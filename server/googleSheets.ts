@@ -27,18 +27,36 @@ export class GoogleSheetsStorage implements IStorage {
   private supportCurrentId = 1;
   
   constructor() {
-    // Initialize the Google Sheets API client
-    const auth = new google.auth.JWT({
-      email: process.env.GOOGLE_CLIENT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
-    });
-    
-    this.sheets = google.sheets({ version: 'v4', auth });
-    this.spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID || '';
-    
-    // Initialize the spreadsheet with the required sheets if they don't exist
-    this.initializeSpreadsheet();
+    try {
+      // Check if all required environment variables are set
+      if (!process.env.GOOGLE_CLIENT_EMAIL) {
+        throw new Error('GOOGLE_CLIENT_EMAIL environment variable is not set');
+      }
+      if (!process.env.GOOGLE_PRIVATE_KEY) {
+        throw new Error('GOOGLE_PRIVATE_KEY environment variable is not set');
+      }
+      if (!process.env.GOOGLE_SPREADSHEET_ID) {
+        throw new Error('GOOGLE_SPREADSHEET_ID environment variable is not set');
+      }
+      
+      // Initialize the Google Sheets API client
+      const auth = new google.auth.JWT({
+        email: process.env.GOOGLE_CLIENT_EMAIL,
+        key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      });
+      
+      this.sheets = google.sheets({ version: 'v4', auth });
+      this.spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+      
+      // Initialize the spreadsheet with the required sheets if they don't exist
+      this.initializeSpreadsheet();
+      
+      console.log('Google Sheets storage initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Google Sheets storage:', error);
+      throw error; // Rethrow to allow the application to fall back to in-memory storage
+    }
   }
   
   private async initializeSpreadsheet() {
@@ -82,10 +100,10 @@ export class GoogleSheetsStorage implements IStorage {
       // User sheet headers
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.userSheet}!A1:D1`,
+        range: `${this.userSheet}!A1:C1`,
         valueInputOption: 'RAW',
         requestBody: {
-          values: [['id', 'username', 'email', 'role']]
+          values: [['id', 'username', 'password']]
         }
       });
       
@@ -126,7 +144,7 @@ export class GoogleSheetsStorage implements IStorage {
       // Load users
       const usersResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.userSheet}!A2:D`
+        range: `${this.userSheet}!A2:C`
       });
       
       const userRows = usersResponse.data.values || [];
