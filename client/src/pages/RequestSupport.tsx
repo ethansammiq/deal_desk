@@ -244,7 +244,7 @@ export default function RequestSupport() {
                                 </FormControl>
                                 <SelectContent>
                                   <SelectItem value="none">None - This is a new deal</SelectItem>
-                                  {deals?.map((deal: any) => (
+                                  {Array.isArray(deals) && deals.map((deal: any) => (
                                     <SelectItem key={deal.id} value={deal.id.toString()}>
                                       {deal.dealName} (#{deal.referenceNumber})
                                     </SelectItem>
