@@ -7,10 +7,21 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { format } from "date-fns";
 import { 
   Card,
   CardContent
 } from "@/components/ui/card";
+import { 
+  formatCurrency,
+  calculateMonthlyValue,
+  calculateNetValue, 
+  calculateProfit,
+  calculateProfitMargin,
+  calculateYOYGrowth,
+  calculateIncentiveImpact,
+  cn
+} from "@/lib/utils";
 import { 
   Form, 
   FormControl, 
@@ -24,8 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { Slider } from "@/components/ui/slider";
 
 // Extend the deal schema with additional validations
 const dealFormSchema = z.object({
