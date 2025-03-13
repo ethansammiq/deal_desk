@@ -9,6 +9,7 @@ import {
   type SupportRequest,
   type InsertSupportRequest
 } from "@shared/schema";
+import { GoogleSheetsStorage } from "./googleSheets";
 
 // Interface for storage operations
 export interface IStorage {
@@ -336,4 +337,19 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Function to get the appropriate storage implementation based on environment
+function getStorage(): IStorage {
+  // If Google Sheets API credentials are provided, use Google Sheets storage
+  if (process.env.GOOGLE_CLIENT_EMAIL && 
+      process.env.GOOGLE_PRIVATE_KEY && 
+      process.env.GOOGLE_SPREADSHEET_ID) {
+    console.log("Using Google Sheets storage");
+    return new GoogleSheetsStorage();
+  }
+  
+  // Otherwise, fall back to in-memory storage
+  console.log("Using in-memory storage");
+  return new MemStorage();
+}
+
+export const storage = getStorage();
