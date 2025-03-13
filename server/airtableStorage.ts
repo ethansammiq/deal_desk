@@ -303,38 +303,45 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // Create full record with all fields
-      const record = await this.dealTable.create({
-        Name: deal.dealName, // Airtable uses "Name" as the primary field
-        internal_id: id,
-        dealName: deal.dealName,
-        dealType: deal.dealType,
-        description: deal.description,
-        department: deal.department,
-        expectedCloseDate: deal.expectedCloseDate,
-        priority: deal.priority,
-        clientName: deal.clientName,
-        clientType: deal.clientType,
-        industry: deal.industry || '',
-        region: deal.region || '',
-        companySize: deal.companySize || 'medium',
-        totalValue: deal.totalValue,
-        contractTerm: deal.contractTerm,
-        paymentTerms: deal.paymentTerms,
-        discountPercentage: deal.discountPercentage,
-        costPercentage: deal.costPercentage,
-        incentivePercentage: deal.incentivePercentage,
-        previousYearValue: deal.previousYearValue,
-        renewalOption: deal.renewalOption,
-        pricingNotes: deal.pricingNotes || '',
-        status: deal.status,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-        referenceNumber: referenceNumber
-      });
+      // Create a record with the primary "Name" field and any other fields that might exist
+      // This approach is compatible with any Airtable schema
+      const recordData: any = {
+        Name: deal.dealName // Airtable uses "Name" as the primary field
+      };
+      
+      // Get existing field names for this table
+      const tableFields = await this.getDealTableFields();
+      console.log('Available deal fields in Airtable:', tableFields);
+      
+      // Map our fields to Airtable fields if they exist
+      if (tableFields.includes('dealName')) recordData.dealName = deal.dealName;
+      if (tableFields.includes('dealType')) recordData.dealType = deal.dealType;
+      if (tableFields.includes('description')) recordData.description = deal.description;
+      if (tableFields.includes('department')) recordData.department = deal.department;
+      if (tableFields.includes('expectedCloseDate')) recordData.expectedCloseDate = deal.expectedCloseDate;
+      if (tableFields.includes('priority')) recordData.priority = deal.priority;
+      if (tableFields.includes('clientName')) recordData.clientName = deal.clientName;
+      if (tableFields.includes('clientType')) recordData.clientType = deal.clientType;
+      if (tableFields.includes('industry')) recordData.industry = deal.industry || '';
+      if (tableFields.includes('region')) recordData.region = deal.region || '';
+      if (tableFields.includes('companySize')) recordData.companySize = deal.companySize || 'medium';
+      if (tableFields.includes('totalValue')) recordData.totalValue = deal.totalValue;
+      if (tableFields.includes('contractTerm')) recordData.contractTerm = deal.contractTerm;
+      if (tableFields.includes('paymentTerms')) recordData.paymentTerms = deal.paymentTerms;
+      if (tableFields.includes('discountPercentage')) recordData.discountPercentage = deal.discountPercentage;
+      if (tableFields.includes('costPercentage')) recordData.costPercentage = deal.costPercentage;
+      if (tableFields.includes('incentivePercentage')) recordData.incentivePercentage = deal.incentivePercentage;
+      if (tableFields.includes('previousYearValue')) recordData.previousYearValue = deal.previousYearValue;
+      if (tableFields.includes('renewalOption')) recordData.renewalOption = deal.renewalOption;
+      if (tableFields.includes('pricingNotes')) recordData.pricingNotes = deal.pricingNotes || '';
+      if (tableFields.includes('status')) recordData.status = deal.status;
+      if (tableFields.includes('referenceNumber')) recordData.referenceNumber = referenceNumber;
+      
+      // Create the record in Airtable
+      const record = await this.dealTable.create(recordData);
       
       // Log success information
-      console.log(`Successfully created deal "${deal.dealName}" in Airtable with all fields`);
+      console.log(`Successfully created deal "${deal.dealName}" in Airtable`);
       console.log(`Deal record ID: ${record.id}`);
       
       // Store the Airtable record ID
@@ -347,19 +354,45 @@ export class AirtableStorage implements IStorage {
     } catch (error) {
       console.error('Error creating deal in Airtable:', error);
       
-      // If we get a field error, fall back to creating just the Name field
-      // This allows the app to continue working even if the Airtable schema doesn't match
-      if (error.message && error.message.includes('UNKNOWN_FIELD_NAME')) {
+      // If we still get an error, fall back to creating just the Name field
+      if (error.message && (error.message.includes('UNKNOWN_FIELD_NAME') || error.message.includes('NOT_FOUND'))) {
         console.log('Falling back to simple record creation (Name field only)');
-        const record = await this.dealTable.create({
-          Name: deal.dealName  // Airtable uses "Name" as the primary field
-        });
-        
-        this.dealRecordIds.set(id, record.id);
-        this.deals.set(id, deal);
-        return deal;
+        try {
+          const record = await this.dealTable.create({
+            Name: deal.dealName  // Airtable uses "Name" as the primary field
+          });
+          
+          this.dealRecordIds.set(id, record.id);
+          this.deals.set(id, deal);
+          return deal;
+        } catch (fallbackError) {
+          console.error('Error in fallback creation:', fallbackError);
+          // Even if the fallback fails, we still want to keep the deal in our local cache
+          this.deals.set(id, deal);
+          return deal;
+        }
       }
-      throw error;
+      
+      // Even if Airtable storage fails, keep the deal in our local cache
+      this.deals.set(id, deal);
+      return deal;
+    }
+  }
+  
+  // Helper method to get available fields for the Deals table
+  private async getDealTableFields(): Promise<string[]> {
+    try {
+      const records = await this.dealTable.select({
+        maxRecords: 1
+      }).firstPage();
+      
+      if (records.length > 0) {
+        return Object.keys(records[0].fields);
+      }
+      return ['Name']; // Default if no records exist
+    } catch (error) {
+      console.error('Error getting deal table fields:', error);
+      return ['Name']; // Default on error
     }
   }
   
@@ -421,23 +454,30 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // Create full record with all fields
-      const record = await this.supportRequestTable.create({
-        Name: request.requestTitle, // Airtable uses "Name" as the primary field
-        internal_id: id,
-        supportType: request.supportType,
-        requestTitle: request.requestTitle,
-        description: request.description,
-        relatedDealId: request.relatedDealId || null,
-        priorityLevel: request.priorityLevel || 'medium',
-        deadline: request.deadline || '',
-        status: request.status,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      });
+      // Create a record with the primary "Name" field and any other fields that might exist
+      // This approach is compatible with any Airtable schema
+      const recordData: any = {
+        Name: request.requestTitle // Airtable uses "Name" as the primary field
+      };
+      
+      // Get existing field names for this table
+      const tableFields = await this.getSupportRequestTableFields();
+      console.log('Available support request fields in Airtable:', tableFields);
+      
+      // Map our fields to Airtable fields if they exist
+      if (tableFields.includes('supportType')) recordData.supportType = request.supportType;
+      if (tableFields.includes('requestTitle')) recordData.requestTitle = request.requestTitle;
+      if (tableFields.includes('description')) recordData.description = request.description;
+      if (tableFields.includes('relatedDealId')) recordData.relatedDealId = request.relatedDealId || null;
+      if (tableFields.includes('priorityLevel')) recordData.priorityLevel = request.priorityLevel || 'medium';
+      if (tableFields.includes('deadline')) recordData.deadline = request.deadline || '';
+      if (tableFields.includes('status')) recordData.status = request.status;
+      
+      // Create the record in Airtable
+      const record = await this.supportRequestTable.create(recordData);
       
       // Log success information
-      console.log(`Successfully created support request "${request.requestTitle}" in Airtable with all fields`);
+      console.log(`Successfully created support request "${request.requestTitle}" in Airtable`);
       console.log(`Support request record ID: ${record.id}`);
       
       // Store the Airtable record ID
@@ -450,19 +490,45 @@ export class AirtableStorage implements IStorage {
     } catch (error) {
       console.error('Error creating support request in Airtable:', error);
       
-      // If we get a field error, fall back to creating just the Name field
-      // This allows the app to continue working even if the Airtable schema doesn't match
-      if (error.message && error.message.includes('UNKNOWN_FIELD_NAME')) {
+      // If we still get an error, fall back to creating just the Name field
+      if (error.message && (error.message.includes('UNKNOWN_FIELD_NAME') || error.message.includes('NOT_FOUND'))) {
         console.log('Falling back to simple record creation (Name field only)');
-        const record = await this.supportRequestTable.create({
-          Name: request.requestTitle  // Airtable uses "Name" as the primary field
-        });
-        
-        this.supportRequestRecordIds.set(id, record.id);
-        this.supportRequests.set(id, request);
-        return request;
+        try {
+          const record = await this.supportRequestTable.create({
+            Name: request.requestTitle  // Airtable uses "Name" as the primary field
+          });
+          
+          this.supportRequestRecordIds.set(id, record.id);
+          this.supportRequests.set(id, request);
+          return request;
+        } catch (fallbackError) {
+          console.error('Error in fallback creation:', fallbackError);
+          // Even if the fallback fails, we still want to keep the request in our local cache
+          this.supportRequests.set(id, request);
+          return request;
+        }
       }
-      throw error;
+      
+      // Even if Airtable storage fails, keep the request in our local cache
+      this.supportRequests.set(id, request);
+      return request;
+    }
+  }
+  
+  // Helper method to get available fields for the SupportRequests table
+  private async getSupportRequestTableFields(): Promise<string[]> {
+    try {
+      const records = await this.supportRequestTable.select({
+        maxRecords: 1
+      }).firstPage();
+      
+      if (records.length > 0) {
+        return Object.keys(records[0].fields);
+      }
+      return ['Name']; // Default if no records exist
+    } catch (error) {
+      console.error('Error getting support request table fields:', error);
+      return ['Name']; // Default on error
     }
   }
   

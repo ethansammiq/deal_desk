@@ -7,7 +7,12 @@ Airtable.configure({
   apiKey: process.env.AIRTABLE_API_KEY
 });
 
-const base = Airtable.base(process.env.AIRTABLE_BASE_ID);
+// Extract the base ID (app ID) from the provided Base ID - matching the logic in airtableStorage.ts
+const baseIdMatch = process.env.AIRTABLE_BASE_ID.match(/app[a-zA-Z0-9]+/);
+const baseId = baseIdMatch ? baseIdMatch[0] : process.env.AIRTABLE_BASE_ID;
+
+console.log(`Using Airtable base ID: ${baseId}`);
+const base = Airtable.base(baseId);
 
 async function setupTables() {
   try {
