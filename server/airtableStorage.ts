@@ -385,18 +385,14 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // Add to Airtable
+      // Create a simple record with just the Name field to prevent field errors
       const record = await this.supportRequestTable.create({
-        Name: request.requestTitle, // Airtable uses "Name" as the primary field
-        supportType: request.supportType,
-        requestTitle: request.requestTitle,
-        description: request.description,
-        status: request.status,
-        relatedDealId: request.relatedDealId || null,
-        priorityLevel: request.priorityLevel || 'medium',
-        deadline: request.deadline || '',
-        internal_id: id
+        Name: request.requestTitle  // Airtable uses "Name" as the primary field
       });
+      
+      // Log success information
+      console.log(`Successfully created support request "${request.requestTitle}" in Airtable`);
+      console.log(`Support request record ID: ${record.id}`);
       
       // Store the Airtable record ID
       this.supportRequestRecordIds.set(id, record.id);

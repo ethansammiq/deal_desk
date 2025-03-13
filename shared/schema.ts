@@ -52,15 +52,21 @@ export const deals = pgTable("deals", {
 });
 
 export const insertDealSchema = createInsertSchema(deals)
-  .omit({ id: true, createdAt: true, updatedAt: true })
+  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true })
   .extend({
     // Add validation rules
     totalValue: z.number().positive("Deal value must be positive"),
     contractTerm: z.number().int().positive("Contract term must be positive"),
     discountPercentage: z.number().min(0).max(100, "Discount must be between 0 and 100%"),
     costPercentage: z.number().min(0).max(100, "Cost must be between 0 and 100%"),
-    incentivePercentage: z.number().min(0).max(50, "Incentives must be between 0 and 50%"),
-    previousYearValue: z.number().min(0, "Previous year value must be non-negative"),
+    // Make these fields optional with defaults
+    incentivePercentage: z.number().min(0).max(50, "Incentives must be between 0 and 50%").default(0),
+    previousYearValue: z.number().min(0, "Previous year value must be non-negative").default(0),
+    priority: z.string().default("medium"),
+    companySize: z.string().optional(),
+    paymentTerms: z.string().default("monthly"),
+    pricingNotes: z.string().optional(),
+    renewalOption: z.string().default("manual"),
   });
 
 // Support requests table
