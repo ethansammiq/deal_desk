@@ -58,8 +58,7 @@ const dealFormSchema = z.object({
   discountPercentage: z.coerce.number().min(0).max(100, "Discount must be between 0 and 100%").default(0),
   costPercentage: z.coerce.number().min(0).max(100, "Cost must be between 0 and 100%").default(30),
   incentivePercentage: z.coerce.number().min(0).max(50, "Incentives must be between 0 and 50%").default(0),
-  previousYearRevenue: z.coerce.number().min(0, "Previous year revenue must be non-negative").optional(),
-  previousYearProfit: z.coerce.number().min(0, "Previous year profit must be non-negative").optional(),
+  previousYearValue: z.coerce.number().min(0, "Previous year value must be non-negative").default(0),
   renewalOption: z.string().default("manual"),
   pricingNotes: z.string().optional(),
   
@@ -95,8 +94,7 @@ export default function SubmitDeal() {
       discountPercentage: 0,
       costPercentage: 30,
       incentivePercentage: 0,
-      previousYearRevenue: undefined,
-      previousYearProfit: undefined,
+      previousYearValue: 0,
       renewalOption: "manual",
       pricingNotes: "",
     },
@@ -254,9 +252,11 @@ export default function SubmitDeal() {
                             <SelectContent>
                               <SelectItem value="new_business">New Business</SelectItem>
                               <SelectItem value="renewal">Renewal</SelectItem>
-                              <SelectItem value="upsell">Upsell</SelectItem>
-                              <SelectItem value="expansion">Expansion</SelectItem>
-                              <SelectItem value="special_project">Special Project</SelectItem>
+                              <SelectItem value="upsell">Upsell / Cross-sell</SelectItem>
+                              <SelectItem value="expansion">Expansion / Growth</SelectItem>
+                              <SelectItem value="enterprise">Enterprise Agreement</SelectItem>
+                              <SelectItem value="strategic">Strategic Partnership</SelectItem>
+                              <SelectItem value="custom">Custom Solution</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -307,8 +307,11 @@ export default function SubmitDeal() {
                               <SelectItem value="sales">Sales</SelectItem>
                               <SelectItem value="marketing">Marketing</SelectItem>
                               <SelectItem value="operations">Operations</SelectItem>
-                              <SelectItem value="it">IT</SelectItem>
+                              <SelectItem value="it">IT & Technology</SelectItem>
                               <SelectItem value="finance">Finance</SelectItem>
+                              <SelectItem value="product">Product</SelectItem>
+                              <SelectItem value="customer_success">Customer Success</SelectItem>
+                              <SelectItem value="legal">Legal</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -430,6 +433,9 @@ export default function SubmitDeal() {
                               <SelectItem value="existing">Existing Client</SelectItem>
                               <SelectItem value="new">New Client</SelectItem>
                               <SelectItem value="partner">Partner</SelectItem>
+                              <SelectItem value="reseller">Reseller</SelectItem>
+                              <SelectItem value="distributor">Distributor</SelectItem>
+                              <SelectItem value="strategic">Strategic Account</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

@@ -36,6 +36,9 @@ export const deals = pgTable("deals", {
   contractTerm: integer("contract_term").notNull(), // in months
   paymentTerms: text("payment_terms").default("monthly"), // monthly, quarterly, annually, upfront
   discountPercentage: doublePrecision("discount_percentage").default(0),
+  costPercentage: doublePrecision("cost_percentage").default(30), // default cost basis is 30%
+  incentivePercentage: doublePrecision("incentive_percentage").default(0), // sales incentives 
+  previousYearValue: doublePrecision("previous_year_value").default(0), // for YOY calculations
   renewalOption: text("renewal_option").default("manual"), // automatic, manual, none
   pricingNotes: text("pricing_notes"),
   
@@ -55,6 +58,9 @@ export const insertDealSchema = createInsertSchema(deals)
     totalValue: z.number().positive("Deal value must be positive"),
     contractTerm: z.number().int().positive("Contract term must be positive"),
     discountPercentage: z.number().min(0).max(100, "Discount must be between 0 and 100%"),
+    costPercentage: z.number().min(0).max(100, "Cost must be between 0 and 100%"),
+    incentivePercentage: z.number().min(0).max(50, "Incentives must be between 0 and 50%"),
+    previousYearValue: z.number().min(0, "Previous year value must be non-negative"),
   });
 
 // Support requests table
