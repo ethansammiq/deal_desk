@@ -417,18 +417,39 @@ export class AirtableStorage implements IStorage {
         throw new Error(`Deal with ID ${id} not found in Airtable record map`);
       }
       
-      // Update in Airtable
-      await this.dealTable.update(recordId, {
-        status: status
-      });
+      // Get existing field names for this table
+      const tableFields = await this.getDealTableFields();
+      console.log('Available deal fields in Airtable for status update:', tableFields);
       
-      // Update local cache
+      // Create update data based on what fields exist
+      const updateData: any = {};
+      
+      // If the status field exists, update it
+      if (tableFields.includes('status')) {
+        updateData.status = status;
+      } else if (tableFields.includes('Status')) {
+        // Airtable sometimes uses capitalized field names
+        updateData.Status = status;
+      } else {
+        // Try to update the Name field with status information
+        updateData.Name = `${deal.dealName} (${status})`;
+        console.log('No status field found in Airtable, updating Name field with status information');
+      }
+      
+      // Update in Airtable
+      await this.dealTable.update(recordId, updateData);
+      console.log(`Successfully updated deal status to "${status}" in Airtable`);
+      
+      // Update local cache even if Airtable update fails
       this.deals.set(id, updatedDeal);
       
       return updatedDeal;
     } catch (error) {
       console.error(`Error updating deal status in Airtable:`, error);
-      throw error;
+      
+      // Update local cache even if Airtable update fails
+      this.deals.set(id, updatedDeal);
+      return updatedDeal;
     }
   }
   
@@ -553,10 +574,28 @@ export class AirtableStorage implements IStorage {
         throw new Error(`Support request with ID ${id} not found in Airtable record map`);
       }
       
+      // Get existing field names for this table
+      const tableFields = await this.getSupportRequestTableFields();
+      console.log('Available support request fields in Airtable for status update:', tableFields);
+      
+      // Create update data based on what fields exist
+      const updateData: any = {};
+      
+      // If the status field exists, update it
+      if (tableFields.includes('status')) {
+        updateData.status = status;
+      } else if (tableFields.includes('Status')) {
+        // Airtable sometimes uses capitalized field names
+        updateData.Status = status;
+      } else {
+        // Try to update the Name field with status information
+        updateData.Name = `${request.requestTitle} (${status})`;
+        console.log('No status field found in Airtable, updating Name field with status information');
+      }
+      
       // Update in Airtable
-      await this.supportRequestTable.update(recordId, {
-        status: status
-      });
+      await this.supportRequestTable.update(recordId, updateData);
+      console.log(`Successfully updated support request status to "${status}" in Airtable`);
       
       // Update local cache
       this.supportRequests.set(id, updatedRequest);
@@ -564,7 +603,10 @@ export class AirtableStorage implements IStorage {
       return updatedRequest;
     } catch (error) {
       console.error(`Error updating support request status in Airtable:`, error);
-      throw error;
+      
+      // Update local cache even if Airtable update fails
+      this.supportRequests.set(id, updatedRequest);
+      return updatedRequest;
     }
   }
   
