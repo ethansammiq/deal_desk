@@ -9,7 +9,7 @@ import {
   type SupportRequest,
   type InsertSupportRequest
 } from "@shared/schema";
-import { GoogleSheetsStorage } from "./googleSheets";
+import { AirtableStorage } from "./airtableStorage";
 
 // Interface for storage operations
 export interface IStorage {
@@ -339,12 +339,16 @@ export class MemStorage implements IStorage {
 
 // Function to get the appropriate storage implementation based on environment
 function getStorage(): IStorage {
-  // If Google Sheets API credentials are provided, use Google Sheets storage
-  if (process.env.GOOGLE_CLIENT_EMAIL && 
-      process.env.GOOGLE_PRIVATE_KEY && 
-      process.env.GOOGLE_SPREADSHEET_ID) {
-    console.log("Using Google Sheets storage");
-    return new GoogleSheetsStorage();
+  // If Airtable API credentials are provided, use Airtable storage
+  if (process.env.AIRTABLE_API_KEY && process.env.AIRTABLE_BASE_ID) {
+    console.log("Using Airtable storage");
+    try {
+      return new AirtableStorage();
+    } catch (error) {
+      console.error("Failed to initialize Airtable storage:", error);
+      console.log("Falling back to in-memory storage");
+      return new MemStorage();
+    }
   }
   
   // Otherwise, fall back to in-memory storage
