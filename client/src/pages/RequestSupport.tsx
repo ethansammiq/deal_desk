@@ -130,7 +130,11 @@ export default function RequestSupport() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Deal Scoping Request</h1>
+        <div className="flex items-center mb-2">
+          <h1 className="text-2xl font-bold text-slate-900">Deal Process</h1>
+          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
+        </div>
+        <h2 className="text-xl font-medium text-slate-800 mb-1">Deal Scoping Request</h2>
         <p className="mt-1 text-sm text-slate-500">
           New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
           <span className="block mt-1 text-primary">

@@ -1,8 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { 
   HomeIcon, 
-  PlusIcon, 
-  LifeBuoyIcon, 
+  ClipboardPenIcon,
   HelpCircleIcon 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,32 +73,18 @@ export function Sidebar() {
                   Dashboard
                 </a>
               </Link>
-              <Link href="/submit-deal">
-                <a
-                  onClick={closeMobileMenu}
-                  className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
-                    location === "/submit-deal" 
-                      ? "bg-slate-700 text-white" 
-                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                  )}
-                >
-                  <PlusIcon className="w-6 h-6 mr-3" />
-                  Submit New Deal
-                </a>
-              </Link>
               <Link href="/support">
                 <a
                   onClick={closeMobileMenu}
                   className={cn(
                     "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
-                    location === "/support" 
+                    location === "/support" || location === "/submit-deal" 
                       ? "bg-slate-700 text-white" 
                       : "text-slate-300 hover:bg-slate-700 hover:text-white"
                   )}
                 >
-                  <LifeBuoyIcon className="w-6 h-6 mr-3" />
-                  Request Support
+                  <ClipboardPenIcon className="w-6 h-6 mr-3" />
+                  Deal Process
                 </a>
               </Link>
               <Link href="/help">
