@@ -949,31 +949,31 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Client Type</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("clientType") ? 
-                              form.getValues("clientType")
-                                .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
-                              "Not provided"}
+                            {form.getValues("clientType") 
+                              ? String(form.getValues("clientType"))
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                              : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Industry</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("industry") ? 
-                              form.getValues("industry")
-                                .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
-                              "Not provided"}
+                            {form.getValues("industry") 
+                              ? String(form.getValues("industry"))
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                              : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Region</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("region") ? 
-                              form.getValues("region")
-                                .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
-                              "Not provided"}
+                            {form.getValues("region") 
+                              ? String(form.getValues("region"))
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                              : "Not provided"}
                           </dd>
                         </div>
                       </dl>
@@ -1008,17 +1008,56 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Payment Terms</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("paymentTerms") ? 
-                              form.getValues("paymentTerms")
-                                .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
-                              "Not provided"}
+                            {form.getValues("paymentTerms") 
+                              ? String(form.getValues("paymentTerms"))
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                              : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Discount</dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {`${form.getValues("discountPercentage") || 0}%`}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Cost Percentage</dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {`${form.getValues("costPercentage") || 30}%`}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Incentive Percentage</dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {`${form.getValues("incentivePercentage") || 0}%`}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Previous Year Revenue</dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("previousYearValue") 
+                              ? formatCurrency(form.getValues("previousYearValue")) 
+                              : "$0"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">YOY Growth</dt>
+                          <dd className="mt-1 text-sm text-slate-900 font-semibold">
+                            {Math.round(calculateYOYGrowth(
+                              form.getValues("totalValue") ?? 0,
+                              form.getValues("previousYearValue") ?? 0
+                            ))}%
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Profit Margin</dt>
+                          <dd className="mt-1 text-sm font-semibold text-green-600">
+                            {Math.round(calculateProfitMargin(
+                              form.getValues("totalValue") ?? 0,
+                              form.getValues("discountPercentage") ?? 0,
+                              form.getValues("costPercentage") ?? 30
+                            ))}%
                           </dd>
                         </div>
                         <div className="sm:col-span-2">
