@@ -171,46 +171,53 @@ export class AirtableStorage implements IStorage {
   // Initialize tables with sample data if they're empty
   private async initializeTables() {
     try {
-      // Check if tables need initialization
+      // First, let's log the available fields for each table
+      console.log('Inspecting Airtable tables structure...');
+      
+      // Check Users table
+      const usersMeta = await this.userTable.select({
+        maxRecords: 1
+      }).firstPage();
+      console.log('Users table fields:', usersMeta.length > 0 ? Object.keys(usersMeta[0].fields) : 'No records');
+      
+      // Check Deals table
+      const dealsMeta = await this.dealTable.select({
+        maxRecords: 1
+      }).firstPage();
+      console.log('Deals table fields:', dealsMeta.length > 0 ? Object.keys(dealsMeta[0].fields) : 'No records');
+      
+      // Check SupportRequests table
+      const requestsMeta = await this.supportRequestTable.select({
+        maxRecords: 1
+      }).firstPage();
+      console.log('SupportRequests table fields:', requestsMeta.length > 0 ? Object.keys(requestsMeta[0].fields) : 'No records');
+      
+      // Now let's initialize the tables if needed
       const users = await this.userTable.select().all();
       if (users.length === 0) {
-        // Create an initial user
+        // Create an initial user with just the Name field
         await this.userTable.create({
-          Name: 'Admin User',
-          username: 'admin',
-          password: 'password123',
-          internal_id: 1
+          Name: 'Admin User'
         });
+        console.log('Created initial user record');
       }
       
       const deals = await this.dealTable.select().all();
       if (deals.length === 0) {
-        // Create an initial deal
+        // Create an initial deal with just the Name field
         await this.dealTable.create({
-          Name: 'Sample Deal',
-          dealName: 'Enterprise SaaS Package',
-          dealType: 'new_business',
-          description: 'Comprehensive enterprise SaaS package',
-          clientName: 'Acme Corporation',
-          status: 'pending',
-          totalValue: 86500,
-          referenceNumber: 'DEA-0001',
-          internal_id: 1
+          Name: 'Sample Deal'
         });
+        console.log('Created initial deal record');
       }
       
       const supportRequests = await this.supportRequestTable.select().all();
       if (supportRequests.length === 0) {
-        // Create an initial support request
+        // Create an initial support request with just the Name field
         await this.supportRequestTable.create({
-          Name: 'Initial Support Request',
-          requestTitle: 'Deal Approval Assistance',
-          supportType: 'pricing',
-          description: 'Need assistance with deal approval process',
-          status: 'submitted',
-          priorityLevel: 'high',
-          internal_id: 1
+          Name: 'Initial Support Request'
         });
+        console.log('Created initial support request record');
       }
     } catch (error) {
       console.error('Error initializing tables:', error);
@@ -296,30 +303,16 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // Add to Airtable
+      // First, create a simple record with just the Name field
+      // Other fields will be added in a separate initialization step
+      // after we confirm which fields actually exist in the Airtable schema
       const record = await this.dealTable.create({
-        Name: deal.dealName, // Airtable uses "Name" as the primary field
-        dealName: deal.dealName,
-        dealType: deal.dealType,
-        description: deal.description,
-        clientName: deal.clientName,
-        clientType: deal.clientType || '',
-        industry: deal.industry || '',
-        region: deal.region || '',
-        department: deal.department,
-        status: deal.status,
-        totalValue: deal.totalValue,
-        contractTerm: deal.contractTerm,
-        discountPercentage: deal.discountPercentage,
-        costPercentage: deal.costPercentage || 0,
-        expectedCloseDate: deal.expectedCloseDate,
-        referenceNumber: referenceNumber,
-        internal_id: id,
-        priority: deal.priority || 'medium',
-        companySize: deal.companySize || 'medium',
-        paymentTerms: deal.paymentTerms || 'monthly',
-        pricingNotes: deal.pricingNotes || ''
+        Name: deal.dealName  // Airtable uses "Name" as the primary field
       });
+      
+      // Log success information
+      console.log(`Successfully created deal "${deal.dealName}" in Airtable`);
+      console.log(`Deal record ID: ${record.id}`);
       
       // Store the Airtable record ID
       this.dealRecordIds.set(id, record.id);
