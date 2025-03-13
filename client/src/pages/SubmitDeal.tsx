@@ -660,6 +660,176 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <FormField
+                      control={form.control}
+                      name="costPercentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cost Percentage (%)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="30"
+                              min="0"
+                              max="100"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Internal cost as percentage of revenue
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="incentivePercentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Incentive Percentage (%)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              min="0"
+                              max="50"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Sales or other incentives
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="previousYearValue"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Previous Year Revenue ($)</FormLabel>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <span className="text-slate-500 sm:text-sm">$</span>
+                            </div>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="0.00" 
+                                className="pl-7"
+                                {...field}
+                              />
+                            </FormControl>
+                          </div>
+                          <FormDescription>
+                            For YOY growth calculation
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    <h3 className="text-lg font-medium text-slate-900 mb-4">Deal Financial Calculator</h3>
+                    
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Monthly Revenue</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {formatCurrency(calculateMonthlyValue(form.watch("totalValue") || 0, form.watch("contractTerm") || 1))}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Per month over contract term</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Net Revenue</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {formatCurrency(calculateNetValue(form.watch("totalValue") || 0, form.watch("discountPercentage") || 0))}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">After applying discount</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Profit</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {formatCurrency(calculateProfit(
+                            form.watch("totalValue") || 0,
+                            form.watch("discountPercentage") || 0,
+                            form.watch("costPercentage") || 30
+                          ))}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">After costs and discounts</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Profit Margin</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {Math.round(calculateProfitMargin(
+                            form.watch("totalValue") || 0,
+                            form.watch("discountPercentage") || 0,
+                            form.watch("costPercentage") || 30
+                          ))}%
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Percentage of net revenue</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 mt-4">
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Revenue YOY Growth</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {Math.round(calculateYOYGrowth(
+                            form.watch("totalValue") || 0,
+                            form.watch("previousYearValue") || 0
+                          ))}%
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Year-over-year revenue growth</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Incentive Impact</h4>
+                        <p className="mt-1 text-2xl font-semibold text-primary">
+                          {formatCurrency(calculateIncentiveImpact(
+                            form.watch("totalValue") || 0,
+                            form.watch("incentivePercentage") || 0
+                          ))}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Cost of incentives</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Total Costs</h4>
+                        <p className="mt-1 text-2xl font-semibold text-red-500">
+                          {formatCurrency((form.watch("totalValue") || 0) * (form.watch("costPercentage") || 30) / 100)}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Based on cost percentage</p>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <h4 className="text-sm font-medium text-slate-500">Net Profit</h4>
+                        <p className="mt-1 text-2xl font-semibold text-green-600">
+                          {formatCurrency(
+                            calculateProfit(
+                              form.watch("totalValue") || 0,
+                              form.watch("discountPercentage") || 0,
+                              form.watch("costPercentage") || 30
+                            ) - calculateIncentiveImpact(
+                              form.watch("totalValue") || 0,
+                              form.watch("incentivePercentage") || 0
+                            )
+                          )}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">After all deductions</p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <FormField
                     control={form.control}
                     name="pricingNotes"
