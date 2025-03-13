@@ -303,15 +303,38 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // First, create a simple record with just the Name field
-      // Other fields will be added in a separate initialization step
-      // after we confirm which fields actually exist in the Airtable schema
+      // Create full record with all fields
       const record = await this.dealTable.create({
-        Name: deal.dealName  // Airtable uses "Name" as the primary field
+        Name: deal.dealName, // Airtable uses "Name" as the primary field
+        internal_id: id,
+        dealName: deal.dealName,
+        dealType: deal.dealType,
+        description: deal.description,
+        department: deal.department,
+        expectedCloseDate: deal.expectedCloseDate,
+        priority: deal.priority,
+        clientName: deal.clientName,
+        clientType: deal.clientType,
+        industry: deal.industry || '',
+        region: deal.region || '',
+        companySize: deal.companySize || 'medium',
+        totalValue: deal.totalValue,
+        contractTerm: deal.contractTerm,
+        paymentTerms: deal.paymentTerms,
+        discountPercentage: deal.discountPercentage,
+        costPercentage: deal.costPercentage,
+        incentivePercentage: deal.incentivePercentage,
+        previousYearValue: deal.previousYearValue,
+        renewalOption: deal.renewalOption,
+        pricingNotes: deal.pricingNotes || '',
+        status: deal.status,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        referenceNumber: referenceNumber
       });
       
       // Log success information
-      console.log(`Successfully created deal "${deal.dealName}" in Airtable`);
+      console.log(`Successfully created deal "${deal.dealName}" in Airtable with all fields`);
       console.log(`Deal record ID: ${record.id}`);
       
       // Store the Airtable record ID
@@ -323,6 +346,19 @@ export class AirtableStorage implements IStorage {
       return deal;
     } catch (error) {
       console.error('Error creating deal in Airtable:', error);
+      
+      // If we get a field error, fall back to creating just the Name field
+      // This allows the app to continue working even if the Airtable schema doesn't match
+      if (error.message && error.message.includes('UNKNOWN_FIELD_NAME')) {
+        console.log('Falling back to simple record creation (Name field only)');
+        const record = await this.dealTable.create({
+          Name: deal.dealName  // Airtable uses "Name" as the primary field
+        });
+        
+        this.dealRecordIds.set(id, record.id);
+        this.deals.set(id, deal);
+        return deal;
+      }
       throw error;
     }
   }
@@ -385,13 +421,23 @@ export class AirtableStorage implements IStorage {
     };
     
     try {
-      // Create a simple record with just the Name field to prevent field errors
+      // Create full record with all fields
       const record = await this.supportRequestTable.create({
-        Name: request.requestTitle  // Airtable uses "Name" as the primary field
+        Name: request.requestTitle, // Airtable uses "Name" as the primary field
+        internal_id: id,
+        supportType: request.supportType,
+        requestTitle: request.requestTitle,
+        description: request.description,
+        relatedDealId: request.relatedDealId || null,
+        priorityLevel: request.priorityLevel || 'medium',
+        deadline: request.deadline || '',
+        status: request.status,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
       });
       
       // Log success information
-      console.log(`Successfully created support request "${request.requestTitle}" in Airtable`);
+      console.log(`Successfully created support request "${request.requestTitle}" in Airtable with all fields`);
       console.log(`Support request record ID: ${record.id}`);
       
       // Store the Airtable record ID
@@ -403,6 +449,19 @@ export class AirtableStorage implements IStorage {
       return request;
     } catch (error) {
       console.error('Error creating support request in Airtable:', error);
+      
+      // If we get a field error, fall back to creating just the Name field
+      // This allows the app to continue working even if the Airtable schema doesn't match
+      if (error.message && error.message.includes('UNKNOWN_FIELD_NAME')) {
+        console.log('Falling back to simple record creation (Name field only)');
+        const record = await this.supportRequestTable.create({
+          Name: request.requestTitle  // Airtable uses "Name" as the primary field
+        });
+        
+        this.supportRequestRecordIds.set(id, record.id);
+        this.supportRequests.set(id, request);
+        return request;
+      }
       throw error;
     }
   }
