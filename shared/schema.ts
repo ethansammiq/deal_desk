@@ -42,6 +42,10 @@ export const deals = pgTable("deals", {
   renewalOption: text("renewal_option").default("manual"), // automatic, manual, none
   pricingNotes: text("pricing_notes"),
   
+  // Custom fields (added)
+  customField1: text("custom_field1"),
+  customField2: text("custom_field2"),
+  
   // Status and tracking
   status: text("status").notNull().default("pending"), // pending, approved, rejected, in_progress, completed
   createdAt: timestamp("created_at").defaultNow(),
@@ -67,6 +71,9 @@ export const insertDealSchema = createInsertSchema(deals)
     paymentTerms: z.string().default("monthly"),
     pricingNotes: z.string().optional(),
     renewalOption: z.string().default("manual"),
+    // Custom fields
+    customField1: z.string().optional(),
+    customField2: z.string().optional(),
   });
 
 // Support requests table

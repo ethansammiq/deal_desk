@@ -337,6 +337,10 @@ export class AirtableStorage implements IStorage {
       if (tableFields.includes('status')) recordData.status = deal.status;
       if (tableFields.includes('referenceNumber')) recordData.referenceNumber = referenceNumber;
       
+      // New custom fields
+      if (tableFields.includes('customField1')) recordData.customField1 = deal.customField1 || '';
+      if (tableFields.includes('customField2')) recordData.customField2 = deal.customField2 || '';
+      
       // Create the record in Airtable
       const record = await this.dealTable.create(recordData);
       
