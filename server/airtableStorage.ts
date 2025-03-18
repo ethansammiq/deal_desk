@@ -4,31 +4,25 @@ import {
   User, 
   InsertUser, 
   Deal, 
-  InsertDeal, 
-  SupportRequest, 
-  InsertSupportRequest 
+  InsertDeal
 } from '@shared/schema';
 
 export class AirtableStorage implements IStorage {
   private base: Airtable.Base;
   private userTable: Airtable.Table<any>;
   private dealTable: Airtable.Table<any>;
-  private supportRequestTable: Airtable.Table<any>;
   
   // Local cache to reduce API calls
   private users: Map<number, User> = new Map();
   private deals: Map<number, Deal> = new Map();
-  private supportRequests: Map<number, SupportRequest> = new Map();
   
   // Current IDs for new records
   private userCurrentId = 1;
   private dealCurrentId = 1;
-  private supportCurrentId = 1;
   
   // Record ID maps to maintain relationship between our IDs and Airtable record IDs
   private userRecordIds: Map<number, string> = new Map();
   private dealRecordIds: Map<number, string> = new Map();
-  private supportRequestRecordIds: Map<number, string> = new Map();
   
   constructor() {
     try {
@@ -52,7 +46,6 @@ export class AirtableStorage implements IStorage {
       this.base = Airtable.base(baseId);
       this.userTable = this.base('Users');
       this.dealTable = this.base('Deals');
-      this.supportRequestTable = this.base('SupportRequests');
       
       // Load existing data
       this.loadExistingData();
@@ -134,33 +127,7 @@ export class AirtableStorage implements IStorage {
         }
       });
       
-      // Load support requests
-      const supportRecords = await this.supportRequestTable.select().all();
-      supportRecords.forEach(record => {
-        const fields = record.fields;
-        // Use the internal_id field, or generate one if not available
-        const id = fields.internal_id ? Number(fields.internal_id) : this.supportCurrentId++;
-        
-        const request: SupportRequest = {
-          id,
-          supportType: fields.supportType ? String(fields.supportType) : 'general',
-          requestTitle: fields.requestTitle ? String(fields.requestTitle) : 'Support Request',
-          description: fields.description ? String(fields.description) : '',
-          status: fields.status ? String(fields.status) : 'submitted',
-          relatedDealId: fields.relatedDealId ? Number(fields.relatedDealId) : null,
-          priorityLevel: fields.priorityLevel ? String(fields.priorityLevel) : 'medium',
-          deadline: fields.deadline ? String(fields.deadline) : null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        this.supportRequests.set(id, request);
-        this.supportRequestRecordIds.set(id, record.id);
-        
-        if (id >= this.supportCurrentId) {
-          this.supportCurrentId = id + 1;
-        }
-      });
+      // Support requests have been removed as per user request
       
       console.log('Loaded existing data from Airtable');
     } catch (error) {

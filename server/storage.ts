@@ -1,13 +1,10 @@
 import { 
   users, 
   deals, 
-  supportRequests, 
   type User, 
   type InsertUser, 
   type Deal, 
-  type InsertDeal,
-  type SupportRequest,
-  type InsertSupportRequest
+  type InsertDeal
 } from "@shared/schema";
 import { AirtableStorage } from "./airtableStorage";
 
@@ -25,11 +22,7 @@ export interface IStorage {
   createDeal(deal: InsertDeal): Promise<Deal>;
   updateDealStatus(id: number, status: string): Promise<Deal | undefined>;
   
-  // Support request methods
-  getSupportRequest(id: number): Promise<SupportRequest | undefined>;
-  getSupportRequests(): Promise<SupportRequest[]>;
-  createSupportRequest(request: InsertSupportRequest): Promise<SupportRequest>;
-  updateSupportRequestStatus(id: number, status: string): Promise<SupportRequest | undefined>;
+  // Support request methods have been removed as per user request
   
   // Stats methods
   getDealStats(): Promise<{
@@ -44,18 +37,14 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private deals: Map<number, Deal>;
-  private supportRequests: Map<number, SupportRequest>;
   private userCurrentId: number;
   private dealCurrentId: number;
-  private supportCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.deals = new Map();
-    this.supportRequests = new Map();
     this.userCurrentId = 1;
     this.dealCurrentId = 1;
-    this.supportCurrentId = 1;
     
     // Initialize with some sample data
     this.initSampleData();
@@ -256,44 +245,7 @@ export class MemStorage implements IStorage {
     return updatedDeal;
   }
   
-  // Support request methods
-  async getSupportRequest(id: number): Promise<SupportRequest | undefined> {
-    return this.supportRequests.get(id);
-  }
-  
-  async getSupportRequests(): Promise<SupportRequest[]> {
-    return Array.from(this.supportRequests.values())
-      .sort((a, b) => b.id - a.id);
-  }
-  
-  async createSupportRequest(insertRequest: InsertSupportRequest): Promise<SupportRequest> {
-    const id = this.supportCurrentId++;
-    const now = new Date();
-    
-    const request: SupportRequest = {
-      ...insertRequest,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-    
-    this.supportRequests.set(id, request);
-    return request;
-  }
-  
-  async updateSupportRequestStatus(id: number, status: string): Promise<SupportRequest | undefined> {
-    const request = this.supportRequests.get(id);
-    if (!request) return undefined;
-    
-    const updatedRequest: SupportRequest = {
-      ...request,
-      status,
-      updatedAt: new Date(),
-    };
-    
-    this.supportRequests.set(id, updatedRequest);
-    return updatedRequest;
-  }
+  // Support request methods have been removed as per user request
   
   // Stats methods
   async getDealStats(): Promise<{

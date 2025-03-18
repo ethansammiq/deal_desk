@@ -1,7 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDealSchema, insertSupportRequestSchema } from "@shared/schema";
+import { insertDealSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
@@ -128,100 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Support requests endpoints
-  router.get("/support-requests", async (req: Request, res: Response) => {
-    try {
-      const requests = await storage.getSupportRequests();
-      res.status(200).json(requests);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch support requests" });
-    }
-  });
-  
-  router.get("/support-requests/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid request ID" });
-      }
-      
-      const request = await storage.getSupportRequest(id);
-      if (!request) {
-        return res.status(404).json({ message: "Support request not found" });
-      }
-      
-      res.status(200).json(request);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch support request" });
-    }
-  });
-  
-  router.post("/support-requests", async (req: Request, res: Response) => {
-    try {
-      // Validate the request body against the schema
-      const validatedData = insertSupportRequestSchema.safeParse(req.body);
-      
-      if (!validatedData.success) {
-        const errorMessage = fromZodError(validatedData.error).message;
-        return res.status(400).json({ message: errorMessage });
-      }
-      
-      const newRequest = await storage.createSupportRequest(validatedData.data);
-      res.status(201).json(newRequest);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to create support request" });
-    }
-  });
-  
-  router.patch("/support-requests/:id/status", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid request ID" });
-      }
-      
-      // Validate status
-      const statusSchema = z.object({
-        status: z.enum(["open", "in_progress", "resolved", "closed"])
-      });
-      
-      const validatedData = statusSchema.safeParse(req.body);
-      
-      if (!validatedData.success) {
-        const errorMessage = fromZodError(validatedData.error).message;
-        return res.status(400).json({ message: errorMessage });
-      }
-      
-      const { status } = validatedData.data;
-      
-      const updatedRequest = await storage.updateSupportRequestStatus(id, status);
-      if (!updatedRequest) {
-        return res.status(404).json({ message: "Support request not found" });
-      }
-      
-      res.status(200).json(updatedRequest);
-    } catch (error) {
-      console.error("Error updating support request status:", error);
-      
-      // Attempt to get the support request from storage anyway
-      // This allows the app to continue working even if the Airtable operation fails
-      try {
-        const request = await storage.getSupportRequest(parseInt(req.params.id));
-        if (request) {
-          console.log("Retrieved support request after update error. Returning cached version.");
-          return res.json({
-            ...request,
-            status: req.body.status,
-            updatedAt: new Date()
-          });
-        }
-      } catch (fallbackError) {
-        console.error("Error in fallback operation:", fallbackError);
-      }
-      
-      res.status(500).json({ message: "Failed to update support request status" });
-    }
-  });
+  // Support requests endpoints have been removed as per user request
 
   const httpServer = createServer(app);
   return httpServer;

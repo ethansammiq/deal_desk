@@ -14,19 +14,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-// Support requests table
-export const supportRequests = pgTable("support_requests", {
-  id: serial("id").primaryKey(),
-  supportType: text("support_type").notNull(), // pricing, technical, legal, proposal, other
-  requestTitle: text("request_title").notNull(),
-  description: text("description").notNull(),
-  relatedDealId: integer("related_deal_id"),
-  priorityLevel: text("priority_level").notNull().default("medium"), // high, medium, low
-  deadline: text("deadline"),
-  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// Support requests table has been removed as per user request
 
 // Deals table
 export const deals = pgTable("deals", {
@@ -91,11 +79,7 @@ export const insertDealSchema = createInsertSchema(deals)
 
 
 
-export const insertSupportRequestSchema = createInsertSchema(supportRequests)
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
-    relatedDealId: z.number().int().positive().optional(),
-  });
+// Support request schema has been removed as per user request
 
 // Type definitions for ORM
 export type User = typeof users.$inferSelect;
@@ -104,5 +88,4 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Deal = typeof deals.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
 
-export type SupportRequest = typeof supportRequests.$inferSelect;
-export type InsertSupportRequest = z.infer<typeof insertSupportRequestSchema>;
+// Support request types have been removed as per user request
