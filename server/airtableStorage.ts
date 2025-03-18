@@ -153,11 +153,7 @@ export class AirtableStorage implements IStorage {
       }).firstPage();
       console.log('Deals table fields:', dealsMeta.length > 0 ? Object.keys(dealsMeta[0].fields) : 'No records');
       
-      // Check SupportRequests table
-      const requestsMeta = await this.supportRequestTable.select({
-        maxRecords: 1
-      }).firstPage();
-      console.log('SupportRequests table fields:', requestsMeta.length > 0 ? Object.keys(requestsMeta[0].fields) : 'No records');
+      // Support requests table has been removed as per user request
       
       // Now let's initialize the tables if needed
       const users = await this.userTable.select().all();
@@ -176,15 +172,6 @@ export class AirtableStorage implements IStorage {
           Name: 'Sample Deal'
         });
         console.log('Created initial deal record');
-      }
-      
-      const supportRequests = await this.supportRequestTable.select().all();
-      if (supportRequests.length === 0) {
-        // Create an initial support request with just the Name field
-        await this.supportRequestTable.create({
-          Name: 'Initial Support Request'
-        });
-        console.log('Created initial support request record');
       }
     } catch (error) {
       console.error('Error initializing tables:', error);
@@ -424,162 +411,8 @@ export class AirtableStorage implements IStorage {
     }
   }
   
-  // Support request methods
-  async getSupportRequest(id: number): Promise<SupportRequest | undefined> {
-    return this.supportRequests.get(id);
-  }
-  
-  async getSupportRequests(): Promise<SupportRequest[]> {
-    return Array.from(this.supportRequests.values());
-  }
-  
-  async createSupportRequest(insertRequest: InsertSupportRequest): Promise<SupportRequest> {
-    const id = this.supportCurrentId++;
-    const now = new Date();
-    
-    const request: SupportRequest = {
-      ...insertRequest,
-      id,
-      status: 'submitted',
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    try {
-      // Create a record with the primary "Name" field and any other fields that might exist
-      // This approach is compatible with any Airtable schema
-      const recordData: any = {
-        Name: request.requestTitle // Airtable uses "Name" as the primary field
-      };
-      
-      // Get existing field names for this table
-      const tableFields = await this.getSupportRequestTableFields();
-      console.log('Available support request fields in Airtable:', tableFields);
-      
-      // Map our fields to Airtable fields if they exist
-      if (tableFields.includes('supportType')) recordData.supportType = request.supportType;
-      if (tableFields.includes('requestTitle')) recordData.requestTitle = request.requestTitle;
-      if (tableFields.includes('description')) recordData.description = request.description;
-      if (tableFields.includes('relatedDealId')) recordData.relatedDealId = request.relatedDealId || null;
-      if (tableFields.includes('priorityLevel')) recordData.priorityLevel = request.priorityLevel || 'medium';
-      if (tableFields.includes('deadline')) recordData.deadline = request.deadline || '';
-      if (tableFields.includes('status')) recordData.status = request.status;
-      
-      // Create the record in Airtable
-      const record = await this.supportRequestTable.create(recordData);
-      
-      // Log success information
-      console.log(`Successfully created support request "${request.requestTitle}" in Airtable`);
-      console.log(`Support request record ID: ${record.id}`);
-      
-      // Store the Airtable record ID
-      this.supportRequestRecordIds.set(id, record.id);
-      
-      // Add to local cache
-      this.supportRequests.set(id, request);
-      
-      return request;
-    } catch (error) {
-      console.error('Error creating support request in Airtable:', error);
-      
-      // If we still get an error, fall back to creating just the Name field
-      if (error.message && (error.message.includes('UNKNOWN_FIELD_NAME') || error.message.includes('NOT_FOUND'))) {
-        console.log('Falling back to simple record creation (Name field only)');
-        try {
-          const record = await this.supportRequestTable.create({
-            Name: request.requestTitle  // Airtable uses "Name" as the primary field
-          });
-          
-          this.supportRequestRecordIds.set(id, record.id);
-          this.supportRequests.set(id, request);
-          return request;
-        } catch (fallbackError) {
-          console.error('Error in fallback creation:', fallbackError);
-          // Even if the fallback fails, we still want to keep the request in our local cache
-          this.supportRequests.set(id, request);
-          return request;
-        }
-      }
-      
-      // Even if Airtable storage fails, keep the request in our local cache
-      this.supportRequests.set(id, request);
-      return request;
-    }
-  }
-  
-  // Helper method to get available fields for the SupportRequests table
-  private async getSupportRequestTableFields(): Promise<string[]> {
-    try {
-      const records = await this.supportRequestTable.select({
-        maxRecords: 1
-      }).firstPage();
-      
-      if (records.length > 0) {
-        return Object.keys(records[0].fields);
-      }
-      return ['Name']; // Default if no records exist
-    } catch (error) {
-      console.error('Error getting support request table fields:', error);
-      return ['Name']; // Default on error
-    }
-  }
-  
-  async updateSupportRequestStatus(id: number, status: string): Promise<SupportRequest | undefined> {
-    const request = this.supportRequests.get(id);
-    
-    if (!request) {
-      return undefined;
-    }
-    
-    const updatedRequest: SupportRequest = {
-      ...request,
-      status,
-      updatedAt: new Date()
-    };
-    
-    try {
-      // Get the Airtable record ID
-      const recordId = this.supportRequestRecordIds.get(id);
-      
-      if (!recordId) {
-        throw new Error(`Support request with ID ${id} not found in Airtable record map`);
-      }
-      
-      // Get existing field names for this table
-      const tableFields = await this.getSupportRequestTableFields();
-      console.log('Available support request fields in Airtable for status update:', tableFields);
-      
-      // Create update data based on what fields exist
-      const updateData: any = {};
-      
-      // If the status field exists, update it
-      if (tableFields.includes('status')) {
-        updateData.status = status;
-      } else if (tableFields.includes('Status')) {
-        // Airtable sometimes uses capitalized field names
-        updateData.Status = status;
-      } else {
-        // Try to update the Name field with status information
-        updateData.Name = `${request.requestTitle} (${status})`;
-        console.log('No status field found in Airtable, updating Name field with status information');
-      }
-      
-      // Update in Airtable
-      await this.supportRequestTable.update(recordId, updateData);
-      console.log(`Successfully updated support request status to "${status}" in Airtable`);
-      
-      // Update local cache
-      this.supportRequests.set(id, updatedRequest);
-      
-      return updatedRequest;
-    } catch (error) {
-      console.error(`Error updating support request status in Airtable:`, error);
-      
-      // Update local cache even if Airtable update fails
-      this.supportRequests.set(id, updatedRequest);
-      return updatedRequest;
-    }
-  }
+  // Support request methods (removed as per user request)
+  // Support request methods have been removed from the application
   
   // Stats methods
   async getDealStats(): Promise<{

@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import SubmitDeal from "@/pages/SubmitDeal";
-import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
 import { Sidebar } from "@/components/layout/Sidebar";
 
@@ -31,7 +30,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/submit-deal" component={SubmitDeal} />
-        <Route path="/support" component={RequestSupport} />
+        <Route path="/support" component={SubmitDeal} />
         <Route path="/help" component={HelpResources} />
         {/* Fallback to 404 */}
         <Route component={NotFound} />
