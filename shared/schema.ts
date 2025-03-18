@@ -14,22 +14,37 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+// Support requests table
+export const supportRequests = pgTable("support_requests", {
+  id: serial("id").primaryKey(),
+  supportType: text("support_type").notNull(), // pricing, technical, legal, proposal, other
+  requestTitle: text("request_title").notNull(),
+  description: text("description").notNull(),
+  relatedDealId: integer("related_deal_id"),
+  priorityLevel: text("priority_level").notNull().default("medium"), // high, medium, low
+  deadline: text("deadline"),
+  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Deals table
 export const deals = pgTable("deals", {
   id: serial("id").primaryKey(),
   dealName: text("deal_name").notNull(),
-  dealType: text("deal_type").notNull(), // new_business, renewal, upsell, expansion, special_project
-  description: text("description").notNull(),
-  department: text("department").notNull(), // sales, marketing, operations, it, finance
-  expectedCloseDate: text("expected_close_date").notNull(),
+  dealType: text("deal_type").notNull(), // growth, protect, custom
+  description: text("summary").notNull(),
+//  department: text("department").notNull(), // sales, marketing, operations, it, finance
+//  expectedCloseDate: text("expected_close_date").notNull(),
   priority: text("priority").notNull().default("medium"), // high, medium, low
   
   // Client information
-  clientName: text("client_name").notNull(),
-  clientType: text("client_type").notNull().default("new"), // existing, new, partner
-  industry: text("industry"),
+  advertiserName: text("advertiser_name").notNull(),
+  agencyName: text("agency_name").notNull(),
+  salesChannel: text("sales_channel").notNull(), // holding company, indendpent agency, client direct
+//  industry: text("industry"),
   region: text("region"),
-  companySize: text("company_size"),
+//  companySize: text("company_size"),
   
   // Pricing information
   totalValue: doublePrecision("total_value").notNull(),
@@ -41,13 +56,11 @@ export const deals = pgTable("deals", {
   previousYearValue: doublePrecision("previous_year_value").default(0), // for YOY calculations
   renewalOption: text("renewal_option").default("manual"), // automatic, manual, none
   pricingNotes: text("pricing_notes"),
-  
-  // Custom fields (added)
   customField1: text("custom_field1"),
   customField2: text("custom_field2"),
   
   // Status and tracking
-  status: text("status").notNull().default("pending"), // pending, approved, rejected, in_progress, completed
+  status: text("status").notNull().default("?"), // pending, approved, rejected, in_progress, completed
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   
@@ -76,19 +89,7 @@ export const insertDealSchema = createInsertSchema(deals)
     customField2: z.string().optional(),
   });
 
-// Support requests table
-export const supportRequests = pgTable("support_requests", {
-  id: serial("id").primaryKey(),
-  supportType: text("support_type").notNull(), // pricing, technical, legal, proposal, other
-  requestTitle: text("request_title").notNull(),
-  description: text("description").notNull(),
-  relatedDealId: integer("related_deal_id"),
-  priorityLevel: text("priority_level").notNull().default("medium"), // high, medium, low
-  deadline: text("deadline"),
-  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+
 
 export const insertSupportRequestSchema = createInsertSchema(supportRequests)
   .omit({ id: true, createdAt: true, updatedAt: true })
