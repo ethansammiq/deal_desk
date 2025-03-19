@@ -8,7 +8,7 @@ import {
   ChevronDown,
   UserCircle
 } from "lucide-react";
-import companyLogo from "../../assets/miq-logo.jpg";
+import companyLogo from "../../assets/company-logo.jpg";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";

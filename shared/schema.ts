@@ -52,7 +52,7 @@ export const dealScopingRequests = pgTable("deal_scoping_requests", {
   salesChannel: text("sales_channel").notNull(),
   advertiserName: text("advertiser_name"),
   agencyName: text("agency_name"),
-  growthOpportunityMIQ: text("growth_opportunity_miq").notNull(),
+  growthOpportunityCommercial: text("growth_opportunity_commercial").notNull(),
   growthAmbition: doublePrecision("growth_ambition").notNull(),
   growthOpportunityClient: text("growth_opportunity_client").notNull(),
   clientAsks: text("client_asks"),
@@ -145,11 +145,7 @@ export const insertDealSchema = createInsertSchema(deals)
     
     // Deal type validation
     dealType: z.enum(["grow", "protect", "custom"])
-      .describe({
-        grow: "Agency/Client that has run with MiQ for at least a year with the objective to continue to grow revenue and profit by >20% YOY",
-        protect: "Retain large businesses even if can't grow. Value of the business is still important to MiQ",
-        custom: "Require custom \"out of the box\" build to underpin revenue to meet client's needs & solve challenges"
-      }),
+      .describe("Deal type - grow, protect, or custom deal strategy"),
     
     // Sales channel validation
     salesChannel: z.enum(["holding_company", "independent_agency", "client_direct"]),
