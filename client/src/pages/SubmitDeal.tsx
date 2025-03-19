@@ -984,7 +984,53 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Deal Name</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("dealName") || "Not provided"}
+                            {(() => {
+                              // Preview the auto-generated deal name
+                              const dealType = form.getValues("dealType");
+                              const salesChannel = form.getValues("salesChannel");
+                              const termStartDate = form.getValues("termStartDate");
+                              const termEndDate = form.getValues("termEndDate");
+                              const dealStructure = form.getValues("dealStructure");
+                              
+                              if (!dealType || !salesChannel || !termStartDate || !termEndDate || !dealStructure) {
+                                return "Will be auto-generated on submission";
+                              }
+                              
+                              // Get client name
+                              let clientName = "";
+                              if (salesChannel === "client_direct" && form.getValues("advertiserName")) {
+                                clientName = form.getValues("advertiserName");
+                              } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") 
+                                        && form.getValues("agencyName")) {
+                                clientName = form.getValues("agencyName");
+                              }
+                              
+                              if (!clientName) return "Will be auto-generated on submission";
+                              
+                              // Format mapping
+                              const dealTypeMap = {
+                                grow: "Grow",
+                                protect: "Protect",
+                                custom: "Custom"
+                              };
+                              
+                              const salesChannelMap = {
+                                client_direct: "Direct",
+                                holding_company: "Holding",
+                                independent_agency: "Indep"
+                              };
+                              
+                              const dealStructureMap = {
+                                tiered: "Tiered",
+                                flat_commit: "Flat"
+                              };
+                              
+                              // Format dates
+                              const startDateFormatted = format(termStartDate, 'yyyyMMdd');
+                              const endDateFormatted = format(termEndDate, 'yyyyMMdd');
+                              
+                              return `${dealTypeMap[dealType]}_${salesChannelMap[salesChannel]}_${clientName}_${dealStructureMap[dealStructure]}_${startDateFormatted}-${endDateFormatted}`;
+                            })()}
                           </dd>
                         </div>
                         <div>
