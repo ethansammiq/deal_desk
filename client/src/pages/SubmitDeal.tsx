@@ -153,13 +153,7 @@ export default function SubmitDeal() {
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
   
-  // Define interface for previous year data
-  // Define types for our component
-  interface PreviousYearData {
-    annualRevenue: number;
-    annualGrossMargin: number;
-    annualGrossMarginPercent: number;
-  }
+  // Removed previous year data interface - no longer needed in simplified UI
   
   interface DealTierData {
     tierNumber: number;
@@ -175,7 +169,8 @@ export default function SubmitDeal() {
     id: number;
     name: string;
     region: string;
-    // Keep fields for reference but don't use them in the form
+    // Historical fields - maintained in interface for API compatibility
+    // but not used in the simplified UI implementation
     previousYearRevenue?: number;
     previousYearMargin?: number;
   }
@@ -185,7 +180,8 @@ export default function SubmitDeal() {
     name: string;
     type: string;
     region: string;
-    // Keep fields for reference but don't use them in the form
+    // Historical fields - maintained in interface for API compatibility
+    // but not used in the simplified UI implementation
     previousYearRevenue?: number;
     previousYearMargin?: number;
   }
@@ -1220,21 +1216,13 @@ export default function SubmitDeal() {
                             {`${getTypedValue("incentivePercentage") || 0}%`}
                           </dd>
                         </div>
+                        {/* Removed Previous Year Revenue and YOY Growth display - simplified UI */}
                         <div>
-                          <dt className="text-sm font-medium text-slate-500">Previous Year Revenue</dt>
+                          <dt className="text-sm font-medium text-slate-500">Annual Revenue Target</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("previousYearValue") 
-                              ? formatCurrency(getTypedValue("previousYearValue") as number) 
+                            {getTypedValue("annualRevenue") 
+                              ? formatCurrency(getTypedValue("annualRevenue") as number) 
                               : "$0"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">YOY Growth</dt>
-                          <dd className="mt-1 text-sm text-slate-900 font-semibold">
-                            {Math.round(calculateYOYGrowth(
-                              getTypedValue("totalValue") as number ?? 0,
-                              getTypedValue("previousYearValue") as number ?? 0
-                            ))}%
                           </dd>
                         </div>
                         <div>
