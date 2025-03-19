@@ -37,7 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ApprovalAlert, ApprovalHelpText } from "@/components/ApprovalAlert";
+import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 
 // Extend the deal schema with additional validations
