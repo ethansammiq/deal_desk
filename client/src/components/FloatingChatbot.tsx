@@ -7,9 +7,15 @@ import {
   SendIcon,
   BotIcon,
   UserIcon,
-  Loader2Icon
+  Loader2Icon,
+  TrashIcon,
+  ClipboardCopyIcon,
+  InfoIcon,
+  LightbulbIcon,
+  SettingsIcon
 } from "lucide-react";
 import { useChat } from '@/lib/chat-context';
+import { useToast } from "@/hooks/use-toast";
 
 interface FloatingChatbotProps {
   title?: string;
@@ -33,9 +39,28 @@ export default function FloatingChatbot({
   showTimestamps = false
 }: FloatingChatbotProps) {
   const { messages, sendMessage, clearChatHistory, isLoading, suggestedQuestions, model } = useChat();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Function to copy message to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Copied to clipboard",
+        description: "Message content has been copied to your clipboard",
+        duration: 2000,
+      });
+    }).catch(() => {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy text. Please try again.",
+        variant: "destructive",
+        duration: 2000,
+      });
+    });
+  };
   
   // Scroll to bottom of chat when messages change
   useEffect(() => {
@@ -150,13 +175,18 @@ export default function FloatingChatbot({
               onClick={() => {
                 if (window.confirm('Are you sure you want to clear your chat history?')) {
                   clearChatHistory();
+                  toast({
+                    title: "Chat history cleared",
+                    description: "All messages have been removed",
+                    duration: 2000,
+                  });
                 }
               }} 
               className="text-white/70 hover:text-white focus:outline-none"
               aria-label="Clear chat history"
               title="Clear chat history"
             >
-              <XIcon className="h-4 w-4 rotate-45" />
+              <TrashIcon className="h-4 w-4" />
             </button>
             <button 
               onClick={toggleChat} 
