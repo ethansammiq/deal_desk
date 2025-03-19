@@ -55,12 +55,11 @@ The MIQ deal process follows these key stages:
 
 1. **Scoping**: Define customer needs and potential solutions
 2. **Submission**: Complete deal forms with all required details
-3. **Review**: Deal desk assesses commercial terms and requirements
-4. **Approval**: Stakeholders sign off based on deal value and terms
-5. **Negotiation**: Finalize terms with the customer
-6. **Contracting**: Execute legal agreements
-7. **Implementation**: Solution deployment and customer onboarding
-8. **Evaluation**: Post-deal review and performance tracking
+3. **Review & Approval**: Deal desk assesses and approves terms based on deal value
+4. **Negotiation**: Finalize terms with the customer
+5. **Contracting**: Execute legal agreements
+6. **Implementation**: Solution deployment and customer onboarding
+7. **Evaluation**: Post-deal review and performance tracking
 
 Each stage has specific requirements and documentation. Would you like more details about a particular stage?`,
   
@@ -71,35 +70,30 @@ Each stage has specific requirements and documentation. Would you like more deta
   // Stage 1: Scoping
   dealScoping: `# Deal Scoping Stage
 
-Deal scoping is the critical first stage of our deal process where we define what the customer needs and how we can help them.
+Deal scoping is the critical first stage of our deal process where we define initial deal feasibility and guardrails for pre-approval engagement.
 
 ## Key Components
-• **Customer Analysis**: Understand customer's business, market position, and challenges
-• **Needs Assessment**: Identify specific requirements and success criteria
-• **Solution Design**: Develop preliminary solution architecture
+• **Client Analysis**: Understand client's business strategy, challenges and needs
 • **Value Proposition**: Define ROI and strategic benefits for customer
 
 ## Required Information
-• Customer profile and background
+• Client information
 • Business needs and challenges
-• Potential solutions and approaches
-• Preliminary deal size estimate
-• Timeline and key milestones
-• Competitive landscape
+• Potential path to grow with MIQ
+• Estimated growth ambition
 
 ## Process Steps
-1. Complete the Deal Scoping Request form in the system
-2. Schedule initial customer discovery meeting
-3. Document all findings in the Deal Scoping Document
-4. Submit for initial assessment
-5. Receive approval to proceed to formal submission
+1. Complete the Deal Scoping Request form under Deal Process
+2. Have an initial discovery meeting with Partnership to assess client needs, and strategic fit
+3. Collaborate with Trading, Marketing, and Creative teams to refine pricing structure and incentives.
+4. Obtain sign-off from the RVP Trading and MD before presenting V1 to the client (framed as exploratory, not approved yet).
+5. Present V1 to the client and ask for their feedback.
 
 ## Timeline & Next Steps
-• Typical review time: 1-3 business days
-• After approval, proceed to formal deal submission
-• Deal scoping document becomes foundation for full deal submission
+• Request for deal scoping will be processed within 48 hours. 
+• After the discovery call with Partnership, proceed to formal deal submission
 
-> **Pro Tip**: The more detailed your scoping information, the faster your deal can progress through later stages. Don't skip important details!`,
+> **Pro Tip**: The more time you spend on scoping & qualifying the deal during this stage, the less questions you'll get during review stage. Don't skip the planning work`,
   
   // Stage 2: Deal Submission
   dealSubmission: `# Deal Submission Stage
@@ -107,72 +101,41 @@ Deal scoping is the critical first stage of our deal process where we define wha
 The deal submission stage formalizes your opportunity with complete details needed for review and approval.
 
 ## Required Information
-• Customer details (full company profile)
-• Deal specifics (products, services, pricing)
-• Contract terms (duration, payment schedule)
-• Deal value breakdown
-• Incentive requests (if applicable)
-• Special terms or customizations
-• Competitive situation
+• Region
+• Deal type
+• Deal timeframe & terms
+• Client details
+• Revenue and Profit projection
+• Incentive requests
 
-## Documentation Requirements
-• Statement of Work (for service components)
-• Customer Requirements Document
-• Price Quote and Discount Approvals
-• Technical Specifications (if applicable)
-• Business Justification (for non-standard terms)
-
-## Submission Process
-1. Navigate to the "Submit Deal" page from the main menu
-2. Complete all mandatory fields
-3. Upload required documentation
-4. Add any supplementary information or context
-5. Submit for review
-6. Receive confirmation with deal reference number
+## Approval Requirements
+• All proposed financial incentives must be signed off by Trading and Finance.
+• All proposed product incentives must be signed off by Solutions and Product.
+• All proposed resources incentives must be signed off by relevant Department leads (Trading, AM, Solutions, Marketing, etc.).
 
 ## Timeframe
 • Standard deals: 2 business days for initial review
-• Urgent deals: 4 business hours for initial review
-• Complex deals: 3-5 business days for initial review
+• Non-standard deals: 3-5 business hours for initial review
 
 > **Pro Tip**: Always include detailed competitive information to help justify any discounts or special terms you're requesting.`,
   
-  // Stage 3: Review Process
-  reviewProcess: `# Deal Review and Approval Process
+  // Stage 3: Review & Approval Process
+  reviewAndApproval: `# Deal Review & Approval Process
 
-The deal review process ensures all commercial and technical aspects are viable and properly structured.
+The consolidated review and approval process ensures all deal aspects are thoroughly assessed and authorized in one streamlined stage.
 
-## Review Process Components
+## Process Overview
+1. Deal submission enters the review queue
+2. Cross-functional team evaluates all aspects
+3. Approval decision based on deal parameters
+4. Final sign-off based on approval matrix
+
+## Review Components
 • **Initial Screening** (Deal Desk): Check for completeness and basic criteria
 • **Commercial Review** (Finance): Examine pricing, discounts, and financial terms
 • **Technical Review** (Product/Engineering): Assess feasibility of technical requirements
 • **Legal Assessment** (Legal): Evaluate contract terms and risk factors
 • **Strategic Alignment** (Leadership): Ensure deal supports company objectives
-
-## Approval Hierarchy
-• Deals up to $50,000: Manager approval
-• $50,001 - $250,000: Director approval
-• $250,001 - $1,000,000: VP approval
-• Over $1,000,000: C-level approval
-
-## Timeline by Deal Type
-• Standard deals: 2-3 business days
-• Non-standard terms: 3-5 business days
-• Strategic deals: 1-2 business days (expedited)
-• Technical complexity: +1-3 days for product team review
-
-## Tracking and Visibility
-• Real-time status updates in Deal Dashboard
-• Email notifications at key approval stages
-• Comments from review team visible in Deal Details
-• Centralized document repository for all reviewers
-
-> **Pro Tip**: Respond promptly to any questions from the review team to avoid delays in the process.`,
-  
-  // Stage 4: Approval Framework
-  approvalFramework: `# Deal Approval Framework
-
-The approval framework defines who needs to sign off on a deal based on various factors.
 
 ## Approval Factors
 • **Deal Value**: Higher values require more senior approvals
@@ -189,12 +152,24 @@ The approval framework defines who needs to sign off on a deal based on various 
 | $250K-$1M       | VP             | VP                 | SVP                   |
 | Over $1M        | SVP            | C-Level            | C-Level               |
 
-## Documentation for Approval
+## Required Documentation
 • Deal Summary Document
 • Pricing and Discount Justification
 • Terms Exception Report (for non-standard terms)
 • Competitive Analysis (required for discounts)
 • Financial Impact Analysis (for large deals)
+
+## Timeline Expectations
+• Standard deals: 2-3 business days
+• Non-standard terms: 3-5 business days
+• Strategic deals: 1-2 business days (expedited)
+• Technical complexity: +1-3 days for product team review
+
+## Tracking and Visibility
+• Real-time status updates in Deal Dashboard
+• Email notifications at key approval stages
+• Comments from review team visible in Deal Details
+• Centralized document repository for all reviewers
 
 ## Escalation Process
 If your deal is urgent or has been delayed in approval:
@@ -202,7 +177,7 @@ If your deal is urgent or has been delayed in approval:
 2. Submit formal escalation request through the system
 3. Provide business justification for expedited review
 
-> **Pro Tip**: Schedule a deal review call with approvers for complex or high-value deals to streamline the approval process.`,
+> **Pro Tip**: Respond promptly to any questions from the review team to avoid delays. For complex deals, consider scheduling a pre-review call with key stakeholders to address potential concerns before formal submission.`,
   
   // Stage 5: Negotiation
   negotiationProcess: `# Deal Negotiation Process
