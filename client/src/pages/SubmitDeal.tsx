@@ -533,7 +533,7 @@ export default function SubmitDeal() {
         <div className="flex items-center justify-between mb-4">
           <div className="w-full flex items-center">
             <div 
-              onClick={() => setFormStep(0)}
+              onClick={() => prevStep()}
               className={cn(
                 "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                 formStep >= 0 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
@@ -546,7 +546,7 @@ export default function SubmitDeal() {
               formStep >= 1 ? "bg-primary" : ""
             )}></div>
             <div 
-              onClick={() => formStep >= 1 || validateAndGoToStep(1)}
+              onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)}
               className={cn(
                 "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                 formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
@@ -559,7 +559,7 @@ export default function SubmitDeal() {
               formStep >= 2 ? "bg-primary" : ""
             )}></div>
             <div 
-              onClick={() => formStep >= 2 || validateAndGoToStep(2)}
+              onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
               className={cn(
                 "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                 formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
@@ -571,7 +571,7 @@ export default function SubmitDeal() {
         </div>
         <div className="flex justify-between text-sm text-slate-600">
           <div 
-            onClick={() => setFormStep(0)}
+            onClick={() => prevStep()}
             className={cn(
               "cursor-pointer hover:text-primary transition-colors", 
               formStep === 0 ? "font-medium text-primary" : ""
@@ -580,7 +580,7 @@ export default function SubmitDeal() {
             Deal Details
           </div>
           <div 
-            onClick={() => formStep >= 1 || validateAndGoToStep(1)} 
+            onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)} 
             className={cn(
               "cursor-pointer hover:text-primary transition-colors", 
               formStep === 1 ? "font-medium text-primary" : ""
@@ -589,7 +589,7 @@ export default function SubmitDeal() {
             Deal Structure & Pricing
           </div>
           <div 
-            onClick={() => formStep >= 2 || validateAndGoToStep(2)}
+            onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
             className={cn(
               "cursor-pointer hover:text-primary transition-colors", 
               formStep === 2 ? "font-medium text-primary" : ""
