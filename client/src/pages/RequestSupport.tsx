@@ -71,14 +71,15 @@ export default function RequestSupport() {
     mode: "onChange"
   });
   
-  // Create support request mutation
-  const createSupportRequest = useMutation({
+  // Create deal scoping request mutation
+  const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
-      const response = await apiRequest("POST", "/api/support-requests", data);
+      console.log("Submitting deal scoping request:", data);
+      const response = await apiRequest("POST", "/api/deal-scoping-requests", data);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/support-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
       toast({
         title: "Success",
         description: "Deal scoping request submitted successfully! A team member will contact you to set up a discovery call.",
@@ -87,6 +88,7 @@ export default function RequestSupport() {
       form.reset();
     },
     onError: (error: any) => {
+      console.error("Error submitting deal scoping request:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to submit deal scoping request",

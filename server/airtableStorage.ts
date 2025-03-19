@@ -135,37 +135,44 @@ export class AirtableStorage implements IStorage {
       });
       
       // Load Deal Scoping Requests
-      const dealScopingRecords = await this.dealScopingRequestTable.select().all();
-      dealScopingRecords.forEach(record => {
-        const fields = record.fields;
-        // Use the internal_id field, or generate one if not available
-        const id = fields.internal_id ? Number(fields.internal_id) : this.dealScopingRequestCurrentId++;
+      try {
+        const dealScopingRecords = await this.dealScopingRequestTable.select().all();
+        dealScopingRecords.forEach(record => {
+          const fields = record.fields;
+          // Use the internal_id field, or generate one if not available
+          const id = fields.internal_id ? Number(fields.internal_id) : this.dealScopingRequestCurrentId++;
+          
+          // Create a deal scoping request object with default values for missing fields
+          const dealScopingRequest: DealScopingRequest = {
+            id,
+            status: fields.status ? String(fields.status) : 'pending',
+            email: fields.email ? String(fields.email) : null,
+            salesChannel: fields.salesChannel ? String(fields.salesChannel) : 'holding_company',
+            advertiserName: fields.advertiserName ? String(fields.advertiserName) : null,
+            agencyName: fields.agencyName ? String(fields.agencyName) : null,
+            growthOpportunityMIQ: fields.growthOpportunityMIQ ? String(fields.growthOpportunityMIQ) : '',
+            growthAmbition: fields.growthAmbition ? Number(fields.growthAmbition) : 1000000,
+            growthOpportunityClient: fields.growthOpportunityClient ? String(fields.growthOpportunityClient) : '',
+            requestTitle: fields.requestTitle ? String(fields.requestTitle) : 'Untitled Request',
+            clientAsks: fields.clientAsks ? String(fields.clientAsks) : null,
+            description: fields.description ? String(fields.description) : null,
+            createdAt: fields.createdAt ? new Date(String(fields.createdAt)) : new Date(),
+            updatedAt: fields.updatedAt ? new Date(String(fields.updatedAt)) : new Date()
+          };
+          
+          this.dealScopingRequests.set(id, dealScopingRequest);
+          this.dealScopingRequestRecordIds.set(id, record.id);
+          
+          if (id >= this.dealScopingRequestCurrentId) {
+            this.dealScopingRequestCurrentId = id + 1;
+          }
+        });
         
-        // Create a deal scoping request object with default values for missing fields
-        const dealScopingRequest: DealScopingRequest = {
-          id,
-          status: fields.status ? String(fields.status) : 'pending',
-          email: fields.email ? String(fields.email) : null,
-          salesChannel: fields.salesChannel ? String(fields.salesChannel) : 'holding_company',
-          advertiserName: fields.advertiserName ? String(fields.advertiserName) : null,
-          agencyName: fields.agencyName ? String(fields.agencyName) : null,
-          growthOpportunityMIQ: fields.growthOpportunityMIQ ? String(fields.growthOpportunityMIQ) : '',
-          growthAmbition: fields.growthAmbition ? Number(fields.growthAmbition) : 1000000,
-          growthOpportunityClient: fields.growthOpportunityClient ? String(fields.growthOpportunityClient) : '',
-          requestTitle: fields.requestTitle ? String(fields.requestTitle) : 'Untitled Request',
-          clientAsks: fields.clientAsks ? String(fields.clientAsks) : null,
-          description: fields.description ? String(fields.description) : null,
-          createdAt: fields.createdAt ? new Date(String(fields.createdAt)) : new Date(),
-          updatedAt: fields.updatedAt ? new Date(String(fields.updatedAt)) : new Date()
-        };
-        
-        this.dealScopingRequests.set(id, dealScopingRequest);
-        this.dealScopingRequestRecordIds.set(id, record.id);
-        
-        if (id >= this.dealScopingRequestCurrentId) {
-          this.dealScopingRequestCurrentId = id + 1;
-        }
-      });
+        console.log(`Loaded ${dealScopingRecords.length} deal scoping requests from Airtable`);
+      } catch (error) {
+        console.error('Error loading deal scoping requests from Airtable:', error);
+        console.log('Will proceed with in-memory storage for deal scoping requests');
+      }
       
       console.log('Loaded existing data from Airtable');
     } catch (error) {
@@ -192,10 +199,15 @@ export class AirtableStorage implements IStorage {
       console.log('Deals table fields:', dealsMeta.length > 0 ? Object.keys(dealsMeta[0].fields) : 'No records');
       
       // Check Deal Scoping Requests table
-      const dealScopingMeta = await this.dealScopingRequestTable.select({
-        maxRecords: 1
-      }).firstPage();
-      console.log('Deal Scoping Requests table fields:', dealScopingMeta.length > 0 ? Object.keys(dealScopingMeta[0].fields) : 'No records');
+      try {
+        const dealScopingMeta = await this.dealScopingRequestTable.select({
+          maxRecords: 1
+        }).firstPage();
+        console.log('Deal Scoping Requests table fields:', dealScopingMeta.length > 0 ? Object.keys(dealScopingMeta[0].fields) : 'No records');
+      } catch (error) {
+        console.error('Error accessing Deal Scoping Requests table:', error);
+        console.log('Will create Deal Scoping Requests table if authorized');
+      }
       
       // Now let's initialize the tables if needed
       const users = await this.userTable.select().all();
@@ -217,13 +229,18 @@ export class AirtableStorage implements IStorage {
       }
       
       // Initialize Deal Scoping Requests table if needed
-      const dealScopingRequests = await this.dealScopingRequestTable.select().all();
-      if (dealScopingRequests.length === 0) {
-        // Create an initial deal scoping request with just the Name field
-        await this.dealScopingRequestTable.create({
-          Name: 'Sample Deal Scoping Request'
-        });
-        console.log('Created initial deal scoping request record');
+      try {
+        const dealScopingRequests = await this.dealScopingRequestTable.select().all();
+        if (dealScopingRequests.length === 0) {
+          // Create an initial deal scoping request with just the Name field
+          await this.dealScopingRequestTable.create({
+            Name: 'Sample Deal Scoping Request'
+          });
+          console.log('Created initial deal scoping request record');
+        }
+      } catch (error) {
+        console.error('Error initializing Deal Scoping Requests table:', error);
+        console.log('Will continue with in-memory storage for deal scoping requests');
       }
     } catch (error) {
       console.error('Error initializing tables:', error);

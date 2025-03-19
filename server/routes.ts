@@ -128,7 +128,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Support requests endpoints have been removed as per user request
+  // Deal scoping requests endpoints
+  router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      const filters = req.query.status ? { status: req.query.status as string } : undefined;
+      const requests = await storage.getDealScopingRequests(filters);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching deal scoping requests:", error);
+      // Return an empty array instead of an error to make the client-side handling easier
+      res.json([]);
+    }
+  });
+
+  router.get("/deal-scoping-requests/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const request = await storage.getDealScopingRequest(id);
+      
+      if (!request) {
+        return res.status(404).json({ error: "Deal scoping request not found" });
+      }
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error fetching deal scoping request:", error);
+      res.status(500).json({ error: "Failed to fetch deal scoping request" });
+    }
+  });
+
+  router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      console.log("Creating deal scoping request with data:", req.body);
+      const request = await storage.createDealScopingRequest(req.body);
+      console.log("Created deal scoping request:", request);
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Error creating deal scoping request:", error);
+      res.status(500).json({ error: "Failed to create deal scoping request" });
+    }
+  });
+
+  router.patch("/deal-scoping-requests/:id/status", async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    try {
+      const request = await storage.updateDealScopingRequestStatus(id, status);
+      
+      if (!request) {
+        return res.status(404).json({ error: "Deal scoping request not found" });
+      }
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error updating deal scoping request status:", error);
+      res.status(500).json({ error: "Failed to update deal scoping request status" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
