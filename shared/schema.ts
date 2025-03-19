@@ -14,7 +14,29 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-// Support requests table has been removed as per user request
+// Deal scoping requests table
+export const dealScopingRequests = pgTable("deal_scoping_requests", {
+  id: serial("id").primaryKey(),
+  email: text("email"),
+  salesChannel: text("sales_channel").notNull(),
+  advertiserName: text("advertiser_name"),
+  agencyName: text("agency_name"),
+  growthOpportunityMIQ: text("growth_opportunity_miq").notNull(),
+  growthAmbition: doublePrecision("growth_ambition").notNull(),
+  growthOpportunityClient: text("growth_opportunity_client").notNull(),
+  clientAsks: text("client_asks"),
+  requestTitle: text("request_title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequests)
+  .omit({ id: true, createdAt: true, updatedAt: true, status: true })
+  .extend({
+    growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
+  });
 
 // Deals table
 export const deals = pgTable("deals", {
@@ -88,4 +110,5 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Deal = typeof deals.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
 
-// Support request types have been removed as per user request
+export type DealScopingRequest = typeof dealScopingRequests.$inferSelect;
+export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSchema>;

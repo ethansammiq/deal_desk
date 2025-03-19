@@ -1,10 +1,13 @@
 import { 
   users, 
-  deals, 
+  deals,
+  dealScopingRequests,
   type User, 
   type InsertUser, 
   type Deal, 
-  type InsertDeal
+  type InsertDeal,
+  type DealScopingRequest,
+  type InsertDealScopingRequest
 } from "@shared/schema";
 import { AirtableStorage } from "./airtableStorage";
 
@@ -22,7 +25,11 @@ export interface IStorage {
   createDeal(deal: InsertDeal): Promise<Deal>;
   updateDealStatus(id: number, status: string): Promise<Deal | undefined>;
   
-  // Support request methods have been removed as per user request
+  // Deal scoping request methods
+  getDealScopingRequest(id: number): Promise<DealScopingRequest | undefined>;
+  getDealScopingRequests(filters?: { status?: string }): Promise<DealScopingRequest[]>;
+  createDealScopingRequest(request: InsertDealScopingRequest): Promise<DealScopingRequest>;
+  updateDealScopingRequestStatus(id: number, status: string): Promise<DealScopingRequest | undefined>;
   
   // Stats methods
   getDealStats(): Promise<{
@@ -37,14 +44,18 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private deals: Map<number, Deal>;
+  private dealScopingRequests: Map<number, DealScopingRequest>;
   private userCurrentId: number;
   private dealCurrentId: number;
+  private dealScopingRequestCurrentId: number;
 
   constructor() {
     this.users = new Map();
     this.deals = new Map();
+    this.dealScopingRequests = new Map();
     this.userCurrentId = 1;
     this.dealCurrentId = 1;
+    this.dealScopingRequestCurrentId = 1;
     
     // Initialize with some sample data
     this.initSampleData();
@@ -245,7 +256,53 @@ export class MemStorage implements IStorage {
     return updatedDeal;
   }
   
-  // Support request methods have been removed as per user request
+  // Deal scoping request methods
+  async getDealScopingRequest(id: number): Promise<DealScopingRequest | undefined> {
+    return this.dealScopingRequests.get(id);
+  }
+  
+  async getDealScopingRequests(filters?: { status?: string }): Promise<DealScopingRequest[]> {
+    let requests = Array.from(this.dealScopingRequests.values());
+    
+    // Apply filters if provided
+    if (filters && filters.status) {
+      requests = requests.filter(request => request.status === filters.status);
+    }
+    
+    // Sort by newest first (using id as proxy for creation date)
+    return requests.sort((a, b) => b.id - a.id);
+  }
+  
+  async createDealScopingRequest(insertRequest: InsertDealScopingRequest): Promise<DealScopingRequest> {
+    const id = this.dealScopingRequestCurrentId++;
+    const now = new Date();
+    
+    // Create a new deal scoping request with the provided data and default values
+    const request: DealScopingRequest = {
+      ...insertRequest,
+      id,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.dealScopingRequests.set(id, request);
+    return request;
+  }
+  
+  async updateDealScopingRequestStatus(id: number, status: string): Promise<DealScopingRequest | undefined> {
+    const request = this.dealScopingRequests.get(id);
+    if (!request) return undefined;
+    
+    const updatedRequest: DealScopingRequest = {
+      ...request,
+      status,
+      updatedAt: new Date(),
+    };
+    
+    this.dealScopingRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
   
   // Stats methods
   async getDealStats(): Promise<{

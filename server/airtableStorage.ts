@@ -4,25 +4,31 @@ import {
   User, 
   InsertUser, 
   Deal, 
-  InsertDeal
+  InsertDeal,
+  DealScopingRequest,
+  InsertDealScopingRequest
 } from '@shared/schema';
 
 export class AirtableStorage implements IStorage {
   private base: Airtable.Base;
   private userTable: Airtable.Table<any>;
   private dealTable: Airtable.Table<any>;
+  private dealScopingRequestTable: Airtable.Table<any>;
   
   // Local cache to reduce API calls
   private users: Map<number, User> = new Map();
   private deals: Map<number, Deal> = new Map();
+  private dealScopingRequests: Map<number, DealScopingRequest> = new Map();
   
   // Current IDs for new records
   private userCurrentId = 1;
   private dealCurrentId = 1;
+  private dealScopingRequestCurrentId = 1;
   
   // Record ID maps to maintain relationship between our IDs and Airtable record IDs
   private userRecordIds: Map<number, string> = new Map();
   private dealRecordIds: Map<number, string> = new Map();
+  private dealScopingRequestRecordIds: Map<number, string> = new Map();
   
   constructor() {
     try {
