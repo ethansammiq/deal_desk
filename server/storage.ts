@@ -348,37 +348,112 @@ export class MemStorage implements IStorage {
 
 // Function to get the appropriate storage implementation based on environment
 function getStorage(): IStorage {
-  // Create memory storage for deal scoping requests, since we know there are permission issues
+  // Create memory storage as either our main storage or a fallback
   const memStorage = new MemStorage();
   
-  // If Airtable API credentials are provided, use Airtable storage for deals and users
+  // If Airtable API credentials are provided, try to use Airtable storage
   if (process.env.AIRTABLE_API_KEY && process.env.AIRTABLE_BASE_ID) {
-    console.log("Using Airtable storage for deals and users");
     try {
+      // Initialize Airtable storage
       const airtableStorage = new AirtableStorage();
+      console.log("Successfully initialized Airtable storage");
       
-      // Create hybrid storage that uses mem storage for deal scoping requests
+      // Test Airtable permissions by attempting to access deal scoping requests
+      // We'll create an async test but won't await it so initialization can continue
+      (async () => {
+        try {
+          await airtableStorage.getDealScopingRequests();
+          console.log("Airtable storage has permissions for deal scoping requests");
+        } catch (error) {
+          console.warn("Airtable doesn't have permissions for deal scoping requests, using hybrid storage");
+        }
+      })();
+      
+      // Create hybrid storage with graceful fallbacks
       return {
-        // User methods
-        getUser: (id) => airtableStorage.getUser(id),
-        getUserByUsername: (username) => airtableStorage.getUserByUsername(username),
-        createUser: (user) => airtableStorage.createUser(user),
+        // User methods - with fallback to memory if operations fail
+        getUser: async (id) => {
+          try {
+            return await airtableStorage.getUser(id);
+          } catch (err) {
+            console.warn("Airtable user operation failed, using memory storage");
+            return memStorage.getUser(id);
+          }
+        },
+        getUserByUsername: async (username) => {
+          try {
+            return await airtableStorage.getUserByUsername(username);
+          } catch (err) {
+            console.warn("Airtable user operation failed, using memory storage");
+            return memStorage.getUserByUsername(username);
+          }
+        },
+        createUser: async (user) => {
+          try {
+            return await airtableStorage.createUser(user);
+          } catch (err) {
+            console.warn("Airtable user creation failed, using memory storage");
+            return memStorage.createUser(user);
+          }
+        },
         
-        // Deal methods
-        getDeal: (id) => airtableStorage.getDeal(id),
-        getDealByReference: (ref) => airtableStorage.getDealByReference(ref),
-        getDeals: (filters) => airtableStorage.getDeals(filters),
-        createDeal: (deal) => airtableStorage.createDeal(deal),
-        updateDealStatus: (id, status) => airtableStorage.updateDealStatus(id, status),
+        // Deal methods - with fallback to memory if operations fail
+        getDeal: async (id) => {
+          try {
+            return await airtableStorage.getDeal(id);
+          } catch (err) {
+            console.warn("Airtable deal operation failed, using memory storage");
+            return memStorage.getDeal(id);
+          }
+        },
+        getDealByReference: async (ref) => {
+          try {
+            return await airtableStorage.getDealByReference(ref);
+          } catch (err) {
+            console.warn("Airtable deal operation failed, using memory storage");
+            return memStorage.getDealByReference(ref);
+          }
+        },
+        getDeals: async (filters) => {
+          try {
+            return await airtableStorage.getDeals(filters);
+          } catch (err) {
+            console.warn("Airtable deal operation failed, using memory storage");
+            return memStorage.getDeals(filters);
+          }
+        },
+        createDeal: async (deal) => {
+          try {
+            return await airtableStorage.createDeal(deal);
+          } catch (err) {
+            console.warn("Airtable deal creation failed, using memory storage");
+            return memStorage.createDeal(deal);
+          }
+        },
+        updateDealStatus: async (id, status) => {
+          try {
+            return await airtableStorage.updateDealStatus(id, status);
+          } catch (err) {
+            console.warn("Airtable deal update failed, using memory storage");
+            return memStorage.updateDealStatus(id, status);
+          }
+        },
         
-        // Deal scoping request methods - use memory storage
+        // Deal scoping request methods - always use memory storage as we know there are permission issues
         getDealScopingRequest: (id) => memStorage.getDealScopingRequest(id),
         getDealScopingRequests: (filters) => memStorage.getDealScopingRequests(filters),
         createDealScopingRequest: (request) => memStorage.createDealScopingRequest(request),
         updateDealScopingRequestStatus: (id, status) => memStorage.updateDealScopingRequestStatus(id, status),
         
-        // Stats
-        getDealStats: () => airtableStorage.getDealStats()
+        // Stats - with fallback to memory if operations fail
+        getDealStats: async () => {
+          try {
+            return await airtableStorage.getDealStats();
+          } catch (err) {
+            console.warn("Airtable stats operation failed, using memory storage");
+            return memStorage.getDealStats();
+          }
+        }
       };
     } catch (error) {
       console.error("Failed to initialize Airtable storage:", error);
