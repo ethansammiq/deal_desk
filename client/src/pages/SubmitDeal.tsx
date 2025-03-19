@@ -385,21 +385,16 @@ export default function SubmitDeal() {
     updateHistoricalData();
   }, [form, salesChannel, agencies, advertisers]);
 
-  // Calculate growth rates automatically
+  // Calculate contract term automatically based on start and end dates
   useEffect(() => {
-    const annualRevenue = Number(getTypedValue("annualRevenue") || 0);
-    const previousYearRevenue = Number(getTypedValue("previousYearRevenue") || 0);
-    const annualGrossMargin = Number(getTypedValue("annualGrossMargin") || 0);
-    const previousYearMargin = Number(getTypedValue("previousYearMargin") || 0);
+    const startDate = getTypedValue("termStartDate") as Date;
+    const endDate = getTypedValue("termEndDate") as Date;
     
-    if (annualRevenue && previousYearRevenue && previousYearRevenue > 0) {
-      const growthRate = ((annualRevenue - previousYearRevenue) / previousYearRevenue) * 100;
-      form.setValue("yearlyRevenueGrowthRate", parseFloat(growthRate.toFixed(1)));
-    }
-    
-    if (annualGrossMargin && previousYearMargin && previousYearMargin > 0) {
-      const marginGrowthRate = ((annualGrossMargin - previousYearMargin) / previousYearMargin) * 100;
-      form.setValue("yearlyMarginGrowthRate", parseFloat(marginGrowthRate.toFixed(1)));
+    if (startDate && endDate) {
+      // Calculate difference in months
+      const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                         (endDate.getMonth() - startDate.getMonth());
+      form.setValue("contractTerm", Math.max(1, diffMonths));
     }
   }, [
     form, // Include the entire form as a dependency
@@ -792,29 +787,14 @@ export default function SubmitDeal() {
                   
                   <hr className="my-4" />
                   
-                  {/* Approval alert will display here based on deal parameters */}
-                  {watchTypedValue("totalValue") && watchTypedValue("contractTerm") && (
+                  {/* Simplified approval alert based on basic deal parameters */}
+                  {watchTypedValue("annualRevenue") && watchTypedValue("contractTerm") && (
                     <ApprovalAlert 
-                      totalValue={Number(watchTypedValue("totalValue")) || 0}
-                      contractTerm={Number(watchTypedValue("contractTerm")) || 0}
-                      discountPercentage={Number(watchTypedValue("discountPercentage")) || 0}
+                      totalValue={Number(watchTypedValue("annualRevenue")) || 0}
+                      contractTerm={Number(watchTypedValue("contractTerm")) || 12}
                       hasNonStandardTerms={hasNonStandardTerms}
                       dealType={String(watchTypedValue("dealType")) || "grow"}
                       salesChannel={String(watchTypedValue("salesChannel")) || "independent_agency"}
-                      hasTradeAMImplications={Boolean(watchTypedValue("hasTradeAMImplications")) || false}
-                      yearlyRevenueGrowthRate={calculateYOYGrowth(
-                        Number(watchTypedValue("totalValue") || 0),
-                        Number(watchTypedValue("previousYearValue") || 0)
-                      )}
-                      forecastedMargin={calculateProfitMargin(
-                        Number(watchTypedValue("totalValue") || 0),
-                        Number(watchTypedValue("discountPercentage") || 0),
-                        Number(watchTypedValue("costPercentage") || 30)
-                      )}
-                      yearlyMarginGrowthRate={Number(watchTypedValue("yearlyMarginGrowthRate")) || 0}
-                      addedValueBenefitsCost={Number(watchTypedValue("addedValueBenefitsCost")) || 0}
-                      analyticsTier={String(watchTypedValue("analyticsTier")) || "silver"}
-                      requiresCustomMarketing={Boolean(watchTypedValue("requiresCustomMarketing")) || false}
                       onChange={handleApprovalChange}
                     />
                   )}

@@ -16,34 +16,18 @@ import { Button } from "@/components/ui/button";
 interface ApprovalAlertProps {
   totalValue: number;
   hasNonStandardTerms: boolean;
-  discountPercentage: number;
   contractTerm: number;
   dealType?: string;
   salesChannel?: string;
-  hasTradeAMImplications?: boolean;
-  yearlyRevenueGrowthRate?: number;
-  forecastedMargin?: number;
-  yearlyMarginGrowthRate?: number;
-  addedValueBenefitsCost?: number;
-  analyticsTier?: string;
-  requiresCustomMarketing?: boolean;
   onChange?: (approverLevel: string, approvalInfo: ApprovalRule) => void;
 }
 
 export function ApprovalAlert({
   totalValue,
   hasNonStandardTerms,
-  discountPercentage,
   contractTerm,
   dealType = "grow",
   salesChannel = "independent_agency",
-  hasTradeAMImplications = false,
-  yearlyRevenueGrowthRate = 25,
-  forecastedMargin = 30,
-  yearlyMarginGrowthRate = 0,
-  addedValueBenefitsCost = 0,
-  analyticsTier = "silver",
-  requiresCustomMarketing = false,
   onChange
 }: ApprovalAlertProps) {
   const [alertInfo, setAlertInfo] = useState<{
@@ -60,17 +44,18 @@ export function ApprovalAlert({
       const params: DealParameters = {
         totalValue,
         hasNonStandardTerms,
-        discountPercentage,
+        discountPercentage: 0, // Simplified - no discount percentage
         contractTerm,
         dealType,
         salesChannel,
-        hasTradeAMImplications,
-        yearlyRevenueGrowthRate,
-        forecastedMargin,
-        yearlyMarginGrowthRate,
-        addedValueBenefitsCost,
-        analyticsTier,
-        requiresCustomMarketing,
+        // Simplified default values for remaining required fields
+        hasTradeAMImplications: false,
+        yearlyRevenueGrowthRate: 25, // Default to 25%
+        forecastedMargin: 30, // Default to 30%
+        yearlyMarginGrowthRate: 0,
+        addedValueBenefitsCost: 0,
+        analyticsTier: "silver",
+        requiresCustomMarketing: false,
         // Calculate annual value based on total value and contract term
         annualValue: totalValue / (contractTerm / 12)
       };
@@ -88,17 +73,9 @@ export function ApprovalAlert({
   }, [
     totalValue, 
     hasNonStandardTerms, 
-    discountPercentage, 
     contractTerm, 
     dealType,
     salesChannel,
-    hasTradeAMImplications,
-    yearlyRevenueGrowthRate,
-    forecastedMargin,
-    yearlyMarginGrowthRate,
-    addedValueBenefitsCost,
-    analyticsTier,
-    requiresCustomMarketing,
     onChange
   ]);
 
