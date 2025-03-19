@@ -467,7 +467,9 @@ export default function SubmitDeal() {
   }
   
   function prevStep() {
-    setFormStep(prev => Math.max(prev - 1, 0));
+    // For going back, we don't need validation - we can simply navigate to the previous step
+    const targetStep = Math.max(formStep - 1, 0);
+    setFormStep(targetStep);
   }
   
   function onSubmit(data: DealFormValues) {
