@@ -98,7 +98,7 @@ export default function RequestSupport() {
   });
   
   function onSubmit(data: DealScopingFormValues) {
-    createSupportRequest.mutate(data);
+    createDealScopingRequest.mutate(data);
   }
   
   function goToNextTab() {
@@ -369,8 +369,8 @@ export default function RequestSupport() {
                         >
                           Back: Sales Channel Info
                         </Button>
-                        <Button type="submit" disabled={createSupportRequest.isPending}>
-                          {createSupportRequest.isPending ? "Submitting..." : "Submit Deal Scoping Request"}
+                        <Button type="submit" disabled={createDealScopingRequest.isPending}>
+                          {createDealScopingRequest.isPending ? "Submitting..." : "Submit Deal Scoping Request"}
                         </Button>
                       </div>
                     </TabsContent>
