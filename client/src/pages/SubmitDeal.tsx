@@ -882,9 +882,9 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Not editable, pulled from data */}
+                                  {/* Base value column - simplified UI */}
                                   <div className="text-slate-700">
-                                    {formatCurrency(previousYearData?.annualRevenue || 0)}
+                                    Base
                                   </div>
                                 </td>
                                 {dealTiers.map((tier, index) => (
@@ -913,9 +913,9 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Gross Margin (Base)</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Not editable, pulled from data */}
+                                  {/* Base value column - simplified UI */}
                                   <div className="text-slate-700">
-                                    {((previousYearData?.annualGrossMarginPercent || 0) * 100).toFixed(2)}%
+                                    Base
                                   </div>
                                 </td>
                                 {dealTiers.map((tier, index) => (
@@ -949,9 +949,9 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Not editable, pulled from data */}
+                                  {/* Base value column - simplified UI */}
                                   <div className="text-slate-700">
-                                    {formatCurrency((previousYearData?.annualRevenue || 0) * (previousYearData?.annualGrossMarginPercent || 0))}
+                                    Base
                                   </div>
                                 </td>
                                 {dealTiers.map((tier) => (
