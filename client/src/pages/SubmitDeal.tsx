@@ -1129,11 +1129,19 @@ export default function SubmitDeal() {
                                 flat_commit: "Flat"
                               };
                               
-                              // Format dates
-                              const startDateFormatted = format(termStartDate, 'yyyyMMdd');
-                              const endDateFormatted = format(termEndDate, 'yyyyMMdd');
+                              // Format dates - ensure we're working with Date objects
+                              const startDateObj = typeof termStartDate === 'string' ? new Date(termStartDate) : (termStartDate as Date);
+                              const endDateObj = typeof termEndDate === 'string' ? new Date(termEndDate) : (termEndDate as Date);
                               
-                              return `${dealTypeMap[dealType]}_${salesChannelMap[salesChannel]}_${clientName}_${dealStructureMap[dealStructure]}_${startDateFormatted}-${endDateFormatted}`;
+                              const startDateFormatted = format(startDateObj, 'yyyyMMdd');
+                              const endDateFormatted = format(endDateObj, 'yyyyMMdd');
+                              
+                              // Safely access map values with type casting
+                              const dealTypeKey = typeof dealType === 'string' ? dealType as keyof typeof dealTypeMap : 'grow';
+                              const salesChannelKey = typeof salesChannel === 'string' ? salesChannel as keyof typeof salesChannelMap : 'client_direct';
+                              const dealStructureKey = typeof dealStructure === 'string' ? dealStructure as keyof typeof dealStructureMap : 'flat_commit';
+                              
+                              return `${dealTypeMap[dealTypeKey]}_${salesChannelMap[salesChannelKey]}_${clientName}_${dealStructureMap[dealStructureKey]}_${startDateFormatted}-${endDateFormatted}`;
                             })()}
                           </dd>
                         </div>
@@ -1168,7 +1176,7 @@ export default function SubmitDeal() {
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">Deal Description</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("description") || "Not provided"}
+                            {getTypedValue("description") ? String(getTypedValue("description")) : "Not provided"}
                           </dd>
                         </div>
                       </dl>
@@ -1184,7 +1192,7 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Client Name</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("clientName") || "Not provided"}
+                            {getTypedValue("clientName") ? String(getTypedValue("clientName")) : "Not provided"}
                           </dd>
                         </div>
                         <div>
@@ -1301,7 +1309,7 @@ export default function SubmitDeal() {
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">Special Pricing Notes</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("pricingNotes") || "None"}
+                            {getTypedValue("pricingNotes") ? String(getTypedValue("pricingNotes")) : "None"}
                           </dd>
                         </div>
                       </dl>
