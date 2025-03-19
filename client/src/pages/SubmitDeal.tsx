@@ -730,91 +730,7 @@ export default function SubmitDeal() {
                 
                 <div className="space-y-6">
                   
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <FormField
-                      control={form.control}
-                      name="industry"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Industry</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select industry" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="technology">Technology</SelectItem>
-                              <SelectItem value="healthcare">Healthcare</SelectItem>
-                              <SelectItem value="finance">Finance</SelectItem>
-                              <SelectItem value="retail">Retail</SelectItem>
-                              <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="region"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Region</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select region" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="north_america">North America</SelectItem>
-                              <SelectItem value="europe">Europe</SelectItem>
-                              <SelectItem value="asia_pacific">Asia Pacific</SelectItem>
-                              <SelectItem value="latin_america">Latin America</SelectItem>
-                              <SelectItem value="middle_east">Middle East & Africa</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="companySize"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Size</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select company size" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="small">Small (1-50)</SelectItem>
-                              <SelectItem value="medium">Medium (51-500)</SelectItem>
-                              <SelectItem value="large">Large (501-5000)</SelectItem>
-                              <SelectItem value="enterprise">Enterprise (5000+)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  {/* Fields for industry, region, and companySize were removed for form simplification */}
                   
                   <hr className="my-4" />
                   
@@ -849,8 +765,7 @@ export default function SubmitDeal() {
                     />
                   )}
                   
-                  {/* Standard Deal Criteria Help Info */}
-                  <StandardDealCriteriaHelp />
+                  {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
@@ -1073,100 +988,7 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
-                  <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
-                    <h3 className="text-lg font-medium text-slate-900 mb-4">Deal Financial Calculator</h3>
-                    
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Monthly Revenue</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {formatCurrency(calculateMonthlyValue(form.watch("totalValue") || 0, form.watch("contractTerm") || 1))}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Per month over contract term</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Net Revenue</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {formatCurrency(calculateNetValue(form.watch("totalValue") || 0, form.watch("discountPercentage") || 0))}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">After applying discount</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Profit</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {formatCurrency(calculateProfit(
-                            form.watch("totalValue") || 0,
-                            form.watch("discountPercentage") || 0,
-                            form.watch("costPercentage") || 30
-                          ))}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">After costs and discounts</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Profit Margin</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {Math.round(calculateProfitMargin(
-                            form.watch("totalValue") || 0,
-                            form.watch("discountPercentage") || 0,
-                            form.watch("costPercentage") || 30
-                          ))}%
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Percentage of net revenue</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 mt-4">
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Revenue YOY Growth</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {Math.round(calculateYOYGrowth(
-                            form.watch("totalValue") || 0,
-                            form.watch("previousYearValue") || 0
-                          ))}%
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Year-over-year revenue growth</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Incentive Impact</h4>
-                        <p className="mt-1 text-2xl font-semibold text-primary">
-                          {formatCurrency(calculateIncentiveImpact(
-                            form.watch("totalValue") || 0,
-                            form.watch("incentivePercentage") || 0
-                          ))}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Cost of incentives</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Total Costs</h4>
-                        <p className="mt-1 text-2xl font-semibold text-red-500">
-                          {formatCurrency((form.watch("totalValue") || 0) * (form.watch("costPercentage") || 30) / 100)}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Based on cost percentage</p>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-medium text-slate-500">Net Profit</h4>
-                        <p className="mt-1 text-2xl font-semibold text-green-600">
-                          {formatCurrency(
-                            calculateProfit(
-                              form.watch("totalValue") || 0,
-                              form.watch("discountPercentage") || 0,
-                              form.watch("costPercentage") || 30
-                            ) - calculateIncentiveImpact(
-                              form.watch("totalValue") || 0,
-                              form.watch("incentivePercentage") || 0
-                            )
-                          )}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">After all deductions</p>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Financial calculator section was removed for form simplification */}
                   
                   {/* Tiered Deal Structure Section - Only shown when "tiered" is selected */}
                   {dealStructureType === "tiered" && (
@@ -1349,6 +1171,9 @@ export default function SubmitDeal() {
                     By submitting this deal, you confirm that all information is accurate and complete. The deal will be reviewed by the appropriate team members based on your department and deal value.
                   </div>
                 </div>
+                
+                {/* Standard Deal Criteria Help moved here from Step 2 */}
+                <StandardDealCriteriaHelp />
                 
                 {/* Review Sections */}
                 <div className="space-y-6">
