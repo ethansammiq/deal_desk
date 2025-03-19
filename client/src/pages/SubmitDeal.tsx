@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ApprovalAlert, ApprovalHelpText } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 
@@ -684,6 +685,28 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
+                  {/* Non-standard terms checkbox */}
+                  <div className="mt-6 mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="nonStandardTerms" 
+                        checked={hasNonStandardTerms} 
+                        onCheckedChange={(checked) => {
+                          setHasNonStandardTerms(checked === true);
+                        }}
+                      />
+                      <label
+                        htmlFor="nonStandardTerms"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        This deal includes non-standard terms
+                      </label>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500 ml-6">
+                      Any modifications to standard contract language, special provisions, or custom pricing structures
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <FormField
                       control={form.control}
