@@ -7,21 +7,18 @@ import Dashboard from "@/pages/Dashboard";
 import SubmitDeal from "@/pages/SubmitDeal";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { TopNavbar } from "@/components/layout/TopNavbar";
 import { ChatProvider } from "@/lib/chat-context";
 import FloatingChatbot from "@/components/FloatingChatbot";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <div className="flex flex-col h-screen overflow-hidden">
+      <TopNavbar />
       
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 w-0 overflow-hidden">
-        {/* Page Content */}
-        <div className="overflow-auto h-full bg-slate-50">
-          {children}
-        </div>
+      <div className="flex-1 overflow-auto bg-slate-50">
+        {children}
       </div>
       
       {/* Floating chatbot UI - with full customization options */}
