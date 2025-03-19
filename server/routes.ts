@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertDealSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -206,6 +207,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error updating deal scoping request status:", error);
       res.status(500).json({ error: "Failed to update deal scoping request status" });
     }
+  });
+
+  // Initialize and register chatbot routes
+  const chatStorage = new ChatMemStorage();
+  registerChatbotRoutes(app, {
+    basePath: '/api',
+    storage: chatStorage,
+    welcomeMessage: "Hi there! I'm your Deal Assistant. How can I help you with deals and incentives today?"
   });
 
   const httpServer = createServer(app);
