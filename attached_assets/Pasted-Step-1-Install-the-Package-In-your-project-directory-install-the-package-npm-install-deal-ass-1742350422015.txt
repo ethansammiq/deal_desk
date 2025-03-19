@@ -1,0 +1,136 @@
+Step 1: Install the Package
+In your project directory, install the package:
+
+npm install deal-assistant
+Step 2: Client-Side Integration
+Add the ChatProvider to your React application
+Wrap your main application component with the ChatProvider:
+
+// In your App.js or App.tsx
+import { ChatProvider } from 'deal-assistant';
+function App() {
+  return (
+    <ChatProvider config={{
+      apiBasePath: '/api',  // This should match your server routes
+      defaultSuggestedQuestions: [
+        "What are the incentive thresholds?",
+        "How do I submit a new deal?",
+        "What are the approval requirements?"
+      ]
+    }}>
+      {/* Your existing app components */}
+    </ChatProvider>
+  );
+}
+Add the Floating Chatbot to any page
+Add the floating chat bubble to your layout or specific pages:
+
+// In your Layout or specific page component
+import { FloatingChatbot } from 'deal-assistant';
+function Layout() {
+  return (
+    <>
+      {/* Your existing layout content */}
+      
+      {/* Add this anywhere in your component */}
+      <FloatingChatbot 
+        title="Deal Assistant" 
+        subtitle="Ask me about deals & incentives"
+        iconUrl="/path-to-your-icon.png"  // Optional
+      />
+    </>
+  );
+}
+Step 3: Server-Side Integration
+Set up Express routes
+In your server file, add the chatbot routes:
+
+// In your server.js or index.js
+const express = require('express');
+const { registerChatbotRoutes, MemStorage } = require('deal-assistant');
+const app = express();
+app.use(express.json());
+// Create a storage instance - use MemStorage for quick setup
+const storage = new MemStorage();
+// Register the chatbot routes
+registerChatbotRoutes(app, {
+  basePath: '/api',  // Must match the apiBasePath in your ChatProvider
+  storage: storage,
+  welcomeMessage: "Hello! I'm your Deal Assistant. How can I help you today?",
+  openAI: {
+    systemPrompt: "You are an assistant for Commercial Deals...",
+    temperature: 0.7,
+    maxTokens: 1000,
+    model: "gpt-4o"  // Use the latest model
+  }
+});
+// Your other routes...
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+Set up your OpenAI API key
+Make sure you have the OpenAI API key in your environment variables:
+
+OPENAI_API_KEY=your_api_key_here
+Step 4: Optional Customizations
+Access chat functionality in custom components
+You can access the chat functionality in any component using the useChat hook:
+
+import { useChat } from 'deal-assistant';
+function DealSummary() {
+  const { sendMessage, messages, isLoading } = useChat();
+  
+  const askQuestion = () => {
+    sendMessage("What's the status of my current deal?");
+  };
+  
+  return (
+    <div>
+      <h2>Deal Summary</h2>
+      <button onClick={askQuestion} disabled={isLoading}>
+        Ask about deal status
+      </button>
+    </div>
+  );
+}
+Switch to database storage
+To use a database instead of in-memory storage, implement the IStorage interface:
+
+const { IStorage } = require('deal-assistant');
+const { db } = require('./your-database-connection');
+class DatabaseStorage {
+  async getMessage(id) {
+    // Your database implementation
+  }
+  
+  async getMessagesByConversationId(conversationId) {
+    // Your database implementation
+  }
+  
+  async createMessage(message) {
+    // Your database implementation
+  }
+  
+  async getAllKnowledgeBase() {
+    // Your database implementation
+  }
+  
+  // Implement other methods as needed
+}
+// Use your database storage
+const dbStorage = new DatabaseStorage();
+registerChatbotRoutes(app, { storage: dbStorage, /* other options */ });
+Troubleshooting
+ChatProvider must wrap everything: Make sure the ChatProvider is at the top level of your component hierarchy.
+
+API base path must match: The apiBasePath in ChatProvider must match the basePath in registerChatbotRoutes.
+
+OpenAI API key: If responses aren't working, check that your OpenAI API key is set correctly.
+
+Static files: If using custom icons, ensure they're in your public directory or served correctly.
+
+Additional Resources
+For more detailed examples and documentation, refer to the files in the integration-package/docs directory:
+
+README.md - Complete API reference
+integration-example.md - More advanced integration examples
