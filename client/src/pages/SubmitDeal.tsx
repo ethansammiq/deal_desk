@@ -76,6 +76,11 @@ export default function SubmitDeal() {
   const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
   
+  // Handle approval level changes
+  const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
+    setCurrentApprover(approvalInfo);
+  };
+  
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
@@ -543,6 +548,17 @@ export default function SubmitDeal() {
                   <div className="mb-6">
                     <h3 className="text-lg font-medium text-slate-900">Pricing Information</h3>
                   </div>
+                  
+                  {/* Approval alert will display here based on deal parameters */}
+                  {form.watch("totalValue") && form.watch("contractTerm") && (
+                    <ApprovalAlert 
+                      totalValue={form.watch("totalValue") || 0}
+                      contractTerm={form.watch("contractTerm") || 0}
+                      discountPercentage={form.watch("discountPercentage") || 0}
+                      hasNonStandardTerms={hasNonStandardTerms}
+                      onChange={handleApprovalChange}
+                    />
+                  )}
                   
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
