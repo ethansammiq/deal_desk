@@ -33,8 +33,8 @@ const dealScopingSchema = z.object({
   
   // Sales channel and client information
   salesChannel: z.string().min(1, "Sales channel is required"),
-  advertiserName: z.string().min(1, "Advertiser name is required").optional(),
-  agencyName: z.string().min(1, "Agency name is required").optional(),
+  advertiserName: z.string().optional(),
+  agencyName: z.string().optional(),
   
   // Growth opportunity fields
   growthOpportunityMIQ: z.string().min(10, "Please provide more details about the growth opportunity"),
@@ -45,6 +45,29 @@ const dealScopingSchema = z.object({
   // Legacy fields maintained for compatibility
   requestTitle: z.string().min(1, "Request title is required").default("Deal Scoping Request"),
   description: z.string().optional(),
+})
+.superRefine((data, ctx) => {
+  // If sales channel is client_direct, advertiserName is required
+  if (data.salesChannel === "client_direct" && !data.advertiserName) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Advertiser name is required for client direct sales channel",
+      path: ["advertiserName"]
+    });
+    return false;
+  }
+  
+  // If sales channel is holding_company or independent_agency, agencyName is required
+  if ((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && !data.agencyName) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Agency name is required for this sales channel",
+      path: ["agencyName"]
+    });
+    return false;
+  }
+  
+  return true;
 });
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
@@ -115,9 +138,76 @@ export default function RequestSupport() {
     }
   });
   
-  function onSubmit(data: DealScopingFormValues) {
+  async function onSubmit(data: DealScopingFormValues) {
     console.log("Form submitted with data:", data);
-    createDealScopingRequest.mutate(data);
+    // Check form validation errors
+    console.log("Form validation errors:", form.formState.errors);
+    
+    // Check if form is valid
+    if (!form.formState.isValid) {
+      console.log("Form is invalid. Please fix validation errors.");
+      toast({
+        title: "Form Error",
+        description: "Please fix the form errors before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Try a direct fetch instead of using React Query
+    try {
+      console.log("Trying direct fetch instead of React Query");
+      
+      // Format the data
+      const formData = {
+        ...data,
+        requestTitle: data.requestTitle || "Deal Scoping Request",
+        description: data.description || `Request from ${data.email || 'unknown'}`
+      };
+      
+      // Send direct fetch request
+      const response = await fetch("/api/deal-scoping-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Direct fetch success:", result);
+        
+        toast({
+          title: "Success",
+          description: "Deal scoping request submitted successfully! A team member will contact you to set up a discovery call.",
+          variant: "default",
+        });
+        
+        form.reset();
+      } else {
+        console.error("Direct fetch failed:", response.status, response.statusText);
+        try {
+          const errorData = await response.json();
+          console.error("Error details:", errorData);
+        } catch (e) {
+          console.error("Could not parse error response");
+        }
+        
+        toast({
+          title: "Error",
+          description: `Failed to submit deal scoping request: ${response.statusText}`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in direct fetch:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit deal scoping request. Please try again.",
+        variant: "destructive",
+      });
+    }
   }
   
   function goToNextTab() {
