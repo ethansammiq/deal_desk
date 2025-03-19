@@ -765,7 +765,7 @@ export default function SubmitDeal() {
                         <Select 
                           onValueChange={(value) => {
                             field.onChange(value);
-                            setDealStructureType(value);
+                            setDealStructure(value as "tiered" | "flat_commit");
                           }}
                           defaultValue={field.value}
                         >
