@@ -136,6 +136,20 @@ export default function SubmitDeal() {
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
   const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("flat_commit");
   
+  // Type-safe helper functions for getting form values
+  function getTypedValue<T extends keyof DealFormValues>(
+    field: T
+  ): DealFormValues[T] {
+    return form.getValues(field as any);
+  }
+  
+  // Type-safe helper function for watching form values
+  function watchTypedValue<T extends keyof DealFormValues>(
+    field: T
+  ): DealFormValues[T] {
+    return form.watch(field as any);
+  }
+  
   // Handle approval level changes
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
     setCurrentApprover(approvalInfo);
@@ -321,8 +335,8 @@ export default function SubmitDeal() {
   }, [toast]);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
-  const salesChannel = form.watch("salesChannel");
-  const dealStructure = form.watch("dealStructure");
+  const salesChannel = watchTypedValue("salesChannel");
+  const dealStructure = watchTypedValue("dealStructure");
   
   // Update dealStructureType when form value changes
   useEffect(() => {
@@ -334,8 +348,8 @@ export default function SubmitDeal() {
   // Auto-populate historical data when selecting advertiser or agency
   useEffect(() => {
     const updateHistoricalData = async () => {
-      const advertiserName = form.getValues("advertiserName");
-      const agencyName = form.getValues("agencyName");
+      const advertiserName = getTypedValue("advertiserName");
+      const agencyName = getTypedValue("agencyName");
       
       if (salesChannel === "client_direct" && advertiserName) {
         const advertiser = advertisers.find((a: AdvertiserData) => a.name === advertiserName);
