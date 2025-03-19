@@ -17,7 +17,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <TopNavbar />
       
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto bg-slate-50">
+      <div className="flex-1 overflow-auto bg-slate-50 pt-4">
         {children}
       </div>
       
