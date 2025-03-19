@@ -1,16 +1,197 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   FileTextIcon, 
   BuildingIcon, 
   TrendingUpIcon, 
   ClipboardIcon, 
   LifeBuoyIcon, 
-  MessageSquareIcon
+  MessageSquareIcon,
+  LightbulbIcon,
+  SettingsIcon,
+  BotIcon,
+  UserIcon,
+  SendIcon,
+  Loader2Icon,
+  ClipboardCopyIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import DealAssistantChatbot from "@/components/DealAssistantChatbot";
+import { useChat } from "@/lib/chat-context";
+import { useToast } from "@/hooks/use-toast";
+
+// Embedded Chat Component for the Help Resources Page
+function EmbeddedChat() {
+  const { messages, sendMessage, isLoading, suggestedQuestions, model } = useChat();
+  const { toast } = useToast();
+  const [inputText, setInputText] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to bottom of chat when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  // Function to copy message to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Copied to clipboard",
+        description: "Message content has been copied to your clipboard",
+        duration: 2000,
+      });
+    }).catch(() => {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy text. Please try again.",
+        variant: "destructive",
+        duration: 2000,
+      });
+    });
+  };
+  
+  // Handle sending a message
+  const handleSendMessage = () => {
+    if (!inputText.trim()) return;
+    sendMessage(inputText);
+    setInputText('');
+  };
+  
+  return (
+    <div className="bg-white rounded-lg">
+      {/* AI Model Indicator */}
+      <div className="mb-4 text-right">
+        <span className="text-xs bg-slate-100 px-2 py-1 rounded inline-flex items-center">
+          <SettingsIcon className="h-3 w-3 mr-1" />
+          Using {model === 'advanced' ? 'Advanced AI' : 'Basic AI'}
+        </span>
+      </div>
+      
+      {/* Chat messages area */}
+      <div className="h-80 overflow-y-auto border border-slate-200 rounded-lg p-4 mb-4">
+        {messages.length > 1 ? (
+          messages.slice(1).map((message) => (
+            <div 
+              key={message.id} 
+              className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div 
+                className={`max-w-[90%] rounded-lg px-4 py-2 group relative ${
+                  message.sender === 'user' 
+                    ? 'bg-primary text-white rounded-tr-none' 
+                    : 'bg-slate-100 text-slate-800 rounded-tl-none'
+                }`}
+              >
+                {/* Message header */}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center">
+                    {message.sender === 'bot' ? 
+                      <BotIcon className="h-3 w-3 mr-1" /> :
+                      <UserIcon className="h-3 w-3 mr-1" />
+                    }
+                    <span className="text-xs">
+                      {message.sender === 'user' ? 'You' : 'Deal Assistant'}
+                    </span>
+                  </div>
+                  
+                  {/* Message actions - visible on hover */}
+                  <div className={`opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                    message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
+                  }`}>
+                    <button 
+                      onClick={() => copyToClipboard(message.text)}
+                      className="p-1 hover:bg-white/10 rounded"
+                      title="Copy message"
+                      aria-label="Copy message"
+                    >
+                      <ClipboardCopyIcon className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Message content */}
+                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center max-w-md mx-auto">
+              <LightbulbIcon className="h-8 w-8 text-primary/60 mx-auto mb-3" />
+              <h3 className="text-base font-medium text-slate-900 mb-2">Deal Assistant</h3>
+              <p className="text-sm text-slate-500 mb-4">
+                Ask questions about deals, incentives, approval processes, and documentation requirements.
+              </p>
+              <p className="text-xs text-slate-400">
+                Example: "What is required for a deal submission?"
+              </p>
+            </div>
+          </div>
+        )}
+        {isLoading && (
+          <div className="flex justify-start mb-4">
+            <div className="bg-slate-100 text-slate-800 rounded-lg rounded-tl-none px-4 py-2 flex items-center">
+              <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+              <span className="text-sm">Thinking...</span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Quick questions */}
+      {suggestedQuestions.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-xs text-slate-500 mb-2">Quick questions:</h4>
+          <div className="flex flex-wrap gap-2">
+            {suggestedQuestions.map((question, index) => (
+              <button
+                key={index}
+                onClick={() => sendMessage(question)}
+                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-full"
+                disabled={isLoading}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Chat input */}
+      <div className="flex">
+        <Input 
+          type="text" 
+          placeholder="Ask about deal processes or incentives..." 
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !isLoading) {
+              handleSendMessage();
+            }
+          }}
+          disabled={isLoading}
+          className="rounded-r-none focus-visible:ring-1"
+        />
+        <Button 
+          onClick={handleSendMessage}
+          className="rounded-l-none"
+          size="sm"
+          variant="default"
+          type="button"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2Icon className="h-4 w-4 animate-spin" />
+          ) : (
+            <SendIcon className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 enum TabTypes {
   GUIDES = "guides",
@@ -264,8 +445,24 @@ export default function HelpResources() {
         )}
       </div>
 
-      {/* Add the Deal Assistant Chatbot */}
-      <DealAssistantChatbot />
+      {/* Add Embedded Chatbot - using our shared ChatContext */}
+      <Card className="mt-8">
+        <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-slate-900 flex items-center">
+            <MessageSquareIcon className="h-5 w-5 mr-2 text-primary" />
+            Deal Assistant
+            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+              AI-Powered
+            </span>
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Get instant answers about deal processes, incentives, and requirements
+          </p>
+        </div>
+        <CardContent className="p-6">
+          <EmbeddedChat />
+        </CardContent>
+      </Card>
     </div>
   );
 }

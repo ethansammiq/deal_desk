@@ -207,26 +207,45 @@ export default function FloatingChatbot({
             >
               <div 
                 style={message.sender === 'user' && primaryColor ? {backgroundColor: primaryColor} : {}}
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                className={`max-w-[80%] rounded-lg px-4 py-2 group relative ${
                   message.sender === 'user' 
                     ? primaryColor ? 'text-white rounded-tr-none' : 'bg-primary text-white rounded-tr-none' 
                     : 'bg-slate-100 text-slate-800 rounded-tl-none'
                 }`}
               >
-                <div className="flex items-center mb-1">
-                  {message.sender === 'bot' && (avatarUrl ? 
-                    <img src={avatarUrl} alt={title} className="h-3 w-3 rounded-full mr-1 object-cover" /> :
-                    <BotIcon className="h-3 w-3 mr-1" />)}
-                  {message.sender === 'user' && <UserIcon className="h-3 w-3 mr-1" />}
-                  <span className="text-xs">
-                    {message.sender === 'user' ? 'You' : title}
-                  </span>
-                  {showTimestamps && (
-                    <span className="text-xs ml-2 opacity-50">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {/* Message header */}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center">
+                    {message.sender === 'bot' && (avatarUrl ? 
+                      <img src={avatarUrl} alt={title} className="h-3 w-3 rounded-full mr-1 object-cover" /> :
+                      <BotIcon className="h-3 w-3 mr-1" />)}
+                    {message.sender === 'user' && <UserIcon className="h-3 w-3 mr-1" />}
+                    <span className="text-xs">
+                      {message.sender === 'user' ? 'You' : title}
                     </span>
-                  )}
+                    {showTimestamps && (
+                      <span className="text-xs ml-2 opacity-50">
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Message actions - visible on hover */}
+                  <div className={`opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                    message.sender === 'user' ? 'text-white/70' : 'text-slate-500'
+                  }`}>
+                    <button 
+                      onClick={() => copyToClipboard(message.text)}
+                      className="p-1 hover:bg-white/10 rounded"
+                      title="Copy message"
+                      aria-label="Copy message"
+                    >
+                      <ClipboardCopyIcon className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
+                
+                {/* Message content */}
                 <p className="text-sm whitespace-pre-wrap">{message.text}</p>
               </div>
             </div>
