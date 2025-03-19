@@ -5,7 +5,7 @@
  * to determine required approvers based on deal parameters.
  */
 
-export type ApproverLevel = 'Manager' | 'Director' | 'VP' | 'SVP' | 'C-Level';
+export type ApproverLevel = 'MD' | 'Executive';
 
 export interface ApprovalRule {
   level: ApproverLevel;
@@ -38,77 +38,38 @@ export const approvalMatrix: ApprovalMatrix = {
   valueRanges: [
     {
       min: 0,
-      max: 50000,
-      standardTerms: 'Manager',
-      nonStandardTerms: 'Director',
-      highDiscount: 'Director'
+      max: 500000,
+      standardTerms: 'MD',
+      nonStandardTerms: 'MD',
+      highDiscount: 'Executive'
     },
     {
-      min: 50001,
-      max: 250000,
-      standardTerms: 'Director',
-      nonStandardTerms: 'VP',
-      highDiscount: 'VP'
-    },
-    {
-      min: 250001,
-      max: 1000000,
-      standardTerms: 'VP',
-      nonStandardTerms: 'VP',
-      highDiscount: 'SVP'
-    },
-    {
-      min: 1000001,
+      min: 500001,
       max: null, // no upper limit
-      standardTerms: 'SVP',
-      nonStandardTerms: 'C-Level',
-      highDiscount: 'C-Level'
+      standardTerms: 'Executive',
+      nonStandardTerms: 'Executive',
+      highDiscount: 'Executive'
     }
   ],
   discountThresholds: [
-    { threshold: 10, level: 'Manager' },
-    { threshold: 20, level: 'Director' },
-    { threshold: 30, level: 'VP' },
-    { threshold: 40, level: 'SVP' },
-    { threshold: 50, level: 'C-Level' },
+    { threshold: 30, level: 'Executive' }
   ],
   contractTermThresholds: [
-    { months: 12, level: 'Manager' },
-    { months: 24, level: 'Director' },
-    { months: 36, level: 'VP' },
-    { months: 48, level: 'SVP' },
-    { months: 60, level: 'C-Level' },
+    { months: 24, level: 'MD' },
+    { months: 36, level: 'Executive' }
   ],
   approverLevels: {
-    'Manager': {
-      level: 'Manager',
-      title: 'Sales Manager',
-      description: 'First level of approval for standard deals under $50K',
-      estimatedTime: '1 business day'
-    },
-    'Director': {
-      level: 'Director',
-      title: 'Sales Director',
-      description: 'Required for non-standard terms or deals up to $250K',
+    'MD': {
+      level: 'MD',
+      title: 'Managing Director',
+      description: 'Standard approval for deals under $500K without high discounts',
       estimatedTime: '1-2 business days'
     },
-    'VP': {
-      level: 'VP',
-      title: 'Vice President',
-      description: 'Required for larger deals up to $1M or higher discounts',
-      estimatedTime: '2-3 business days'
-    },
-    'SVP': {
-      level: 'SVP',
-      title: 'Senior Vice President',
-      description: 'Required for strategic deals or significant discounts',
+    'Executive': {
+      level: 'Executive',
+      title: 'Executive Committee',
+      description: 'Required for high-value deals, extended contracts, or significant discounts',
       estimatedTime: '3-5 business days'
-    },
-    'C-Level': {
-      level: 'C-Level',
-      title: 'C-Suite Executive',
-      description: 'Highest approval level for largest or most complex deals',
-      estimatedTime: '5-7 business days'
     }
   }
 };
@@ -130,7 +91,7 @@ export function getValueBasedApprover(value: number, hasNonStandardTerms: boolea
   
   if (!range) {
     // Default to highest level if no range matches (shouldn't happen with null max)
-    return 'C-Level';
+    return 'Executive';
   }
   
   if (highDiscount) {
@@ -160,8 +121,8 @@ export function getDiscountBasedApprover(discountPercentage: number): ApproverLe
     }
   }
   
-  // Default to Manager for very low discounts
-  return 'Manager';
+  // Default to MD for very low discounts
+  return 'MD';
 }
 
 /**
@@ -177,8 +138,8 @@ export function getContractTermBasedApprover(contractTerm: number): ApproverLeve
     }
   }
   
-  // Default to Manager for short contracts
-  return 'Manager';
+  // Default to MD for short contracts
+  return 'MD';
 }
 
 /**
