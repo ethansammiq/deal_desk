@@ -42,31 +42,89 @@ import { ApprovalRule } from "@/lib/approval-matrix";
 
 // Extend the deal schema with additional validations
 const dealFormSchema = z.object({
+  // Basic deal information
   dealName: z.string().min(1, "Deal name is required"),
-  dealType: z.string().min(1, "Deal type is required"),
-  description: z.string().min(10, "Description should be at least 10 characters"),
-  department: z.string().min(1, "Department is required"),
-  expectedCloseDate: z.string().min(1, "Expected close date is required"),
-  priority: z.string().default("medium"),
+  dealType: z.enum(["grow", "protect", "custom"], {
+    required_error: "Deal type is required",
+    invalid_type_error: "Deal type must be one of: Grow, Protect, Custom",
+  }),
   
-  clientName: z.string().min(1, "Client name is required"),
-  clientType: z.string().default("new"),
-  industry: z.string().optional(),
-  region: z.string().optional(),
-  companySize: z.string().optional(),
+  // Business information
+  businessSummary: z.string().min(10, "Business summary should be at least 10 characters"),
   
-  totalValue: z.coerce.number().positive("Deal value must be positive"),
-  contractTerm: z.coerce.number().int().positive("Contract term must be positive"),
-  paymentTerms: z.string().default("monthly"),
-  discountPercentage: z.coerce.number().min(0).max(100, "Discount must be between 0 and 100%").default(0),
-  costPercentage: z.coerce.number().min(0).max(100, "Cost must be between 0 and 100%").default(30),
-  incentivePercentage: z.coerce.number().min(0).max(50, "Incentives must be between 0 and 50%").default(0),
-  previousYearValue: z.coerce.number().min(0, "Previous year value must be non-negative").default(0),
-  renewalOption: z.string().default("manual"),
-  pricingNotes: z.string().optional(),
+  // Client/Agency information
+  salesChannel: z.enum(["holding_company", "independent_agency", "client_direct"], {
+    required_error: "Sales channel is required",
+  }),
+  region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
+    required_error: "Region is required",
+  }),
   
-  referenceNumber: z.string().optional()
-});
+  // Conditional fields based on salesChannel
+  advertiserName: z.string().optional(),
+  agencyName: z.string().optional(),
+  
+  // Deal structure
+  dealStructure: z.enum(["tiered", "flat_commit"], {
+    required_error: "Deal structure is required",
+  }),
+  
+  // Timeframe
+  termStartDate: z.date({
+    required_error: "Start date is required",
+    invalid_type_error: "Start date must be a valid date",
+  }),
+  termEndDate: z.date({
+    required_error: "End date is required",
+    invalid_type_error: "End date must be a valid date",
+  }),
+
+  // Financial data
+  annualRevenue: z.coerce.number().positive("Annual revenue must be positive"),
+  annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%"),
+  previousYearRevenue: z.coerce.number().min(0, "Previous year revenue must be non-negative").default(0),
+  previousYearMargin: z.coerce.number().min(0).max(100, "Previous year margin must be between 0 and 100%").default(0),
+  
+  // Standard deal criteria fields
+  hasTradeAMImplications: z.boolean().default(false),
+  yearlyRevenueGrowthRate: z.coerce.number().default(0),
+  forecastedMargin: z.coerce.number().min(0).max(100, "Forecasted margin must be between 0 and 100%").default(0),
+  yearlyMarginGrowthRate: z.coerce.number().default(0),
+  addedValueBenefitsCost: z.coerce.number().min(0).default(0),
+  analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
+  requiresCustomMarketing: z.boolean().default(false),
+  
+  // Deal tiers (for tiered structure only)
+  // We'll handle tiers as a separate form/state
+  
+  email: z.string().email().optional(),
+  status: z.string().default("submitted"),
+  referenceNumber: z.string().optional(),
+})
+// Add conditional validation - if salesChannel is client_direct, advertiserName is required
+.refine(
+  (data) => !(data.salesChannel === "client_direct" && !data.advertiserName),
+  {
+    message: "Advertiser name is required for Client Direct sales channel",
+    path: ["advertiserName"],
+  }
+)
+// Add conditional validation - if salesChannel is agency type, agencyName is required
+.refine(
+  (data) => !((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && !data.agencyName),
+  {
+    message: "Agency name is required for Agency sales channels",
+    path: ["agencyName"],
+  }
+)
+// Validate that termEndDate is after termStartDate
+.refine(
+  (data) => data.termEndDate > data.termStartDate,
+  {
+    message: "End date must be after start date",
+    path: ["termEndDate"],
+  }
+);
 
 type DealFormValues = z.infer<typeof dealFormSchema>;
 
@@ -82,31 +140,84 @@ export default function SubmitDeal() {
     setCurrentApprover(approvalInfo);
   };
   
+  // State to track selected agencies and advertisers for dropdowns
+  const [agencies, setAgencies] = useState([]);
+  const [advertisers, setAdvertisers] = useState([]);
+  
+  // State for tiered deal structure
+  const [dealTiers, setDealTiers] = useState([
+    {
+      tierNumber: 1,
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      incentivePercentage: 0,
+      incentiveNotes: "Base tier - no incentives"
+    },
+    {
+      tierNumber: 2,
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      incentivePercentage: 0,
+      incentiveNotes: ""
+    },
+    {
+      tierNumber: 3,
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      incentivePercentage: 0,
+      incentiveNotes: ""
+    },
+    {
+      tierNumber: 4,
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      incentivePercentage: 0,
+      incentiveNotes: ""
+    }
+  ]);
+
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
+      // Basic deal information
       dealName: "",
-      dealType: "",
-      description: "",
-      department: "",
-      expectedCloseDate: format(new Date(), "yyyy-MM-dd"),
-      priority: "medium",
+      dealType: "grow",
       
-      clientName: "",
-      clientType: "new",
-      industry: "",
-      region: "north_america",
-      companySize: "medium",
+      // Business information
+      businessSummary: "",
       
-      totalValue: undefined,
-      contractTerm: undefined,
-      paymentTerms: "monthly",
-      discountPercentage: 0,
-      costPercentage: 30,
-      incentivePercentage: 0,
-      previousYearValue: 0,
-      renewalOption: "manual",
-      pricingNotes: "",
+      // Client/Agency information
+      salesChannel: "client_direct",
+      region: "northeast",
+      advertiserName: "",
+      agencyName: "",
+      
+      // Deal structure
+      dealStructure: "flat_commit",
+      
+      // Timeframe
+      termStartDate: new Date(),
+      termEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      
+      // Financial data
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      previousYearRevenue: 0,
+      previousYearMargin: 0,
+      
+      // Standard deal criteria fields
+      hasTradeAMImplications: false,
+      yearlyRevenueGrowthRate: 0,
+      forecastedMargin: 0,
+      yearlyMarginGrowthRate: 0,
+      addedValueBenefitsCost: 0,
+      analyticsTier: "silver",
+      requiresCustomMarketing: false,
+      
+      // Status
+      status: "submitted",
+      email: "",
+      referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
     },
     mode: "onChange"
   });
@@ -135,26 +246,128 @@ export default function SubmitDeal() {
     }
   });
   
+  // Fetch agencies and advertisers for dropdowns
+  useEffect(() => {
+    const fetchAgencies = async () => {
+      try {
+        const response = await apiRequest("GET", "/api/agencies");
+        const data = await response.json();
+        setAgencies(data);
+      } catch (error) {
+        console.error("Failed to fetch agencies:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load agencies data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const fetchAdvertisers = async () => {
+      try {
+        const response = await apiRequest("GET", "/api/advertisers");
+        const data = await response.json();
+        setAdvertisers(data);
+      } catch (error) {
+        console.error("Failed to fetch advertisers:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load advertisers data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchAgencies();
+    fetchAdvertisers();
+  }, [toast]);
+
+  // Watch for salesChannel changes to handle conditional fields
+  const salesChannel = form.watch("salesChannel");
+  const dealStructure = form.watch("dealStructure");
+
+  // Auto-populate historical data when selecting advertiser or agency
+  useEffect(() => {
+    const updateHistoricalData = async () => {
+      const advertiserName = form.getValues("advertiserName");
+      const agencyName = form.getValues("agencyName");
+      
+      if (salesChannel === "client_direct" && advertiserName) {
+        const advertiser = advertisers.find(a => a.name === advertiserName);
+        if (advertiser) {
+          form.setValue("previousYearRevenue", advertiser.previousYearRevenue || 0);
+          form.setValue("previousYearMargin", advertiser.previousYearMargin || 0);
+          form.setValue("region", advertiser.region || "northeast");
+        }
+      } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+        const agency = agencies.find(a => a.name === agencyName);
+        if (agency) {
+          form.setValue("previousYearRevenue", agency.previousYearRevenue || 0);
+          form.setValue("previousYearMargin", agency.previousYearMargin || 0);
+          form.setValue("region", agency.region || "northeast");
+        }
+      }
+    };
+    
+    updateHistoricalData();
+  }, [form.watch("advertiserName"), form.watch("agencyName"), salesChannel, agencies, advertisers, form]);
+
+  // Calculate growth rates automatically
+  useEffect(() => {
+    const annualRevenue = form.getValues("annualRevenue");
+    const previousYearRevenue = form.getValues("previousYearRevenue");
+    const annualGrossMargin = form.getValues("annualGrossMargin");
+    const previousYearMargin = form.getValues("previousYearMargin");
+    
+    if (annualRevenue && previousYearRevenue && previousYearRevenue > 0) {
+      const growthRate = ((annualRevenue - previousYearRevenue) / previousYearRevenue) * 100;
+      form.setValue("yearlyRevenueGrowthRate", parseFloat(growthRate.toFixed(1)));
+    }
+    
+    if (annualGrossMargin && previousYearMargin && previousYearMargin > 0) {
+      const marginGrowthRate = ((annualGrossMargin - previousYearMargin) / previousYearMargin) * 100;
+      form.setValue("yearlyMarginGrowthRate", parseFloat(marginGrowthRate.toFixed(1)));
+    }
+  }, [
+    form.watch("annualRevenue"), 
+    form.watch("previousYearRevenue"),
+    form.watch("annualGrossMargin"),
+    form.watch("previousYearMargin"),
+    form
+  ]);
+
   function nextStep() {
     // Validate current step fields
     if (formStep === 0) {
-      form.trigger(['dealName', 'dealType', 'description', 'department', 'expectedCloseDate']);
+      form.trigger(['dealName', 'dealType', 'businessSummary', 'salesChannel', 'region']);
       const dealNameError = form.getFieldState('dealName').error;
       const dealTypeError = form.getFieldState('dealType').error;
-      const descriptionError = form.getFieldState('description').error;
-      const departmentError = form.getFieldState('department').error;
-      const closeDateError = form.getFieldState('expectedCloseDate').error;
+      const businessSummaryError = form.getFieldState('businessSummary').error;
+      const salesChannelError = form.getFieldState('salesChannel').error;
+      const regionError = form.getFieldState('region').error;
       
-      if (dealNameError || dealTypeError || descriptionError || departmentError || closeDateError) {
+      // Check conditional field validation based on salesChannel
+      let conditionalError = false;
+      if (salesChannel === "client_direct") {
+        form.trigger(['advertiserName']);
+        conditionalError = !!form.getFieldState('advertiserName').error;
+      } else if (salesChannel === "holding_company" || salesChannel === "independent_agency") {
+        form.trigger(['agencyName']);
+        conditionalError = !!form.getFieldState('agencyName').error;
+      }
+      
+      if (dealNameError || dealTypeError || businessSummaryError || salesChannelError || regionError || conditionalError) {
         return;
       }
     } else if (formStep === 1) {
-      form.trigger(['clientName', 'totalValue', 'contractTerm']);
-      const clientNameError = form.getFieldState('clientName').error;
-      const totalValueError = form.getFieldState('totalValue').error;
-      const contractTermError = form.getFieldState('contractTerm').error;
+      form.trigger(['dealStructure', 'termStartDate', 'termEndDate', 'annualRevenue', 'annualGrossMargin']);
+      const dealStructureError = form.getFieldState('dealStructure').error;
+      const termStartDateError = form.getFieldState('termStartDate').error;
+      const termEndDateError = form.getFieldState('termEndDate').error;
+      const annualRevenueError = form.getFieldState('annualRevenue').error;
+      const annualGrossMarginError = form.getFieldState('annualGrossMargin').error;
       
-      if (clientNameError || totalValueError || contractTermError) {
+      if (dealStructureError || termStartDateError || termEndDateError || annualRevenueError || annualGrossMarginError) {
         return;
       }
     }
@@ -228,7 +441,7 @@ export default function SubmitDeal() {
             {formStep === 0 && (
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">Deal Information</h2>
+                  <h2 className="text-lg font-medium text-slate-900">Basic Deal Information</h2>
                   <p className="mt-1 text-sm text-slate-500">Provide the basic details about this commercial deal</p>
                 </div>
                 
@@ -264,15 +477,16 @@ export default function SubmitDeal() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="new_business">New Business</SelectItem>
-                              <SelectItem value="renewal">Renewal</SelectItem>
-                              <SelectItem value="upsell">Upsell / Cross-sell</SelectItem>
-                              <SelectItem value="expansion">Expansion / Growth</SelectItem>
-                              <SelectItem value="enterprise">Enterprise Agreement</SelectItem>
-                              <SelectItem value="strategic">Strategic Partnership</SelectItem>
-                              <SelectItem value="custom">Custom Solution</SelectItem>
+                              <SelectItem value="grow">Grow ({'>'}20% YOY Growth)</SelectItem>
+                              <SelectItem value="protect">Protect (Large Account Retention)</SelectItem>
+                              <SelectItem value="custom">Custom (Special Builds/Requirements)</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormDescription>
+                            Grow: {'>'}20% YOY growth for existing clients<br />
+                            Protect: Retention focus for large accounts<br />
+                            Custom: Special build requirements
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -281,10 +495,10 @@ export default function SubmitDeal() {
                   
                   <FormField
                     control={form.control}
-                    name="description"
+                    name="businessSummary"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Deal Description <span className="text-red-500">*</span></FormLabel>
+                        <FormLabel>Business Summary <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Briefly describe the deal, its objectives, and any special considerations"
@@ -294,38 +508,33 @@ export default function SubmitDeal() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Briefly describe the deal, its objectives, and any special considerations.
+                          Briefly describe the business opportunity, growth potential, and any special considerations.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
-                      name="department"
+                      name="salesChannel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Department <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select department" />
+                                <SelectValue placeholder="Select sales channel" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="sales">Sales</SelectItem>
-                              <SelectItem value="marketing">Marketing</SelectItem>
-                              <SelectItem value="operations">Operations</SelectItem>
-                              <SelectItem value="it">IT & Technology</SelectItem>
-                              <SelectItem value="finance">Finance</SelectItem>
-                              <SelectItem value="product">Product</SelectItem>
-                              <SelectItem value="customer_success">Customer Success</SelectItem>
-                              <SelectItem value="legal">Legal</SelectItem>
+                              <SelectItem value="client_direct">Client Direct</SelectItem>
+                              <SelectItem value="holding_company">Holding Company</SelectItem>
+                              <SelectItem value="independent_agency">Independent Agency</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -335,37 +544,25 @@ export default function SubmitDeal() {
                     
                     <FormField
                       control={form.control}
-                      name="expectedCloseDate"
+                      name="region"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Expected Close Date <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
+                          <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
+                                <SelectValue placeholder="Select region" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="northeast">Northeast</SelectItem>
+                              <SelectItem value="midwest">Midwest</SelectItem>
+                              <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
+                              <SelectItem value="south">South</SelectItem>
+                              <SelectItem value="west">West</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -374,31 +571,86 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700">Supporting Documents</label>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md">
-                      <div className="space-y-1 text-center">
-                        <svg className="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <div className="flex text-sm text-slate-600">
-                          <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-blue-500">
-                            <span>Upload a file</span>
-                            <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs text-slate-500">
-                          PDF, DOC, XLS up to 10MB
-                        </p>
-                      </div>
-                    </div>
+                  {/* Conditional fields based on sales channel */}
+                  <div className="grid grid-cols-1 gap-6">
+                    {salesChannel === "client_direct" && (
+                      <FormField
+                        control={form.control}
+                        name="advertiserName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Advertiser Name <span className="text-red-500">*</span></FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select advertiser" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {advertisers.map(advertiser => (
+                                  <SelectItem key={advertiser.id} value={advertiser.name}>
+                                    {advertiser.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Historical data will be loaded automatically when selected
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    
+                    {(salesChannel === "holding_company" || salesChannel === "independent_agency") && (
+                      <FormField
+                        control={form.control}
+                        name="agencyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Agency Name <span className="text-red-500">*</span></FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select agency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {agencies
+                                  .filter(agency => 
+                                    salesChannel === "holding_company" 
+                                      ? agency.type === "holding_company" 
+                                      : agency.type === "independent"
+                                  )
+                                  .map(agency => (
+                                    <SelectItem key={agency.id} value={agency.name}>
+                                      {agency.name}
+                                    </SelectItem>
+                                  ))
+                                }
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Historical data will be loaded automatically when selected
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
                 </div>
                 
                 <div className="mt-8 flex justify-end">
                   <Button type="button" onClick={nextStep}>
-                    Next: Client & Pricing
+                    Next: Deal Structure & Pricing
                   </Button>
                 </div>
               </CardContent>
@@ -408,21 +660,39 @@ export default function SubmitDeal() {
             {formStep === 1 && (
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">Client Information</h2>
-                  <p className="mt-1 text-sm text-slate-500">Provide details about the client and pricing information</p>
+                  <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
+                  <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms of this deal</p>
                 </div>
                 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
-                      name="clientName"
+                      name="dealStructure"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Client Name <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter client name" {...field} />
-                          </FormControl>
+                          <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setDealStructure(value as "tiered" | "flat_commit");
+                            }}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select deal structure" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="tiered">Tiered Commit Structure</SelectItem>
+                              <SelectItem value="flat_commit">Flat Commit Structure</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Tiered: Multi-level revenue commitments with variable margin<br />
+                            Flat: Single revenue commitment with fixed margin
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -430,28 +700,16 @@ export default function SubmitDeal() {
                     
                     <FormField
                       control={form.control}
-                      name="clientType"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Client Type</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select client type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="existing">Existing Client</SelectItem>
-                              <SelectItem value="new">New Client</SelectItem>
-                              <SelectItem value="partner">Partner</SelectItem>
-                              <SelectItem value="reseller">Reseller</SelectItem>
-                              <SelectItem value="distributor">Distributor</SelectItem>
-                              <SelectItem value="strategic">Strategic Account</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>Contact Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter contact email" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Email address for notifications about this deal
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
