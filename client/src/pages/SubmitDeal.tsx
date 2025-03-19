@@ -723,28 +723,28 @@ export default function SubmitDeal() {
                   <hr className="my-4" />
                   
                   {/* Approval alert will display here based on deal parameters */}
-                  {form.watch("totalValue") && form.watch("contractTerm") && (
+                  {form.watch(["totalValue"]) && form.watch(["contractTerm"]) && (
                     <ApprovalAlert 
-                      totalValue={form.watch("totalValue") || 0}
-                      contractTerm={form.watch("contractTerm") || 0}
-                      discountPercentage={form.watch("discountPercentage") || 0}
+                      totalValue={Number(form.watch(["totalValue"])) || 0}
+                      contractTerm={Number(form.watch(["contractTerm"])) || 0}
+                      discountPercentage={Number(form.watch(["discountPercentage"])) || 0}
                       hasNonStandardTerms={hasNonStandardTerms}
-                      dealType={form.watch("dealType") || "grow"}
-                      salesChannel={form.watch("salesChannel") || "independent_agency"}
-                      hasTradeAMImplications={form.watch("hasTradeAMImplications") || false}
+                      dealType={String(form.watch(["dealType"])) || "grow"}
+                      salesChannel={String(form.watch(["salesChannel"])) || "independent_agency"}
+                      hasTradeAMImplications={Boolean(form.watch(["hasTradeAMImplications"])) || false}
                       yearlyRevenueGrowthRate={calculateYOYGrowth(
-                        form.watch("totalValue") ?? 0,
-                        form.watch("previousYearValue") ?? 0
+                        Number(form.watch(["totalValue"]) || 0),
+                        Number(form.watch(["previousYearValue"]) || 0)
                       )}
                       forecastedMargin={calculateProfitMargin(
-                        form.watch("totalValue") ?? 0,
-                        form.watch("discountPercentage") ?? 0,
-                        form.watch("costPercentage") ?? 30
+                        Number(form.watch(["totalValue"]) || 0),
+                        Number(form.watch(["discountPercentage"]) || 0),
+                        Number(form.watch(["costPercentage"]) || 30)
                       )}
-                      yearlyMarginGrowthRate={form.watch("yearlyMarginGrowthRate") ?? 0}
-                      addedValueBenefitsCost={form.watch("addedValueBenefitsCost") ?? 0}
-                      analyticsTier={form.watch("analyticsTier") ?? "silver"}
-                      requiresCustomMarketing={form.watch("requiresCustomMarketing") ?? false}
+                      yearlyMarginGrowthRate={Number(form.watch(["yearlyMarginGrowthRate"])) || 0}
+                      addedValueBenefitsCost={Number(form.watch(["addedValueBenefitsCost"])) || 0}
+                      analyticsTier={String(form.watch(["analyticsTier"])) || "silver"}
+                      requiresCustomMarketing={Boolean(form.watch(["requiresCustomMarketing"])) || false}
                       onChange={handleApprovalChange}
                     />
                   )}
@@ -982,11 +982,11 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               // Preview the auto-generated deal name
-                              const dealType = form.getValues("dealType");
-                              const salesChannel = form.getValues("salesChannel");
-                              const termStartDate = form.getValues("termStartDate");
-                              const termEndDate = form.getValues("termEndDate");
-                              const dealStructure = form.getValues("dealStructure");
+                              const dealType = form.getValues(["dealType"])[0];
+                              const salesChannel = form.getValues(["salesChannel"])[0];
+                              const termStartDate = form.getValues(["termStartDate"])[0];
+                              const termEndDate = form.getValues(["termEndDate"])[0];
+                              const dealStructure = form.getValues(["dealStructure"])[0];
                               
                               if (!dealType || !salesChannel || !termStartDate || !termEndDate || !dealStructure) {
                                 return "Will be auto-generated on submission";
@@ -994,11 +994,11 @@ export default function SubmitDeal() {
                               
                               // Get client name
                               let clientName = "";
-                              if (salesChannel === "client_direct" && form.getValues("advertiserName")) {
-                                clientName = form.getValues("advertiserName");
+                              if (salesChannel === "client_direct" && form.getValues(["advertiserName"])[0]) {
+                                clientName = String(form.getValues(["advertiserName"])[0]);
                               } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") 
-                                        && form.getValues("agencyName")) {
-                                clientName = form.getValues("agencyName");
+                                        && form.getValues(["agencyName"])[0]) {
+                                clientName = String(form.getValues(["agencyName"])[0]);
                               }
                               
                               if (!clientName) return "Will be auto-generated on submission";
