@@ -15,12 +15,22 @@ interface FloatingChatbotProps {
   title?: string;
   subtitle?: string;
   iconUrl?: string;
+  primaryColor?: string;
+  bubblePosition?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  bubbleSize?: 'small' | 'medium' | 'large';
+  avatarUrl?: string;
+  showTimestamps?: boolean;
 }
 
 export default function FloatingChatbot({
   title = "Deal Assistant",
   subtitle = "Ask me about deals & incentives",
-  iconUrl
+  iconUrl,
+  primaryColor,
+  bubblePosition = 'bottom-right',
+  bubbleSize = 'medium',
+  avatarUrl,
+  showTimestamps = false
 }: FloatingChatbotProps) {
   const { messages, sendMessage, isLoading, suggestedQuestions } = useChat();
   const [isOpen, setIsOpen] = useState(false);
@@ -49,36 +59,79 @@ export default function FloatingChatbot({
     sendMessage(question);
   };
   
+  // Calculate position classes based on bubblePosition
+  const getBubblePositionClasses = () => {
+    switch (bubblePosition) {
+      case 'bottom-left':
+        return { button: 'bottom-6 left-6', panel: 'bottom-20 left-6' };
+      case 'top-right':
+        return { button: 'top-6 right-6', panel: 'top-20 right-6' };
+      case 'top-left':
+        return { button: 'top-6 left-6', panel: 'top-20 left-6' };
+      case 'bottom-right':
+      default:
+        return { button: 'bottom-6 right-6', panel: 'bottom-20 right-6' };
+    }
+  };
+  
+  // Calculate size classes based on bubbleSize
+  const getBubbleSizeClasses = () => {
+    switch (bubbleSize) {
+      case 'small':
+        return { button: 'p-2', icon: 'h-4 w-4', panel: 'w-72 md:w-80' };
+      case 'large':
+        return { button: 'p-4', icon: 'h-8 w-8', panel: 'w-96 md:w-[30rem]' };
+      case 'medium':
+      default:
+        return { button: 'p-3', icon: 'h-6 w-6', panel: 'w-80 md:w-96' };
+    }
+  };
+  
+  const positionClasses = getBubblePositionClasses();
+  const sizeClasses = getBubbleSizeClasses();
+  
+  // Custom color style
+  const customColorStyle = primaryColor ? { 
+    '--custom-primary-color': primaryColor,
+  } as React.CSSProperties : {};
+
   return (
     <>
       {/* Floating chat button */}
       <button
         onClick={toggleChat}
-        className={`fixed bottom-6 right-6 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none ${
-          isOpen ? 'bg-red-500 rotate-90' : 'bg-primary hover:bg-primary/90'
+        style={customColorStyle}
+        className={`fixed ${positionClasses.button} rounded-full ${sizeClasses.button} shadow-lg transition-all duration-300 focus:outline-none ${
+          isOpen ? 'bg-red-500 rotate-90' : primaryColor ? 'bg-[var(--custom-primary-color)] hover:bg-[var(--custom-primary-color)]/90' : 'bg-primary hover:bg-primary/90'
         }`}
         aria-label={isOpen ? "Close chat assistant" : "Open chat assistant"}
       >
         {isOpen ? (
-          <XIcon className="h-6 w-6 text-white" />
+          <XIcon className={`${sizeClasses.icon} text-white`} />
         ) : (
           iconUrl ? (
-            <img src={iconUrl} alt="Chat" className="h-6 w-6" />
+            <img src={iconUrl} alt="Chat" className={sizeClasses.icon} />
           ) : (
-            <MessageCircleIcon className="h-6 w-6 text-white" />
+            <MessageCircleIcon className={`${sizeClasses.icon} text-white`} />
           )
         )}
       </button>
       
       {/* Chat panel */}
-      <div className={`fixed bottom-20 right-6 w-80 md:w-96 bg-white rounded-lg shadow-xl transition-all duration-300 transform z-50 ${
-        isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
-      }`}>
+      <div 
+        style={customColorStyle}
+        className={`fixed ${positionClasses.panel} ${sizeClasses.panel} bg-white rounded-lg shadow-xl transition-all duration-300 transform z-50 ${
+          isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
+        }`}>
         {/* Chat header */}
-        <div className="bg-primary text-white p-4 rounded-t-lg flex justify-between items-center">
+        <div className={primaryColor ? 'bg-[var(--custom-primary-color)] text-white p-4 rounded-t-lg flex justify-between items-center' : 'bg-primary text-white p-4 rounded-t-lg flex justify-between items-center'}>
           <div className="flex flex-col">
             <h3 className="font-medium flex items-center">
-              <BotIcon className="h-5 w-5 mr-2" />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={title} className="h-6 w-6 rounded-full mr-2 object-cover" />
+              ) : (
+                <BotIcon className="h-5 w-5 mr-2" />
+              )}
               {title}
             </h3>
             {subtitle && (
@@ -102,18 +155,26 @@ export default function FloatingChatbot({
               className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
+                style={message.sender === 'user' && primaryColor ? {backgroundColor: primaryColor} : {}}
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
                   message.sender === 'user' 
-                    ? 'bg-primary text-white rounded-tr-none' 
+                    ? primaryColor ? 'text-white rounded-tr-none' : 'bg-primary text-white rounded-tr-none' 
                     : 'bg-slate-100 text-slate-800 rounded-tl-none'
                 }`}
               >
                 <div className="flex items-center mb-1">
-                  {message.sender === 'bot' && <BotIcon className="h-3 w-3 mr-1" />}
+                  {message.sender === 'bot' && (avatarUrl ? 
+                    <img src={avatarUrl} alt={title} className="h-3 w-3 rounded-full mr-1 object-cover" /> :
+                    <BotIcon className="h-3 w-3 mr-1" />)}
                   {message.sender === 'user' && <UserIcon className="h-3 w-3 mr-1" />}
                   <span className="text-xs">
                     {message.sender === 'user' ? 'You' : title}
                   </span>
+                  {showTimestamps && (
+                    <span className="text-xs ml-2 opacity-50">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{message.text}</p>
               </div>

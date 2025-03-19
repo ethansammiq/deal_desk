@@ -11,6 +11,11 @@ export type Message = {
 export type ChatConfig = {
   apiBasePath: string;
   defaultSuggestedQuestions: string[];
+  welcomeMessage?: string;
+  autoSuggestThreshold?: number; // Number of characters typed before showing auto-suggestions
+  persistConversation?: boolean; // Whether to save chat history in localStorage
+  maxHistoryLength?: number; // Maximum number of messages to keep in history
+  aiModel?: 'simple' | 'advanced'; // Which AI model to use for responses
 };
 
 type ChatContextType = {

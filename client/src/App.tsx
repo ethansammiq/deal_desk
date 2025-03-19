@@ -24,10 +24,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       
-      {/* Floating chatbot UI */}
+      {/* Floating chatbot UI - with full customization options */}
       <FloatingChatbot 
         title="Deal Assistant" 
         subtitle="Ask me about deals & incentives"
+        primaryColor="#4f46e5" // Custom primary color (Indigo)
+        bubblePosition="bottom-right" // Position: 'bottom-right', 'bottom-left', 'top-right', or 'top-left'
+        bubbleSize="medium" // Size: 'small', 'medium', or 'large'
+        showTimestamps={true} // Show message timestamps
+        // avatarUrl="/path/to/avatar.png" // Optional custom avatar
       />
     </div>
   );
