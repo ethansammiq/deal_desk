@@ -39,10 +39,11 @@ function Router() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/submit-deal" component={SubmitDeal} />
+        <Route path="/" component={HelpResources} />
         <Route path="/support" component={RequestSupport} />
-        <Route path="/help" component={HelpResources} />
+        <Route path="/submit-deal" component={SubmitDeal} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/help" component={HelpResources} /> {/* Keep support for old URL */}
         {/* Fallback to 404 */}
         <Route component={NotFound} />
       </Switch>

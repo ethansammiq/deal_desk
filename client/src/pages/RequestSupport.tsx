@@ -222,7 +222,7 @@ export default function RequestSupport() {
     <div className="p-6">
       <div className="mb-6">
         <div className="flex items-center mb-2">
-          <h1 className="text-2xl font-bold text-slate-900">Deal Process</h1>
+          <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
         </div>
         <h2 className="text-xl font-medium text-slate-800 mb-1">Deal Scoping Request</h2>

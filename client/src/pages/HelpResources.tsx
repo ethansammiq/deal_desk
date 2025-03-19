@@ -206,8 +206,8 @@ export default function HelpResources() {
   return (
     <div className="p-6 relative">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Help & Resources</h1>
-        <p className="mt-1 text-sm text-slate-500">Find guidance and resources to help you manage deals effectively</p>
+        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">US Deal Desk Support</h1>
+        <p className="mt-1 text-sm text-slate-600">Welcome to the Support Desk. Get assistance, find resources, and connect with our deal experts.</p>
       </div>
       
       {/* Help Tabs */}

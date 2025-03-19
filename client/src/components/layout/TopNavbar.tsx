@@ -28,18 +28,22 @@ export function TopNavbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Desk</h1>
+              {/* Logo placeholder - can be replaced with an actual logo image */}
+              <div className="h-8 w-8 mr-2 rounded-md bg-gradient-to-br from-indigo-600 to-purple-800 flex items-center justify-center text-white font-bold text-xs">
+                US
+              </div>
+              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">US Deal Desk</h1>
             </div>
             <nav className="hidden md:ml-8 md:flex md:space-x-1">
               <Link href="/">
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  location === "/" 
+                  location === "/" || location === "/help"
                     ? "bg-slate-100 text-indigo-600" 
                     : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
                 )}>
-                  <HomeIcon className="w-4 h-4 mr-2" />
-                  Dashboard
+                  <HelpCircleIcon className="w-4 h-4 mr-2" />
+                  Support Desk
                 </div>
               </Link>
               <Link href="/support">
@@ -50,18 +54,18 @@ export function TopNavbar() {
                     : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
                 )}>
                   <ClipboardPenIcon className="w-4 h-4 mr-2" />
-                  Deal Process
+                  Submit Deal Requests
                 </div>
               </Link>
-              <Link href="/help">
+              <Link href="/dashboard">
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  location === "/help" 
+                  location === "/dashboard" 
                     ? "bg-slate-100 text-indigo-600" 
                     : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
                 )}>
-                  <HelpCircleIcon className="w-4 h-4 mr-2" />
-                  Help & Resources
+                  <HomeIcon className="w-4 h-4 mr-2" />
+                  Deal Dash
                 </div>
               </Link>
             </nav>
@@ -103,13 +107,13 @@ export function TopNavbar() {
           <Link href="/">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
-              location === "/" 
+              location === "/" || location === "/help" 
                 ? "bg-slate-100 text-indigo-600" 
                 : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
             )}>
               <div className="flex items-center">
-                <HomeIcon className="w-5 h-5 mr-2" />
-                Dashboard
+                <HelpCircleIcon className="w-5 h-5 mr-2" />
+                Support Desk
               </div>
             </div>
           </Link>
@@ -122,20 +126,20 @@ export function TopNavbar() {
             )}>
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2" />
-                Deal Process
+                Submit Deal Requests
               </div>
             </div>
           </Link>
-          <Link href="/help">
+          <Link href="/dashboard">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
-              location === "/help" 
+              location === "/dashboard" 
                 ? "bg-slate-100 text-indigo-600" 
                 : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
             )}>
               <div className="flex items-center">
-                <HelpCircleIcon className="w-5 h-5 mr-2" />
-                Help & Resources
+                <HomeIcon className="w-5 h-5 mr-2" />
+                Deal Dash
               </div>
             </div>
           </Link>
