@@ -39,6 +39,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
+import { Plus, Trash2, Info } from "lucide-react";
 
 // Extend the deal schema with additional validations
 const dealFormSchema = z.object({
@@ -1154,6 +1155,149 @@ export default function SubmitDeal() {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Tiered Deal Structure Section - Only shown when "tiered" is selected */}
+                  {dealStructureType === "tiered" && (
+                    <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-slate-900">Tiered Revenue Structure</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          type="button"
+                          onClick={() => {
+                            // Add a new tier to the dealTiers state
+                            if (dealTiers.length < 6) {
+                              setDealTiers([
+                                ...dealTiers,
+                                {
+                                  tierNumber: dealTiers.length + 1,
+                                  annualRevenue: 0,
+                                  annualGrossMargin: 0,
+                                  incentivePercentage: 0,
+                                  incentiveNotes: ""
+                                }
+                              ]);
+                            } else {
+                              toast({
+                                title: "Maximum tiers reached",
+                                description: "You can add a maximum of 6 revenue tiers",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Tier
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-12 gap-4 bg-slate-100 p-3 rounded font-medium text-sm text-slate-600">
+                          <div className="col-span-1">Tier</div>
+                          <div className="col-span-3">Annual Revenue</div>
+                          <div className="col-span-3">Gross Margin</div>
+                          <div className="col-span-2">Incentive %</div>
+                          <div className="col-span-3">Incentive Details</div>
+                        </div>
+                        
+                        {dealTiers.map((tier, index) => (
+                          <div key={tier.tierNumber} className="grid grid-cols-12 gap-4 items-center bg-white p-3 rounded border border-slate-200">
+                            <div className="col-span-1 font-medium">{tier.tierNumber}</div>
+                            <div className="col-span-3">
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <span className="text-slate-500 sm:text-sm">$</span>
+                                </div>
+                                <Input
+                                  type="number"
+                                  className="pl-7"
+                                  placeholder="0.00"
+                                  value={tier.annualRevenue}
+                                  onChange={(e) => {
+                                    const newTiers = [...dealTiers];
+                                    newTiers[index].annualRevenue = parseFloat(e.target.value);
+                                    setDealTiers(newTiers);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="col-span-3">
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <span className="text-slate-500 sm:text-sm">$</span>
+                                </div>
+                                <Input
+                                  type="number"
+                                  className="pl-7"
+                                  placeholder="0.00"
+                                  value={tier.annualGrossMargin}
+                                  onChange={(e) => {
+                                    const newTiers = [...dealTiers];
+                                    newTiers[index].annualGrossMargin = parseFloat(e.target.value);
+                                    setDealTiers(newTiers);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="col-span-2">
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  placeholder="0"
+                                  value={tier.incentivePercentage}
+                                  onChange={(e) => {
+                                    const newTiers = [...dealTiers];
+                                    newTiers[index].incentivePercentage = parseFloat(e.target.value);
+                                    setDealTiers(newTiers);
+                                  }}
+                                />
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                  <span className="text-slate-500 sm:text-sm">%</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-span-3 flex items-center gap-2">
+                              <Input
+                                placeholder="Incentive notes"
+                                value={tier.incentiveNotes || ""}
+                                onChange={(e) => {
+                                  const newTiers = [...dealTiers];
+                                  newTiers[index].incentiveNotes = e.target.value;
+                                  setDealTiers(newTiers);
+                                }}
+                              />
+                              {index > 0 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  type="button"
+                                  onClick={() => {
+                                    const newTiers = dealTiers.filter((_, i) => i !== index);
+                                    // Renumber the tiers
+                                    newTiers.forEach((t, i) => {
+                                      t.tierNumber = i + 1;
+                                    });
+                                    setDealTiers(newTiers);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+                        <Info className="h-4 w-4 inline mr-2" />
+                        The tier structure represents revenue commitments and associated incentives.
+                        Each tier should have a progressive revenue target and corresponding margin impact.
+                      </div>
+                    </div>
+                  )}
                   
                   <FormField
                     control={form.control}
