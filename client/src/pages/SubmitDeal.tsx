@@ -284,9 +284,16 @@ export default function SubmitDeal() {
     fetchAdvertisers();
   }, [toast]);
 
-  // Watch for salesChannel changes to handle conditional fields
+  // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");
   const dealStructure = form.watch("dealStructure");
+  
+  // Update dealStructureType when form value changes
+  useEffect(() => {
+    if (dealStructure) {
+      setDealStructure(dealStructure as "tiered" | "flat_commit");
+    }
+  }, [dealStructure]);
 
   // Auto-populate historical data when selecting advertiser or agency
   useEffect(() => {
@@ -382,7 +389,14 @@ export default function SubmitDeal() {
   }
   
   function onSubmit(data: DealFormValues) {
-    createDeal.mutate(data);
+    // Include deal tiers data for tiered structure
+    const dealData = {
+      ...data,
+      // Only include dealTiers if the structure is tiered
+      ...(dealStructureType === "tiered" ? { dealTiers } : {})
+    };
+    
+    createDeal.mutate(dealData);
   }
   
   return (
