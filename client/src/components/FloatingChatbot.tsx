@@ -7,8 +7,7 @@ import {
   SendIcon,
   BotIcon,
   UserIcon,
-  Loader2Icon,
-  Trash
+  Loader2Icon
 } from "lucide-react";
 import { useChat } from '@/lib/chat-context';
 
@@ -157,7 +156,7 @@ export default function FloatingChatbot({
               aria-label="Clear chat history"
               title="Clear chat history"
             >
-              <Trash className="h-4 w-4" />
+              <XIcon className="h-4 w-4 rotate-45" />
             </button>
             <button 
               onClick={toggleChat} 

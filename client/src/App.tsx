@@ -59,14 +59,15 @@ function App() {
       <ChatProvider config={{
         apiBasePath: '/api',
         // Custom welcome message for the chatbot
-        welcomeMessage: "👋 Hi there! I'm your Deal Assistant. How can I help you today with deal submissions or incentive questions?",
+        welcomeMessage: "👋 Welcome to the MIQ Deal Assistant! I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
         // Default suggested questions
         defaultSuggestedQuestions: [
-          "What are the incentive thresholds?",
+          "What is the deal process workflow?",
+          "What financial incentives are available?",
           "How do I submit a new deal?",
-          "What are the approval requirements?",
-          "How are urgent deals handled?",
-          "What growth opportunities qualify for incentives?"
+          "What documentation is required?",
+          "What are the eligibility requirements?",
+          "How are urgent deals handled?"
         ],
         // Enable conversation persistence across page refreshes
         persistConversation: true,
