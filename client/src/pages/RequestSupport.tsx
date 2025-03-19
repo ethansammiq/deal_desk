@@ -75,8 +75,18 @@ export default function RequestSupport() {
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
+      
+      // Add requestTitle if not present
+      const formData = {
+        ...data,
+        requestTitle: data.requestTitle || "Deal Scoping Request",
+        description: data.description || `Request from ${data.email || 'unknown'}`
+      };
+      
+      console.log("Processed form data:", formData);
+      
       try {
-        const response = await apiRequest("POST", "/api/deal-scoping-requests", data);
+        const response = await apiRequest("POST", "/api/deal-scoping-requests", formData);
         console.log("API response status:", response.status);
         const responseData = await response.json();
         console.log("API response data:", responseData);
