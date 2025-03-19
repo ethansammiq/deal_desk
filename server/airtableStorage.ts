@@ -32,42 +32,72 @@ export class AirtableStorage implements IStorage {
   
   constructor() {
     try {
-      // Check if all required environment variables are set
+      // Verify that required environment variables are set
       if (!process.env.AIRTABLE_API_KEY) {
+        console.error('AIRTABLE_API_KEY environment variable is not set');
+        console.error('Please set the AIRTABLE_API_KEY environment variable to continue');
         throw new Error('AIRTABLE_API_KEY environment variable is not set');
       }
+      
       if (!process.env.AIRTABLE_BASE_ID) {
+        console.error('AIRTABLE_BASE_ID environment variable is not set');
+        console.error('Please set the AIRTABLE_BASE_ID environment variable to continue');
         throw new Error('AIRTABLE_BASE_ID environment variable is not set');
       }
       
-      // Initialize Airtable
+      // Initialize Airtable with the provided API key
       Airtable.configure({
-        apiKey: process.env.AIRTABLE_API_KEY
+        apiKey: process.env.AIRTABLE_API_KEY,
+        endpointUrl: 'https://api.airtable.com',
+        requestTimeout: 30000 // 30 second timeout
       });
       
-      // Extract the base ID (app ID) from the provided Base ID
+      // Extract the base ID from the provided Base ID
+      // The base ID should start with 'app', but sometimes full URLs are provided
       const baseIdMatch = process.env.AIRTABLE_BASE_ID.match(/app[a-zA-Z0-9]+/);
       const baseId = baseIdMatch ? baseIdMatch[0] : process.env.AIRTABLE_BASE_ID;
       
+      // Connect to the Airtable base
       this.base = Airtable.base(baseId);
+      
+      // Connect to the standard tables
       this.userTable = this.base('Users');
       this.dealTable = this.base('Deals');
       
-      // Try to access Deal Scoping Requests table, attempt to create it if it doesn't exist
-      try {
-        this.dealScopingRequestTable = this.base('Deal Scoping Requests');
-        console.log('Successfully connected to Deal Scoping Requests table');
-      } catch (err) {
-        console.warn('Error accessing Deal Scoping Requests table, will try to create it:', err);
-        this.createDealScopingRequestsTable().then(table => {
-          if (table) {
-            this.dealScopingRequestTable = table;
-            console.log('Successfully created Deal Scoping Requests table');
+      // Deal Scoping Requests table requires special handling
+      // We initialize it and then verify access to see if we need to create it
+      this.dealScopingRequestTable = this.base('Deal Scoping Requests');
+      
+      // Test access to the Deal Scoping Requests table - done asynchronously
+      this.dealScopingRequestTable.select({ maxRecords: 1 }).firstPage()
+        .then(() => {
+          console.log('Successfully connected to Deal Scoping Requests table');
+          console.log('Airtable storage has permissions for deal scoping requests');
+        })
+        .catch(async (err) => {
+          console.warn('Error accessing Deal Scoping Requests table:', err);
+          
+          // Check if this is a permission issue or if the table doesn't exist
+          if (err.error === 'NOT_FOUND' || err.statusCode === 404) {
+            console.log('Deal Scoping Requests table not found, attempting to create it');
+            
+            // Try to create the table
+            const table = await this.createDealScopingRequestsTable();
+            if (table) {
+              this.dealScopingRequestTable = table;
+              console.log('Successfully created and connected to Deal Scoping Requests table');
+            } else {
+              console.error('Failed to create Deal Scoping Requests table - will use in-memory storage');
+            }
+          } else if (err.error === 'NOT_AUTHORIZED' || err.statusCode === 403) {
+            console.error('Permission denied: Your API key does not have access to the Deal Scoping Requests table');
+            console.error('Please ensure your Airtable API key has the proper permissions');
+            console.error('Will continue with in-memory storage for deal scoping requests');
           } else {
-            console.error('Failed to create Deal Scoping Requests table');
+            console.error('Error initializing Deal Scoping Requests table:', err);
+            console.error('Will continue with in-memory storage for deal scoping requests');
           }
         });
-      }
       
       // Load existing data
       this.loadExistingData();
@@ -82,9 +112,33 @@ export class AirtableStorage implements IStorage {
   // Helper method to create Deal Scoping Requests table if it doesn't exist
   private async createDealScopingRequestsTable(): Promise<Airtable.Table<any> | null> {
     try {
+      console.log('Attempting to create or access Deal Scoping Requests table...');
+      
+      // First, try to see if the table already exists
+      try {
+        const table = this.base('Deal Scoping Requests');
+        // Test if we can access the table by fetching a single record
+        await table.select({ maxRecords: 1 }).firstPage();
+        console.log('Successfully connected to existing Deal Scoping Requests table');
+        return table;
+      } catch (existingTableError: any) {
+        // If error is NOT_FOUND (404), table doesn't exist yet
+        // If error is NOT_AUTHORIZED (403), we don't have permission to access the table
+        if (existingTableError && existingTableError.statusCode === 404) {
+          console.log('Deal Scoping Requests table not found, attempting to create it');
+        } else if (existingTableError && existingTableError.statusCode === 403) {
+          console.error('You do not have permission to access the Deal Scoping Requests table');
+          console.error('Please ensure your Airtable API key has proper permissions');
+          // Still try to create it in case that's allowed
+        } else {
+          console.error('Error accessing Deal Scoping Requests table:', existingTableError);
+        }
+      }
+      
       // We need to use the Airtable API directly to create a table
-      // First, let's try to get the base schema
       const baseUrl = `https://api.airtable.com/v0/meta/bases/${process.env.AIRTABLE_BASE_ID}/tables`;
+      console.log('Sending request to create Deal Scoping Requests table...');
+      
       const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
@@ -93,12 +147,30 @@ export class AirtableStorage implements IStorage {
         },
         body: JSON.stringify({
           name: 'Deal Scoping Requests',
-          description: 'Table for storing deal scoping requests',
+          description: 'Table for storing deal scoping requests from sales team',
           fields: [
+            // Primary field (required by Airtable)
             { name: 'Name', type: 'singleLineText', options: { } },
-            { name: 'status', type: 'singleLineText', options: { } },
+            
+            // Key fields matching our schema
+            { name: 'status', type: 'singleSelect', options: { 
+                choices: [
+                  { name: 'pending' },
+                  { name: 'in_review' },
+                  { name: 'approved' },
+                  { name: 'rejected' }
+                ] 
+              } 
+            },
             { name: 'email', type: 'email', options: { } },
-            { name: 'salesChannel', type: 'singleLineText', options: { } },
+            { name: 'salesChannel', type: 'singleSelect', options: { 
+                choices: [
+                  { name: 'Holding Company' },
+                  { name: 'Independent Agency' },
+                  { name: 'Client Direct' }
+                ]
+              }
+            },
             { name: 'advertiserName', type: 'singleLineText', options: { } },
             { name: 'agencyName', type: 'singleLineText', options: { } },
             { name: 'growthOpportunityMIQ', type: 'multilineText', options: { } },
@@ -107,26 +179,59 @@ export class AirtableStorage implements IStorage {
             { name: 'requestTitle', type: 'singleLineText', options: { } },
             { name: 'clientAsks', type: 'multilineText', options: { } },
             { name: 'description', type: 'multilineText', options: { } },
+            
+            // Metadata fields
             { name: 'createdAt', type: 'dateTime', options: { } },
             { name: 'updatedAt', type: 'dateTime', options: { } },
-            { name: 'internal_id', type: 'number', options: { } }
+            { name: 'internal_id', type: 'number', options: { precision: 0 } }
           ]
         })
       });
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Successfully created Deal Scoping Requests table:', data);
+        console.log('Successfully created Deal Scoping Requests table');
         
         // Return the table object after creation
         return this.base('Deal Scoping Requests');
       } else {
-        const errorData = await response.json();
-        console.error('Failed to create table:', errorData);
-        return null;
+        // Parse error response
+        let errorInfo = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorInfo = JSON.stringify(errorData);
+          
+          if (errorData.error === 'NOT_AUTHORIZED') {
+            console.error('Airtable permission error: You are not authorized to create tables.');
+            console.error('Please ensure your Airtable API key has proper permissions or manually create a "Deal Scoping Requests" table in Airtable.');
+            
+            // Try to connect to any existing table with this name - it might exist but we can't create it
+            try {
+              const table = this.base('Deal Scoping Requests');
+              console.log('Attempting to connect to existing Deal Scoping Requests table...');
+              return table;
+            } catch (tableError) {
+              console.error('Could not connect to existing Deal Scoping Requests table:', tableError);
+            }
+          }
+        } catch (jsonError) {
+          errorInfo = `Status ${response.status}: ${response.statusText}`;
+        }
+        
+        console.error('Error creating Deal Scoping Requests table:', errorInfo);
+        console.log('Will continue with in-memory storage for deal scoping requests');
+        
+        // Try one more time to access the table
+        try {
+          return this.base('Deal Scoping Requests');
+        } catch {
+          // Silently fail and return null
+          return null;
+        }
       }
     } catch (error) {
-      console.error('Error creating Deal Scoping Requests table:', error);
+      console.error('Error initializing Deal Scoping Requests table:', error);
+      console.log('Will continue with in-memory storage for deal scoping requests');
       return null;
     }
   }
@@ -583,13 +688,17 @@ export class AirtableStorage implements IStorage {
     const id = this.dealScopingRequestCurrentId++;
     const now = new Date();
     
-    // Create the request object
+    // Create the request object, ensuring clientAsks is properly handled as optional
     const request: DealScopingRequest = {
       ...insertRequest,
       id,
       status: 'pending',
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      // If clientAsks is undefined or empty string, set it to null
+      clientAsks: insertRequest.clientAsks && insertRequest.clientAsks.trim().length > 0 
+        ? insertRequest.clientAsks 
+        : null
     };
     
     // Always store in local cache first to ensure we don't lose data
@@ -597,6 +706,13 @@ export class AirtableStorage implements IStorage {
     
     try {
       console.log('Attempting to save deal scoping request to Airtable:', request.requestTitle);
+      
+      // Verify API key and Base ID are available
+      if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
+        console.error('Airtable credentials missing. Cannot save to Airtable.');
+        console.error('Please ensure AIRTABLE_API_KEY and AIRTABLE_BASE_ID are set.');
+        return request; // Return in-memory version if credentials are missing
+      }
       
       // If dealScopingRequestTable isn't properly initialized, try to initialize it
       if (!this.dealScopingRequestTable) {
@@ -607,6 +723,7 @@ export class AirtableStorage implements IStorage {
           console.log('Successfully created and initialized Deal Scoping Requests table');
         } else {
           console.error('Failed to create Deal Scoping Requests table');
+          console.error('Continuing with in-memory storage only');
           return request; // Return in-memory version if we can't create the table
         }
       }
