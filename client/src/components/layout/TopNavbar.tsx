@@ -8,7 +8,7 @@ import {
   ChevronDown,
   UserCircle
 } from "lucide-react";
-import miqLogo from "../../assets/miq-logo.jpg";
+import companyLogo from "../../assets/miq-logo.jpg";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export function TopNavbar() {
             <div className="flex-shrink-0 flex items-center">
               {/* Logo */}
               <img 
-                src={miqLogo} 
+                src={companyLogo} 
                 alt="Logo" 
                 className="h-8 mr-2" 
               />
