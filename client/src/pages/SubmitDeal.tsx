@@ -140,14 +140,16 @@ export default function SubmitDeal() {
   function getTypedValue<T extends keyof DealFormValues>(
     field: T
   ): DealFormValues[T] {
-    return form.getValues(field as any);
+    // Using type assertion to ensure correct typing
+    return form.getValues(field as any) as DealFormValues[T];
   }
   
   // Type-safe helper function for watching form values
   function watchTypedValue<T extends keyof DealFormValues>(
     field: T
   ): DealFormValues[T] {
-    return form.watch(field as any);
+    // Using type assertion to ensure correct typing
+    return form.watch(field as any) as DealFormValues[T];
   }
   
   // Handle approval level changes
@@ -395,10 +397,10 @@ export default function SubmitDeal() {
 
   // Calculate growth rates automatically
   useEffect(() => {
-    const annualRevenue = form.getValues("annualRevenue");
-    const previousYearRevenue = form.getValues("previousYearRevenue");
-    const annualGrossMargin = form.getValues("annualGrossMargin");
-    const previousYearMargin = form.getValues("previousYearMargin");
+    const annualRevenue = getTypedValue("annualRevenue");
+    const previousYearRevenue = getTypedValue("previousYearRevenue");
+    const annualGrossMargin = getTypedValue("annualGrossMargin");
+    const previousYearMargin = getTypedValue("previousYearMargin");
     
     if (annualRevenue && previousYearRevenue && previousYearRevenue > 0) {
       const growthRate = ((annualRevenue - previousYearRevenue) / previousYearRevenue) * 100;
@@ -801,28 +803,28 @@ export default function SubmitDeal() {
                   <hr className="my-4" />
                   
                   {/* Approval alert will display here based on deal parameters */}
-                  {form.watch("totalValue") && form.watch("contractTerm") && (
+                  {watchTypedValue("totalValue") && watchTypedValue("contractTerm") && (
                     <ApprovalAlert 
-                      totalValue={Number(form.watch("totalValue")) || 0}
-                      contractTerm={Number(form.watch("contractTerm")) || 0}
-                      discountPercentage={Number(form.watch("discountPercentage")) || 0}
+                      totalValue={Number(watchTypedValue("totalValue")) || 0}
+                      contractTerm={Number(watchTypedValue("contractTerm")) || 0}
+                      discountPercentage={Number(watchTypedValue("discountPercentage")) || 0}
                       hasNonStandardTerms={hasNonStandardTerms}
-                      dealType={String(form.watch("dealType")) || "grow"}
-                      salesChannel={String(form.watch("salesChannel")) || "independent_agency"}
-                      hasTradeAMImplications={Boolean(form.watch("hasTradeAMImplications")) || false}
+                      dealType={String(watchTypedValue("dealType")) || "grow"}
+                      salesChannel={String(watchTypedValue("salesChannel")) || "independent_agency"}
+                      hasTradeAMImplications={Boolean(watchTypedValue("hasTradeAMImplications")) || false}
                       yearlyRevenueGrowthRate={calculateYOYGrowth(
-                        Number(form.watch("totalValue") || 0),
-                        Number(form.watch("previousYearValue") || 0)
+                        Number(watchTypedValue("totalValue") || 0),
+                        Number(watchTypedValue("previousYearValue") || 0)
                       )}
                       forecastedMargin={calculateProfitMargin(
-                        Number(form.watch("totalValue") || 0),
-                        Number(form.watch("discountPercentage") || 0),
-                        Number(form.watch("costPercentage") || 30)
+                        Number(watchTypedValue("totalValue") || 0),
+                        Number(watchTypedValue("discountPercentage") || 0),
+                        Number(watchTypedValue("costPercentage") || 30)
                       )}
-                      yearlyMarginGrowthRate={Number(form.watch("yearlyMarginGrowthRate")) || 0}
-                      addedValueBenefitsCost={Number(form.watch("addedValueBenefitsCost")) || 0}
-                      analyticsTier={String(form.watch("analyticsTier")) || "silver"}
-                      requiresCustomMarketing={Boolean(form.watch("requiresCustomMarketing")) || false}
+                      yearlyMarginGrowthRate={Number(watchTypedValue("yearlyMarginGrowthRate")) || 0}
+                      addedValueBenefitsCost={Number(watchTypedValue("addedValueBenefitsCost")) || 0}
+                      analyticsTier={String(watchTypedValue("analyticsTier")) || "silver"}
+                      requiresCustomMarketing={Boolean(watchTypedValue("requiresCustomMarketing")) || false}
                       onChange={handleApprovalChange}
                     />
                   )}
