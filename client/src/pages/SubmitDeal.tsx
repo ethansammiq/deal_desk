@@ -1090,11 +1090,11 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               // Preview the auto-generated deal name
-                              const dealType = form.getValues("dealType");
-                              const salesChannel = form.getValues("salesChannel");
-                              const termStartDate = form.getValues("termStartDate");
-                              const termEndDate = form.getValues("termEndDate");
-                              const dealStructure = form.getValues("dealStructure");
+                              const dealType = getTypedValue("dealType");
+                              const salesChannel = getTypedValue("salesChannel");
+                              const termStartDate = getTypedValue("termStartDate");
+                              const termEndDate = getTypedValue("termEndDate");
+                              const dealStructure = getTypedValue("dealStructure");
                               
                               if (!dealType || !salesChannel || !termStartDate || !termEndDate || !dealStructure) {
                                 return "Will be auto-generated on submission";
@@ -1102,11 +1102,11 @@ export default function SubmitDeal() {
                               
                               // Get client name
                               let clientName = "";
-                              if (salesChannel === "client_direct" && form.getValues("advertiserName")) {
-                                clientName = String(form.getValues("advertiserName"));
+                              if (salesChannel === "client_direct" && getTypedValue("advertiserName")) {
+                                clientName = String(getTypedValue("advertiserName"));
                               } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") 
-                                        && form.getValues("agencyName")) {
-                                clientName = String(form.getValues("agencyName"));
+                                        && getTypedValue("agencyName")) {
+                                clientName = String(getTypedValue("agencyName"));
                               }
                               
                               if (!clientName) return "Will be auto-generated on submission";
@@ -1140,35 +1140,35 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Deal Type</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("dealType") ? 
-                              form.getValues("dealType")
+                            {getTypedValue("dealType") ? 
+                              String(getTypedValue("dealType"))
                                 .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
+                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
                               "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Expected Close Date</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("expectedCloseDate") ? 
-                              new Date(form.getValues("expectedCloseDate") as string).toLocaleDateString() : 
+                            {getTypedValue("expectedCloseDate") ? 
+                              new Date(getTypedValue("expectedCloseDate") as string).toLocaleDateString() : 
                               "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Department</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("department") ? 
-                              form.getValues("department")
+                            {getTypedValue("department") ? 
+                              String(getTypedValue("department"))
                                 .replace("_", " ")
-                                .replace(/\b\w/g, char => char.toUpperCase()) : 
+                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
                               "Not provided"}
                           </dd>
                         </div>
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">Deal Description</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("description") || "Not provided"}
+                            {getTypedValue("description") || "Not provided"}
                           </dd>
                         </div>
                       </dl>
@@ -1184,36 +1184,36 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Client Name</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("clientName") || "Not provided"}
+                            {getTypedValue("clientName") || "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Client Type</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("clientType") 
-                              ? String(form.getValues("clientType"))
+                            {getTypedValue("clientType") 
+                              ? String(getTypedValue("clientType"))
                                   .replace("_", " ")
-                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                                  .replace(/\b\w/g, (char) => char.toUpperCase()) 
                               : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Industry</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("industry") 
-                              ? String(form.getValues("industry"))
+                            {getTypedValue("industry") 
+                              ? String(getTypedValue("industry"))
                                   .replace("_", " ")
-                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                                  .replace(/\b\w/g, (char) => char.toUpperCase()) 
                               : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Region</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("region") 
-                              ? String(form.getValues("region"))
+                            {getTypedValue("region") 
+                              ? String(getTypedValue("region"))
                                   .replace("_", " ")
-                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                                  .replace(/\b\w/g, (char) => char.toUpperCase()) 
                               : "Not provided"}
                           </dd>
                         </div>
