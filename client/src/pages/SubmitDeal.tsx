@@ -44,7 +44,6 @@ import { Plus, Trash2, Info } from "lucide-react";
 // Extend the deal schema with additional validations
 const dealFormSchema = z.object({
   // Basic deal information
-  dealName: z.string().min(1, "Deal name is required"),
   dealType: z.enum(["grow", "protect", "custom"], {
     required_error: "Deal type is required",
     invalid_type_error: "Deal type must be one of: Grow, Protect, Custom",
@@ -182,7 +181,6 @@ export default function SubmitDeal() {
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
       // Basic deal information
-      dealName: "",
       dealType: "grow",
       
       // Business information
@@ -348,8 +346,7 @@ export default function SubmitDeal() {
   function nextStep() {
     // Validate current step fields
     if (formStep === 0) {
-      form.trigger(['dealName', 'dealType', 'businessSummary', 'salesChannel', 'region']);
-      const dealNameError = form.getFieldState('dealName').error;
+      form.trigger(['dealType', 'businessSummary', 'salesChannel', 'region']);
       const dealTypeError = form.getFieldState('dealType').error;
       const businessSummaryError = form.getFieldState('businessSummary').error;
       const salesChannelError = form.getFieldState('salesChannel').error;
@@ -365,7 +362,7 @@ export default function SubmitDeal() {
         conditionalError = !!form.getFieldState('agencyName').error;
       }
       
-      if (dealNameError || dealTypeError || businessSummaryError || salesChannelError || regionError || conditionalError) {
+      if (dealTypeError || businessSummaryError || salesChannelError || regionError || conditionalError) {
         return;
       }
     } else if (formStep === 1) {
@@ -389,9 +386,43 @@ export default function SubmitDeal() {
   }
   
   function onSubmit(data: DealFormValues) {
-    // Include deal tiers data for tiered structure
+    // Format dates for deal name
+    const startDateFormatted = format(data.termStartDate, 'yyyyMMdd');
+    const endDateFormatted = format(data.termEndDate, 'yyyyMMdd');
+    
+    // Determine client/agency name
+    let clientName = "";
+    if (data.salesChannel === "client_direct" && data.advertiserName) {
+      clientName = data.advertiserName;
+    } else if ((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && data.agencyName) {
+      clientName = data.agencyName;
+    }
+    
+    // Generate deal name format: 
+    // Deal Type_Sales Channel_Advertiser Name/Agency Name_Deal Structure_Deal Start Date-Deal End Date
+    const dealTypeMap = {
+      grow: "Grow",
+      protect: "Protect",
+      custom: "Custom"
+    };
+    
+    const salesChannelMap = {
+      client_direct: "Direct",
+      holding_company: "Holding",
+      independent_agency: "Indep"
+    };
+    
+    const dealStructureMap = {
+      tiered: "Tiered",
+      flat_commit: "Flat"
+    };
+    
+    const dealName = `${dealTypeMap[data.dealType]}_${salesChannelMap[data.salesChannel]}_${clientName}_${dealStructureMap[data.dealStructure]}_${startDateFormatted}-${endDateFormatted}`;
+    
+    // Include generated deal name and deal tiers data for tiered structure
     const dealData = {
       ...data,
+      dealName: dealName,
       // Only include dealTiers if the structure is tiered
       ...(dealStructureType === "tiered" ? { dealTiers } : {})
     };
@@ -463,19 +494,6 @@ export default function SubmitDeal() {
                 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="dealName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deal Name <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter deal name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     
                     <FormField
                       control={form.control}
