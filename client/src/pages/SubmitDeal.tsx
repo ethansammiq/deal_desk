@@ -167,13 +167,6 @@ export default function SubmitDeal() {
       annualGrossMargin: 0,
       incentivePercentage: 0,
       incentiveNotes: ""
-    },
-    {
-      tierNumber: 4,
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-      incentivePercentage: 0,
-      incentiveNotes: ""
     }
   ]);
 
@@ -817,103 +810,118 @@ export default function SubmitDeal() {
                         </Button>
                       </div>
                       
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-12 gap-4 bg-slate-100 p-3 rounded font-medium text-sm text-slate-600">
-                          <div className="col-span-1">Tier</div>
-                          <div className="col-span-3">Annual Revenue</div>
-                          <div className="col-span-3">Gross Margin</div>
-                          <div className="col-span-2">Incentive %</div>
-                          <div className="col-span-3">Incentive Details</div>
+                      <div className="space-y-8">
+                        {/* Column layout for tiers */}
+                        <div className="flex gap-6">
+                          {dealTiers.map((tier, index) => (
+                            <div key={tier.tierNumber} className="flex-1 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                              <div className="flex justify-between items-center mb-4">
+                                <h4 className="font-medium text-base">Tier {tier.tierNumber}</h4>
+                                {index > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    type="button"
+                                    onClick={() => {
+                                      const newTiers = dealTiers.filter((_, i) => i !== index);
+                                      // Renumber the tiers
+                                      newTiers.forEach((t, i) => {
+                                        t.tierNumber = i + 1;
+                                      });
+                                      setDealTiers(newTiers);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Annual Revenue
+                                  </label>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">$</span>
+                                    </div>
+                                    <Input
+                                      type="number"
+                                      className="pl-7"
+                                      placeholder="0.00"
+                                      value={tier.annualRevenue}
+                                      onChange={(e) => {
+                                        const newTiers = [...dealTiers];
+                                        newTiers[index].annualRevenue = parseFloat(e.target.value);
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Gross Margin
+                                  </label>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">$</span>
+                                    </div>
+                                    <Input
+                                      type="number"
+                                      className="pl-7"
+                                      placeholder="0.00"
+                                      value={tier.annualGrossMargin}
+                                      onChange={(e) => {
+                                        const newTiers = [...dealTiers];
+                                        newTiers[index].annualGrossMargin = parseFloat(e.target.value);
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Incentive %
+                                  </label>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      placeholder="0"
+                                      value={tier.incentivePercentage}
+                                      onChange={(e) => {
+                                        const newTiers = [...dealTiers];
+                                        newTiers[index].incentivePercentage = parseFloat(e.target.value);
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Incentive Details
+                                  </label>
+                                  <Input
+                                    placeholder="Incentive notes"
+                                    value={tier.incentiveNotes || ""}
+                                    onChange={(e) => {
+                                      const newTiers = [...dealTiers];
+                                      newTiers[index].incentiveNotes = e.target.value;
+                                      setDealTiers(newTiers);
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        
-                        {dealTiers.map((tier, index) => (
-                          <div key={tier.tierNumber} className="grid grid-cols-12 gap-4 items-center bg-white p-3 rounded border border-slate-200">
-                            <div className="col-span-1 font-medium">{tier.tierNumber}</div>
-                            <div className="col-span-3">
-                              <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                  <span className="text-slate-500 sm:text-sm">$</span>
-                                </div>
-                                <Input
-                                  type="number"
-                                  className="pl-7"
-                                  placeholder="0.00"
-                                  value={tier.annualRevenue}
-                                  onChange={(e) => {
-                                    const newTiers = [...dealTiers];
-                                    newTiers[index].annualRevenue = parseFloat(e.target.value);
-                                    setDealTiers(newTiers);
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="col-span-3">
-                              <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                  <span className="text-slate-500 sm:text-sm">$</span>
-                                </div>
-                                <Input
-                                  type="number"
-                                  className="pl-7"
-                                  placeholder="0.00"
-                                  value={tier.annualGrossMargin}
-                                  onChange={(e) => {
-                                    const newTiers = [...dealTiers];
-                                    newTiers[index].annualGrossMargin = parseFloat(e.target.value);
-                                    setDealTiers(newTiers);
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="col-span-2">
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  placeholder="0"
-                                  value={tier.incentivePercentage}
-                                  onChange={(e) => {
-                                    const newTiers = [...dealTiers];
-                                    newTiers[index].incentivePercentage = parseFloat(e.target.value);
-                                    setDealTiers(newTiers);
-                                  }}
-                                />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                  <span className="text-slate-500 sm:text-sm">%</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-span-3 flex items-center gap-2">
-                              <Input
-                                placeholder="Incentive notes"
-                                value={tier.incentiveNotes || ""}
-                                onChange={(e) => {
-                                  const newTiers = [...dealTiers];
-                                  newTiers[index].incentiveNotes = e.target.value;
-                                  setDealTiers(newTiers);
-                                }}
-                              />
-                              {index > 0 && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  type="button"
-                                  onClick={() => {
-                                    const newTiers = dealTiers.filter((_, i) => i !== index);
-                                    // Renumber the tiers
-                                    newTiers.forEach((t, i) => {
-                                      t.tierNumber = i + 1;
-                                    });
-                                    setDealTiers(newTiers);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
                       </div>
                       
                       <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
