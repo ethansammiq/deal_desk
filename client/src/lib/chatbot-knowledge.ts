@@ -1,5 +1,5 @@
 /**
- * MIQ Deal Chatbot Knowledge Base
+ * Commercial Deal Chatbot Knowledge Base
  * This file contains the structured knowledge for the chatbot to reference when responding to user queries.
  * Organized into two sections:
  * 1. Simple responses - Brief, concise answers for quick information
@@ -9,7 +9,7 @@
 // Simple knowledge base - brief answers for the 'simple' AI model
 export const simpleKnowledgeBase = {
   // Deal Process Guidance
-  dealProcess: 'The MIQ deal process workflow consists of several stages: scoping, submission, review, approval, negotiation, contracting, and evaluation. Each stage has specific requirements and documentation needs.',
+  dealProcess: 'The Commercial deal process workflow consists of several stages: scoping, submission, review, approval, negotiation, contracting, and evaluation. Each stage has specific requirements and documentation needs.',
   
   dealScoping: 'Deal scoping is the initial stage where you define the deal parameters, customer needs, and potential solutions. Complete the Deal Scoping Request form in the system to begin this process.',
   
@@ -26,7 +26,7 @@ export const simpleKnowledgeBase = {
   
   resourceIncentives: 'Resource incentives include Technical Resources, Training & Development, and Consultative Services. These are subject to team availability and typically require manager approval.',
   
-  generalIncentives: 'MIQ offers three main incentive categories: Financial (Added Value Media, Revenue Share), Product (Feature Access, Integration Services), and Resource (Technical Resources, Training). Each has specific eligibility criteria and approval processes.',
+  generalIncentives: 'We offer three main incentive categories: Financial (Added Value Media, Revenue Share), Product (Feature Access, Integration Services), and Resource (Technical Resources, Training). Each has specific eligibility criteria and approval processes.',
   
   // Eligibility & Approval Support
   eligibilityRequirements: 'Eligibility for incentives depends on deal size, customer tier, contract length, and strategic alignment. Minimum deal values vary by incentive type, with financial incentives typically requiring larger deals.',
@@ -49,9 +49,9 @@ export const advancedKnowledgeBase = {
   //=======================================================================================
   
   // Overall Deal Process
-  dealProcess: `# MIQ Deal Process Overview
+  dealProcess: `# Commercial Deal Process Overview
 
-The MIQ deal process follows these key stages:
+The Commercial deal process follows these key stages:
 
 1. **Scoping**: Define customer needs and potential solutions
 2. **Submission**: Complete deal forms with all required details

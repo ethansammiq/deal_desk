@@ -29,13 +29,13 @@ export function TopNavbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              {/* MiQ Logo */}
+              {/* Logo */}
               <img 
                 src={miqLogo} 
-                alt="MiQ Logo" 
+                alt="Logo" 
                 className="h-8 mr-2" 
               />
-              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">MiQ Deal Desk</h1>
+              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Commercial Deal Desk</h1>
             </div>
             <nav className="hidden md:ml-8 md:flex md:space-x-1">
               <Link href="/">
