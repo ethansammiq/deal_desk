@@ -143,16 +143,8 @@ export default function RequestSupport() {
     // Check form validation errors
     console.log("Form validation errors:", form.formState.errors);
     
-    // Check if form is valid
-    if (!form.formState.isValid) {
-      console.log("Form is invalid. Please fix validation errors.");
-      toast({
-        title: "Form Error",
-        description: "Please fix the form errors before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // We'll skip the form validity check since it's causing issues with optional fields
+    // and we already have validation through Zod
     
     // Try a direct fetch instead of using React Query
     try {
