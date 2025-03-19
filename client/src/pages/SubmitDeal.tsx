@@ -85,19 +85,13 @@ const dealFormSchema = z.object({
   previousYearRevenue: z.coerce.number().min(0, "Previous year revenue must be non-negative").default(0),
   previousYearMargin: z.coerce.number().min(0).max(100, "Previous year margin must be between 0 and 100%").default(0),
   
-  // Standard deal criteria fields
-  hasTradeAMImplications: z.boolean().default(false),
-  yearlyRevenueGrowthRate: z.coerce.number().default(0),
-  forecastedMargin: z.coerce.number().min(0).max(100, "Forecasted margin must be between 0 and 100%").default(0),
-  yearlyMarginGrowthRate: z.coerce.number().default(0),
-  addedValueBenefitsCost: z.coerce.number().min(0).default(0),
-  analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
-  requiresCustomMarketing: z.boolean().default(false),
+  // Contract term (in months)
+  contractTerm: z.coerce.number().min(1, "Contract term must be at least 1 month").default(12),
   
-  // Deal tiers (for tiered structure only)
-  // We'll handle tiers as a separate form/state
-  
+  // Contact information
   email: z.string().email().optional(),
+  
+  // System fields
   status: z.string().default("submitted"),
   referenceNumber: z.string().optional(),
 })
@@ -259,18 +253,14 @@ export default function SubmitDeal() {
       previousYearRevenue: 0,
       previousYearMargin: 0,
       
-      // Standard deal criteria fields
-      hasTradeAMImplications: false,
-      yearlyRevenueGrowthRate: 0,
-      forecastedMargin: 0,
-      yearlyMarginGrowthRate: 0,
-      addedValueBenefitsCost: 0,
-      analyticsTier: "silver",
-      requiresCustomMarketing: false,
+      // Contract term (in months)
+      contractTerm: 12,
+      
+      // Contact information
+      email: "",
       
       // Status
       status: "submitted",
-      email: "",
       referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
     },
     mode: "onChange"
