@@ -159,12 +159,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
     try {
-      console.log("Creating deal scoping request with data:", req.body);
+      console.log("Creating deal scoping request with data:", JSON.stringify(req.body, null, 2));
+      
+      // Check if requestTitle is present
+      if (!req.body.requestTitle) {
+        console.log("Adding default requestTitle");
+        req.body.requestTitle = "Deal Scoping Request";
+      }
+      
+      // Set default status if not provided
+      if (!req.body.status) {
+        req.body.status = "pending";
+      }
+      
       const request = await storage.createDealScopingRequest(req.body);
-      console.log("Created deal scoping request:", request);
+      console.log("Created deal scoping request:", JSON.stringify(request, null, 2));
       res.status(201).json(request);
     } catch (error) {
       console.error("Error creating deal scoping request:", error);
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       res.status(500).json({ error: "Failed to create deal scoping request" });
     }
   });

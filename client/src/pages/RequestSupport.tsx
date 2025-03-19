@@ -75,8 +75,16 @@ export default function RequestSupport() {
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
-      const response = await apiRequest("POST", "/api/deal-scoping-requests", data);
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/deal-scoping-requests", data);
+        console.log("API response status:", response.status);
+        const responseData = await response.json();
+        console.log("API response data:", responseData);
+        return responseData;
+      } catch (error) {
+        console.error("Error in API request:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
@@ -98,6 +106,7 @@ export default function RequestSupport() {
   });
   
   function onSubmit(data: DealScopingFormValues) {
+    console.log("Form submitted with data:", data);
     createDealScopingRequest.mutate(data);
   }
   
