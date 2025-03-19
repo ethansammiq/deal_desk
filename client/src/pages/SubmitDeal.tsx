@@ -134,6 +134,7 @@ export default function SubmitDeal() {
   const [, navigate] = useLocation();
   const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
+  const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("flat_commit");
   
   // Handle approval level changes
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
@@ -677,7 +678,7 @@ export default function SubmitDeal() {
                               field.onChange(value);
                               setDealStructure(value as "tiered" | "flat_commit");
                             }}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
