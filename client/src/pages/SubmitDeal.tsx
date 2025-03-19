@@ -137,19 +137,19 @@ export default function SubmitDeal() {
   const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("flat_commit");
   
   // Type-safe helper functions for getting form values
-  function getTypedValue<T extends keyof DealFormValues>(
+  function getTypedValue<T extends string>(
     field: T
-  ): DealFormValues[T] {
+  ): string | number | boolean | Date | undefined {
     // Using type assertion to ensure correct typing
-    return form.getValues(field as any) as DealFormValues[T];
+    return form.getValues(field as any);
   }
   
   // Type-safe helper function for watching form values
-  function watchTypedValue<T extends keyof DealFormValues>(
+  function watchTypedValue<T extends string>(
     field: T
-  ): DealFormValues[T] {
+  ): string | number | boolean | Date | undefined {
     // Using type assertion to ensure correct typing
-    return form.watch(field as any) as DealFormValues[T];
+    return form.watch(field as any);
   }
   
   // Handle approval level changes
@@ -397,10 +397,10 @@ export default function SubmitDeal() {
 
   // Calculate growth rates automatically
   useEffect(() => {
-    const annualRevenue = getTypedValue("annualRevenue");
-    const previousYearRevenue = getTypedValue("previousYearRevenue");
-    const annualGrossMargin = getTypedValue("annualGrossMargin");
-    const previousYearMargin = getTypedValue("previousYearMargin");
+    const annualRevenue = Number(getTypedValue("annualRevenue") || 0);
+    const previousYearRevenue = Number(getTypedValue("previousYearRevenue") || 0);
+    const annualGrossMargin = Number(getTypedValue("annualGrossMargin") || 0);
+    const previousYearMargin = Number(getTypedValue("previousYearMargin") || 0);
     
     if (annualRevenue && previousYearRevenue && previousYearRevenue > 0) {
       const growthRate = ((annualRevenue - previousYearRevenue) / previousYearRevenue) * 100;
@@ -1231,10 +1231,7 @@ export default function SubmitDeal() {
                           <dt className="text-sm font-medium text-slate-500">Total Deal Value</dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {getTypedValue("totalValue") ? 
-                              `$${Number(getTypedValue("totalValue")).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}` : 
+                              formatCurrency(Number(getTypedValue("totalValue"))) : 
                               "Not provided"}
                           </dd>
                         </div>
