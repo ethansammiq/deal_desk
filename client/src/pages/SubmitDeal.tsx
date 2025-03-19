@@ -557,9 +557,28 @@ export default function SubmitDeal() {
                       contractTerm={form.watch("contractTerm") || 0}
                       discountPercentage={form.watch("discountPercentage") || 0}
                       hasNonStandardTerms={hasNonStandardTerms}
+                      dealType={form.watch("dealType") || "grow"}
+                      salesChannel={form.watch("salesChannel") || "independent_agency"}
+                      hasTradeAMImplications={form.watch("hasTradeAMImplications") || false}
+                      yearlyRevenueGrowthRate={calculateYOYGrowth(
+                        form.watch("totalValue") ?? 0,
+                        form.watch("previousYearValue") ?? 0
+                      )}
+                      forecastedMargin={calculateProfitMargin(
+                        form.watch("totalValue") ?? 0,
+                        form.watch("discountPercentage") ?? 0,
+                        form.watch("costPercentage") ?? 30
+                      )}
+                      yearlyMarginGrowthRate={form.watch("yearlyMarginGrowthRate") ?? 0}
+                      addedValueBenefitsCost={form.watch("addedValueBenefitsCost") ?? 0}
+                      analyticsTier={form.watch("analyticsTier") ?? "silver"}
+                      requiresCustomMarketing={form.watch("requiresCustomMarketing") ?? false}
                       onChange={handleApprovalChange}
                     />
                   )}
+                  
+                  {/* Standard Deal Criteria Help Info */}
+                  <StandardDealCriteriaHelp />
                   
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField

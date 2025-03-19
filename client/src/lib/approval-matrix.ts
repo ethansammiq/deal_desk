@@ -33,6 +33,36 @@ export interface ApprovalMatrix {
   approverLevels: Record<ApproverLevel, ApprovalRule>;
 }
 
+// Define the standard deal criteria
+export interface StandardDealCriteria {
+  dealType: string;
+  salesChannel: string[];
+  hasTradeAMImplications: boolean;
+  projectedAnnualSpendMin: number;
+  projectedAnnualSpendMax: number;
+  yearlyRevenueGrowthRate: number;
+  forecastedMargin: number;
+  yearlyMarginGrowthRate: number;
+  addedValueBenefitsCost: number;
+  analyticsTier: string;
+  requiresCustomMarketing: boolean;
+}
+
+// Standard deal criteria 
+export const standardDealCriteria: StandardDealCriteria = {
+  dealType: "grow",
+  salesChannel: ["independent_agency", "client_direct"],
+  hasTradeAMImplications: false,
+  projectedAnnualSpendMin: 1000000, // $1M
+  projectedAnnualSpendMax: 3000000, // $3M
+  yearlyRevenueGrowthRate: 25, // ≥ 25%
+  forecastedMargin: 30, // ≥ 30%
+  yearlyMarginGrowthRate: -5, // ≥ -5%
+  addedValueBenefitsCost: 100000, // ≤ $100K
+  analyticsTier: "silver",
+  requiresCustomMarketing: false
+};
+
 // Define the approval matrix with all rules
 export const approvalMatrix: ApprovalMatrix = {
   valueRanges: [
@@ -40,7 +70,7 @@ export const approvalMatrix: ApprovalMatrix = {
       min: 0,
       max: 500000,
       standardTerms: 'MD',
-      nonStandardTerms: 'MD',
+      nonStandardTerms: 'Executive',
       highDiscount: 'Executive'
     },
     {
@@ -62,13 +92,13 @@ export const approvalMatrix: ApprovalMatrix = {
     'MD': {
       level: 'MD',
       title: 'Managing Director',
-      description: 'Standard approval for deals under $500K without high discounts',
+      description: 'Standard approval for deals meeting standard criteria',
       estimatedTime: '1-2 business days'
     },
     'Executive': {
       level: 'Executive',
       title: 'Executive Committee',
-      description: 'Required for high-value deals, extended contracts, or significant discounts',
+      description: 'Required for non-standard deals, high-value deals, or deals with special terms',
       estimatedTime: '3-5 business days'
     }
   }
@@ -76,9 +106,117 @@ export const approvalMatrix: ApprovalMatrix = {
 
 export interface DealParameters {
   totalValue: number;
+  annualValue?: number;
+  dealType?: string;
+  salesChannel?: string;
+  hasTradeAMImplications?: boolean;
+  yearlyRevenueGrowthRate?: number;
+  forecastedMargin?: number;
+  yearlyMarginGrowthRate?: number;
+  addedValueBenefitsCost?: number;
+  analyticsTier?: string;
+  requiresCustomMarketing?: boolean;
   hasNonStandardTerms: boolean;
   discountPercentage: number;
   contractTerm: number; // in months
+}
+
+/**
+ * Determines if a deal meets all standard deal criteria
+ */
+export function isStandardDeal(params: DealParameters): boolean {
+  // All criteria must be met to be considered a standard deal
+  
+  // If any of these required parameters are missing, it's not a standard deal
+  if (!params.dealType || !params.salesChannel || 
+      params.yearlyRevenueGrowthRate === undefined || 
+      params.forecastedMargin === undefined ||
+      params.yearlyMarginGrowthRate === undefined) {
+    return false;
+  }
+  
+  const annualValue = params.annualValue || (params.totalValue / (params.contractTerm / 12));
+  const addedValueBenefitsCost = params.addedValueBenefitsCost || 0;
+  
+  // Check all criteria
+  const isDealTypeMatch = params.dealType.toLowerCase() === standardDealCriteria.dealType;
+  const isSalesChannelMatch = standardDealCriteria.salesChannel.includes(params.salesChannel);
+  const hasNoTradeImplications = params.hasTradeAMImplications === false;
+  const isSpendInRange = annualValue >= standardDealCriteria.projectedAnnualSpendMin && 
+                         annualValue <= standardDealCriteria.projectedAnnualSpendMax;
+  const isRevenueGrowthSufficient = (params.yearlyRevenueGrowthRate || 0) >= standardDealCriteria.yearlyRevenueGrowthRate;
+  const isMarginSufficient = (params.forecastedMargin || 0) >= standardDealCriteria.forecastedMargin;
+  const isMarginGrowthSufficient = (params.yearlyMarginGrowthRate || 0) >= standardDealCriteria.yearlyMarginGrowthRate;
+  const isBenefitCostAcceptable = addedValueBenefitsCost <= standardDealCriteria.addedValueBenefitsCost;
+  const isAnalyticsTierAcceptable = (params.analyticsTier || "").toLowerCase() === standardDealCriteria.analyticsTier;
+  const hasNoCustomMarketing = params.requiresCustomMarketing === false;
+  
+  // All criteria must pass
+  return isDealTypeMatch && 
+         isSalesChannelMatch && 
+         hasNoTradeImplications && 
+         isSpendInRange && 
+         isRevenueGrowthSufficient && 
+         isMarginSufficient && 
+         isMarginGrowthSufficient && 
+         isBenefitCostAcceptable && 
+         isAnalyticsTierAcceptable && 
+         hasNoCustomMarketing;
+}
+
+/**
+ * Get failed criteria reasons for non-standard deals
+ */
+export function getNonStandardDealReasons(params: DealParameters): string[] {
+  const reasons: string[] = [];
+  
+  // Calculate annual value
+  const annualValue = params.annualValue || (params.totalValue / (params.contractTerm / 12));
+  const addedValueBenefitsCost = params.addedValueBenefitsCost || 0;
+  
+  // Check each criterion and add reason if failed
+  if (!params.dealType || params.dealType.toLowerCase() !== standardDealCriteria.dealType) {
+    reasons.push(`Deal type is not 'Grow'`);
+  }
+  
+  if (!params.salesChannel || !standardDealCriteria.salesChannel.includes(params.salesChannel)) {
+    reasons.push(`Sales channel is not Independent Agency or Client Direct`);
+  }
+  
+  if (params.hasTradeAMImplications === true) {
+    reasons.push(`Has Trading & AM resource implications`);
+  }
+  
+  if (annualValue < standardDealCriteria.projectedAnnualSpendMin || 
+      annualValue > standardDealCriteria.projectedAnnualSpendMax) {
+    reasons.push(`Projected annual spend not between $1M-$3M`);
+  }
+  
+  if ((params.yearlyRevenueGrowthRate || 0) < standardDealCriteria.yearlyRevenueGrowthRate) {
+    reasons.push(`Yearly revenue growth rate < 25%`);
+  }
+  
+  if ((params.forecastedMargin || 0) < standardDealCriteria.forecastedMargin) {
+    reasons.push(`Forecasted margin < 30%`);
+  }
+  
+  if ((params.yearlyMarginGrowthRate || 0) < standardDealCriteria.yearlyMarginGrowthRate) {
+    reasons.push(`Yearly margin growth rate < -5%`);
+  }
+  
+  if (addedValueBenefitsCost > standardDealCriteria.addedValueBenefitsCost) {
+    reasons.push(`Added value benefits cost > $100K`);
+  }
+  
+  if ((params.analyticsTier || "").toLowerCase() !== standardDealCriteria.analyticsTier) {
+    reasons.push(`Analytics solutions tier is not Silver`);
+  }
+  
+  if (params.requiresCustomMarketing === true) {
+    reasons.push(`Requires custom marketing/PR`);
+  }
+  
+  return reasons;
 }
 
 /**
@@ -158,6 +296,13 @@ function getHigherLevel(level1: ApproverLevel, level2: ApproverLevel): ApproverL
  * Returns the highest level approver required
  */
 export function determineRequiredApprover(params: DealParameters): ApproverLevel {
+  // First check if deal meets standard criteria
+  // Non-standard deals always require Executive approval
+  if (!isStandardDeal(params)) {
+    return 'Executive';
+  }
+  
+  // Even if it's a standard deal, check other factors
   const isHighDiscountDeal = isHighDiscount(params.discountPercentage);
   
   const valueBasedLevel = getValueBasedApprover(params.totalValue, params.hasNonStandardTerms, isHighDiscountDeal);
@@ -185,6 +330,7 @@ export function generateApprovalAlert(params: DealParameters): {
   message: string;
   level: 'info' | 'warning' | 'alert';
   approver: ApprovalRule;
+  reasons: string[];
 } {
   const requiredLevel = determineRequiredApprover(params);
   const approver = getApproverDetails(requiredLevel);
@@ -200,19 +346,33 @@ export function generateApprovalAlert(params: DealParameters): {
   // Build a descriptive message
   let message = `This deal requires ${approver.title} approval`;
   
-  const reasons = [];
-  if (params.totalValue > 500000) reasons.push(`deal value of $${params.totalValue.toLocaleString()}`);
-  if (params.hasNonStandardTerms) reasons.push('non-standard terms');
-  if (params.discountPercentage > 30) reasons.push(`high discount of ${params.discountPercentage}%`);
-  if (params.contractTerm > 36) reasons.push(`extended contract term of ${params.contractTerm} months`);
+  // Get reasons for non-standard deal
+  const standardDealReasons = getNonStandardDealReasons(params);
+  
+  // Additional reasons related to value, discounts, etc.
+  const additionalReasons = [];
+  if (params.totalValue > 500000) additionalReasons.push(`deal value of $${params.totalValue.toLocaleString()}`);
+  if (params.hasNonStandardTerms) additionalReasons.push('non-standard terms');
+  if (params.discountPercentage > 30) additionalReasons.push(`high discount of ${params.discountPercentage}%`);
+  if (params.contractTerm > 36) additionalReasons.push(`extended contract term of ${params.contractTerm} months`);
+  
+  // Combine all reasons
+  const reasons = [...standardDealReasons, ...additionalReasons];
   
   if (reasons.length > 0) {
-    message += ` due to ${reasons.join(' and ')}. `;
+    if (reasons.length === 1) {
+      message += ` due to ${reasons[0]}. `;
+    } else if (reasons.length === 2) {
+      message += ` due to ${reasons.join(' and ')}. `;
+    } else {
+      const lastReason = reasons.pop();
+      message += ` due to ${reasons.join(', ')}, and ${lastReason}. `;
+    }
   } else {
     message += '. ';
   }
   
   message += `Estimated approval time: ${approver.estimatedTime}.`;
   
-  return { message, level: alertLevel, approver };
+  return { message, level: alertLevel, approver, reasons };
 }
