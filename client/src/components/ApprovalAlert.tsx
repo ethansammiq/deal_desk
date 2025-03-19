@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { AlertCircle, Clock, CheckCircle2, UserCog, Info, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertCircle, Clock, CheckCircle2, UserCog, Info } from "lucide-react";
 import { 
   determineRequiredApprover, 
   getApproverDetails, 
-  generateApprovalAlert,
-  getNonStandardDealReasons,
-  isStandardDeal,
-  DealParameters,
   ApprovalRule
 } from "@/lib/approval-matrix";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface ApprovalAlertProps {
   totalValue: number;
@@ -34,38 +29,43 @@ export function ApprovalAlert({
     message: string;
     level: 'info' | 'warning' | 'alert';
     approver: ApprovalRule;
-    reasons: string[];
   } | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     // Only calculate and show alert if we have valid deal parameters
-    if (totalValue > 0 && contractTerm > 0) {
-      const params: DealParameters = {
-        totalValue,
+    if (totalValue > 0) {
+      // Use the simplified approval matrix logic
+      const approverLevel = determineRequiredApprover(
+        totalValue, 
         hasNonStandardTerms,
-        discountPercentage: 0, // Simplified - no discount percentage
-        contractTerm,
         dealType,
-        salesChannel,
-        // Simplified default values for remaining required fields
-        hasTradeAMImplications: false,
-        yearlyRevenueGrowthRate: 25, // Default to 25%
-        forecastedMargin: 30, // Default to 30%
-        yearlyMarginGrowthRate: 0,
-        addedValueBenefitsCost: 0,
-        analyticsTier: "silver",
-        requiresCustomMarketing: false,
-        // Calculate annual value based on total value and contract term
-        annualValue: totalValue / (contractTerm / 12)
-      };
+        salesChannel
+      );
       
-      const alert = generateApprovalAlert(params);
-      setAlertInfo(alert);
+      // Get approver details
+      const approver = getApproverDetails(approverLevel);
+      
+      // Set alert level and message
+      let level: 'info' | 'warning' | 'alert';
+      let message: string;
+      
+      if (approverLevel === 'MD') {
+        level = 'info';
+        message = "This deal meets standard criteria and requires MD approval.";
+      } else {
+        level = 'warning';
+        message = "This deal requires Executive approval due to its value, terms, or special conditions.";
+      }
+      
+      setAlertInfo({
+        message,
+        level,
+        approver
+      });
       
       // Notify parent component about the approver level if callback provided
       if (onChange) {
-        onChange(alert.approver.level, alert.approver);
+        onChange(approverLevel, approver);
       }
     } else {
       setAlertInfo(null);
@@ -82,8 +82,6 @@ export function ApprovalAlert({
   if (!alertInfo) {
     return null;
   }
-
-  const toggleDetails = () => setShowDetails(!showDetails);
 
   return (
     <Alert 
@@ -112,36 +110,11 @@ export function ApprovalAlert({
                 {alertInfo.approver.level}
               </Badge>
             </AlertTitle>
-            
-            {alertInfo.reasons.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="px-2 h-8" 
-                onClick={toggleDetails}
-              >
-                {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </Button>
-            )}
           </div>
           
           <AlertDescription className="text-sm">
             {alertInfo.message}
           </AlertDescription>
-          
-          {showDetails && alertInfo.reasons.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-slate-200">
-              <div className="flex items-center gap-1 mb-2 text-sm font-medium">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-                <span>Non-Standard Deal Criteria</span>
-              </div>
-              <ul className="text-sm pl-5 space-y-1 list-disc">
-                {alertInfo.reasons.map((reason, index) => (
-                  <li key={index} className="text-slate-700">{reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
           
           <div className="mt-3 flex justify-between items-center">
             <div className="flex items-center text-sm gap-2">
@@ -193,14 +166,8 @@ export function StandardDealCriteriaHelp() {
       <ul className="text-xs text-slate-700 pl-5 space-y-1 list-disc">
         <li>Deal type: Grow</li>
         <li>Sales channel: Independent Agency or Client Direct</li>
-        <li>No Trading & AM resource implications</li>
-        <li>Projected Annual Spend: $1M–$3M</li>
-        <li>Yearly revenue growth rate ≥ 25%</li>
-        <li>Forecasted margin ≥ 30%</li>
-        <li>Yearly margin growth rate ≥ -5%</li>
-        <li>Cost of added value benefits ≤ $100K</li>
-        <li>Analytics solutions: Silver tier</li>
-        <li>No custom marketing/PR required</li>
+        <li>Projected Annual Spend: Under $500,000</li>
+        <li>No non-standard terms or special conditions</li>
       </ul>
     </div>
   );
