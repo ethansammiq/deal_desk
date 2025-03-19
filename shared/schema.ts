@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,12 +7,43 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email").notNull().unique(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
 });
+
+// Advertisers lookup table
+export const advertisers = pgTable("advertisers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
+  previousYearMargin: doublePrecision("previous_year_margin").default(0),
+  region: text("region"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAdvertiserSchema = createInsertSchema(advertisers)
+  .omit({ id: true, createdAt: true, updatedAt: true });
+
+// Agencies lookup table
+export const agencies = pgTable("agencies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  type: text("type").notNull().default("independent"), // holding_company, independent
+  previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
+  previousYearMargin: doublePrecision("previous_year_margin").default(0),
+  region: text("region"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAgencySchema = createInsertSchema(agencies)
+  .omit({ id: true, createdAt: true, updatedAt: true });
 
 // Deal scoping requests table
 export const dealScopingRequests = pgTable("deal_scoping_requests", {
@@ -38,39 +69,67 @@ export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequ
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
   });
 
-// Deals table
+// Tier configuration for tiered deals
+export const dealTiers = pgTable("deal_tiers", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  tierNumber: integer("tier_number").notNull(), // 1, 2, 3, 4 for tier ordering
+  annualRevenue: doublePrecision("annual_revenue").notNull(),
+  annualGrossMargin: doublePrecision("annual_gross_margin").notNull(), // as a percentage
+  incentivePercentage: doublePrecision("incentive_percentage").default(0),
+  incentiveNotes: text("incentive_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDealTierSchema = createInsertSchema(dealTiers)
+  .omit({ id: true, createdAt: true, updatedAt: true });
+
+// Deals table - updated with new fields
 export const deals = pgTable("deals", {
   id: serial("id").primaryKey(),
+  
+  // User information
+  email: text("email"),
+  
+  // Basic deal information
   dealName: text("deal_name").notNull(),
-  dealType: text("deal_type").notNull(), // growth, protect, custom
-  description: text("summary").notNull(),
-//  department: text("department").notNull(), // sales, marketing, operations, it, finance
-//  expectedCloseDate: text("expected_close_date").notNull(),
-  priority: text("priority").notNull().default("medium"), // high, medium, low
+  dealType: text("deal_type").notNull(), // "grow", "protect", "custom"
+  salesChannel: text("sales_channel").notNull(), // "holding_company", "independent_agency", "client_direct"
+  region: text("region"), // "northeast", "midwest", "midatlantic", "west", "south"
   
-  // Client information
-  advertiserName: text("advertiser_name").notNull(),
-  agencyName: text("agency_name").notNull(),
-  salesChannel: text("sales_channel").notNull(), // holding company, indendpent agency, client direct
-//  industry: text("industry"),
-  region: text("region"),
-//  companySize: text("company_size"),
+  // Client information based on salesChannel
+  advertiserName: text("advertiser_name"),
+  agencyName: text("agency_name"),
   
-  // Pricing information
-  totalValue: doublePrecision("total_value").notNull(),
-  contractTerm: integer("contract_term").notNull(), // in months
-  paymentTerms: text("payment_terms").default("monthly"), // monthly, quarterly, annually, upfront
-  discountPercentage: doublePrecision("discount_percentage").default(0),
-  costPercentage: doublePrecision("cost_percentage").default(30), // default cost basis is 30%
-  incentivePercentage: doublePrecision("incentive_percentage").default(0), // sales incentives 
-  previousYearValue: doublePrecision("previous_year_value").default(0), // for YOY calculations
-  renewalOption: text("renewal_option").default("manual"), // automatic, manual, none
-  pricingNotes: text("pricing_notes"),
-  customField1: text("custom_field1"),
-  customField2: text("custom_field2"),
+  // Deal structure
+  dealStructure: text("deal_structure").notNull(), // "tiered", "flat_commit"
   
-  // Status and tracking
-  status: text("status").notNull().default("?"), // pending, approved, rejected, in_progress, completed
+  // Business information
+  businessSummary: text("business_summary"), // long text for describing deal purpose
+  status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
+  
+  // Timeframe
+  termStartDate: date("term_start_date"),
+  termEndDate: date("term_end_date"),
+  contractTerm: integer("contract_term"), // calculated in months from start and end dates
+  
+  // Financial data for flat commit structure
+  annualRevenue: doublePrecision("annual_revenue"),
+  annualGrossMargin: doublePrecision("annual_gross_margin"), // as a percentage
+  previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
+  previousYearMargin: doublePrecision("previous_year_margin").default(0),
+  
+  // Standard deal criteria fields
+  hasTradeAMImplications: boolean("has_trade_am_implications").default(false),
+  yearlyRevenueGrowthRate: doublePrecision("yearly_revenue_growth_rate").default(0),
+  forecastedMargin: doublePrecision("forecasted_margin").default(0),
+  yearlyMarginGrowthRate: doublePrecision("yearly_margin_growth_rate").default(0),
+  addedValueBenefitsCost: doublePrecision("added_value_benefits_cost").default(0),
+  analyticsTier: text("analytics_tier").default("silver"),
+  requiresCustomMarketing: boolean("requires_custom_marketing").default(false),
+  
+  // System fields
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   
@@ -79,36 +138,58 @@ export const deals = pgTable("deals", {
 });
 
 export const insertDealSchema = createInsertSchema(deals)
-  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true })
+  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true, contractTerm: true })
   .extend({
-    // Add validation rules
-    totalValue: z.number().positive("Deal value must be positive"),
-    contractTerm: z.number().int().positive("Contract term must be positive"),
-    discountPercentage: z.number().min(0).max(100, "Discount must be between 0 and 100%"),
-    costPercentage: z.number().min(0).max(100, "Cost must be between 0 and 100%"),
-    // Make these fields optional with defaults
-    incentivePercentage: z.number().min(0).max(50, "Incentives must be between 0 and 50%").default(0),
-    previousYearValue: z.number().min(0, "Previous year value must be non-negative").default(0),
-    priority: z.string().default("medium"),
-    companySize: z.string().optional(),
-    paymentTerms: z.string().default("monthly"),
-    pricingNotes: z.string().optional(),
-    renewalOption: z.string().default("manual"),
-    // Custom fields
-    customField1: z.string().optional(),
-    customField2: z.string().optional(),
+    // Region validation
+    region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"]),
+    
+    // Deal type validation
+    dealType: z.enum(["grow", "protect", "custom"])
+      .describe({
+        grow: "Agency/Client that has run with MiQ for at least a year with the objective to continue to grow revenue and profit by >20% YOY",
+        protect: "Retain large businesses even if can't grow. Value of the business is still important to MiQ",
+        custom: "Require custom \"out of the box\" build to underpin revenue to meet client's needs & solve challenges"
+      }),
+    
+    // Sales channel validation
+    salesChannel: z.enum(["holding_company", "independent_agency", "client_direct"]),
+    
+    // Deal structure validation
+    dealStructure: z.enum(["tiered", "flat_commit"]),
+    
+    // Date validations
+    termStartDate: z.date({ coerce: true }),
+    termEndDate: z.date({ coerce: true }),
+    
+    // Financial validations
+    annualRevenue: z.number().positive("Annual revenue must be positive").optional(),
+    annualGrossMargin: z.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
+    
+    // Deal criteria validations
+    hasTradeAMImplications: z.boolean().default(false),
+    yearlyRevenueGrowthRate: z.number().default(0),
+    forecastedMargin: z.number().min(0).max(100, "Forecasted margin must be between 0 and 100%").default(0),
+    yearlyMarginGrowthRate: z.number().default(0),
+    addedValueBenefitsCost: z.number().min(0).default(0),
+    analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
+    requiresCustomMarketing: z.boolean().default(false),
   });
-
-
-
-// Support request schema has been removed as per user request
 
 // Type definitions for ORM
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+export type Advertiser = typeof advertisers.$inferSelect;
+export type InsertAdvertiser = z.infer<typeof insertAdvertiserSchema>;
+
+export type Agency = typeof agencies.$inferSelect;
+export type InsertAgency = z.infer<typeof insertAgencySchema>;
+
 export type Deal = typeof deals.$inferSelect;
 export type InsertDeal = z.infer<typeof insertDealSchema>;
+
+export type DealTier = typeof dealTiers.$inferSelect;
+export type InsertDealTier = z.infer<typeof insertDealTierSchema>;
 
 export type DealScopingRequest = typeof dealScopingRequests.$inferSelect;
 export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSchema>;

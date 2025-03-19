@@ -2,12 +2,21 @@ import {
   users, 
   deals,
   dealScopingRequests,
+  advertisers,
+  agencies,
+  dealTiers,
   type User, 
   type InsertUser, 
   type Deal, 
   type InsertDeal,
   type DealScopingRequest,
-  type InsertDealScopingRequest
+  type InsertDealScopingRequest,
+  type Advertiser,
+  type InsertAdvertiser,
+  type Agency,
+  type InsertAgency,
+  type DealTier,
+  type InsertDealTier
 } from "@shared/schema";
 import { AirtableStorage } from "./airtableStorage";
 
@@ -18,12 +27,29 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Advertiser methods
+  getAdvertiser(id: number): Promise<Advertiser | undefined>;
+  getAdvertiserByName(name: string): Promise<Advertiser | undefined>;
+  getAdvertisers(): Promise<Advertiser[]>;
+  createAdvertiser(advertiser: InsertAdvertiser): Promise<Advertiser>;
+  
+  // Agency methods
+  getAgency(id: number): Promise<Agency | undefined>;
+  getAgencyByName(name: string): Promise<Agency | undefined>;
+  getAgencies(filters?: { type?: string }): Promise<Agency[]>;
+  createAgency(agency: InsertAgency): Promise<Agency>;
+  
   // Deal methods
   getDeal(id: number): Promise<Deal | undefined>;
   getDealByReference(referenceNumber: string): Promise<Deal | undefined>;
-  getDeals(filters?: { status?: string }): Promise<Deal[]>;
+  getDeals(filters?: { status?: string, dealType?: string, salesChannel?: string }): Promise<Deal[]>;
   createDeal(deal: InsertDeal): Promise<Deal>;
   updateDealStatus(id: number, status: string): Promise<Deal | undefined>;
+  
+  // Deal tier methods
+  getDealTiers(dealId: number): Promise<DealTier[]>;
+  createDealTier(tier: InsertDealTier): Promise<DealTier>;
+  updateDealTier(id: number, tier: Partial<InsertDealTier>): Promise<DealTier | undefined>;
   
   // Deal scoping request methods
   getDealScopingRequest(id: number): Promise<DealScopingRequest | undefined>;
@@ -43,18 +69,32 @@ export interface IStorage {
 // In-memory storage implementation
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private advertisers: Map<number, Advertiser>;
+  private agencies: Map<number, Agency>;
   private deals: Map<number, Deal>;
+  private dealTiers: Map<number, DealTier>;
   private dealScopingRequests: Map<number, DealScopingRequest>;
+  
   private userCurrentId: number;
+  private advertiserCurrentId: number;
+  private agencyCurrentId: number;
   private dealCurrentId: number;
+  private dealTierCurrentId: number;
   private dealScopingRequestCurrentId: number;
 
   constructor() {
     this.users = new Map();
+    this.advertisers = new Map();
+    this.agencies = new Map();
     this.deals = new Map();
+    this.dealTiers = new Map();
     this.dealScopingRequests = new Map();
+    
     this.userCurrentId = 1;
+    this.advertiserCurrentId = 1;
+    this.agencyCurrentId = 1;
     this.dealCurrentId = 1;
+    this.dealTierCurrentId = 1;
     this.dealScopingRequestCurrentId = 1;
     
     // Initialize with some sample data
@@ -63,123 +103,328 @@ export class MemStorage implements IStorage {
   
   // Initialize with sample data for demo purposes
   private initSampleData() {
-    const dealStatuses = ["pending", "approved", "rejected", "in_progress", "completed"];
-    const dealTypes = ["new_business", "renewal", "upsell", "expansion", "special_project"];
-    const clients = ["Acme Corporation", "Globex Industries", "Initech LLC", "Wayne Enterprises", "Stark Industries"];
-    const departments = ["sales", "marketing", "operations", "it", "finance"];
+    // Sample advertisers
+    const sampleAdvertisers: InsertAdvertiser[] = [
+      { 
+        name: "Coca-Cola", 
+        previousYearRevenue: 2500000, 
+        previousYearMargin: 18.5, 
+        region: "south" 
+      },
+      { 
+        name: "Pepsi", 
+        previousYearRevenue: 2100000, 
+        previousYearMargin: 17.8, 
+        region: "northeast" 
+      },
+      { 
+        name: "General Motors", 
+        previousYearRevenue: 4200000, 
+        previousYearMargin: 12.3, 
+        region: "midwest" 
+      },
+      { 
+        name: "Ford", 
+        previousYearRevenue: 3700000, 
+        previousYearMargin: 11.5, 
+        region: "midwest" 
+      },
+      { 
+        name: "Nike", 
+        previousYearRevenue: 1800000, 
+        previousYearMargin: 22.4, 
+        region: "west" 
+      }
+    ];
+    
+    // Sample agencies
+    const sampleAgencies: InsertAgency[] = [
+      { 
+        name: "WPP", 
+        type: "holding_company", 
+        previousYearRevenue: 8500000, 
+        previousYearMargin: 28.5, 
+        region: "northeast" 
+      },
+      { 
+        name: "Omnicom", 
+        type: "holding_company", 
+        previousYearRevenue: 7800000, 
+        previousYearMargin: 27.2, 
+        region: "northeast" 
+      },
+      { 
+        name: "Droga5", 
+        type: "independent", 
+        previousYearRevenue: 950000, 
+        previousYearMargin: 32.8, 
+        region: "northeast" 
+      },
+      { 
+        name: "72andSunny", 
+        type: "independent", 
+        previousYearRevenue: 620000, 
+        previousYearMargin: 31.5, 
+        region: "west" 
+      },
+      { 
+        name: "The Richards Group", 
+        type: "independent", 
+        previousYearRevenue: 510000, 
+        previousYearMargin: 30.2, 
+        region: "south" 
+      }
+    ];
+    
+    // Add sample advertisers and agencies to storage
+    sampleAdvertisers.forEach(advertiser => {
+      this.createAdvertiser(advertiser);
+    });
+    
+    sampleAgencies.forEach(agency => {
+      this.createAgency(agency);
+    });
     
     // Sample deals
     const sampleDeals: InsertDeal[] = [
       {
-        dealName: "Enterprise SaaS Package",
-        dealType: "new_business",
-        description: "Comprehensive enterprise SaaS package including core platform licensing, implementation services, and premium support for 24 months.",
-        department: "sales",
-        expectedCloseDate: "2023-11-30",
-        priority: "high",
-        clientName: "Acme Corporation",
-        clientType: "new",
-        industry: "technology",
-        region: "north_america",
-        companySize: "enterprise",
-        totalValue: 86500,
-        contractTerm: 24,
-        paymentTerms: "quarterly",
-        discountPercentage: 10,
-        renewalOption: "automatic",
-        pricingNotes: "Includes 10% new customer discount. Annual review with option to upgrade to enterprise tier at current pricing.",
-        status: "pending",
-        referenceNumber: "DEAL-2023-089"
+        dealName: "Coca-Cola Q1 2025 Campaign",
+        dealType: "grow",
+        businessSummary: "Comprehensive digital campaign focusing on growing Coca-Cola's market share in the Southern region, targeting younger demographics.",
+        salesChannel: "client_direct",
+        advertiserName: "Coca-Cola",
+        region: "south",
+        dealStructure: "tiered",
+        termStartDate: new Date("2025-01-01"),
+        termEndDate: new Date("2025-12-31"),
+        annualRevenue: 3000000,
+        annualGrossMargin: 20.5,
+        previousYearRevenue: 2500000, 
+        previousYearMargin: 18.5,
+        hasTradeAMImplications: false,
+        yearlyRevenueGrowthRate: 20,
+        forecastedMargin: 20.5,
+        yearlyMarginGrowthRate: 10.8,
+        addedValueBenefitsCost: 150000,
+        analyticsTier: "gold",
+        requiresCustomMarketing: false,
+        status: "submitted",
+        referenceNumber: "DEAL-2025-001"
       },
       {
-        dealName: "Annual Support Contract",
-        dealType: "renewal",
-        description: "Renewal of annual support contract with expanded service hours and dedicated technical account manager.",
-        department: "operations",
-        expectedCloseDate: "2023-12-15",
-        priority: "medium",
-        clientName: "Globex Industries",
-        clientType: "existing",
-        industry: "manufacturing",
-        region: "europe",
-        companySize: "large",
-        totalValue: 45000,
-        contractTerm: 12,
-        paymentTerms: "annually",
-        discountPercentage: 5,
-        renewalOption: "manual",
-        pricingNotes: "",
-        status: "approved",
-        referenceNumber: "DEAL-2023-088"
+        dealName: "WPP Agency Partnership",
+        dealType: "grow",
+        businessSummary: "Strategic partnership with WPP to handle multiple clients under a unified agreement with volume discounts.",
+        salesChannel: "holding_company",
+        agencyName: "WPP",
+        region: "northeast",
+        dealStructure: "flat_commit",
+        termStartDate: new Date("2025-01-01"),
+        termEndDate: new Date("2026-12-31"),
+        annualRevenue: 9500000,
+        annualGrossMargin: 30.2,
+        previousYearRevenue: 8500000,
+        previousYearMargin: 28.5,
+        hasTradeAMImplications: true,
+        yearlyRevenueGrowthRate: 11.8,
+        forecastedMargin: 30.2,
+        yearlyMarginGrowthRate: 5.9,
+        addedValueBenefitsCost: 320000,
+        analyticsTier: "platinum",
+        requiresCustomMarketing: true,
+        status: "in_review",
+        referenceNumber: "DEAL-2025-002"
       },
       {
-        dealName: "Data Migration Project",
-        dealType: "special_project",
-        description: "Migration of legacy systems to new cloud platform with data transformation and validation services.",
-        department: "it",
-        expectedCloseDate: "2023-12-05",
-        priority: "high",
-        clientName: "Initech LLC",
-        clientType: "existing",
-        industry: "finance",
-        region: "north_america",
-        companySize: "medium",
-        totalValue: 125000,
-        contractTerm: 6,
-        paymentTerms: "monthly",
-        discountPercentage: 0,
-        renewalOption: "none",
-        pricingNotes: "Fixed price project with milestone-based payments",
-        status: "approved",
-        referenceNumber: "DEAL-2023-087"
+        dealName: "GM Custom Data Solution",
+        dealType: "custom",
+        businessSummary: "Custom data integration and analytics solution for GM's new vehicle lineup, designed to improve targeting precision.",
+        salesChannel: "client_direct",
+        advertiserName: "General Motors",
+        region: "midwest",
+        dealStructure: "flat_commit",
+        termStartDate: new Date("2025-03-01"),
+        termEndDate: new Date("2026-02-28"),
+        annualRevenue: 5000000,
+        annualGrossMargin: 15.8,
+        previousYearRevenue: 4200000,
+        previousYearMargin: 12.3,
+        hasTradeAMImplications: true,
+        yearlyRevenueGrowthRate: 19,
+        forecastedMargin: 15.8,
+        yearlyMarginGrowthRate: 28.5,
+        addedValueBenefitsCost: 450000,
+        analyticsTier: "platinum",
+        requiresCustomMarketing: true,
+        status: "initial_approval",
+        referenceNumber: "DEAL-2025-003"
       },
       {
-        dealName: "Cloud Infrastructure Upgrade",
-        dealType: "upsell",
-        description: "Expansion of cloud infrastructure with additional redundancy and performance optimization.",
-        department: "it",
-        expectedCloseDate: "2023-11-25",
-        priority: "medium",
-        clientName: "Wayne Enterprises",
-        clientType: "existing",
-        industry: "technology",
-        region: "asia_pacific",
-        companySize: "enterprise",
-        totalValue: 250000,
-        contractTerm: 36,
-        paymentTerms: "quarterly",
-        discountPercentage: 8,
-        renewalOption: "automatic",
-        pricingNotes: "",
-        status: "in_progress",
-        referenceNumber: "DEAL-2023-086"
+        dealName: "Droga5 Client Portfolio",
+        dealType: "protect",
+        businessSummary: "Retention-focused deal to maintain Droga5's existing client portfolio with minimal growth targets but stable margins.",
+        salesChannel: "independent_agency",
+        agencyName: "Droga5",
+        region: "northeast",
+        dealStructure: "tiered",
+        termStartDate: new Date("2025-02-15"),
+        termEndDate: new Date("2025-12-31"),
+        annualRevenue: 980000,
+        annualGrossMargin: 32.8,
+        previousYearRevenue: 950000,
+        previousYearMargin: 32.8,
+        hasTradeAMImplications: false,
+        yearlyRevenueGrowthRate: 3.2,
+        forecastedMargin: 32.8,
+        yearlyMarginGrowthRate: 0,
+        addedValueBenefitsCost: 50000,
+        analyticsTier: "silver",
+        requiresCustomMarketing: false,
+        status: "client_feedback",
+        referenceNumber: "DEAL-2025-004"
       },
       {
-        dealName: "Security Compliance Package",
-        dealType: "new_business",
-        description: "Comprehensive security audit, remediation, and compliance certification package.",
-        department: "operations",
-        expectedCloseDate: "2023-10-30",
-        priority: "high",
-        clientName: "Stark Industries",
-        clientType: "new",
-        industry: "technology",
-        region: "north_america",
-        companySize: "large",
-        totalValue: 75800,
-        contractTerm: 12,
-        paymentTerms: "upfront",
-        discountPercentage: 0,
-        renewalOption: "none",
-        pricingNotes: "",
-        status: "rejected",
-        referenceNumber: "DEAL-2023-085"
+        dealName: "Nike Digital Transformation",
+        dealType: "custom",
+        businessSummary: "Comprehensive digital transformation project focused on Nike's online retail experience and personalization capabilities.",
+        salesChannel: "client_direct",
+        advertiserName: "Nike",
+        region: "west",
+        dealStructure: "tiered",
+        termStartDate: new Date("2025-04-01"),
+        termEndDate: new Date("2027-03-31"),
+        annualRevenue: 2500000,
+        annualGrossMargin: 25.5,
+        previousYearRevenue: 1800000,
+        previousYearMargin: 22.4,
+        hasTradeAMImplications: true,
+        yearlyRevenueGrowthRate: 38.9,
+        forecastedMargin: 25.5,
+        yearlyMarginGrowthRate: 13.8,
+        addedValueBenefitsCost: 275000,
+        analyticsTier: "gold",
+        requiresCustomMarketing: true,
+        status: "signed",
+        referenceNumber: "DEAL-2025-005"
       }
     ];
     
     // Add the sample deals to storage
     sampleDeals.forEach(deal => {
       this.createDeal(deal);
+    });
+    
+    // Add sample tiers for tiered deals
+    const tiersByDealId = {
+      1: [ // For "Coca-Cola Q1 2025 Campaign"
+        {
+          dealId: 1,
+          tierNumber: 1,
+          annualRevenue: 2500000,
+          annualGrossMargin: 18.5,
+          incentivePercentage: 0,
+          incentiveNotes: "Base tier - no incentives"
+        },
+        {
+          dealId: 1,
+          tierNumber: 2,
+          annualRevenue: 3000000,
+          annualGrossMargin: 20.5,
+          incentivePercentage: 1.5,
+          incentiveNotes: "Tier 2 - 1.5% rebate"
+        },
+        {
+          dealId: 1,
+          tierNumber: 3,
+          annualRevenue: 3500000,
+          annualGrossMargin: 21.0,
+          incentivePercentage: 2.0,
+          incentiveNotes: "Tier 3 - 2% rebate + premium support"
+        },
+        {
+          dealId: 1,
+          tierNumber: 4,
+          annualRevenue: 4000000,
+          annualGrossMargin: 22.0,
+          incentivePercentage: 3.0,
+          incentiveNotes: "Tier 4 - 3% rebate + premium support + quarterly strategy sessions"
+        }
+      ],
+      4: [ // For "Droga5 Client Portfolio"
+        {
+          dealId: 4,
+          tierNumber: 1,
+          annualRevenue: 950000,
+          annualGrossMargin: 32.8,
+          incentivePercentage: 0,
+          incentiveNotes: "Base tier - no incentives"
+        },
+        {
+          dealId: 4,
+          tierNumber: 2,
+          annualRevenue: 1000000,
+          annualGrossMargin: 33.0,
+          incentivePercentage: 1.0,
+          incentiveNotes: "Tier 2 - 1% rebate"
+        },
+        {
+          dealId: 4,
+          tierNumber: 3,
+          annualRevenue: 1100000,
+          annualGrossMargin: 33.5,
+          incentivePercentage: 1.5,
+          incentiveNotes: "Tier 3 - 1.5% rebate"
+        },
+        {
+          dealId: 4,
+          tierNumber: 4,
+          annualRevenue: 1250000,
+          annualGrossMargin: 34.0,
+          incentivePercentage: 2.5,
+          incentiveNotes: "Tier 4 - 2.5% rebate + priority support"
+        }
+      ],
+      5: [ // For "Nike Digital Transformation"
+        {
+          dealId: 5,
+          tierNumber: 1,
+          annualRevenue: 2000000,
+          annualGrossMargin: 23.0,
+          incentivePercentage: 0,
+          incentiveNotes: "Base tier - no incentives"
+        },
+        {
+          dealId: 5,
+          tierNumber: 2,
+          annualRevenue: 2500000,
+          annualGrossMargin: 25.5,
+          incentivePercentage: 2.0,
+          incentiveNotes: "Tier 2 - 2% rebate + enhanced analytics package"
+        },
+        {
+          dealId: 5,
+          tierNumber: 3,
+          annualRevenue: 3000000,
+          annualGrossMargin: 27.0,
+          incentivePercentage: 3.0,
+          incentiveNotes: "Tier 3 - 3% rebate + enhanced analytics + quarterly workshops"
+        },
+        {
+          dealId: 5,
+          tierNumber: 4,
+          annualRevenue: 3500000,
+          annualGrossMargin: 28.5,
+          incentivePercentage: 4.5,
+          incentiveNotes: "Tier 4 - 4.5% rebate + all premium features + executive quarterly reviews"
+        }
+      ]
+    };
+    
+    // Add the sample tiers to storage
+    Object.values(tiersByDealId).forEach(tiers => {
+      tiers.forEach(tier => {
+        this.createDealTier(tier);
+      });
     });
   }
 
@@ -201,6 +446,110 @@ export class MemStorage implements IStorage {
     return user;
   }
   
+  // Advertiser methods
+  async getAdvertiser(id: number): Promise<Advertiser | undefined> {
+    return this.advertisers.get(id);
+  }
+  
+  async getAdvertiserByName(name: string): Promise<Advertiser | undefined> {
+    return Array.from(this.advertisers.values()).find(
+      (advertiser) => advertiser.name === name,
+    );
+  }
+  
+  async getAdvertisers(): Promise<Advertiser[]> {
+    return Array.from(this.advertisers.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+  
+  async createAdvertiser(insertAdvertiser: InsertAdvertiser): Promise<Advertiser> {
+    const id = this.advertiserCurrentId++;
+    const now = new Date();
+    
+    const advertiser: Advertiser = {
+      ...insertAdvertiser,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.advertisers.set(id, advertiser);
+    return advertiser;
+  }
+  
+  // Agency methods
+  async getAgency(id: number): Promise<Agency | undefined> {
+    return this.agencies.get(id);
+  }
+  
+  async getAgencyByName(name: string): Promise<Agency | undefined> {
+    return Array.from(this.agencies.values()).find(
+      (agency) => agency.name === name,
+    );
+  }
+  
+  async getAgencies(filters?: { type?: string }): Promise<Agency[]> {
+    let agencies = Array.from(this.agencies.values());
+    
+    if (filters && filters.type) {
+      agencies = agencies.filter(agency => agency.type === filters.type);
+    }
+    
+    return agencies.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  
+  async createAgency(insertAgency: InsertAgency): Promise<Agency> {
+    const id = this.agencyCurrentId++;
+    const now = new Date();
+    
+    const agency: Agency = {
+      ...insertAgency,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.agencies.set(id, agency);
+    return agency;
+  }
+  
+  // Deal tier methods
+  async getDealTiers(dealId: number): Promise<DealTier[]> {
+    const tiers = Array.from(this.dealTiers.values())
+      .filter(tier => tier.dealId === dealId)
+      .sort((a, b) => a.tierNumber - b.tierNumber);
+      
+    return tiers;
+  }
+  
+  async createDealTier(insertTier: InsertDealTier): Promise<DealTier> {
+    const id = this.dealTierCurrentId++;
+    const now = new Date();
+    
+    const tier: DealTier = {
+      ...insertTier,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.dealTiers.set(id, tier);
+    return tier;
+  }
+  
+  async updateDealTier(id: number, tierUpdate: Partial<InsertDealTier>): Promise<DealTier | undefined> {
+    const tier = this.dealTiers.get(id);
+    if (!tier) return undefined;
+    
+    const updatedTier: DealTier = {
+      ...tier,
+      ...tierUpdate,
+      updatedAt: new Date(),
+    };
+    
+    this.dealTiers.set(id, updatedTier);
+    return updatedTier;
+  }
+  
   // Deal methods
   async getDeal(id: number): Promise<Deal | undefined> {
     return this.deals.get(id);
@@ -212,13 +561,19 @@ export class MemStorage implements IStorage {
     );
   }
   
-  async getDeals(filters?: { status?: string }): Promise<Deal[]> {
+  async getDeals(filters?: { status?: string, dealType?: string, salesChannel?: string }): Promise<Deal[]> {
     let deals = Array.from(this.deals.values());
     
     // Apply filters if provided
     if (filters) {
       if (filters.status) {
         deals = deals.filter(deal => deal.status === filters.status);
+      }
+      if (filters.dealType) {
+        deals = deals.filter(deal => deal.dealType === filters.dealType);
+      }
+      if (filters.salesChannel) {
+        deals = deals.filter(deal => deal.salesChannel === filters.salesChannel);
       }
     }
     
@@ -397,6 +752,18 @@ function getStorage(): IStorage {
           }
         },
         
+        // Advertiser methods - always use memory storage for now
+        getAdvertiser: (id) => memStorage.getAdvertiser(id),
+        getAdvertiserByName: (name) => memStorage.getAdvertiserByName(name),
+        getAdvertisers: () => memStorage.getAdvertisers(),
+        createAdvertiser: (advertiser) => memStorage.createAdvertiser(advertiser),
+        
+        // Agency methods - always use memory storage for now
+        getAgency: (id) => memStorage.getAgency(id),
+        getAgencyByName: (name) => memStorage.getAgencyByName(name),
+        getAgencies: (filters) => memStorage.getAgencies(filters),
+        createAgency: (agency) => memStorage.createAgency(agency),
+        
         // Deal methods - with fallback to memory if operations fail
         getDeal: async (id) => {
           try {
@@ -438,6 +805,11 @@ function getStorage(): IStorage {
             return memStorage.updateDealStatus(id, status);
           }
         },
+        
+        // Deal tier methods - always use memory storage for now
+        getDealTiers: (dealId) => memStorage.getDealTiers(dealId),
+        createDealTier: (tier) => memStorage.createDealTier(tier),
+        updateDealTier: (id, tier) => memStorage.updateDealTier(id, tier),
         
         // Deal scoping request methods - always use memory storage as we know there are permission issues
         getDealScopingRequest: (id) => memStorage.getDealScopingRequest(id),
