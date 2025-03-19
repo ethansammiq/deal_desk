@@ -53,8 +53,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   router.post("/deals", async (req: Request, res: Response) => {
     try {
-      // Validate the request body against the schema
-      const validatedData = insertDealSchema.safeParse(req.body);
+      // Extract dealTiers from request body if present
+      const { dealTiers, ...dealData } = req.body;
+      
+      // Validate the deal data against the schema
+      const validatedData = insertDealSchema.safeParse(dealData);
       
       if (!validatedData.success) {
         const errorMessage = fromZodError(validatedData.error).message;
@@ -74,8 +77,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referenceNumber
       });
       
+      // If this is a tiered deal structure and dealTiers were provided, create them
+      if (validatedData.data.dealStructure === "tiered" && Array.isArray(dealTiers) && dealTiers.length > 0) {
+        // Create each tier and associate it with the new deal
+        for (const tier of dealTiers) {
+          await storage.createDealTier({
+            ...tier,
+            dealId: newDeal.id
+          });
+        }
+      }
+      
       res.status(201).json(newDeal);
     } catch (error) {
+      console.error("Error creating deal:", error);
       res.status(500).json({ message: "Failed to create deal" });
     }
   });
