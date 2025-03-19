@@ -1230,8 +1230,8 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Total Deal Value</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("totalValue") ? 
-                              `$${form.getValues("totalValue").toLocaleString(undefined, {
+                            {getTypedValue("totalValue") ? 
+                              `$${Number(getTypedValue("totalValue")).toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                               })}` : 
@@ -1241,44 +1241,44 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Contract Term</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("contractTerm") ? 
-                              `${form.getValues("contractTerm")} Months` : 
+                            {getTypedValue("contractTerm") ? 
+                              `${getTypedValue("contractTerm")} Months` : 
                               "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Payment Terms</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("paymentTerms") 
-                              ? String(form.getValues("paymentTerms"))
+                            {getTypedValue("paymentTerms") 
+                              ? String(getTypedValue("paymentTerms"))
                                   .replace("_", " ")
-                                  .replace(/\b\w/g, char => char.toUpperCase()) 
+                                  .replace(/\b\w/g, (char) => char.toUpperCase()) 
                               : "Not provided"}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Discount</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {`${form.getValues("discountPercentage") || 0}%`}
+                            {`${getTypedValue("discountPercentage") || 0}%`}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Cost Percentage</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {`${form.getValues("costPercentage") || 30}%`}
+                            {`${getTypedValue("costPercentage") || 30}%`}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Incentive Percentage</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {`${form.getValues("incentivePercentage") || 0}%`}
+                            {`${getTypedValue("incentivePercentage") || 0}%`}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Previous Year Revenue</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("previousYearValue") 
-                              ? formatCurrency(form.getValues("previousYearValue")) 
+                            {getTypedValue("previousYearValue") 
+                              ? formatCurrency(getTypedValue("previousYearValue") as number) 
                               : "$0"}
                           </dd>
                         </div>
@@ -1286,8 +1286,8 @@ export default function SubmitDeal() {
                           <dt className="text-sm font-medium text-slate-500">YOY Growth</dt>
                           <dd className="mt-1 text-sm text-slate-900 font-semibold">
                             {Math.round(calculateYOYGrowth(
-                              form.getValues("totalValue") ?? 0,
-                              form.getValues("previousYearValue") ?? 0
+                              getTypedValue("totalValue") as number ?? 0,
+                              getTypedValue("previousYearValue") as number ?? 0
                             ))}%
                           </dd>
                         </div>
@@ -1295,16 +1295,16 @@ export default function SubmitDeal() {
                           <dt className="text-sm font-medium text-slate-500">Profit Margin</dt>
                           <dd className="mt-1 text-sm font-semibold text-green-600">
                             {Math.round(calculateProfitMargin(
-                              form.getValues("totalValue") ?? 0,
-                              form.getValues("discountPercentage") ?? 0,
-                              form.getValues("costPercentage") ?? 30
+                              getTypedValue("totalValue") as number ?? 0,
+                              getTypedValue("discountPercentage") as number ?? 0,
+                              getTypedValue("costPercentage") as number ?? 30
                             ))}%
                           </dd>
                         </div>
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">Special Pricing Notes</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {form.getValues("pricingNotes") || "None"}
+                            {getTypedValue("pricingNotes") || "None"}
                           </dd>
                         </div>
                       </dl>
