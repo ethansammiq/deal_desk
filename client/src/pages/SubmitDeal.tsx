@@ -1055,6 +1055,22 @@ export default function SubmitDeal() {
                     </div>
                   )}
                 </div>
+                
+                <div className="mt-8 flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                  >
+                    Previous: Deal Details
+                  </Button>
+                  <Button 
+                    type="button"
+                    onClick={nextStep}
+                  >
+                    Next: Review & Submit
+                  </Button>
+                </div>
               </CardContent>
             )}
             
