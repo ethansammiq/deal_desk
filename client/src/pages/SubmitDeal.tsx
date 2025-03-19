@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +36,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { ApprovalAlert, ApprovalHelpText } from "@/components/ApprovalAlert";
+import { ApprovalRule } from "@/lib/approval-matrix";
 
 // Extend the deal schema with additional validations
 const dealFormSchema = z.object({
@@ -71,6 +73,8 @@ export default function SubmitDeal() {
   const [formStep, setFormStep] = useState(0);
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
+  const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
   
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),

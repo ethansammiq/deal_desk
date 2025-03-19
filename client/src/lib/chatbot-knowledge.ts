@@ -115,7 +115,7 @@ The deal submission stage formalizes your opportunity with complete details need
 
 ## Timeframe
 • Standard deals: 2 business days for initial review
-• Non-standard deals: 3-5 business hours for initial review
+• Non-standard deals: 3-5 business days for initial review
 
 > **Pro Tip**: Always include detailed competitive information to help justify any discounts or special terms you're requesting.`,
   
@@ -146,11 +146,11 @@ The consolidated review and approval process ensures all deal aspects are thorou
 
 ## Approval Matrix
 | Deal Value      | Standard Terms | Non-Standard Terms | High Discount (>20%) |
-|-----------------|----------------|--------------------|-----------------------|
-| Up to $50K      | Manager        | Director           | Director              |
-| $50K-$250K      | Director       | VP                 | VP                    |
-| $250K-$1M       | VP             | VP                 | SVP                   |
-| Over $1M        | SVP            | C-Level            | C-Level               |
+|-----------------|----------------|--------------------|----------------------|
+| Up to $50K      | Manager        | Director           | Director             |
+| $50K-$250K      | Director       | VP                 | VP                   |
+| $250K-$1M       | VP             | VP                 | SVP                  |
+| Over $1M        | SVP            | C-Level            | C-Level              |
 
 ## Required Documentation
 • Deal Summary Document
@@ -179,7 +179,7 @@ If your deal is urgent or has been delayed in approval:
 
 > **Pro Tip**: Respond promptly to any questions from the review team to avoid delays. For complex deals, consider scheduling a pre-review call with key stakeholders to address potential concerns before formal submission.`,
   
-  // Stage 5: Negotiation
+  // Stage 4: Negotiation
   negotiationProcess: `# Deal Negotiation Process
 
 The negotiation stage finalizes commercial terms with the customer after internal approval.
@@ -212,7 +212,7 @@ The negotiation stage finalizes commercial terms with the customer after interna
 
 > **Pro Tip**: Always prepare a negotiation strategy document before engaging with customers to align internal stakeholders.`,
   
-  // Stage 6: Contracting
+  // Stage 5: Contracting
   contractingProcess: `# Deal Contracting Process
 
 The contracting stage formalizes the agreement with proper legal documentation.
@@ -249,7 +249,7 @@ The contracting stage formalizes the agreement with proper legal documentation.
 
 > **Pro Tip**: Use our contract templates whenever possible to speed up the process and reduce legal review time.`,
   
-  // Stage 7: Implementation
+  // Stage 6: Implementation
   implementationProcess: `# Deal Implementation Process
 
 The implementation stage delivers the promised solution to the customer after contract signing.
@@ -288,7 +288,7 @@ The implementation stage delivers the promised solution to the customer after co
 
 > **Pro Tip**: Set clear expectations with customers about implementation timelines and required resources from their side to avoid delays.`,
   
-  // Stage 8: Evaluation
+  // Stage 7: Evaluation
   evaluationProcess: `# Deal Evaluation Process
 
 The evaluation stage assesses deal performance after implementation to measure success and gather insights.
