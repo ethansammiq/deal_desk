@@ -602,37 +602,7 @@ export default function SubmitDeal() {
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="dealStructure"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
-                          <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              setDealStructure(value as "tiered" | "flat_commit");
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select deal structure" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="tiered">Tiered Commit Structure</SelectItem>
-                              <SelectItem value="flat_commit">Flat Commit Structure</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Tiered: Multi-level revenue commitments with variable margin<br />
-                            Flat: Single revenue commitment with fixed margin
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
                   </div>
                   
                   {/* Conditional fields based on sales channel */}
@@ -767,8 +737,39 @@ export default function SubmitDeal() {
                   
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
-                  {/* Pricing fields have been moved to the Review & Submit tab */}
-                  
+                  {/* Deal Structure Field - Moved from Deal Details tab */}
+                  <FormField
+                    control={form.control}
+                    name="dealStructure"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setDealStructureType(value);
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select deal structure" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="flat">Flat Commit</SelectItem>
+                            <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                            <SelectItem value="hybrid">Hybrid Model</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          The revenue structure for this deal
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   {/* Tiered Deal Structure Section - Only shown when "tiered" is selected */}
                   {dealStructureType === "tiered" && (
                     <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
@@ -911,28 +912,6 @@ export default function SubmitDeal() {
                       </div>
                     </div>
                   )}
-                  
-                  <FormField
-                    control={form.control}
-                    name="pricingNotes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Special Pricing Notes</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Include any special pricing considerations, concessions, or non-standard terms"
-                            className="resize-none"
-                            rows={3}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Include any special pricing considerations, concessions, or non-standard terms.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </CardContent>
             )}
