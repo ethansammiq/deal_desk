@@ -7,7 +7,8 @@ import {
   SendIcon,
   BotIcon,
   UserIcon,
-  Loader2Icon
+  Loader2Icon,
+  Trash
 } from "lucide-react";
 import { useChat } from '@/lib/chat-context';
 
@@ -32,7 +33,7 @@ export default function FloatingChatbot({
   avatarUrl,
   showTimestamps = false
 }: FloatingChatbotProps) {
-  const { messages, sendMessage, isLoading, suggestedQuestions } = useChat();
+  const { messages, sendMessage, clearChatHistory, isLoading, suggestedQuestions, model } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -126,25 +127,46 @@ export default function FloatingChatbot({
         {/* Chat header */}
         <div className={primaryColor ? 'bg-[var(--custom-primary-color)] text-white p-4 rounded-t-lg flex justify-between items-center' : 'bg-primary text-white p-4 rounded-t-lg flex justify-between items-center'}>
           <div className="flex flex-col">
-            <h3 className="font-medium flex items-center">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={title} className="h-6 w-6 rounded-full mr-2 object-cover" />
-              ) : (
-                <BotIcon className="h-5 w-5 mr-2" />
-              )}
-              {title}
-            </h3>
+            <div className="flex items-center">
+              <h3 className="font-medium flex items-center">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={title} className="h-6 w-6 rounded-full mr-2 object-cover" />
+                ) : (
+                  <BotIcon className="h-5 w-5 mr-2" />
+                )}
+                {title}
+              </h3>
+              {/* AI Model Indicator */}
+              <span className="ml-2 text-xs bg-white/20 px-1.5 py-0.5 rounded-sm">
+                {model === 'advanced' ? 'Pro AI' : 'Basic AI'}
+              </span>
+            </div>
             {subtitle && (
               <p className="text-xs text-white/80 mt-1">{subtitle}</p>
             )}
           </div>
-          <button 
-            onClick={toggleChat} 
-            className="text-white hover:text-slate-200 focus:outline-none"
-            aria-label="Close chat"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Clear history button */}
+            <button 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear your chat history?')) {
+                  clearChatHistory();
+                }
+              }} 
+              className="text-white/70 hover:text-white focus:outline-none"
+              aria-label="Clear chat history"
+              title="Clear chat history"
+            >
+              <Trash className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={toggleChat} 
+              className="text-white hover:text-slate-200 focus:outline-none"
+              aria-label="Close chat"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         
         {/* Chat messages */}

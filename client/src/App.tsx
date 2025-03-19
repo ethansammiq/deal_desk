@@ -58,13 +58,24 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ChatProvider config={{
         apiBasePath: '/api',
+        // Custom welcome message for the chatbot
+        welcomeMessage: "👋 Hi there! I'm your Deal Assistant. How can I help you today with deal submissions or incentive questions?",
+        // Default suggested questions
         defaultSuggestedQuestions: [
           "What are the incentive thresholds?",
           "How do I submit a new deal?",
           "What are the approval requirements?",
           "How are urgent deals handled?",
           "What growth opportunities qualify for incentives?"
-        ]
+        ],
+        // Enable conversation persistence across page refreshes
+        persistConversation: true,
+        // Maximum number of messages to keep in history
+        maxHistoryLength: 30,
+        // Number of characters before showing auto-suggestions
+        autoSuggestThreshold: 3,
+        // AI model to use - 'simple' for keyword matching or 'advanced' for more detailed responses
+        aiModel: 'advanced'
       }}>
         <Router />
         <Toaster />
