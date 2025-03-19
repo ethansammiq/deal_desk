@@ -587,6 +587,54 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter contact email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="dealStructure"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setDealStructure(value as "tiered" | "flat_commit");
+                            }}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select deal structure" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="tiered">Tiered Commit Structure</SelectItem>
+                              <SelectItem value="flat_commit">Flat Commit Structure</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Tiered: Multi-level revenue commitments with variable margin<br />
+                            Flat: Single revenue commitment with fixed margin
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   {/* Conditional fields based on sales channel */}
                   <div className="grid grid-cols-1 gap-6">
                     {salesChannel === "client_direct" && (
@@ -672,7 +720,7 @@ export default function SubmitDeal() {
               </CardContent>
             )}
             
-            {/* Step 2: Client & Pricing */}
+            {/* Step 2: Deal Structure & Pricing */}
             {formStep === 1 && (
               <CardContent className="p-6">
                 <div className="mb-6">
@@ -681,56 +729,6 @@ export default function SubmitDeal() {
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="dealStructure"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
-                          <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              setDealStructure(value as "tiered" | "flat_commit");
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select deal structure" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="tiered">Tiered Commit Structure</SelectItem>
-                              <SelectItem value="flat_commit">Flat Commit Structure</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Tiered: Multi-level revenue commitments with variable margin<br />
-                            Flat: Single revenue commitment with fixed margin
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Contact Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter contact email" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Email address for notifications about this deal
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <FormField
