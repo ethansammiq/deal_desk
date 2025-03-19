@@ -105,7 +105,7 @@ export function getValueBasedApprover(value: number, hasNonStandardTerms: boolea
  * Determines if a discount percentage is considered "high" requiring special approval
  */
 export function isHighDiscount(discountPercentage: number): boolean {
-  return discountPercentage > 20;
+  return discountPercentage > 30;
 }
 
 /**
@@ -146,7 +146,7 @@ export function getContractTermBasedApprover(contractTerm: number): ApproverLeve
  * Returns the higher level between two approver levels
  */
 function getHigherLevel(level1: ApproverLevel, level2: ApproverLevel): ApproverLevel {
-  const levels = ['Manager', 'Director', 'VP', 'SVP', 'C-Level'];
+  const levels = ['MD', 'Executive'];
   const index1 = levels.indexOf(level1);
   const index2 = levels.indexOf(level2);
   
@@ -191,20 +191,20 @@ export function generateApprovalAlert(params: DealParameters): {
   
   // Determine alert level based on approver level
   let alertLevel: 'info' | 'warning' | 'alert' = 'info';
-  if (requiredLevel === 'VP') {
+  if (requiredLevel === 'MD') {
+    alertLevel = 'info';
+  } else if (requiredLevel === 'Executive') {
     alertLevel = 'warning';
-  } else if (requiredLevel === 'SVP' || requiredLevel === 'C-Level') {
-    alertLevel = 'alert';
   }
   
   // Build a descriptive message
   let message = `This deal requires ${approver.title} approval`;
   
   const reasons = [];
-  if (params.totalValue > 50000) reasons.push(`deal value of $${params.totalValue.toLocaleString()}`);
+  if (params.totalValue > 500000) reasons.push(`deal value of $${params.totalValue.toLocaleString()}`);
   if (params.hasNonStandardTerms) reasons.push('non-standard terms');
-  if (params.discountPercentage > 20) reasons.push(`high discount of ${params.discountPercentage}%`);
-  if (params.contractTerm > 24) reasons.push(`extended contract term of ${params.contractTerm} months`);
+  if (params.discountPercentage > 30) reasons.push(`high discount of ${params.discountPercentage}%`);
+  if (params.contractTerm > 36) reasons.push(`extended contract term of ${params.contractTerm} months`);
   
   if (reasons.length > 0) {
     message += ` due to ${reasons.join(' and ')}. `;

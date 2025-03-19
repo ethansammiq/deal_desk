@@ -93,16 +93,10 @@ export function ApprovalAlert({
 export function ApprovalHelpText({ level }: { level: string }) {
   const getHelpText = () => {
     switch (level) {
-      case 'Manager':
-        return "Standard approval process, typically fast.";
-      case 'Director':
-        return "Director approval may require additional documentation.";
-      case 'VP':
-        return "VP approval requires strong business justification.";
-      case 'SVP':
-        return "SVP approval needed for high-value deals. Prepare executive summary.";
-      case 'C-Level':
-        return "C-Level approval requires executive briefing and strong ROI validation.";
+      case 'MD':
+        return "Managing Director approval process, typically fast for standard deals.";
+      case 'Executive':
+        return "Executive Committee approval requires strong business case, detailed documentation, and comprehensive ROI validation.";
       default:
         return "Standard approval process applies.";
     }
