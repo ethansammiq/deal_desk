@@ -767,228 +767,7 @@ export default function SubmitDeal() {
                   
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="totalValue"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Total Deal Value <span className="text-red-500">*</span></FormLabel>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-slate-500 sm:text-sm">$</span>
-                            </div>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="0.00" 
-                                className="pl-7"
-                                {...field}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="contractTerm"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Contract Term <span className="text-red-500">*</span></FormLabel>
-                          <div className="flex rounded-md">
-                            <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                className="rounded-r-none"
-                              />
-                            </FormControl>
-                            <span className="inline-flex items-center px-3 py-2 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 text-sm">
-                              Months
-                            </span>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <FormField
-                      control={form.control}
-                      name="paymentTerms"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Payment Terms</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select payment terms" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="monthly">Monthly</SelectItem>
-                              <SelectItem value="quarterly">Quarterly</SelectItem>
-                              <SelectItem value="annually">Annually</SelectItem>
-                              <SelectItem value="upfront">Upfront</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="discountPercentage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Discount (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              min="0"
-                              max="100"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="renewalOption"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Renewal Option</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select renewal option" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="automatic">Automatic</SelectItem>
-                              <SelectItem value="manual">Manual</SelectItem>
-                              <SelectItem value="none">None</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* Non-standard terms checkbox */}
-                  <div className="mt-6 mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="nonStandardTerms" 
-                        checked={hasNonStandardTerms} 
-                        onCheckedChange={(checked) => {
-                          setHasNonStandardTerms(checked === true);
-                        }}
-                      />
-                      <label
-                        htmlFor="nonStandardTerms"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        This deal includes non-standard terms
-                      </label>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500 ml-6">
-                      Any modifications to standard contract language, special provisions, or custom pricing structures
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <FormField
-                      control={form.control}
-                      name="costPercentage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cost Percentage (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="30"
-                              min="0"
-                              max="100"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Internal cost as percentage of revenue
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="incentivePercentage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Incentive Percentage (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              min="0"
-                              max="50"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Sales or other incentives
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="previousYearValue"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Previous Year Revenue ($)</FormLabel>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-slate-500 sm:text-sm">$</span>
-                            </div>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="0.00" 
-                                className="pl-7"
-                                {...field}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormDescription>
-                            For YOY growth calculation
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* Financial calculator section was removed for form simplification */}
+                  {/* Pricing fields have been moved to the Review & Submit tab */}
                   
                   {/* Tiered Deal Structure Section - Only shown when "tiered" is selected */}
                   {dealStructureType === "tiered" && (
@@ -1170,6 +949,28 @@ export default function SubmitDeal() {
                   <div className="text-sm text-slate-500 italic">
                     By submitting this deal, you confirm that all information is accurate and complete. The deal will be reviewed by the appropriate team members based on your department and deal value.
                   </div>
+                </div>
+                
+                {/* Non-standard terms checkbox - moved here from Client & Pricing tab */}
+                <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="nonStandardTerms" 
+                      checked={hasNonStandardTerms} 
+                      onCheckedChange={(checked) => {
+                        setHasNonStandardTerms(checked === true);
+                      }}
+                    />
+                    <label
+                      htmlFor="nonStandardTerms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      This deal includes non-standard terms
+                    </label>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 ml-6">
+                    Any modifications to standard contract language, special provisions, or custom pricing structures
+                  </p>
                 </div>
                 
                 {/* Standard Deal Criteria Help moved here from Step 2 */}
