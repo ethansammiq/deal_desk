@@ -190,12 +190,7 @@ export default function SubmitDeal() {
     previousYearMargin?: number;
   }
   
-  // Mock previous year data (in a real app, this would come from an API)
-  const [previousYearData, setPreviousYearData] = useState<PreviousYearData>({
-    annualRevenue: 0,
-    annualGrossMargin: 0,
-    annualGrossMarginPercent: 0
-  });
+  // Removed previous year data state as it's no longer needed for simplified UI
   
   // State for tiered deal structure
   const [dealTiers, setDealTiers] = useState([
