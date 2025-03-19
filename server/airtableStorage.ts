@@ -52,6 +52,7 @@ export class AirtableStorage implements IStorage {
       this.base = Airtable.base(baseId);
       this.userTable = this.base('Users');
       this.dealTable = this.base('Deals');
+      this.dealScopingRequestTable = this.base('Deal Scoping Requests');
       
       // Load existing data
       this.loadExistingData();
@@ -133,7 +134,38 @@ export class AirtableStorage implements IStorage {
         }
       });
       
-      // Support requests have been removed as per user request
+      // Load Deal Scoping Requests
+      const dealScopingRecords = await this.dealScopingRequestTable.select().all();
+      dealScopingRecords.forEach(record => {
+        const fields = record.fields;
+        // Use the internal_id field, or generate one if not available
+        const id = fields.internal_id ? Number(fields.internal_id) : this.dealScopingRequestCurrentId++;
+        
+        // Create a deal scoping request object with default values for missing fields
+        const dealScopingRequest: DealScopingRequest = {
+          id,
+          status: fields.status ? String(fields.status) : 'pending',
+          email: fields.email ? String(fields.email) : null,
+          salesChannel: fields.salesChannel ? String(fields.salesChannel) : 'holding_company',
+          advertiserName: fields.advertiserName ? String(fields.advertiserName) : null,
+          agencyName: fields.agencyName ? String(fields.agencyName) : null,
+          growthOpportunityMIQ: fields.growthOpportunityMIQ ? String(fields.growthOpportunityMIQ) : '',
+          growthAmbition: fields.growthAmbition ? Number(fields.growthAmbition) : 1000000,
+          growthOpportunityClient: fields.growthOpportunityClient ? String(fields.growthOpportunityClient) : '',
+          requestTitle: fields.requestTitle ? String(fields.requestTitle) : 'Untitled Request',
+          clientAsks: fields.clientAsks ? String(fields.clientAsks) : null,
+          description: fields.description ? String(fields.description) : null,
+          createdAt: fields.createdAt ? new Date(String(fields.createdAt)) : new Date(),
+          updatedAt: fields.updatedAt ? new Date(String(fields.updatedAt)) : new Date()
+        };
+        
+        this.dealScopingRequests.set(id, dealScopingRequest);
+        this.dealScopingRequestRecordIds.set(id, record.id);
+        
+        if (id >= this.dealScopingRequestCurrentId) {
+          this.dealScopingRequestCurrentId = id + 1;
+        }
+      });
       
       console.log('Loaded existing data from Airtable');
     } catch (error) {
@@ -159,7 +191,11 @@ export class AirtableStorage implements IStorage {
       }).firstPage();
       console.log('Deals table fields:', dealsMeta.length > 0 ? Object.keys(dealsMeta[0].fields) : 'No records');
       
-      // Support requests table has been removed as per user request
+      // Check Deal Scoping Requests table
+      const dealScopingMeta = await this.dealScopingRequestTable.select({
+        maxRecords: 1
+      }).firstPage();
+      console.log('Deal Scoping Requests table fields:', dealScopingMeta.length > 0 ? Object.keys(dealScopingMeta[0].fields) : 'No records');
       
       // Now let's initialize the tables if needed
       const users = await this.userTable.select().all();
@@ -178,6 +214,16 @@ export class AirtableStorage implements IStorage {
           Name: 'Sample Deal'
         });
         console.log('Created initial deal record');
+      }
+      
+      // Initialize Deal Scoping Requests table if needed
+      const dealScopingRequests = await this.dealScopingRequestTable.select().all();
+      if (dealScopingRequests.length === 0) {
+        // Create an initial deal scoping request with just the Name field
+        await this.dealScopingRequestTable.create({
+          Name: 'Sample Deal Scoping Request'
+        });
+        console.log('Created initial deal scoping request record');
       }
     } catch (error) {
       console.error('Error initializing tables:', error);
@@ -417,8 +463,172 @@ export class AirtableStorage implements IStorage {
     }
   }
   
-  // Support request methods (removed as per user request)
-  // Support request methods have been removed from the application
+  // Deal Scoping Request methods
+  async getDealScopingRequest(id: number): Promise<DealScopingRequest | undefined> {
+    return this.dealScopingRequests.get(id);
+  }
+  
+  async getDealScopingRequests(filters?: { status?: string }): Promise<DealScopingRequest[]> {
+    const requests = Array.from(this.dealScopingRequests.values());
+    
+    if (filters?.status) {
+      return requests.filter(request => request.status === filters.status);
+    }
+    
+    return requests;
+  }
+  
+  // Helper method to get available fields for the Deal Scoping Requests table
+  private async getDealScopingRequestTableFields(): Promise<string[]> {
+    try {
+      const records = await this.dealScopingRequestTable.select({
+        maxRecords: 1
+      }).firstPage();
+      
+      if (records.length > 0) {
+        return Object.keys(records[0].fields);
+      }
+      return ['Name']; // Default if no records exist
+    } catch (error) {
+      console.error('Error getting deal scoping request table fields:', error);
+      return ['Name']; // Default on error
+    }
+  }
+  
+  async createDealScopingRequest(insertRequest: InsertDealScopingRequest): Promise<DealScopingRequest> {
+    const id = this.dealScopingRequestCurrentId++;
+    const now = new Date();
+    
+    const request: DealScopingRequest = {
+      ...insertRequest,
+      id,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    try {
+      // Create a record with the primary "Name" field and any other fields that might exist
+      const recordData: any = {
+        Name: request.requestTitle || 'New Scoping Request' // Airtable uses "Name" as the primary field
+      };
+      
+      // Get existing field names for this table
+      const tableFields = await this.getDealScopingRequestTableFields();
+      console.log('Available deal scoping request fields in Airtable:', tableFields);
+      
+      // Map our fields to Airtable fields if they exist
+      if (tableFields.includes('requestTitle')) recordData.requestTitle = request.requestTitle;
+      if (tableFields.includes('status')) recordData.status = request.status;
+      if (tableFields.includes('email')) recordData.email = request.email;
+      if (tableFields.includes('salesChannel')) recordData.salesChannel = request.salesChannel;
+      if (tableFields.includes('advertiserName')) recordData.advertiserName = request.advertiserName;
+      if (tableFields.includes('agencyName')) recordData.agencyName = request.agencyName;
+      if (tableFields.includes('growthOpportunityMIQ')) recordData.growthOpportunityMIQ = request.growthOpportunityMIQ;
+      if (tableFields.includes('growthAmbition')) recordData.growthAmbition = request.growthAmbition;
+      if (tableFields.includes('growthOpportunityClient')) recordData.growthOpportunityClient = request.growthOpportunityClient;
+      if (tableFields.includes('clientAsks')) recordData.clientAsks = request.clientAsks;
+      if (tableFields.includes('description')) recordData.description = request.description;
+      if (tableFields.includes('internal_id')) recordData.internal_id = id;
+      
+      // Create the record in Airtable
+      const record = await this.dealScopingRequestTable.create(recordData);
+      
+      // Log success information
+      console.log(`Successfully created deal scoping request "${request.requestTitle}" in Airtable`);
+      console.log(`Deal Scoping Request record ID: ${record.id}`);
+      
+      // Store the Airtable record ID
+      this.dealScopingRequestRecordIds.set(id, record.id);
+      
+      // Add to local cache
+      this.dealScopingRequests.set(id, request);
+      
+      return request;
+    } catch (error) {
+      console.error('Error creating deal scoping request in Airtable:', error);
+      
+      // If we still get an error, fall back to creating just the Name field
+      if (error instanceof Error && (error.message.includes('UNKNOWN_FIELD_NAME') || error.message.includes('NOT_FOUND'))) {
+        console.log('Falling back to simple record creation (Name field only)');
+        try {
+          const record = await this.dealScopingRequestTable.create({
+            Name: request.requestTitle || 'New Scoping Request'
+          });
+          
+          this.dealScopingRequestRecordIds.set(id, record.id);
+          this.dealScopingRequests.set(id, request);
+          return request;
+        } catch (fallbackError) {
+          console.error('Error in fallback creation:', fallbackError);
+          // Even if the fallback fails, we still want to keep the request in our local cache
+          this.dealScopingRequests.set(id, request);
+          return request;
+        }
+      }
+      
+      // Even if Airtable storage fails, keep the request in our local cache
+      this.dealScopingRequests.set(id, request);
+      return request;
+    }
+  }
+  
+  async updateDealScopingRequestStatus(id: number, status: string): Promise<DealScopingRequest | undefined> {
+    const request = this.dealScopingRequests.get(id);
+    
+    if (!request) {
+      return undefined;
+    }
+    
+    const updatedRequest: DealScopingRequest = {
+      ...request,
+      status,
+      updatedAt: new Date()
+    };
+    
+    try {
+      // Get the Airtable record ID
+      const recordId = this.dealScopingRequestRecordIds.get(id);
+      
+      if (!recordId) {
+        throw new Error(`Deal scoping request with ID ${id} not found in Airtable record map`);
+      }
+      
+      // Get existing field names for this table
+      const tableFields = await this.getDealScopingRequestTableFields();
+      console.log('Available deal scoping request fields in Airtable for status update:', tableFields);
+      
+      // Create update data based on what fields exist
+      const updateData: any = {};
+      
+      // If the status field exists, update it
+      if (tableFields.includes('status')) {
+        updateData.status = status;
+      } else if (tableFields.includes('Status')) {
+        // Airtable sometimes uses capitalized field names
+        updateData.Status = status;
+      } else {
+        // Try to update the Name field with status information
+        updateData.Name = `${request.requestTitle || 'Scoping Request'} (${status})`;
+        console.log('No status field found in Airtable, updating Name field with status information');
+      }
+      
+      // Update in Airtable
+      await this.dealScopingRequestTable.update(recordId, updateData);
+      console.log(`Successfully updated deal scoping request status to "${status}" in Airtable`);
+      
+      // Update local cache even if Airtable update fails
+      this.dealScopingRequests.set(id, updatedRequest);
+      
+      return updatedRequest;
+    } catch (error) {
+      console.error(`Error updating deal scoping request status in Airtable:`, error);
+      
+      // Update local cache even if Airtable update fails
+      this.dealScopingRequests.set(id, updatedRequest);
+      return updatedRequest;
+    }
+  }
   
   // Stats methods
   async getDealStats(): Promise<{

@@ -60,10 +60,10 @@ export function Sidebar() {
           <div className="flex flex-col flex-grow px-4 pt-5 pb-4 overflow-y-auto">
             <nav className="flex-1 space-y-2">
               <Link href="/">
-                <a
+                <div
                   onClick={closeMobileMenu}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group cursor-pointer",
                     location === "/" 
                       ? "bg-slate-700 text-white" 
                       : "text-slate-300 hover:bg-slate-700 hover:text-white"
@@ -71,13 +71,13 @@ export function Sidebar() {
                 >
                   <HomeIcon className="w-6 h-6 mr-3" />
                   Dashboard
-                </a>
+                </div>
               </Link>
               <Link href="/support">
-                <a
+                <div
                   onClick={closeMobileMenu}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group cursor-pointer",
                     location === "/support" || location === "/submit-deal" 
                       ? "bg-slate-700 text-white" 
                       : "text-slate-300 hover:bg-slate-700 hover:text-white"
@@ -85,13 +85,13 @@ export function Sidebar() {
                 >
                   <ClipboardPenIcon className="w-6 h-6 mr-3" />
                   Deal Process
-                </a>
+                </div>
               </Link>
               <Link href="/help">
-                <a
+                <div
                   onClick={closeMobileMenu}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-md group cursor-pointer",
                     location === "/help" 
                       ? "bg-slate-700 text-white" 
                       : "text-slate-300 hover:bg-slate-700 hover:text-white"
@@ -99,7 +99,7 @@ export function Sidebar() {
                 >
                   <HelpCircleIcon className="w-6 h-6 mr-3" />
                   Help & Resources
-                </a>
+                </div>
               </Link>
             </nav>
             <div className="pt-4 mt-6 border-t border-slate-700">
