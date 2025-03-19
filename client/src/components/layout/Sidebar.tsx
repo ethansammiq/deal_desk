@@ -84,7 +84,7 @@ export function Sidebar() {
                   )}
                 >
                   <ClipboardPenIcon className="w-6 h-6 mr-3" />
-                  Submit Deal
+                  Deal Process
                 </a>
               </Link>
               <Link href="/help">
