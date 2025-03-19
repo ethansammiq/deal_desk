@@ -367,8 +367,15 @@ export default function SubmitDeal() {
     form, // Include the entire form as a dependency
   ]);
 
-  function nextStep() {
-    // Validate current step fields
+  // Validates the current step and allows or prevents navigation
+  function validateAndGoToStep(targetStep: number): boolean {
+    // If going to a step we've already completed or the current step, allow it
+    if (formStep >= targetStep) {
+      setFormStep(targetStep);
+      return true;
+    }
+    
+    // Validate current step fields before allowing navigation
     if (formStep === 0) {
       // Use individual triggers for each field instead of array syntax
       form.trigger("dealType");
@@ -392,10 +399,41 @@ export default function SubmitDeal() {
       }
       
       if (dealTypeError || businessSummaryError || salesChannelError || regionError || conditionalError) {
-        return;
+        toast({
+          title: "Validation Error",
+          description: "Please fix the errors in the Deal Details section before continuing.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // If target is 2 (Review), also validate step 1
+      if (targetStep === 2) {
+        // Continue validation for step 1
+        form.trigger("dealStructure");
+        form.trigger("termStartDate");
+        form.trigger("termEndDate");
+        form.trigger("annualRevenue");
+        form.trigger("annualGrossMargin");
+        
+        const dealStructureError = form.getFieldState('dealStructure').error;
+        const termStartDateError = form.getFieldState('termStartDate').error;
+        const termEndDateError = form.getFieldState('termEndDate').error;
+        const annualRevenueError = form.getFieldState('annualRevenue').error;
+        const annualGrossMarginError = form.getFieldState('annualGrossMargin').error;
+        
+        if (dealStructureError || termStartDateError || termEndDateError || annualRevenueError || annualGrossMarginError) {
+          // Stop at Step 1 to fix the errors
+          setFormStep(1);
+          toast({
+            title: "Validation Error",
+            description: "Please fix the errors in the Deal Structure & Pricing section before continuing to Review.",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
     } else if (formStep === 1) {
-      // Use individual triggers for each field instead of array syntax
       form.trigger("dealStructure");
       form.trigger("termStartDate");
       form.trigger("termEndDate");
@@ -409,11 +447,23 @@ export default function SubmitDeal() {
       const annualGrossMarginError = form.getFieldState('annualGrossMargin').error;
       
       if (dealStructureError || termStartDateError || termEndDateError || annualRevenueError || annualGrossMarginError) {
-        return;
+        toast({
+          title: "Validation Error",
+          description: "Please fix the errors in the Deal Structure & Pricing section before continuing.",
+          variant: "destructive",
+        });
+        return false;
       }
     }
     
-    setFormStep(prev => Math.min(prev + 1, 2));
+    // If all validations pass, go to the target step
+    setFormStep(targetStep);
+    return true;
+  }
+
+  function nextStep() {
+    const targetStep = Math.min(formStep + 1, 2);
+    validateAndGoToStep(targetStep);
   }
   
   function prevStep() {
@@ -476,42 +526,75 @@ export default function SubmitDeal() {
         <p className="mt-1 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
       </div>
       
-      {/* Form Progress */}
+      {/* Form Progress - Modified to be clickable for back and forth navigation */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div className="w-full flex items-center">
-            <div className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium",
-              formStep >= 0 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-            )}>
+            <div 
+              onClick={() => setFormStep(0)}
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                formStep >= 0 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+              )}
+            >
               1
             </div>
             <div className={cn(
               "w-full h-1 bg-slate-200",
               formStep >= 1 ? "bg-primary" : ""
             )}></div>
-            <div className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium",
-              formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-            )}>
+            <div 
+              onClick={() => formStep >= 1 || validateAndGoToStep(1)}
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+              )}
+            >
               2
             </div>
             <div className={cn(
               "w-full h-1 bg-slate-200",
               formStep >= 2 ? "bg-primary" : ""
             )}></div>
-            <div className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium",
-              formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-            )}>
+            <div 
+              onClick={() => formStep >= 2 || validateAndGoToStep(2)}
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+              )}
+            >
               3
             </div>
           </div>
         </div>
         <div className="flex justify-between text-sm text-slate-600">
-          <div className={formStep === 0 ? "font-medium text-primary" : ""}>Deal Details</div>
-          <div className={formStep === 1 ? "font-medium text-primary" : ""}>Deal Structure & Pricing</div>
-          <div className={formStep === 2 ? "font-medium text-primary" : ""}>Review & Submit</div>
+          <div 
+            onClick={() => setFormStep(0)}
+            className={cn(
+              "cursor-pointer hover:text-primary transition-colors", 
+              formStep === 0 ? "font-medium text-primary" : ""
+            )}
+          >
+            Deal Details
+          </div>
+          <div 
+            onClick={() => formStep >= 1 || validateAndGoToStep(1)} 
+            className={cn(
+              "cursor-pointer hover:text-primary transition-colors", 
+              formStep === 1 ? "font-medium text-primary" : ""
+            )}
+          >
+            Deal Structure & Pricing
+          </div>
+          <div 
+            onClick={() => formStep >= 2 || validateAndGoToStep(2)}
+            className={cn(
+              "cursor-pointer hover:text-primary transition-colors", 
+              formStep === 2 ? "font-medium text-primary" : ""
+            )}
+          >
+            Review & Submit
+          </div>
         </div>
       </div>
       
