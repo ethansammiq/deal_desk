@@ -75,17 +75,85 @@ export const advancedKnowledgeBase = {
 
 // Keyword mapping to responses - Used to detect the topic being discussed
 export const keywordMapping = {
-  dealProcess: ['process', 'workflow', 'lifecycle', 'steps', 'stages', 'how deal works', 'deal flow'],
-  scoping: ['scoping', 'scope', 'initial stage', 'first step', 'begin deal', 'start deal'],
-  dealSubmission: ['submit', 'submission', 'new deal', 'create deal', 'start deal', 'enter deal', 'deal form'],
-  review: ['review', 'approval', 'approve', 'evaluate', 'assessment', 'appraise'],
-  negotiation: ['negotiation', 'contract', 'terms', 'agreement', 'finalize deal'],
-  financialIncentives: ['financial incentive', 'money', 'revenue share', 'monetary', 'commission', 'discount', 'financial bonus'],
-  productIncentives: ['product incentive', 'feature', 'platform', 'product bonus', 'feature access', 'early access'],
-  resourceIncentives: ['resource incentive', 'training', 'technical resource', 'support', 'assistance', 'help resources'],
-  generalIncentives: ['incentive', 'bonus', 'threshold', 'rewards', 'perks', 'benefits', 'special offers'],
-  eligibility: ['eligibility', 'qualify', 'eligible', 'who can', 'requirements', 'criteria', 'qualification'],
-  documentation: ['document', 'paperwork', 'forms', 'required files', 'attachments', 'what to submit', 'required documents', 'what is required'],
-  urgent: ['urgent', 'fast track', 'expedite', 'rush', 'quick', 'emergency', 'immediate', 'asap', 'high priority'],
-  growth: ['growth', 'opportunity', 'expansion', 'increase', 'growing', 'scale', 'upsell']
+  dealProcess: ['process', 'workflow', 'lifecycle', 'steps', 'stages', 'how deal works', 'deal flow', 'deal stages', 'deal lifecycle'],
+  
+  // More extensive keywords for deal scoping
+  dealScoping: [
+    'scoping', 'scope', 'initial stage', 'first step', 'begin deal', 'start deal', 
+    'what is scoping', 'deal scoping', 'scoping stage', 'scoping process', 
+    'how to scope a deal', 'deal parameters', 'customer needs', 'solution design',
+    'scoping requirements', 'define deal'
+  ],
+  
+  // More extensive keywords for deal submission
+  dealSubmission: [
+    'submit', 'submission', 'new deal', 'create deal', 'start deal', 'enter deal', 'deal form',
+    'how to submit', 'submission process', 'deal details', 'required fields', 'submit for review',
+    'create a new deal', 'deal creation', 'submit a deal', 'deal information', 'adding a deal'
+  ],
+  
+  // More extensive keywords for review and approval
+  review: [
+    'review', 'approval', 'approve', 'evaluate', 'assessment', 'appraise',
+    'review process', 'approval process', 'deal desk review', 'stakeholder approval', 
+    'evaluation criteria', 'review timeline', 'deal approval', 'how long for approval',
+    'who approves', 'approval workflow', 'approval stages'
+  ],
+  
+  // More extensive keywords for negotiation and contracting
+  negotiation: [
+    'negotiation', 'contract', 'terms', 'agreement', 'finalize deal',
+    'negotiation process', 'contract review', 'legal review', 'contract terms', 
+    'finalize agreement', 'execute contract', 'contracting process', 'deal terms',
+    'standard terms', 'non-standard terms', 'legal agreement'
+  ],
+  
+  financialIncentives: [
+    'financial incentive', 'money', 'revenue share', 'monetary', 'commission', 
+    'discount', 'financial bonus', 'added value media', 'performance bonus',
+    'financial rewards', 'monetary incentive'
+  ],
+  
+  productIncentives: [
+    'product incentive', 'feature', 'platform', 'product bonus', 'feature access', 
+    'early access', 'integration services', 'platform customization', 'custom features',
+    'product perks', 'product offering'
+  ],
+  
+  resourceIncentives: [
+    'resource incentive', 'training', 'technical resource', 'support', 'assistance', 
+    'help resources', 'technical account manager', 'implementation specialist',
+    'training programs', 'consultative services'
+  ],
+  
+  generalIncentives: [
+    'incentive', 'bonus', 'threshold', 'rewards', 'perks', 'benefits', 'special offers',
+    'what incentives', 'available incentives', 'incentive types', 'incentive programs',
+    'types of incentives', 'incentive categories', 'what bonuses', 'what benefits'
+  ],
+  
+  eligibility: [
+    'eligibility', 'qualify', 'eligible', 'who can', 'requirements', 'criteria', 
+    'qualification', 'who qualifies', 'eligibility factors', 'deal size', 'customer tier',
+    'contract length', 'strategic alignment', 'eligibility requirements'
+  ],
+  
+  documentation: [
+    'document', 'paperwork', 'forms', 'required files', 'attachments', 'what to submit', 
+    'required documents', 'what is required', 'documentation needed', 'deal submission form',
+    'customer requirements document', 'statement of work', 'business justification',
+    'approval documentation', 'technical assessment', 'legal review'
+  ],
+  
+  urgent: [
+    'urgent', 'fast track', 'expedite', 'rush', 'quick', 'emergency', 'immediate', 
+    'asap', 'high priority', 'urgent deal', 'time-sensitive', 'accelerated approval',
+    'priority review', 'urgent request'
+  ],
+  
+  growth: [
+    'growth', 'opportunity', 'expansion', 'increase', 'growing', 'scale', 'upsell',
+    'new markets', 'contract value increase', 'extending contract', 'adding product lines',
+    'enhanced incentives', 'growth incentives'
+  ]
 };
