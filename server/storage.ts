@@ -348,21 +348,48 @@ export class MemStorage implements IStorage {
 
 // Function to get the appropriate storage implementation based on environment
 function getStorage(): IStorage {
-  // If Airtable API credentials are provided, use Airtable storage
+  // Create memory storage for deal scoping requests, since we know there are permission issues
+  const memStorage = new MemStorage();
+  
+  // If Airtable API credentials are provided, use Airtable storage for deals and users
   if (process.env.AIRTABLE_API_KEY && process.env.AIRTABLE_BASE_ID) {
-    console.log("Using Airtable storage");
+    console.log("Using Airtable storage for deals and users");
     try {
-      return new AirtableStorage();
+      const airtableStorage = new AirtableStorage();
+      
+      // Create hybrid storage that uses mem storage for deal scoping requests
+      return {
+        // User methods
+        getUser: (id) => airtableStorage.getUser(id),
+        getUserByUsername: (username) => airtableStorage.getUserByUsername(username),
+        createUser: (user) => airtableStorage.createUser(user),
+        
+        // Deal methods
+        getDeal: (id) => airtableStorage.getDeal(id),
+        getDealByReference: (ref) => airtableStorage.getDealByReference(ref),
+        getDeals: (filters) => airtableStorage.getDeals(filters),
+        createDeal: (deal) => airtableStorage.createDeal(deal),
+        updateDealStatus: (id, status) => airtableStorage.updateDealStatus(id, status),
+        
+        // Deal scoping request methods - use memory storage
+        getDealScopingRequest: (id) => memStorage.getDealScopingRequest(id),
+        getDealScopingRequests: (filters) => memStorage.getDealScopingRequests(filters),
+        createDealScopingRequest: (request) => memStorage.createDealScopingRequest(request),
+        updateDealScopingRequestStatus: (id, status) => memStorage.updateDealScopingRequestStatus(id, status),
+        
+        // Stats
+        getDealStats: () => airtableStorage.getDealStats()
+      };
     } catch (error) {
       console.error("Failed to initialize Airtable storage:", error);
-      console.log("Falling back to in-memory storage");
-      return new MemStorage();
+      console.log("Falling back to in-memory storage for everything");
+      return memStorage;
     }
   }
   
-  // Otherwise, fall back to in-memory storage
+  // Otherwise, fall back to in-memory storage for everything
   console.log("Using in-memory storage");
-  return new MemStorage();
+  return memStorage;
 }
 
 export const storage = getStorage();
