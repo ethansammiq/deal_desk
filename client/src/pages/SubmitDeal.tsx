@@ -475,7 +475,7 @@ export default function SubmitDeal() {
         </div>
         <div className="flex justify-between text-sm text-slate-600">
           <div className={formStep === 0 ? "font-medium text-primary" : ""}>Deal Details</div>
-          <div className={formStep === 1 ? "font-medium text-primary" : ""}>Client & Pricing</div>
+          <div className={formStep === 1 ? "font-medium text-primary" : ""}>Deal Structure & Pricing</div>
           <div className={formStep === 2 ? "font-medium text-primary" : ""}>Review & Submit</div>
         </div>
       </div>
@@ -721,10 +721,6 @@ export default function SubmitDeal() {
                   {/* Fields for industry, region, and companySize were removed for form simplification */}
                   
                   <hr className="my-4" />
-                  
-                  <div className="mb-6">
-                    <h3 className="text-lg font-medium text-slate-900">Pricing Information</h3>
-                  </div>
                   
                   {/* Approval alert will display here based on deal parameters */}
                   {form.watch("totalValue") && form.watch("contractTerm") && (
@@ -1214,7 +1210,7 @@ export default function SubmitDeal() {
                     variant="outline"
                     onClick={prevStep}
                   >
-                    Previous: Client & Pricing
+                    Previous: Deal Structure & Pricing
                   </Button>
                   <Button type="submit" disabled={createDeal.isPending}>
                     {createDeal.isPending ? "Submitting..." : "Submit Deal for Approval"}
