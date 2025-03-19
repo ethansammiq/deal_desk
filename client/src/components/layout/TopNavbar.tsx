@@ -57,7 +57,7 @@ export function TopNavbar() {
                     : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
                 )}>
                   <ClipboardPenIcon className="w-4 h-4 mr-2" />
-                  Submit Deal Requests
+                  Deal Submission
                 </div>
               </Link>
               <Link href="/dashboard">
@@ -129,7 +129,7 @@ export function TopNavbar() {
             )}>
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2" />
-                Submit Deal Requests
+                Deal Submission
               </div>
             </div>
           </Link>
