@@ -79,7 +79,7 @@ Deal scoping is the critical first stage of our deal process where we define ini
 ## Required Information
 • Client information
 • Business needs and challenges
-• Potential path to grow with MIQ
+• Potential path to grow with our team
 • Estimated growth ambition
 
 ## Process Steps
@@ -329,7 +329,7 @@ The evaluation stage assesses deal performance after implementation to measure s
   // Financial Incentives
   financialIncentives: `# Financial Incentives
 
-MIQ offers the following financial incentives to support deal closure and growth.
+We offer the following financial incentives to support deal closure and growth.
 
 ## Added Value Media
 **Description**: Additional media inventory provided at no additional cost
@@ -376,7 +376,7 @@ MIQ offers the following financial incentives to support deal closure and growth
   // Product Incentives
   productIncentives: `# Product Incentives
 
-MIQ offers these product-based incentives to enhance deal value beyond discounting.
+We offer these product-based incentives to enhance deal value beyond discounting.
 
 ## Feature Access
 **Description**: Early or exclusive access to new platform features
@@ -423,7 +423,7 @@ MIQ offers these product-based incentives to enhance deal value beyond discounti
   // Resource Incentives
   resourceIncentives: `# Resource Incentives
 
-MIQ offers these resource-based incentives to enhance customer success and adoption.
+We offer these resource-based incentives to enhance customer success and adoption.
 
 ## Technical Resources
 **Description**: Dedicated technical account manager or implementation specialist
@@ -470,7 +470,7 @@ MIQ offers these resource-based incentives to enhance customer success and adopt
   // General Incentives Overview
   generalIncentives: `# Incentive Programs Overview
 
-MIQ offers three main categories of incentives to support your deals.
+We offer three main categories of incentives to support your deals.
 
 ## Categories of Incentives
 
@@ -524,7 +524,7 @@ Incentives can be combined strategically, typically following these guidelines:
   // Eligibility Requirements
   eligibilityRequirements: `# Incentive Eligibility Requirements
 
-Eligibility for MIQ incentive programs is determined by multiple factors.
+Eligibility for our incentive programs is determined by multiple factors.
 
 ## Deal Size Thresholds
 • **Standard Threshold Tiers**:
@@ -782,7 +782,7 @@ Growth opportunities qualify for enhanced incentives to reward expansion.
   //=======================================================================================
   
   // General/Default Responses
-  generalResponse: `I notice you're asking about MIQ's commercial deal process. Our process is designed to support you through every stage from scoping to execution. 
+  generalResponse: `I notice you're asking about our commercial deal process. Our process is designed to support you through every stage from scoping to execution. 
 
 I can help with information about:
 • Deal stages and requirements
@@ -792,7 +792,7 @@ I can help with information about:
 
 For more specific information, please ask about a particular aspect of the deal process that you'd like to learn more about.`,
   
-  defaultResponse: `Thanks for your question about MIQ's commercial deal process. I'm here to help with information about deal workflows, incentive programs, eligibility requirements, and documentation needs. 
+  defaultResponse: `Thanks for your question about our commercial deal process. I'm here to help with information about deal workflows, incentive programs, eligibility requirements, and documentation needs. 
 
 Could you provide more specific details about what you're looking for? For example:
 • A particular deal stage
