@@ -142,14 +142,42 @@ export default function SubmitDeal() {
   };
   
   // State to track selected agencies and advertisers for dropdowns
-  const [agencies, setAgencies] = useState([]);
-  const [advertisers, setAdvertisers] = useState([]);
+  const [agencies, setAgencies] = useState<AgencyData[]>([]);
+  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
   
   // Define interface for previous year data
+  // Define types for our component
   interface PreviousYearData {
     annualRevenue: number;
     annualGrossMargin: number;
     annualGrossMarginPercent: number;
+  }
+  
+  interface DealTierData {
+    tierNumber: number;
+    annualRevenue: number;
+    annualGrossMargin: number;
+    annualGrossMarginPercent: number;
+    incentivePercentage: number;
+    incentiveNotes: string;
+  }
+  
+  // Type definitions for advertisers and agencies
+  interface AdvertiserData {
+    id: number;
+    name: string;
+    previousYearRevenue: number;
+    previousYearMargin: number;
+    region: string;
+  }
+  
+  interface AgencyData {
+    id: number;
+    name: string;
+    type: string;
+    previousYearRevenue: number;
+    previousYearMargin: number;
+    region: string;
   }
   
   // Mock previous year data (in a real app, this would come from an API)
@@ -310,18 +338,40 @@ export default function SubmitDeal() {
       const agencyName = form.getValues("agencyName");
       
       if (salesChannel === "client_direct" && advertiserName) {
-        const advertiser = advertisers.find(a => a.name === advertiserName);
+        const advertiser = advertisers.find((a: AdvertiserData) => a.name === advertiserName);
         if (advertiser) {
           form.setValue("previousYearRevenue", advertiser.previousYearRevenue || 0);
           form.setValue("previousYearMargin", advertiser.previousYearMargin || 0);
-          form.setValue("region", advertiser.region || "northeast");
+          
+          // Need to cast the region to the proper enum type
+          const regionValue = (advertiser.region as "northeast" | "midwest" | "midatlantic" | "west" | "south") || "northeast";
+          form.setValue("region", regionValue);
+          
+          // Update the previous year data for table
+          setPreviousYearData({
+            annualRevenue: advertiser.previousYearRevenue || 0,
+            annualGrossMargin: advertiser.previousYearMargin || 0,
+            annualGrossMarginPercent: advertiser.previousYearMargin ? 
+              advertiser.previousYearMargin / advertiser.previousYearRevenue : 0
+          });
         }
       } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
-        const agency = agencies.find(a => a.name === agencyName);
+        const agency = agencies.find((a: AgencyData) => a.name === agencyName);
         if (agency) {
           form.setValue("previousYearRevenue", agency.previousYearRevenue || 0);
           form.setValue("previousYearMargin", agency.previousYearMargin || 0);
-          form.setValue("region", agency.region || "northeast");
+          
+          // Need to cast the region to the proper enum type
+          const regionValue = (agency.region as "northeast" | "midwest" | "midatlantic" | "west" | "south") || "northeast";
+          form.setValue("region", regionValue);
+          
+          // Update the previous year data for table
+          setPreviousYearData({
+            annualRevenue: agency.previousYearRevenue || 0,
+            annualGrossMargin: agency.previousYearMargin || 0,
+            annualGrossMarginPercent: agency.previousYearMargin ? 
+              agency.previousYearMargin / agency.previousYearRevenue : 0
+          });
         }
       }
     };
@@ -346,17 +396,18 @@ export default function SubmitDeal() {
       form.setValue("yearlyMarginGrowthRate", parseFloat(marginGrowthRate.toFixed(1)));
     }
   }, [
-    form.watch("annualRevenue"), 
-    form.watch("previousYearRevenue"),
-    form.watch("annualGrossMargin"),
-    form.watch("previousYearMargin"),
-    form
+    form, // Include the entire form as a dependency
   ]);
 
   function nextStep() {
     // Validate current step fields
     if (formStep === 0) {
-      form.trigger(['dealType', 'businessSummary', 'salesChannel', 'region']);
+      // Use individual triggers for each field instead of array syntax
+      form.trigger("dealType");
+      form.trigger("businessSummary");
+      form.trigger("salesChannel");
+      form.trigger("region");
+      
       const dealTypeError = form.getFieldState('dealType').error;
       const businessSummaryError = form.getFieldState('businessSummary').error;
       const salesChannelError = form.getFieldState('salesChannel').error;
@@ -365,10 +416,10 @@ export default function SubmitDeal() {
       // Check conditional field validation based on salesChannel
       let conditionalError = false;
       if (salesChannel === "client_direct") {
-        form.trigger(['advertiserName']);
+        form.trigger("advertiserName");
         conditionalError = !!form.getFieldState('advertiserName').error;
       } else if (salesChannel === "holding_company" || salesChannel === "independent_agency") {
-        form.trigger(['agencyName']);
+        form.trigger("agencyName");
         conditionalError = !!form.getFieldState('agencyName').error;
       }
       
@@ -376,7 +427,13 @@ export default function SubmitDeal() {
         return;
       }
     } else if (formStep === 1) {
-      form.trigger(['dealStructure', 'termStartDate', 'termEndDate', 'annualRevenue', 'annualGrossMargin']);
+      // Use individual triggers for each field instead of array syntax
+      form.trigger("dealStructure");
+      form.trigger("termStartDate");
+      form.trigger("termEndDate");
+      form.trigger("annualRevenue");
+      form.trigger("annualGrossMargin");
+      
       const dealStructureError = form.getFieldState('dealStructure').error;
       const termStartDateError = form.getFieldState('termStartDate').error;
       const termEndDateError = form.getFieldState('termEndDate').error;
