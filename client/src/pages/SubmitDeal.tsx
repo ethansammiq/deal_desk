@@ -145,12 +145,27 @@ export default function SubmitDeal() {
   const [agencies, setAgencies] = useState([]);
   const [advertisers, setAdvertisers] = useState([]);
   
+  // Define interface for previous year data
+  interface PreviousYearData {
+    annualRevenue: number;
+    annualGrossMargin: number;
+    annualGrossMarginPercent: number;
+  }
+  
+  // Mock previous year data (in a real app, this would come from an API)
+  const [previousYearData, setPreviousYearData] = useState<PreviousYearData>({
+    annualRevenue: 0,
+    annualGrossMargin: 0,
+    annualGrossMarginPercent: 0
+  });
+  
   // State for tiered deal structure
   const [dealTiers, setDealTiers] = useState([
     {
       tierNumber: 1,
       annualRevenue: 0,
       annualGrossMargin: 0,
+      annualGrossMarginPercent: 0, // New field for percentage
       incentivePercentage: 0,
       incentiveNotes: "Base tier - no incentives"
     },
@@ -158,6 +173,7 @@ export default function SubmitDeal() {
       tierNumber: 2,
       annualRevenue: 0,
       annualGrossMargin: 0,
+      annualGrossMarginPercent: 0, // New field for percentage
       incentivePercentage: 0,
       incentiveNotes: ""
     },
@@ -165,6 +181,7 @@ export default function SubmitDeal() {
       tierNumber: 3,
       annualRevenue: 0,
       annualGrossMargin: 0,
+      annualGrossMarginPercent: 0, // New field for percentage
       incentivePercentage: 0,
       incentiveNotes: ""
     }
@@ -792,6 +809,7 @@ export default function SubmitDeal() {
                                   tierNumber: dealTiers.length + 1,
                                   annualRevenue: 0,
                                   annualGrossMargin: 0,
+                                  annualGrossMarginPercent: 0,
                                   incentivePercentage: 0,
                                   incentiveNotes: ""
                                 }
@@ -811,116 +829,128 @@ export default function SubmitDeal() {
                       </div>
                       
                       <div className="space-y-8">
-                        {/* Column layout for tiers */}
-                        <div className="flex gap-6">
-                          {dealTiers.map((tier, index) => (
-                            <div key={tier.tierNumber} className="flex-1 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                              <div className="flex justify-between items-center mb-4">
-                                <h4 className="font-medium text-base">Tier {tier.tierNumber}</h4>
-                                {index > 0 && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    type="button"
-                                    onClick={() => {
-                                      const newTiers = dealTiers.filter((_, i) => i !== index);
-                                      // Renumber the tiers
-                                      newTiers.forEach((t, i) => {
-                                        t.tierNumber = i + 1;
-                                      });
-                                      setDealTiers(newTiers);
-                                    }}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                )}
-                              </div>
+                        {/* Table layout for tiers */}
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                {dealTiers.map((tier) => (
+                                  <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
+                                    <div className="flex justify-between items-center">
+                                      <span className="flex-1">Tier {tier.tierNumber} (Projected)</span>
+                                      {tier.tierNumber > 1 && (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          type="button"
+                                          className="h-6 w-6"
+                                          onClick={() => {
+                                            const newTiers = dealTiers.filter((t) => t.tierNumber !== tier.tierNumber);
+                                            // Renumber the tiers
+                                            newTiers.forEach((t, i) => {
+                                              t.tierNumber = i + 1;
+                                            });
+                                            setDealTiers(newTiers);
+                                          }}
+                                        >
+                                          <Trash2 className="h-3 w-3 text-red-500" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Annual Revenue Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {/* Not editable, pulled from data */}
+                                  <div className="text-slate-700">
+                                    {formatCurrency(previousYearData?.annualRevenue || 0)}
+                                  </div>
+                                </td>
+                                {dealTiers.map((tier, index) => (
+                                  <td key={`revenue-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                    <div className="relative">
+                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span className="text-slate-500 sm:text-sm">$</span>
+                                      </div>
+                                      <Input
+                                        type="number"
+                                        className="pl-7 w-full"
+                                        placeholder="0.00"
+                                        value={tier.annualRevenue}
+                                        onChange={(e) => {
+                                          const newTiers = [...dealTiers];
+                                          newTiers[index].annualRevenue = parseFloat(e.target.value);
+                                          setDealTiers(newTiers);
+                                        }}
+                                      />
+                                    </div>
+                                  </td>
+                                ))}
+                              </tr>
                               
-                              <div className="space-y-4">
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Annual Revenue
-                                  </label>
-                                  <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">$</span>
-                                    </div>
-                                    <Input
-                                      type="number"
-                                      className="pl-7"
-                                      placeholder="0.00"
-                                      value={tier.annualRevenue}
-                                      onChange={(e) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[index].annualRevenue = parseFloat(e.target.value);
-                                        setDealTiers(newTiers);
-                                      }}
-                                    />
+                              {/* Annual Gross Margin (Base) Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Gross Margin (Base)</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {/* Not editable, pulled from data */}
+                                  <div className="text-slate-700">
+                                    {((previousYearData?.annualGrossMarginPercent || 0) * 100).toFixed(2)}%
                                   </div>
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Gross Margin
-                                  </label>
-                                  <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">$</span>
+                                </td>
+                                {dealTiers.map((tier, index) => (
+                                  <td key={`margin-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                    <div className="relative">
+                                      <Input
+                                        type="number"
+                                        className="pr-8 w-full"
+                                        placeholder="0.00"
+                                        min="0"
+                                        max="100"
+                                        value={tier.annualGrossMarginPercent || 0}
+                                        onChange={(e) => {
+                                          const newTiers = [...dealTiers];
+                                          newTiers[index].annualGrossMarginPercent = parseFloat(e.target.value);
+                                          // Also update the gross margin value based on percentage and revenue
+                                          const percent = parseFloat(e.target.value) / 100;
+                                          newTiers[index].annualGrossMargin = newTiers[index].annualRevenue * percent;
+                                          setDealTiers(newTiers);
+                                        }}
+                                      />
+                                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span className="text-slate-500 sm:text-sm">%</span>
+                                      </div>
                                     </div>
-                                    <Input
-                                      type="number"
-                                      className="pl-7"
-                                      placeholder="0.00"
-                                      value={tier.annualGrossMargin}
-                                      onChange={(e) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[index].annualGrossMargin = parseFloat(e.target.value);
-                                        setDealTiers(newTiers);
-                                      }}
-                                    />
+                                  </td>
+                                ))}
+                              </tr>
+                              
+                              {/* Gross Profit (Base) Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {/* Not editable, pulled from data */}
+                                  <div className="text-slate-700">
+                                    {formatCurrency((previousYearData?.annualRevenue || 0) * (previousYearData?.annualGrossMarginPercent || 0))}
                                   </div>
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Incentive %
-                                  </label>
-                                  <div className="relative">
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      max="100"
-                                      placeholder="0"
-                                      value={tier.incentivePercentage}
-                                      onChange={(e) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[index].incentivePercentage = parseFloat(e.target.value);
-                                        setDealTiers(newTiers);
-                                      }}
-                                    />
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">%</span>
+                                </td>
+                                {dealTiers.map((tier) => (
+                                  <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                    {/* Not editable, calculated field */}
+                                    <div className="text-slate-700">
+                                      {formatCurrency(tier.annualRevenue * ((tier.annualGrossMarginPercent || 0) / 100))}
                                     </div>
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Incentive Details
-                                  </label>
-                                  <Input
-                                    placeholder="Incentive notes"
-                                    value={tier.incentiveNotes || ""}
-                                    onChange={(e) => {
-                                      const newTiers = [...dealTiers];
-                                      newTiers[index].incentiveNotes = e.target.value;
-                                      setDealTiers(newTiers);
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                                  </td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                       
