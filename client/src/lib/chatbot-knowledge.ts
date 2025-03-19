@@ -64,6 +64,9 @@ export const advancedKnowledgeBase = {
   // Eligibility & Approval Support
   eligibilityRequirements: 'Eligibility for MIQ incentive programs is determined by multiple factors:\n\n• **Deal Size**: Minimum thresholds vary by incentive type\n   - Financial incentives: Typically $50,000+\n   - Product incentives: Typically $75,000+\n   - Resource incentives: Various thresholds, some available to all customers\n\n• **Customer Tier**: Gold, Silver, and Bronze classifications\n   - Gold: Access to all incentive programs\n   - Silver: Limited access to financial incentives\n   - Bronze: Primarily eligible for resource incentives\n\n• **Contract Length**: Multi-year commitments receive enhanced incentives\n   - 1-year: Standard incentive levels\n   - 2-year: +25% incentive value\n   - 3+ year: +40% incentive value\n\n• **Strategic Alignment**: Deals that align with company priorities receive preferential treatment\n\nThe Deal Desk team makes the final determination on incentive eligibility.',
   
+  // Incentives Overview
+  generalIncentives: 'MIQ offers three main categories of incentives to support your deals:\n\n• **Financial Incentives**: \n   - Added Value Media (up to 10% of deal value)\n   - Revenue Share (5-15% based on volume)\n   - Performance Bonuses (tied to KPIs)\n\n• **Product Incentives**: \n   - Early Feature Access\n   - Integration Services\n   - Platform Customizations\n\n• **Resource Incentives**: \n   - Technical Resources\n   - Training & Development\n   - Consultative Services\n\nEach incentive type has specific eligibility criteria based on deal size, customer tier, and strategic value. What specific incentive type are you interested in learning more about?',
+  
   // Default/General Response
   generalResponse: 'I notice you\'re asking about MIQ\'s commercial deal process. Our process is designed to support you through every stage from scoping to execution. Our incentive programs (Financial, Product, and Resource) can help you close more deals and drive customer satisfaction.\n\nFor more specific information, you can ask me about:\n- Deal process stages and requirements\n- Specific incentive programs and eligibility\n- Documentation requirements\n- Approval workflows\n\nOr browse our detailed guides in the Help Resources section.',
   
@@ -72,17 +75,17 @@ export const advancedKnowledgeBase = {
 
 // Keyword mapping to responses - Used to detect the topic being discussed
 export const keywordMapping = {
-  process: ['process', 'workflow', 'lifecycle'],
-  scoping: ['scoping', 'scope'],
-  submission: ['submit', 'submission', 'new deal'],
-  review: ['review', 'approval', 'approve'],
-  negotiation: ['negotiation', 'contract'],
-  financialIncentives: ['financial incentive', 'money', 'revenue share'],
-  productIncentives: ['product incentive', 'feature', 'platform'],
-  resourceIncentives: ['resource incentive', 'training', 'technical resource'],
-  generalIncentives: ['incentive', 'bonus', 'threshold'],
-  eligibility: ['eligibility', 'qualify', 'eligible'],
-  documentation: ['document', 'paperwork', 'forms'],
-  urgent: ['urgent', 'fast track', 'expedite'],
-  growth: ['growth', 'opportunity']
+  dealProcess: ['process', 'workflow', 'lifecycle', 'steps', 'stages', 'how deal works', 'deal flow'],
+  scoping: ['scoping', 'scope', 'initial stage', 'first step', 'begin deal', 'start deal'],
+  dealSubmission: ['submit', 'submission', 'new deal', 'create deal', 'start deal', 'enter deal', 'deal form'],
+  review: ['review', 'approval', 'approve', 'evaluate', 'assessment', 'appraise'],
+  negotiation: ['negotiation', 'contract', 'terms', 'agreement', 'finalize deal'],
+  financialIncentives: ['financial incentive', 'money', 'revenue share', 'monetary', 'commission', 'discount', 'financial bonus'],
+  productIncentives: ['product incentive', 'feature', 'platform', 'product bonus', 'feature access', 'early access'],
+  resourceIncentives: ['resource incentive', 'training', 'technical resource', 'support', 'assistance', 'help resources'],
+  generalIncentives: ['incentive', 'bonus', 'threshold', 'rewards', 'perks', 'benefits', 'special offers'],
+  eligibility: ['eligibility', 'qualify', 'eligible', 'who can', 'requirements', 'criteria', 'qualification'],
+  documentation: ['document', 'paperwork', 'forms', 'required files', 'attachments', 'what to submit', 'required documents', 'what is required'],
+  urgent: ['urgent', 'fast track', 'expedite', 'rush', 'quick', 'emergency', 'immediate', 'asap', 'high priority'],
+  growth: ['growth', 'opportunity', 'expansion', 'increase', 'growing', 'scale', 'upsell']
 };

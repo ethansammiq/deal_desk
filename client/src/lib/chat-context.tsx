@@ -108,6 +108,40 @@ export function ChatProvider({
   const getAIResponse = (text: string): string => {
     const lowerText = text.toLowerCase();
     
+    // Direct topic mapping for common questions
+    // First, check if we have any direct question matches
+    if (lowerText.includes("what is the deal process") || 
+        lowerText.includes("deal process workflow") || 
+        lowerText.includes("how does the deal process work")) {
+      return aiModel === 'advanced' ? advancedKnowledgeBase.dealProcess : simpleKnowledgeBase.dealProcess;
+    }
+    
+    if (lowerText.includes("how do i submit a deal") || 
+        lowerText.includes("how to submit a deal") || 
+        lowerText.includes("deal submission")) {
+      return aiModel === 'advanced' ? advancedKnowledgeBase.dealSubmission : simpleKnowledgeBase.dealSubmission;
+    }
+    
+    if (lowerText.includes("financial incentive") || 
+        lowerText.includes("money incentive") || 
+        lowerText.includes("revenue share")) {
+      return aiModel === 'advanced' ? advancedKnowledgeBase.financialIncentives : simpleKnowledgeBase.financialIncentives;
+    }
+
+    if (lowerText.includes("what incentives") || 
+        lowerText.includes("available incentives") || 
+        lowerText.includes("incentive types") ||
+        lowerText.includes("types of incentives")) {
+      return aiModel === 'advanced' ? advancedKnowledgeBase.generalIncentives : simpleKnowledgeBase.generalIncentives;
+    }
+    
+    if (lowerText.includes("documentation") || 
+        lowerText.includes("what documents") || 
+        lowerText.includes("required documentation") ||
+        lowerText.includes("what is required")) {
+      return aiModel === 'advanced' ? advancedKnowledgeBase.documentationRequirements : simpleKnowledgeBase.documentationRequirements;
+    }
+    
     // Helper function to check if the user's query contains any of the keywords
     const matchesKeywords = (keywords: string[]): boolean => {
       return keywords.some(keyword => lowerText.includes(keyword));
@@ -141,6 +175,11 @@ export function ChatProvider({
       // If the query mentions incentives generally
       if (lowerText.includes('incentive') || lowerText.includes('bonus') || lowerText.includes('threshold')) {
         return 'generalIncentives';
+      }
+      
+      // If query includes process or workflow
+      if (lowerText.includes('process') || lowerText.includes('workflow') || lowerText.includes('steps')) {
+        return 'dealProcess';
       }
       
       return null;
