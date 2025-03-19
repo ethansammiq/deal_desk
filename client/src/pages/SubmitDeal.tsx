@@ -41,7 +41,7 @@ import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/com
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2, Info } from "lucide-react";
 
-// Extend the deal schema with additional validations
+// Simplified deal schema with only essential fields
 const dealFormSchema = z.object({
   // Basic deal information
   dealType: z.enum(["grow", "protect", "custom"], {
@@ -79,11 +79,9 @@ const dealFormSchema = z.object({
     invalid_type_error: "End date must be a valid date",
   }),
 
-  // Financial data
+  // Essential financial data only
   annualRevenue: z.coerce.number().positive("Annual revenue must be positive"),
   annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%"),
-  previousYearRevenue: z.coerce.number().min(0, "Previous year revenue must be non-negative").default(0),
-  previousYearMargin: z.coerce.number().min(0).max(100, "Previous year margin must be between 0 and 100%").default(0),
   
   // Contract term (in months)
   contractTerm: z.coerce.number().min(1, "Contract term must be at least 1 month").default(12),
@@ -172,22 +170,24 @@ export default function SubmitDeal() {
     incentiveNotes: string;
   }
   
-  // Type definitions for advertisers and agencies
+  // Type definitions for advertisers and agencies (simplified)
   interface AdvertiserData {
     id: number;
     name: string;
-    previousYearRevenue: number;
-    previousYearMargin: number;
     region: string;
+    // Keep fields for reference but don't use them in the form
+    previousYearRevenue?: number;
+    previousYearMargin?: number;
   }
   
   interface AgencyData {
     id: number;
     name: string;
     type: string;
-    previousYearRevenue: number;
-    previousYearMargin: number;
     region: string;
+    // Keep fields for reference but don't use them in the form
+    previousYearRevenue?: number;
+    previousYearMargin?: number;
   }
   
   // Mock previous year data (in a real app, this would come from an API)
@@ -247,11 +247,9 @@ export default function SubmitDeal() {
       termStartDate: new Date(),
       termEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
       
-      // Financial data
+      // Financial data (simplified)
       annualRevenue: 0,
       annualGrossMargin: 0,
-      previousYearRevenue: 0,
-      previousYearMargin: 0,
       
       // Contract term (in months)
       contractTerm: 12,
@@ -337,52 +335,30 @@ export default function SubmitDeal() {
     }
   }, [dealStructure]);
 
-  // Auto-populate historical data when selecting advertiser or agency
+  // Auto-populate region when selecting advertiser or agency
   useEffect(() => {
-    const updateHistoricalData = async () => {
+    const updateRegionData = async () => {
       const advertiserName = getTypedValue("advertiserName");
       const agencyName = getTypedValue("agencyName");
       
       if (salesChannel === "client_direct" && advertiserName) {
         const advertiser = advertisers.find((a: AdvertiserData) => a.name === advertiserName);
         if (advertiser) {
-          form.setValue("previousYearRevenue", advertiser.previousYearRevenue || 0);
-          form.setValue("previousYearMargin", advertiser.previousYearMargin || 0);
-          
-          // Need to cast the region to the proper enum type
+          // Only set the region value
           const regionValue = (advertiser.region as "northeast" | "midwest" | "midatlantic" | "west" | "south") || "northeast";
           form.setValue("region", regionValue);
-          
-          // Update the previous year data for table
-          setPreviousYearData({
-            annualRevenue: advertiser.previousYearRevenue || 0,
-            annualGrossMargin: advertiser.previousYearMargin || 0,
-            annualGrossMarginPercent: advertiser.previousYearMargin ? 
-              advertiser.previousYearMargin / advertiser.previousYearRevenue : 0
-          });
         }
       } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
         const agency = agencies.find((a: AgencyData) => a.name === agencyName);
         if (agency) {
-          form.setValue("previousYearRevenue", agency.previousYearRevenue || 0);
-          form.setValue("previousYearMargin", agency.previousYearMargin || 0);
-          
-          // Need to cast the region to the proper enum type
+          // Only set the region value
           const regionValue = (agency.region as "northeast" | "midwest" | "midatlantic" | "west" | "south") || "northeast";
           form.setValue("region", regionValue);
-          
-          // Update the previous year data for table
-          setPreviousYearData({
-            annualRevenue: agency.previousYearRevenue || 0,
-            annualGrossMargin: agency.previousYearMargin || 0,
-            annualGrossMarginPercent: agency.previousYearMargin ? 
-              agency.previousYearMargin / agency.previousYearRevenue : 0
-          });
         }
       }
     };
     
-    updateHistoricalData();
+    updateRegionData();
   }, [form, salesChannel, agencies, advertisers]);
 
   // Calculate contract term automatically based on start and end dates
