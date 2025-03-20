@@ -42,34 +42,34 @@ export function TopNavbar() {
             <nav className="hidden md:ml-8 md:flex md:space-x-3">
               <Link href="/">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
                   location === "/" || location === "/help"
-                    ? "bg-[#f1e9fd] text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <HelpCircleIcon className="w-4 h-4 mr-2" />
+                  <HelpCircleIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
                   Support Desk
                 </div>
               </Link>
               <Link href="/support">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
                   location === "/support" || location === "/submit-deal" 
-                    ? "bg-[#f1e9fd] text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <ClipboardPenIcon className="w-4 h-4 mr-2" />
+                  <ClipboardPenIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
                   Deal Submission
                 </div>
               </Link>
               <Link href="/dashboard">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
                   location === "/dashboard" 
-                    ? "bg-[#f1e9fd] text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <LayoutDashboardIcon className="w-4 h-4 mr-2" />
+                  <LayoutDashboardIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
                   Deal Dashboard
                 </div>
               </Link>
@@ -115,39 +115,39 @@ export function TopNavbar() {
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b border-slate-200">
           <Link href="/">
             <div className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
               location === "/" || location === "/help" 
-                ? "bg-[#f1e9fd] text-[#3e0075]" 
-                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center">
-                <HelpCircleIcon className="w-5 h-5 mr-2" />
+              <div className="flex items-center group">
+                <HelpCircleIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
                 Support Desk
               </div>
             </div>
           </Link>
           <Link href="/support">
             <div className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
               location === "/support" || location === "/submit-deal" 
-                ? "bg-[#f1e9fd] text-[#3e0075]" 
-                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center">
-                <ClipboardPenIcon className="w-5 h-5 mr-2" />
+              <div className="flex items-center group">
+                <ClipboardPenIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
                 Deal Submission
               </div>
             </div>
           </Link>
           <Link href="/dashboard">
             <div className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium",
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
               location === "/dashboard" 
-                ? "bg-[#f1e9fd] text-[#3e0075]" 
-                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center">
-                <LayoutDashboardIcon className="w-5 h-5 mr-2" />
+              <div className="flex items-center group">
+                <LayoutDashboardIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
                 Deal Dashboard
               </div>
             </div>
