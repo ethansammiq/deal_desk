@@ -91,7 +91,7 @@ function EmbeddedChat() {
                       <UserIcon className="h-3 w-3 mr-1" />
                     }
                     <span className="text-xs">
-                      {message.sender === 'user' ? 'You' : 'Deal Assistant'}
+                      {message.sender === 'user' ? 'You' : 'DealGenie'}
                     </span>
                   </div>
                   
@@ -119,7 +119,7 @@ function EmbeddedChat() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md mx-auto">
               <LightbulbIcon className="h-8 w-8 text-primary/60 mx-auto mb-3" />
-              <h3 className="text-base font-medium text-slate-900 mb-2">Deal Assistant</h3>
+              <h3 className="text-base font-medium text-slate-900 mb-2">DealGenie</h3>
               <p className="text-sm text-slate-500 mb-4">
                 Ask questions about deals, incentives, approval processes, and documentation requirements.
               </p>
@@ -450,7 +450,7 @@ export default function HelpResources() {
         <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
           <h3 className="text-lg font-medium leading-6 text-slate-900 flex items-center">
             <MessageSquareIcon className="h-5 w-5 mr-2 text-primary" />
-            Deal Assistant
+            DealGenie
             <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
               AI-Powered
             </span>

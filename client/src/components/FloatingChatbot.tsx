@@ -29,7 +29,7 @@ interface FloatingChatbotProps {
 }
 
 export default function FloatingChatbot({
-  title = "Deal Assistant",
+  title = "DealGenie",
   subtitle = "Ask me about deals & incentives",
   iconUrl,
   primaryColor,

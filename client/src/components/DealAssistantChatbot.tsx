@@ -152,7 +152,7 @@ export default function DealAssistantChatbot() {
                   {message.sender === 'bot' && <BotIcon className="h-3 w-3 mr-1" />}
                   {message.sender === 'user' && <UserIcon className="h-3 w-3 mr-1" />}
                   <span className="text-xs">
-                    {message.sender === 'user' ? 'You' : 'Deal Assistant'}
+                    {message.sender === 'user' ? 'You' : 'DealGenie'}
                   </span>
                 </div>
                 <p className="text-sm">{message.text}</p>
