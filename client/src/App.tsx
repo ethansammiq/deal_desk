@@ -8,6 +8,7 @@ import SubmitDeal from "@/pages/SubmitDeal";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ChatProvider } from "@/lib/chat-context";
 import FloatingChatbot from "@/components/FloatingChatbot";
 
@@ -17,19 +18,23 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <TopNavbar />
       
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto bg-slate-50 pt-4">
-        {children}
+      <div className="flex-1 overflow-auto bg-gradient-to-b from-[#f8f5ff] to-slate-50 pt-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <Breadcrumbs />
+          <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+            {children}
+          </div>
+        </div>
       </div>
       
       {/* Floating chatbot UI - with full customization options */}
       <FloatingChatbot 
-        title="Deal Assistant" 
-        subtitle="Ask me about deals & incentives"
-        primaryColor="#4f46e5" // Custom primary color (Indigo)
-        bubblePosition="bottom-right" // Position: 'bottom-right', 'bottom-left', 'top-right', or 'top-left'
-        bubbleSize="medium" // Size: 'small', 'medium', or 'large'
-        showTimestamps={true} // Show message timestamps
-        // avatarUrl="/path/to/avatar.png" // Optional custom avatar
+        title="DealGenie" 
+        subtitle="Ask me about deals & approvals"
+        primaryColor="#3e0075" // Deep purple to match our theme
+        bubblePosition="bottom-right" 
+        bubbleSize="medium" 
+        showTimestamps={true}
       />
     </div>
   );
@@ -57,7 +62,7 @@ function App() {
       <ChatProvider config={{
         apiBasePath: '/api',
         // Custom welcome message for the chatbot
-        welcomeMessage: "👋 Welcome to the Commercial Deal Assistant! I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
+        welcomeMessage: "👋 Welcome to the Commercial Deal Desk! I'm DealGenie, your AI assistant. I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
         // Default suggested questions
         defaultSuggestedQuestions: [
           "What is the deal process workflow?",

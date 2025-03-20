@@ -29,11 +29,11 @@ export function Breadcrumbs() {
   const parentTitle = parentPath ? pathToTitle[parentPath] : null;
   
   return (
-    <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2 rounded-md shadow-sm">
+    <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2.5 rounded-md shadow-sm border border-[#f0e6ff]">
       <Link href="/">
-        <div className="flex items-center hover:text-[#3e0075] transition-colors cursor-pointer">
-          <Home className="h-3 w-3 mr-1" />
-          <span>Home</span>
+        <div className="flex items-center hover:text-[#3e0075] transition-all duration-200 cursor-pointer group">
+          <Home className="h-3.5 w-3.5 mr-1 group-hover:scale-110 transition-transform" />
+          <span className="group-hover:font-medium">Home</span>
         </div>
       </Link>
       
@@ -41,7 +41,7 @@ export function Breadcrumbs() {
         <>
           <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
           <Link href={parentPath || "/"}>
-            <span className="hover:text-[#3e0075] transition-colors cursor-pointer">
+            <span className="hover:text-[#3e0075] hover:font-medium transition-all duration-200 cursor-pointer">
               {parentTitle}
             </span>
           </Link>
@@ -49,7 +49,7 @@ export function Breadcrumbs() {
       )}
       
       <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
-      <span className="font-medium text-[#3e0075]">{currentTitle}</span>
+      <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">{currentTitle}</span>
     </div>
   );
 }
