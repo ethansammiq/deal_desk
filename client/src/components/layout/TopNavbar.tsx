@@ -6,12 +6,14 @@ import {
   Menu,
   X,
   ChevronDown,
-  UserCircle
+  UserCircle,
+  BellIcon
 } from "lucide-react";
 import companyLogo from "../../assets/company-logo.jpg";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "./NotificationBell";
 
 export function TopNavbar() {
   const [location] = useLocation();
@@ -74,9 +76,13 @@ export function TopNavbar() {
             </nav>
           </div>
           
-          {/* User Profile */}
-          <div className="hidden md:flex md:items-center">
-            <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all">
+          {/* User Profile & Notifications */}
+          <div className="hidden md:flex md:items-center md:space-x-3">
+            {/* Notification Bell */}
+            <NotificationBell />
+            
+            {/* User Profile */}
+            <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all cursor-pointer">
               <div className="flex items-center text-sm">
                 <UserCircle className="w-5 h-5 text-[#5a0099] mr-1.5" />
                 <span className="font-medium text-[#3e0075]">Sarah Johnson</span>
@@ -147,8 +153,25 @@ export function TopNavbar() {
             </div>
           </Link>
           
-          {/* Mobile user profile */}
+          {/* Mobile Notifications */}
           <div className="mt-3 pt-3 border-t border-[#e9ddff]">
+            <div className="px-3 py-2">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-[#3e0075]">Notifications</p>
+                <div className="bg-[#f1e9fd] p-1 rounded-full">
+                  <div className="relative">
+                    <BellIcon className="h-5 w-5 text-[#5a0099]" />
+                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500" />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white p-2 rounded-md border border-[#e9ddff] text-xs text-[#3e0075]">
+                <p className="font-medium">New deal approval request</p>
+                <p className="text-slate-500 mt-1">A new deal has been submitted for your approval</p>
+              </div>
+            </div>
+            
+            {/* Mobile user profile */}
             <div className="flex items-center px-3 py-2 bg-[#f8f5ff] m-2 rounded-lg border border-[#e9ddff]">
               <UserCircle className="w-8 h-8 text-[#5a0099]" />
               <div className="ml-3">
