@@ -35,15 +35,15 @@ export function TopNavbar() {
                 alt="Logo" 
                 className="h-8 mr-2" 
               />
-              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Commercial Deal Desk</h1>
+              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent">Commercial Deal Desk</h1>
             </div>
             <nav className="hidden md:ml-8 md:flex md:space-x-3">
               <Link href="/">
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/" || location === "/help"
-                    ? "bg-slate-100 text-indigo-600" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                    ? "bg-slate-100 text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
                 )}>
                   <HelpCircleIcon className="w-4 h-4 mr-2" />
                   Support Desk
@@ -53,8 +53,8 @@ export function TopNavbar() {
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/support" || location === "/submit-deal" 
-                    ? "bg-slate-100 text-indigo-600" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                    ? "bg-slate-100 text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
                 )}>
                   <ClipboardPenIcon className="w-4 h-4 mr-2" />
                   Deal Submission
@@ -64,8 +64,8 @@ export function TopNavbar() {
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/dashboard" 
-                    ? "bg-slate-100 text-indigo-600" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                    ? "bg-slate-100 text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
                 )}>
                   <LayoutDashboardIcon className="w-4 h-4 mr-2" />
                   Deal Dashboard
@@ -111,8 +111,8 @@ export function TopNavbar() {
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
               location === "/" || location === "/help" 
-                ? "bg-slate-100 text-indigo-600" 
-                : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                ? "bg-slate-100 text-[#3e0075]" 
+                : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
             )}>
               <div className="flex items-center">
                 <HelpCircleIcon className="w-5 h-5 mr-2" />
@@ -124,8 +124,8 @@ export function TopNavbar() {
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
               location === "/support" || location === "/submit-deal" 
-                ? "bg-slate-100 text-indigo-600" 
-                : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                ? "bg-slate-100 text-[#3e0075]" 
+                : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
             )}>
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2" />
