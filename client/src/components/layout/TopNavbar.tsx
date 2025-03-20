@@ -23,7 +23,7 @@ export function TopNavbar() {
   }, [location]);
 
   return (
-    <header className="bg-white border-b border-slate-200 shadow-sm z-50">
+    <header className="bg-white border-b border-slate-200 shadow-sm z-50 bg-gradient-to-r from-[#f8f5ff] to-white">
       {/* Desktop Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -42,8 +42,8 @@ export function TopNavbar() {
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/" || location === "/help"
-                    ? "bg-slate-100 text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
                 )}>
                   <HelpCircleIcon className="w-4 h-4 mr-2" />
                   Support Desk
@@ -53,8 +53,8 @@ export function TopNavbar() {
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/support" || location === "/submit-deal" 
-                    ? "bg-slate-100 text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
                 )}>
                   <ClipboardPenIcon className="w-4 h-4 mr-2" />
                   Deal Submission
@@ -64,8 +64,8 @@ export function TopNavbar() {
                 <div className={cn(
                   "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors",
                   location === "/dashboard" 
-                    ? "bg-slate-100 text-[#3e0075]" 
-                    : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
+                    ? "bg-[#f1e9fd] text-[#3e0075]" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
                 )}>
                   <LayoutDashboardIcon className="w-4 h-4 mr-2" />
                   Deal Dashboard
@@ -76,11 +76,11 @@ export function TopNavbar() {
           
           {/* User Profile */}
           <div className="hidden md:flex md:items-center">
-            <div className="flex items-center bg-slate-50 p-1.5 pl-3 rounded-full">
+            <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all">
               <div className="flex items-center text-sm">
-                <UserCircle className="w-5 h-5 text-slate-500 mr-1.5" />
-                <span className="font-medium text-slate-700">Sarah Johnson</span>
-                <ChevronDown className="w-4 h-4 ml-1 text-slate-500" />
+                <UserCircle className="w-5 h-5 text-[#5a0099] mr-1.5" />
+                <span className="font-medium text-[#3e0075]">Sarah Johnson</span>
+                <ChevronDown className="w-4 h-4 ml-1 text-[#5a0099]" />
               </div>
             </div>
           </div>
@@ -111,8 +111,8 @@ export function TopNavbar() {
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
               location === "/" || location === "/help" 
-                ? "bg-slate-100 text-[#3e0075]" 
-                : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
+                ? "bg-[#f1e9fd] text-[#3e0075]" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
             )}>
               <div className="flex items-center">
                 <HelpCircleIcon className="w-5 h-5 mr-2" />
@@ -124,8 +124,8 @@ export function TopNavbar() {
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
               location === "/support" || location === "/submit-deal" 
-                ? "bg-slate-100 text-[#3e0075]" 
-                : "text-slate-700 hover:bg-slate-50 hover:text-[#3e0075]"
+                ? "bg-[#f1e9fd] text-[#3e0075]" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
             )}>
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2" />
@@ -137,8 +137,8 @@ export function TopNavbar() {
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium",
               location === "/dashboard" 
-                ? "bg-slate-100 text-indigo-600" 
-                : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600"
+                ? "bg-[#f1e9fd] text-[#3e0075]" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]"
             )}>
               <div className="flex items-center">
                 <LayoutDashboardIcon className="w-5 h-5 mr-2" />
@@ -148,12 +148,12 @@ export function TopNavbar() {
           </Link>
           
           {/* Mobile user profile */}
-          <div className="mt-3 pt-3 border-t border-slate-200">
-            <div className="flex items-center px-3 py-2">
-              <UserCircle className="w-8 h-8 text-slate-400" />
+          <div className="mt-3 pt-3 border-t border-[#e9ddff]">
+            <div className="flex items-center px-3 py-2 bg-[#f8f5ff] m-2 rounded-lg border border-[#e9ddff]">
+              <UserCircle className="w-8 h-8 text-[#5a0099]" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-slate-700">Sarah Johnson</p>
-                <p className="text-xs text-slate-500">Commercial Manager</p>
+                <p className="text-sm font-medium text-[#3e0075]">Sarah Johnson</p>
+                <p className="text-xs text-[#5a0099]">Commercial Manager</p>
               </div>
             </div>
           </div>
