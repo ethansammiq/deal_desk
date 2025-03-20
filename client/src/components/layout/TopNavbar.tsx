@@ -9,7 +9,7 @@ import {
   UserCircle,
   BellIcon
 } from "lucide-react";
-import companyLogo from "../../assets/company-logo.jpg";
+import companyLogo from "../../assets/miq-transparent.png";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
