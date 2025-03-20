@@ -58,7 +58,7 @@ export function ChatProvider({
   const {
     apiBasePath,
     defaultSuggestedQuestions = [],
-    welcomeMessage = "Hi there! I'm your Deal Assistant. How can I help you with deals and incentives today?",
+    welcomeMessage = "Hi there! I'm DealGenie. How can I help you with deals and incentives today?",
     autoSuggestThreshold = 3,
     persistConversation = false,
     maxHistoryLength = 50,

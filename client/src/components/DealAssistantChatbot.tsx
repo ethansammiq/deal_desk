@@ -31,7 +31,7 @@ export default function DealAssistantChatbot() {
     {
       id: 1,
       sender: 'bot',
-      text: 'Hi there! I\'m the Deal Assistant. How can I help you with deal processes or incentives today?',
+      text: 'Hi there! I\'m DealGenie. How can I help you with deal processes or incentives today?',
       timestamp: new Date()
     }
   ]);
@@ -123,7 +123,7 @@ export default function DealAssistantChatbot() {
         <div className="bg-primary text-white p-4 rounded-t-lg flex justify-between items-center">
           <div className="flex items-center">
             <BotIcon className="h-5 w-5 mr-2" />
-            <h3 className="font-medium">Deal Assistant</h3>
+            <h3 className="font-medium">DealGenie</h3>
           </div>
           <button 
             onClick={toggleChat} 
