@@ -93,8 +93,8 @@ export default function Dashboard() {
       cell: ({ row }) => {
         return (
           <div className="text-right">
-            <Link href={`/deals/${row.original.id}`}>
-              <a className="text-primary hover:text-blue-700">View</a>
+            <Link href={`/deals/${row.original.id}`} className="text-[#3e0075] hover:text-[#2d0055] font-medium">
+              View
             </Link>
           </div>
         );
@@ -144,12 +144,12 @@ export default function Dashboard() {
           {/* DataTable contains the search */}
         </div>
         <div>
-          <Link href="/submit-deal">
-            <Button>
+          <Button asChild>
+            <Link href="/submit-deal">
               <PlusIcon className="w-5 h-5 mr-2" />
               New Deal
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 
