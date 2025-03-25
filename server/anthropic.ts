@@ -39,10 +39,8 @@ Format your responses with clear sections and bullet points when appropriate.`;
  */
 export async function generateAIResponse(userQuery: string, conversationHistory: string[] = []): Promise<string> {
   try {
-    // Prepare messages including conversation history
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT }
-    ];
+    // Prepare messages for conversation history
+    const messages = [];
     
     // Add conversation history if available (limited to last few messages to save tokens)
     const recentHistory = conversationHistory.slice(-6); // Keep last 6 messages maximum
@@ -63,11 +61,12 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     // Add the current user query
     messages.push({ role: 'user', content: userQuery });
 
-    // Call Anthropic API
+    // Call Anthropic API with top-level system parameter
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219', 
       max_tokens: 1024,
-      messages: messages as any,
+      system: SYSTEM_PROMPT,
+      messages: messages,
       // Use lower temperature for more deterministic responses
       temperature: 0.2,
     });
