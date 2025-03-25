@@ -25,68 +25,74 @@ export function TopNavbar() {
   }, [location]);
 
   return (
-    <header className="bg-white border-b border-slate-200 shadow-sm z-50 bg-gradient-to-r from-[#f8f5ff] to-white">
-      {/* Desktop Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              {/* Logo */}
+    <header className="sticky top-0 bg-white border-b border-slate-200 shadow-sm z-50 bg-gradient-to-r from-[#f8f5ff] to-white">
+      {/* Desktop Navigation - Fixed Width */}
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between h-16 px-4">
+          {/* Logo and Nav Links Section */}
+          <div className="flex items-center w-full">
+            {/* Logo - Fixed Width */}
+            <div className="flex-shrink-0 flex items-center w-64">
               <img 
                 src={companyLogo} 
                 alt="Logo" 
-                className="h-8 mr-2" 
+                className="h-8 w-8 mr-2" 
               />
-              <h1 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent">Commercial Deal Desk</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
+                Commercial Deal Desk
+              </h1>
             </div>
-            <nav className="hidden md:ml-8 md:flex md:space-x-3">
+            
+            {/* Navigation Links - Each with fixed width */}
+            <nav className="hidden md:flex md:space-x-2 flex-1 justify-center">
+              {/* Each nav item has fixed width to prevent shifting */}
               <Link href="/">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   location === "/" || location === "/help"
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <HelpCircleIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
-                  Support Desk
+                  <HelpCircleIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Support Desk</span>
                 </div>
               </Link>
               <Link href="/support">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   location === "/support" || location === "/submit-deal" 
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <ClipboardPenIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
-                  Deal Submission
+                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Deal Submission</span>
                 </div>
               </Link>
               <Link href="/dashboard">
                 <div className={cn(
-                  "inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105",
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   location === "/dashboard" 
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
-                  <LayoutDashboardIcon className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
-                  Deal Dashboard
+                  <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Deal Dashboard</span>
                 </div>
               </Link>
             </nav>
           </div>
           
-          {/* User Profile & Notifications */}
-          <div className="hidden md:flex md:items-center md:space-x-3">
+          {/* User Profile & Notifications - Fixed Width */}
+          <div className="hidden md:flex md:items-center md:space-x-3 flex-shrink-0 w-64 justify-end">
             {/* Notification Bell */}
             <NotificationBell />
             
             {/* User Profile */}
             <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all cursor-pointer">
               <div className="flex items-center text-sm">
-                <UserCircle className="w-5 h-5 text-[#5a0099] mr-1.5" />
-                <span className="font-medium text-[#3e0075]">Sarah Johnson</span>
-                <ChevronDown className="w-4 h-4 ml-1 text-[#5a0099]" />
+                <UserCircle className="flex-shrink-0 w-5 h-5 text-[#5a0099] mr-1.5" />
+                <span className="font-medium text-[#3e0075] whitespace-nowrap">Sarah Johnson</span>
+                <ChevronDown className="flex-shrink-0 w-4 h-4 ml-1 text-[#5a0099]" />
               </div>
             </div>
           </div>
@@ -120,9 +126,9 @@ export function TopNavbar() {
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center group">
-                <HelpCircleIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
-                Support Desk
+              <div className="flex items-center">
+                <HelpCircleIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Support Desk</span>
               </div>
             </div>
           </Link>
@@ -133,9 +139,9 @@ export function TopNavbar() {
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center group">
-                <ClipboardPenIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
-                Deal Submission
+              <div className="flex items-center">
+                <ClipboardPenIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Deal Submission</span>
               </div>
             </div>
           </Link>
@@ -146,9 +152,9 @@ export function TopNavbar() {
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
-              <div className="flex items-center group">
-                <LayoutDashboardIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
-                Deal Dashboard
+              <div className="flex items-center">
+                <LayoutDashboardIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Deal Dashboard</span>
               </div>
             </div>
           </Link>
@@ -173,7 +179,7 @@ export function TopNavbar() {
             
             {/* Mobile user profile */}
             <div className="flex items-center px-3 py-2 bg-[#f8f5ff] m-2 rounded-lg border border-[#e9ddff]">
-              <UserCircle className="w-8 h-8 text-[#5a0099]" />
+              <UserCircle className="w-8 h-8 text-[#5a0099] flex-shrink-0" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-[#3e0075]">Sarah Johnson</p>
                 <p className="text-xs text-[#5a0099]">Commercial Manager</p>
