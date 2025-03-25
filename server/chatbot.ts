@@ -132,6 +132,13 @@ function getDirectResponse(text: string): string | null {
   
   // Normalize the text for more reliable pattern matching
   const normalizedText = text.toLowerCase().trim().replace(/\s+/g, ' ');
+  console.log("[Chatbot] Normalized text:", normalizedText);
+  
+  // Special case for deal steps - highest priority
+  if (normalizedText === "how many steps does the deal process have") {
+    console.log("[Chatbot] EXACT MATCH for steps question!");
+    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+  }
   
   // Exact match for common phrasings
   const dealStepsExactPhrases = [
@@ -142,21 +149,35 @@ function getDirectResponse(text: string): string | null {
     "what are the steps in the deal process",
     "what steps are in the deal process",
     "steps in deal process",
-    "stages in deal process"
+    "stages in deal process",
+    "deal process steps",
+    "deal steps",
+    "how many deal steps",
+    "number of steps in deal process"
   ];
   
-  if (dealStepsExactPhrases.some(phrase => normalizedText.includes(phrase))) {
-    console.log("[Chatbot] Matched exact steps phrase!");
-    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+  for (const phrase of dealStepsExactPhrases) {
+    if (normalizedText.includes(phrase)) {
+      console.log(`[Chatbot] Matched exact steps phrase: "${phrase}"`);
+      return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+    }
   }
   
   // Pattern match for variations
-  if (/(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/.test(normalizedText) || 
-      /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/.test(normalizedText) ||
-      /(steps|stages).+?(in|of|for).+?(deal|process)/.test(normalizedText) ||
-      /(deal process|commercial process).+?(have|consist of|include|involve)/.test(normalizedText)) {
-    console.log("[Chatbot] Matched steps pattern!");
-    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+  const stepsPatterns = [
+    /(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/,
+    /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/,
+    /(steps|stages).+?(in|of|for).+?(deal|process)/,
+    /(deal process|commercial process).+?(have|consist of|include|involve)/,
+    /(how many).+?(steps)/,
+    /(deal).+?(steps)/
+  ];
+  
+  for (const pattern of stepsPatterns) {
+    if (pattern.test(normalizedText)) {
+      console.log(`[Chatbot] Matched steps pattern: ${pattern}`);
+      return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+    }
   }
   
   // Check for timeframe questions about deal review
