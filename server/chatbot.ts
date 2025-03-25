@@ -267,26 +267,70 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   }
   
   // Improved topic matching with topic scores to find the most relevant topic
+  // Helper function to check if the message contains significant keywords
+  // This helps prioritize important concepts even if the overall word count is lower
+  const containsSignificantKeyword = (text: string, keywords: string[]): boolean => {
+    const significantKeywords = [
+      'process', 'workflow', 'submit', 'approval', 'negotiate', 'contract', 
+      'incentive', 'financial', 'product', 'resource', 'eligibility', 'document', 
+      'urgent', 'growth', 'scope', 'review'
+    ];
+    
+    for (const keyword of keywords) {
+      if (significantKeywords.some(significant => keyword.includes(significant)) && text.includes(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  
+  // Function to calculate contextual similarity between question and keywords
+  const calculateContextualSimilarity = (text: string, keyword: string): number => {
+    // Base score for exact match
+    if (text.includes(keyword)) {
+      return keyword.split(' ').length * 2;
+    }
+    
+    // Partial match for multi-word keywords (matches 2+ consecutive words)
+    if (keyword.includes(' ')) {
+      const keywordParts = keyword.split(' ');
+      for (let i = 0; i < keywordParts.length - 1; i++) {
+        const twoWordPhrase = `${keywordParts[i]} ${keywordParts[i+1]}`;
+        if (text.includes(twoWordPhrase)) {
+          return 2; // Lower than full match but still significant
+        }
+      }
+    }
+    
+    // Check for word boundary matches for individual words
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(text)) {
+      return 1;
+    }
+    
+    // No match
+    return 0;
+  };
+
   let bestMatch = '';
   let highestScore = 0;
   
+  // Track if we found any significant keyword match
+  let hasSignificantMatch = false;
+  
   for (const [topic, keywords] of Object.entries(keywordMappingImport)) {
     let topicScore = 0;
+    let hasSignificantKeyword = false;
     
     // Calculate score based on keyword matches
     for (const keyword of keywords) {
-      // For multi-word keywords, check for exact phrase match
-      if (keyword.includes(' ')) {
-        if (lowerText.includes(keyword)) {
-          // Multi-word matches are weighted higher
-          topicScore += keyword.split(' ').length * 2;
-        }
-      } else {
-        // For single words, check for word boundaries to avoid partial matches
-        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-        if (regex.test(lowerText)) {
-          topicScore += 1;
-        }
+      const similarity = calculateContextualSimilarity(lowerText, keyword);
+      topicScore += similarity;
+      
+      // Check if this is a significant keyword match
+      if (similarity > 0 && containsSignificantKeyword(lowerText, [keyword])) {
+        hasSignificantKeyword = true;
+        topicScore += 2; // Bonus for significant keyword matches
       }
     }
     
@@ -295,10 +339,18 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
       topicScore += 5;
     }
     
-    // Check if this is a better match than what we've seen so far
-    if (topicScore > highestScore) {
+    // If this topic has significant keywords, mark that we've found at least one significant match
+    if (hasSignificantKeyword) {
+      hasSignificantMatch = true;
+    }
+    
+    // Prioritize topics with significant keyword matches if we're comparing similar scores
+    if ((topicScore > highestScore) || 
+        (hasSignificantKeyword && !hasSignificantMatch && topicScore > 0) ||
+        (hasSignificantKeyword && topicScore >= highestScore - 1)) {
       highestScore = topicScore;
       bestMatch = topic;
+      hasSignificantMatch = hasSignificantKeyword;
     }
   }
   
@@ -366,8 +418,9 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
 
     // Check if we have a response key for this topic
     const responseKey = topicToResponseKey[bestMatch] || bestMatch;
-    if (responses[responseKey]) {
-      return responses[responseKey];
+    // Type-safe lookup 
+    if (responseKey in responses) {
+      return responses[responseKey as keyof typeof responses];
     }
   }
   
@@ -503,11 +556,28 @@ export function registerChatbotRoutes(
   app.get(`${basePath}/chat/suggested-questions`, async (req: Request, res: Response) => {
     try {
       const knowledgeBase = await storage.getAllKnowledgeBase();
-      const questions = knowledgeBase.map(entry => entry.question);
+      // Include both main questions and a sample of variants
+      const suggestedQuestions: string[] = [];
+      
+      // Add all main questions
+      knowledgeBase.forEach(entry => {
+        suggestedQuestions.push(entry.question);
+        
+        // Add 1-2 random variants for each entry to provide more options
+        if (entry.variants && entry.variants.length > 0) {
+          // Get up to 2 random variants
+          const numVariantsToAdd = Math.min(2, entry.variants.length);
+          const shuffledVariants = [...entry.variants].sort(() => 0.5 - Math.random());
+          
+          for (let i = 0; i < numVariantsToAdd; i++) {
+            suggestedQuestions.push(shuffledVariants[i]);
+          }
+        }
+      });
       
       res.status(200).json({
         success: true,
-        questions
+        questions: suggestedQuestions
       });
     } catch (error) {
       console.error('Error fetching suggested questions:', error);

@@ -803,21 +803,34 @@ Could you provide more specific details about what you're looking for? For examp
 
 // Keyword mapping to responses - Used to detect the topic being discussed
 export const keywordMapping = {
-  dealProcess: ['process', 'workflow', 'lifecycle', 'steps', 'stages', 'how deal works', 'deal flow', 'deal stages', 'deal lifecycle'],
+  dealProcess: [
+    'process', 'workflow', 'lifecycle', 'steps', 'stages', 'how deal works', 'deal flow', 'deal stages', 'deal lifecycle',
+    'deal process', 'how does a deal work', 'what is the process', 'explain the process', 'deal procedure', 
+    'commercial process', 'commercial deal workflow', 'how does the deal system work', 'what steps are in a deal',
+    'walk through deal process', 'guide me through deal process', 'help with deal process',
+    'what happens during deal', 'deal journey', 'deal roadmap'
+  ],
   
   // More extensive keywords for deal scoping
   dealScoping: [
     'scoping', 'scope', 'initial stage', 'first step', 'begin deal', 'start deal', 
     'what is scoping', 'deal scoping', 'scoping stage', 'scoping process', 
     'how to scope a deal', 'deal parameters', 'customer needs', 'solution design',
-    'scoping requirements', 'define deal'
+    'scoping requirements', 'define deal', 'discovery', 'qualifying deal', 'qualify deal',
+    'how do I start a new deal', 'planning a deal', 'how to plan a deal', 'initial discovery',
+    'deal discovery', 'scoping meeting', 'how to qualify opportunity', 'starting point for deals',
+    'deal initiation', 'deal kick-off', 'opportunity assessment', 'preliminary deal'
   ],
   
   // More extensive keywords for deal submission
   dealSubmission: [
     'submit', 'submission', 'new deal', 'create deal', 'start deal', 'enter deal', 'deal form',
     'how to submit', 'submission process', 'deal details', 'required fields', 'submit for review',
-    'create a new deal', 'deal creation', 'submit a deal', 'deal information', 'adding a deal'
+    'create a new deal', 'deal creation', 'submit a deal', 'deal information', 'adding a deal',
+    'how do I create', 'how to create', 'submitting deals', 'deal registration', 'register a deal',
+    'add new opportunity', 'file a deal', 'input deal details', 'deal submission form', 'where to submit',
+    'deal entry', 'entering deal info', 'how to fill out deal form', 'where is submission form',
+    'deal proposal submission', 'submit for approval', 'propose new deal'
   ],
   
   // More extensive keywords for review and approval
@@ -825,7 +838,11 @@ export const keywordMapping = {
     'review', 'approval', 'approve', 'evaluate', 'assessment', 'appraise',
     'review process', 'approval process', 'deal desk review', 'stakeholder approval', 
     'evaluation criteria', 'review timeline', 'deal approval', 'how long for approval',
-    'who approves', 'approval workflow', 'approval stages'
+    'who approves', 'approval workflow', 'approval stages', 'authorization', 'sign-off',
+    'deal validation', 'approve my deal', 'getting approval', 'approval requirements',
+    'deal authorization', 'deal sign-off', 'verification process', 'deal verification',
+    'approval matrix', 'approval hierarchy', 'how deals are approved', 'approval criteria',
+    'review committee', 'approval steps', 'approval checklist', 'decision process'
   ],
   
   // More extensive keywords for negotiation and contracting
@@ -833,6 +850,10 @@ export const keywordMapping = {
     'negotiation', 'contract', 'terms', 'agreement', 'finalize deal',
     'negotiation process', 'contract review', 'legal review', 'contract terms', 
     'finalize agreement', 'execute contract', 'contracting process', 'deal terms',
+    'legal agreement', 'negotiating', 'contractual', 'legal document', 'legal paperwork',
+    'closing the deal', 'signing', 'contract signing', 'deal closure', 'finalizing terms',
+    'contract execution', 'legal contract', 'deal document', 'deal papers', 'negotiating terms',
+    'contract preparation', 'deal finalization', 'closing process', 'paperwork', 'legal requirements',
     'standard terms', 'non-standard terms', 'legal agreement'
   ],
   
