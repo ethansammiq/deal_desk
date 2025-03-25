@@ -251,8 +251,18 @@ export default function FloatingChatbot({
                   {message.sender === 'user' ? (
                     <p className="whitespace-pre-wrap text-white m-0">{message.text}</p>
                   ) : (
-                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-1 prose-headings:leading-tight prose-p:my-1 prose-p:leading-snug prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 text-[0.9rem] leading-snug">
-                      <ReactMarkdown>{message.text}</ReactMarkdown>
+                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-sm prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-0.5 prose-headings:leading-tight prose-p:my-0.5 prose-p:leading-tight prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 text-[0.9rem] leading-tight">
+                      {/* Apply custom components to fix markdown rendering issues */}
+                      <ReactMarkdown
+                        components={{
+                          // Fix for line breaks after lists
+                          ol: ({node, ...props}) => <ol className="mb-0.5 pb-0" {...props} />,
+                          // Ensure text after lists doesn't break to a new line
+                          p: ({node, ...props}) => <p className="inline-block my-0.5" {...props} />
+                        }}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
