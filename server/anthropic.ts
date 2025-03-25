@@ -15,6 +15,10 @@ const anthropic = new Anthropic({
  */
 export async function generateAIResponse(userQuery: string, conversationHistory: string[] = []): Promise<string> {
   try {
+    console.log("\n\n=======================================");
+    console.log(`[Claude API] NEW QUERY: "${userQuery}"`);
+    console.log("=======================================\n");
+    
     // Prepare messages for conversation history with proper typing
     type MessageRole = "user" | "assistant";
     type Message = { role: MessageRole, content: string };
@@ -41,7 +45,7 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     // Add the current user query
     messages.push({ role: "user", content: userQuery });
 
-    console.log("[Claude API] Sending request to Claude with message:", userQuery.substring(0, 50) + "...");
+    console.log("[Claude API] Processing request with message:", userQuery);
     console.log("[Claude API] Messages array length:", messages.length);
     
     // First check if this is an exact FAQ match

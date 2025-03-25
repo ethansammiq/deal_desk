@@ -126,18 +126,29 @@ function getDirectResponse(text: string): string | null {
 
 // Enhanced AI response generator
 async function generateAIResponse(message: string, storage: IChatStorage): Promise<string> {
+  // Generate a unique identifier for this request to track in logs
+  const requestId = Math.random().toString(36).substring(2, 8);
+  console.log(`\n\n==========================================================`);
+  console.log(`[Chatbot][${requestId}] PROCESSING QUERY: "${message}"`);
+  console.log(`==========================================================\n`);
+  
   // First, try to use the Claude AI model for a response
   try {
-    console.log('[Chatbot] Starting Claude AI processing...');
-    
-    // Special handling for step-related questions to better debug
-    if (message.toLowerCase().includes('step') || message.toLowerCase().includes('stage')) {
-      console.log('[Chatbot] DETECTED STEP/STAGE QUESTION - Should use Claude');
+    // Special topic detection for better debugging
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes('step') || lowerMessage.includes('stage')) {
+      console.log(`[Chatbot][${requestId}] TOPIC DETECTED: Steps/Stages question`);
+    } else if (lowerMessage.includes('incentive') || lowerMessage.includes('discount')) {
+      console.log(`[Chatbot][${requestId}] TOPIC DETECTED: Incentives/Discounts question`);
+    } else if (lowerMessage.includes('approve') || lowerMessage.includes('approval')) {
+      console.log(`[Chatbot][${requestId}] TOPIC DETECTED: Approval process question`);
+    } else {
+      console.log(`[Chatbot][${requestId}] No specific topic detected, general query`);
     }
     
     // Import the Anthropic integration service
     const { generateAIResponse: claudeGenerate } = await import('./anthropic');
-    console.log('[Chatbot] Successfully imported Anthropic module');
+    console.log(`[Chatbot][${requestId}] Successfully imported Anthropic module`);
     
     // Get previous messages for context
     const previousMessages = await storage.getMessagesByConversationId(
@@ -147,7 +158,7 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
         : 'default'
     );
     const conversationHistory = previousMessages.map(msg => msg.text);
-    console.log('[Chatbot] Got conversation history, length:', conversationHistory.length);
+    console.log(`[Chatbot][${requestId}] Retrieved ${conversationHistory.length} previous messages for context`);
     
     console.log('[Chatbot] Attempting Claude API with query:', message.substring(0, 50) + '...');
     
@@ -534,9 +545,16 @@ export function registerChatbotRoutes(
   // Send a message and get a response
   app.post(`${basePath}/chat/message`, async (req: Request, res: Response) => {
     try {
+      console.log("\n\n=============================================");
+      console.log("[CHATBOT] New message received in chat/message endpoint");
+      console.log("=============================================\n");
+      
       const { conversationId, text } = req.body;
+      console.log(`[CHATBOT] Message text: "${text}"`);
+      console.log(`[CHATBOT] Conversation ID: ${conversationId}`);
       
       if (!conversationId || !text) {
+        console.log("[CHATBOT] Error: Missing required fields");
         return res.status(400).json({
           success: false,
           error: 'Missing required fields: conversationId and text'
@@ -553,6 +571,9 @@ export function registerChatbotRoutes(
       };
       
       await storage.createMessage(userMessage);
+      console.log("[CHATBOT] User message saved to storage");
+      
+      console.log("[CHATBOT] Calling generateAIResponse with:", text.substring(0, 50) + (text.length > 50 ? "..." : ""));
       
       // Generate AI response
       const responseText = await generateAIResponse(text, storage);
