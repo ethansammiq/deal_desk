@@ -1097,7 +1097,7 @@ export default function SubmitDeal() {
                                 <td className="p-3 border border-slate-200 text-center">
                                   {/* Base value column - simplified UI */}
                                   <div className="text-slate-700">
-                                    Base
+                                    {formatCurrency(850000)}
                                   </div>
                                 </td>
                                 {dealTiers.map((tier, index) => (
@@ -1128,7 +1128,7 @@ export default function SubmitDeal() {
                                 <td className="p-3 border border-slate-200 text-center">
                                   {/* Base value column - simplified UI */}
                                   <div className="text-slate-700">
-                                    Base
+                                    35%
                                   </div>
                                 </td>
                                 {dealTiers.map((tier, index) => (
@@ -1162,9 +1162,9 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - simplified UI */}
+                                  {/* Base value column - calculated from mock values */}
                                   <div className="text-slate-700">
-                                    Base
+                                    {formatCurrency(850000 * 0.35)}
                                   </div>
                                 </td>
                                 {dealTiers.map((tier) => (
@@ -1188,7 +1188,7 @@ export default function SubmitDeal() {
                                 </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue
-                                  let previousYearRevenue = 0;
+                                  let previousYearRevenue = 850000; // Default to mock value
                                   const salesChannel = form.watch("salesChannel");
                                   const advertiserName = form.watch("advertiserName");
                                   const agencyName = form.watch("agencyName");
@@ -1207,7 +1207,7 @@ export default function SubmitDeal() {
                                   
                                   // Calculate growth rate
                                   let growthRate = 0;
-                                  if (previousYearRevenue && previousYearRevenue > 0) {
+                                  if (previousYearRevenue > 0) {
                                     growthRate = (tier.annualRevenue / previousYearRevenue) - 1;
                                   }
                                   
@@ -1236,8 +1236,8 @@ export default function SubmitDeal() {
                                 </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue and margin
-                                  let previousYearRevenue = 0;
-                                  let previousYearMargin = 0;
+                                  let previousYearRevenue = 850000; // Default to mock value
+                                  let previousYearMargin = 35; // Default to mock value
                                   const salesChannel = form.watch("salesChannel");
                                   const advertiserName = form.watch("advertiserName");
                                   const agencyName = form.watch("agencyName");
@@ -1245,14 +1245,14 @@ export default function SubmitDeal() {
                                   if (salesChannel === "client_direct" && advertiserName) {
                                     const advertiser = advertisers.find(a => a.name === advertiserName);
                                     if (advertiser) {
-                                      previousYearRevenue = advertiser.previousYearRevenue || 0;
-                                      previousYearMargin = advertiser.previousYearMargin || 0;
+                                      previousYearRevenue = advertiser.previousYearRevenue || previousYearRevenue;
+                                      previousYearMargin = advertiser.previousYearMargin || previousYearMargin;
                                     }
                                   } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
                                     const agency = agencies.find(a => a.name === agencyName);
                                     if (agency) {
-                                      previousYearRevenue = agency.previousYearRevenue || 0;
-                                      previousYearMargin = agency.previousYearMargin || 0;
+                                      previousYearRevenue = agency.previousYearRevenue || previousYearRevenue;
+                                      previousYearMargin = agency.previousYearMargin || previousYearMargin;
                                     }
                                   }
                                   
@@ -1262,7 +1262,7 @@ export default function SubmitDeal() {
                                   
                                   // Calculate growth rate
                                   let profitGrowthRate = 0;
-                                  if (previousYearProfit && previousYearProfit > 0) {
+                                  if (previousYearProfit > 0) {
                                     profitGrowthRate = (currentProfit / previousYearProfit) - 1;
                                   }
                                   
