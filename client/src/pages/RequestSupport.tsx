@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -72,10 +72,32 @@ const dealScopingSchema = z.object({
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
 
+// Type definitions for advertisers and agencies
+interface AdvertiserData {
+  id: number;
+  name: string;
+  region: string;
+  previousYearRevenue?: number;
+  previousYearMargin?: number;
+}
+
+interface AgencyData {
+  id: number;
+  name: string;
+  type: string;
+  region: string;
+  previousYearRevenue?: number;
+  previousYearMargin?: number;
+}
+
 export default function RequestSupport() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("sales-channel");
+  
+  // State to track selected agencies and advertisers for dropdowns
+  const [agencies, setAgencies] = useState<AgencyData[]>([]);
+  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
   
   const form = useForm<DealScopingFormValues>({
     resolver: zodResolver(dealScopingSchema),
@@ -218,6 +240,42 @@ export default function RequestSupport() {
     navigate("/submit-deal");
   }
   
+  // Fetch advertisers and agencies on component mount
+  useEffect(() => {
+    const fetchAgencies = async () => {
+      try {
+        const response = await apiRequest("GET", "/api/agencies");
+        const data = await response.json();
+        setAgencies(data);
+      } catch (error) {
+        console.error("Failed to fetch agencies:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load agencies data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const fetchAdvertisers = async () => {
+      try {
+        const response = await apiRequest("GET", "/api/advertisers");
+        const data = await response.json();
+        setAdvertisers(data);
+      } catch (error) {
+        console.error("Failed to fetch advertisers:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load advertisers data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchAgencies();
+    fetchAdvertisers();
+  }, [toast]);
+  
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -321,10 +379,11 @@ export default function RequestSupport() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="advertiser1">Advertiser 1</SelectItem>
-                                  <SelectItem value="advertiser2">Advertiser 2</SelectItem>
-                                  <SelectItem value="advertiser3">Advertiser 3</SelectItem>
-                                  {/* This would be populated from the database in production */}
+                                  {advertisers.map(advertiser => (
+                                    <SelectItem key={advertiser.id} value={advertiser.name}>
+                                      {advertiser.name}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
