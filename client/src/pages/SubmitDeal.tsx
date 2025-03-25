@@ -1066,51 +1066,56 @@ export default function SubmitDeal() {
                           </table>
                         </div>
 
-                        {/* Incentives Section */}
+                        {/* Incentives Section - Tabular Layout */}
                         <div className="mt-8 border border-[#e9ddff] rounded-lg p-4 bg-[#f8f5ff]">
                           <h3 className="text-lg font-medium text-[#3e0075] mb-4">Progressive Incentives Structure</h3>
                           <p className="text-sm text-slate-600 mb-4">
                             Configure progressive incentives for each tier. Incentives are applied when the client reaches the specified revenue threshold.
                           </p>
                           
-                          <div className="space-y-6">
-                            {dealTiers.map((tier, index) => (
-                              <div key={`incentive-${tier.tierNumber}`} 
-                                className={cn(
-                                  "border rounded-md p-4",
-                                  tier.tierNumber === 1 
-                                    ? "border-slate-200 bg-slate-50" 
-                                    : "border-[#e9ddff] bg-white"
-                                )}
-                              >
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className={cn(
-                                    "font-medium",
-                                    tier.tierNumber === 1 ? "text-slate-700" : "text-[#3e0075]"
-                                  )}>
-                                    Tier {tier.tierNumber} Incentives
-                                    {tier.tierNumber === 1 && 
-                                      <span className="ml-2 text-xs font-normal text-slate-500">(Base tier typically has no incentives)</span>
-                                    }
-                                  </h4>
-                                  {tier.tierNumber > 1 && (
-                                    <div className="text-sm text-slate-500">
-                                      Target Revenue: {formatCurrency(tier.annualRevenue)}
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                              <thead>
+                                <tr>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Base</th>
+                                  {dealTiers.slice(1).map((tier) => (
+                                    <th key={`incentive-th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
+                                      <div className="flex justify-between items-center">
+                                        <span className="flex-1">Tier {tier.tierNumber}</span>
+                                      </div>
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Revenue Target Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue Target</td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Base value column */}
+                                    <div className="text-slate-700">
+                                      {formatCurrency(dealTiers[0].annualRevenue)}
                                     </div>
-                                  )}
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  {/* Incentive Type */}
-                                  <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                      Incentive Type
-                                    </label>
+                                  </td>
+                                  {dealTiers.slice(1).map((tier) => (
+                                    <td key={`revenue-target-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      <div className="text-slate-700">
+                                        {formatCurrency(tier.annualRevenue)}
+                                      </div>
+                                    </td>
+                                  ))}
+                                </tr>
+                                
+                                {/* Incentive Type Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
+                                  <td className="p-3 border border-slate-200">
                                     <Select 
-                                      value={tier.incentiveType}
+                                      value={dealTiers[0].incentiveType}
                                       onValueChange={(value) => {
                                         const newTiers = [...dealTiers];
-                                        newTiers[index].incentiveType = value as any; // Cast to any to avoid type issues
+                                        newTiers[0].incentiveType = value as any; // Cast to any to avoid type issues
                                         setDealTiers(newTiers);
                                       }}
                                     >
@@ -1124,13 +1129,38 @@ export default function SubmitDeal() {
                                         <SelectItem value="other">Other</SelectItem>
                                       </SelectContent>
                                     </Select>
-                                  </div>
-
-                                  {/* Incentive Percentage */}
-                                  <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                      Incentive Percentage
-                                    </label>
+                                  </td>
+                                  {dealTiers.slice(1).map((tier, idx) => {
+                                    const index = idx + 1; // Account for base tier at index 0
+                                    return (
+                                      <td key={`incentive-type-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                        <Select 
+                                          value={tier.incentiveType}
+                                          onValueChange={(value) => {
+                                            const newTiers = [...dealTiers];
+                                            newTiers[index].incentiveType = value as any; // Cast to any to avoid type issues
+                                            setDealTiers(newTiers);
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select type" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="rebate">Rebate</SelectItem>
+                                            <SelectItem value="discount">Discount</SelectItem>
+                                            <SelectItem value="bonus">Bonus</SelectItem>
+                                            <SelectItem value="other">Other</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Incentive Percentage Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
+                                  <td className="p-3 border border-slate-200">
                                     <div className="relative">
                                       <Input
                                         type="number"
@@ -1138,13 +1168,13 @@ export default function SubmitDeal() {
                                         placeholder="0.00"
                                         min="0"
                                         max="100"
-                                        value={tier.incentivePercentage || 0}
+                                        value={dealTiers[0].incentivePercentage || 0}
                                         onChange={(e) => {
                                           const newTiers = [...dealTiers];
-                                          newTiers[index].incentivePercentage = parseFloat(e.target.value);
+                                          newTiers[0].incentivePercentage = parseFloat(e.target.value);
                                           // Also calculate incentive amount based on percentage and revenue
                                           const percent = parseFloat(e.target.value) / 100;
-                                          newTiers[index].incentiveAmount = newTiers[index].annualRevenue * percent;
+                                          newTiers[0].incentiveAmount = newTiers[0].annualRevenue * percent;
                                           setDealTiers(newTiers);
                                         }}
                                       />
@@ -1152,13 +1182,41 @@ export default function SubmitDeal() {
                                         <span className="text-slate-500 sm:text-sm">%</span>
                                       </div>
                                     </div>
-                                  </div>
-
-                                  {/* Incentive Amount */}
-                                  <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                      Incentive Amount
-                                    </label>
+                                  </td>
+                                  {dealTiers.slice(1).map((tier, idx) => {
+                                    const index = idx + 1; // Account for base tier at index 0
+                                    return (
+                                      <td key={`incentive-pct-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                        <div className="relative">
+                                          <Input
+                                            type="number"
+                                            className="pr-8 w-full"
+                                            placeholder="0.00"
+                                            min="0"
+                                            max="100"
+                                            value={tier.incentivePercentage || 0}
+                                            onChange={(e) => {
+                                              const newTiers = [...dealTiers];
+                                              newTiers[index].incentivePercentage = parseFloat(e.target.value);
+                                              // Also calculate incentive amount based on percentage and revenue
+                                              const percent = parseFloat(e.target.value) / 100;
+                                              newTiers[index].incentiveAmount = newTiers[index].annualRevenue * percent;
+                                              setDealTiers(newTiers);
+                                            }}
+                                          />
+                                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span className="text-slate-500 sm:text-sm">%</span>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Incentive Amount Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
+                                  <td className="p-3 border border-slate-200">
                                     <div className="relative">
                                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span className="text-slate-500 sm:text-sm">$</span>
@@ -1167,40 +1225,85 @@ export default function SubmitDeal() {
                                         type="number"
                                         className="pl-7 w-full"
                                         placeholder="0.00"
-                                        value={tier.incentiveAmount || 0}
+                                        value={dealTiers[0].incentiveAmount || 0}
                                         onChange={(e) => {
                                           const newTiers = [...dealTiers];
-                                          newTiers[index].incentiveAmount = parseFloat(e.target.value);
+                                          newTiers[0].incentiveAmount = parseFloat(e.target.value);
                                           // Calculate percentage if revenue is not zero
-                                          if (newTiers[index].annualRevenue > 0) {
-                                            newTiers[index].incentivePercentage = 
-                                              (parseFloat(e.target.value) / newTiers[index].annualRevenue) * 100;
+                                          if (newTiers[0].annualRevenue > 0) {
+                                            newTiers[0].incentivePercentage = 
+                                              (parseFloat(e.target.value) / newTiers[0].annualRevenue) * 100;
                                           }
                                           setDealTiers(newTiers);
                                         }}
                                       />
                                     </div>
-                                  </div>
-                                </div>
-
-                                {/* Incentive Notes */}
-                                <div className="mt-3">
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Notes
-                                  </label>
-                                  <Textarea
-                                    placeholder="Enter any notes about this incentive..."
-                                    value={tier.incentiveNotes || ""}
-                                    onChange={(e) => {
-                                      const newTiers = [...dealTiers];
-                                      newTiers[index].incentiveNotes = e.target.value;
-                                      setDealTiers(newTiers);
-                                    }}
-                                    className="min-h-[80px]"
-                                  />
-                                </div>
-                              </div>
-                            ))}
+                                  </td>
+                                  {dealTiers.slice(1).map((tier, idx) => {
+                                    const index = idx + 1; // Account for base tier at index 0
+                                    return (
+                                      <td key={`incentive-amt-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                        <div className="relative">
+                                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-slate-500 sm:text-sm">$</span>
+                                          </div>
+                                          <Input
+                                            type="number"
+                                            className="pl-7 w-full"
+                                            placeholder="0.00"
+                                            value={tier.incentiveAmount || 0}
+                                            onChange={(e) => {
+                                              const newTiers = [...dealTiers];
+                                              newTiers[index].incentiveAmount = parseFloat(e.target.value);
+                                              // Calculate percentage if revenue is not zero
+                                              if (newTiers[index].annualRevenue > 0) {
+                                                newTiers[index].incentivePercentage = 
+                                                  (parseFloat(e.target.value) / newTiers[index].annualRevenue) * 100;
+                                              }
+                                              setDealTiers(newTiers);
+                                            }}
+                                          />
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Incentive Notes Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <Textarea
+                                      placeholder="Enter any notes..."
+                                      value={dealTiers[0].incentiveNotes || ""}
+                                      onChange={(e) => {
+                                        const newTiers = [...dealTiers];
+                                        newTiers[0].incentiveNotes = e.target.value;
+                                        setDealTiers(newTiers);
+                                      }}
+                                      className="min-h-[80px]"
+                                    />
+                                  </td>
+                                  {dealTiers.slice(1).map((tier, idx) => {
+                                    const index = idx + 1; // Account for base tier at index 0
+                                    return (
+                                      <td key={`incentive-notes-${tier.tierNumber}`} className="p-3 border border-slate-200">
+                                        <Textarea
+                                          placeholder="Enter any notes..."
+                                          value={tier.incentiveNotes || ""}
+                                          onChange={(e) => {
+                                            const newTiers = [...dealTiers];
+                                            newTiers[index].incentiveNotes = e.target.value;
+                                            setDealTiers(newTiers);
+                                          }}
+                                          className="min-h-[80px]"
+                                        />
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
 
                           <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
@@ -1318,125 +1421,141 @@ export default function SubmitDeal() {
                           </div>
                         </div>
                         
-                        {/* Incentives Section for Flat Commit */}
+                        {/* Incentives Section for Flat Commit - Tabular Layout */}
                         <div className="mt-8 border border-[#e9ddff] rounded-lg p-4 bg-[#f8f5ff]">
                           <h3 className="text-lg font-medium text-[#3e0075] mb-4">Incentives Structure</h3>
                           <p className="text-sm text-slate-600 mb-4">
                             Configure incentives for this flat commitment deal.
                           </p>
                           
-                          <div className="grid grid-cols-1 gap-6">
-                            <div className="border rounded-md p-4 bg-white border-[#e9ddff]">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Incentive Type */}
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Incentive Type
-                                  </label>
-                                  <Select 
-                                    defaultValue="rebate"
-                                    onValueChange={(value) => {
-                                      const newTier = {...dealTiers[0]};
-                                      newTier.incentiveType = value as any; // Cast to any to avoid type issues
-                                      const newTiers = [newTier, ...dealTiers.slice(1)];
-                                      setDealTiers(newTiers);
-                                    }}
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="rebate">Rebate</SelectItem>
-                                      <SelectItem value="discount">Discount</SelectItem>
-                                      <SelectItem value="bonus">Bonus</SelectItem>
-                                      <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                {/* Incentive Percentage */}
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Incentive Percentage
-                                  </label>
-                                  <div className="relative">
-                                    <Input
-                                      type="number"
-                                      className="pr-8 w-full"
-                                      placeholder="0.00"
-                                      min="0"
-                                      max="100"
-                                      value={dealTiers[0].incentivePercentage || 0}
-                                      onChange={(e) => {
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                              <thead>
+                                <tr>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4">Field</th>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-3/4">Value</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Annual Revenue Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <div className="text-slate-700">
+                                      {formatCurrency(Number(watchTypedValue("annualRevenue")) || 0)}
+                                    </div>
+                                  </td>
+                                </tr>
+                                
+                                {/* Incentive Type Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <Select 
+                                      defaultValue="rebate"
+                                      onValueChange={(value) => {
                                         const newTier = {...dealTiers[0]};
-                                        newTier.incentivePercentage = parseFloat(e.target.value);
-                                        
-                                        // Calculate incentive amount based on percentage and total revenue
-                                        const annualRevenue = Number(watchTypedValue("annualRevenue")) || 0;
-                                        const percent = parseFloat(e.target.value) / 100;
-                                        newTier.incentiveAmount = annualRevenue * percent;
-                                        
+                                        newTier.incentiveType = value as any; // Cast to any to avoid type issues
                                         const newTiers = [newTier, ...dealTiers.slice(1)];
                                         setDealTiers(newTiers);
                                       }}
-                                    />
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">%</span>
+                                    >
+                                      <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="rebate">Rebate</SelectItem>
+                                        <SelectItem value="discount">Discount</SelectItem>
+                                        <SelectItem value="bonus">Bonus</SelectItem>
+                                        <SelectItem value="other">Other</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </td>
+                                </tr>
+                                
+                                {/* Incentive Percentage Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <div className="relative">
+                                      <Input
+                                        type="number"
+                                        className="pr-8 w-full"
+                                        placeholder="0.00"
+                                        min="0"
+                                        max="100"
+                                        value={dealTiers[0].incentivePercentage || 0}
+                                        onChange={(e) => {
+                                          const newTier = {...dealTiers[0]};
+                                          newTier.incentivePercentage = parseFloat(e.target.value);
+                                          
+                                          // Calculate incentive amount based on percentage and total revenue
+                                          const annualRevenue = Number(watchTypedValue("annualRevenue")) || 0;
+                                          const percent = parseFloat(e.target.value) / 100;
+                                          newTier.incentiveAmount = annualRevenue * percent;
+                                          
+                                          const newTiers = [newTier, ...dealTiers.slice(1)];
+                                          setDealTiers(newTiers);
+                                        }}
+                                      />
+                                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span className="text-slate-500 sm:text-sm">%</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-
-                                {/* Incentive Amount */}
-                                <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Incentive Amount
-                                  </label>
-                                  <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">$</span>
+                                  </td>
+                                </tr>
+                                
+                                {/* Incentive Amount Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <div className="relative">
+                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span className="text-slate-500 sm:text-sm">$</span>
+                                      </div>
+                                      <Input
+                                        type="number"
+                                        className="pl-7 w-full"
+                                        placeholder="0.00"
+                                        value={dealTiers[0].incentiveAmount || 0}
+                                        onChange={(e) => {
+                                          const newTier = {...dealTiers[0]};
+                                          newTier.incentiveAmount = parseFloat(e.target.value);
+                                          
+                                          // Calculate percentage if revenue is not zero
+                                          const annualRevenue = Number(watchTypedValue("annualRevenue")) || 0;
+                                          if (annualRevenue > 0) {
+                                            newTier.incentivePercentage = 
+                                              (parseFloat(e.target.value) / annualRevenue) * 100;
+                                          }
+                                          
+                                          const newTiers = [newTier, ...dealTiers.slice(1)];
+                                          setDealTiers(newTiers);
+                                        }}
+                                      />
                                     </div>
-                                    <Input
-                                      type="number"
-                                      className="pl-7 w-full"
-                                      placeholder="0.00"
-                                      value={dealTiers[0].incentiveAmount || 0}
+                                  </td>
+                                </tr>
+                                
+                                {/* Incentive Notes Row */}
+                                <tr>
+                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
+                                  <td className="p-3 border border-slate-200">
+                                    <Textarea
+                                      placeholder="Enter any notes about this incentive..."
+                                      value={dealTiers[0].incentiveNotes || ""}
                                       onChange={(e) => {
                                         const newTier = {...dealTiers[0]};
-                                        newTier.incentiveAmount = parseFloat(e.target.value);
-                                        
-                                        // Calculate percentage if revenue is not zero
-                                        const annualRevenue = Number(watchTypedValue("annualRevenue")) || 0;
-                                        if (annualRevenue > 0) {
-                                          newTier.incentivePercentage = 
-                                            (parseFloat(e.target.value) / annualRevenue) * 100;
-                                        }
-                                        
+                                        newTier.incentiveNotes = e.target.value;
                                         const newTiers = [newTier, ...dealTiers.slice(1)];
                                         setDealTiers(newTiers);
                                       }}
+                                      className="min-h-[80px]"
                                     />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Incentive Notes */}
-                              <div className="mt-3">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                  Notes
-                                </label>
-                                <Textarea
-                                  placeholder="Enter any notes about this incentive..."
-                                  value={dealTiers[0].incentiveNotes || ""}
-                                  onChange={(e) => {
-                                    const newTier = {...dealTiers[0]};
-                                    newTier.incentiveNotes = e.target.value;
-                                    const newTiers = [newTier, ...dealTiers.slice(1)];
-                                    setDealTiers(newTiers);
-                                  }}
-                                  className="min-h-[80px]"
-                                />
-                              </div>
-                            </div>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
                           
                           <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
