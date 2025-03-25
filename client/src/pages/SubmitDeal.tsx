@@ -886,7 +886,7 @@ export default function SubmitDeal() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="flat">Flat Commit</SelectItem>
+                            <SelectItem value="flat_commit">Flat Commit</SelectItem>
                             <SelectItem value="tiered">Tiered Revenue</SelectItem>
                           </SelectContent>
                         </Select>
