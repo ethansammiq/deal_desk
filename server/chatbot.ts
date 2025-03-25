@@ -237,8 +237,16 @@ function getDirectResponse(text: string): string | null {
 async function generateAIResponse(message: string, storage: IChatStorage): Promise<string> {
   // First, try to use the Claude AI model for a response
   try {
+    console.log('[Chatbot] Starting Claude AI processing...');
+    
+    // Special handling for step-related questions to better debug
+    if (message.toLowerCase().includes('step') || message.toLowerCase().includes('stage')) {
+      console.log('[Chatbot] DETECTED STEP/STAGE QUESTION - Should use Claude');
+    }
+    
     // Import the Anthropic integration service
     const { generateAIResponse: claudeGenerate } = await import('./anthropic');
+    console.log('[Chatbot] Successfully imported Anthropic module');
     
     // Get previous messages for context
     const previousMessages = await storage.getMessagesByConversationId(
@@ -248,19 +256,24 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
         : 'default'
     );
     const conversationHistory = previousMessages.map(msg => msg.text);
+    console.log('[Chatbot] Got conversation history, length:', conversationHistory.length);
     
-    console.log('[Chatbot] Attempting Claude API with query:', message);
+    console.log('[Chatbot] Attempting Claude API with query:', message.substring(0, 50) + '...');
     
     // Call Claude's API to get an AI-generated response
     const aiResponse = await claudeGenerate(message, conversationHistory);
     
     // If we successfully get a response from Claude, use it
     if (aiResponse) {
-      console.log('[Chatbot] Claude AI responded successfully');
+      console.log('[Chatbot] Claude AI responded successfully, length:', aiResponse.length);
+      console.log('[Chatbot] First 50 chars of response:', aiResponse.substring(0, 50) + '...');
       return aiResponse;
+    } else {
+      console.log('[Chatbot] Claude returned empty or null response');
     }
   } catch (error) {
-    console.log('Error using Claude AI, falling back to pattern matching:', error);
+    console.error('[Chatbot] Error using Claude AI, details:', error);
+    console.log('[Chatbot] Falling back to pattern matching due to error');
     // Fall back to pattern matching if AI fails
   }
   

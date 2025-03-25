@@ -65,6 +65,9 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     // Add the current user query
     messages.push({ role: "user", content: userQuery });
 
+    console.log("[Claude API] Sending request to Claude with message:", userQuery.substring(0, 50) + "...");
+    console.log("[Claude API] Messages array length:", messages.length);
+    
     // Call Anthropic API with top-level system parameter
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219', 
@@ -74,6 +77,8 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       // Use lower temperature for more deterministic responses
       temperature: 0.2,
     });
+    
+    console.log("[Claude API] Received response from Claude");
 
     // Return the generated response
     if (response.content[0].type === 'text') {
@@ -81,8 +86,27 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     }
     return 'I encountered an issue processing your request.';
     
-  } catch (error) {
+  } catch (err) {
+    const error = err as Error; // Type assertion
     console.error('Error generating AI response:', error);
+    
+    // More detailed error logging
+    console.error('[Claude API] Error details:', {
+      message: error.message || 'Unknown error',
+      name: error.name || 'UnknownError',
+      stack: error.stack ? error.stack.substring(0, 200) : 'No stack trace' // First part of stack trace
+    });
+    
+    // Check for API key issues
+    if (error.message && error.message.includes('API key')) {
+      console.error('[Claude API] Possible API key issue');
+    }
+    
+    // Check for rate limiting
+    if (error.message && error.message.includes('rate')) {
+      console.error('[Claude API] Possible rate limiting issue');
+    }
+    
     return "I'm sorry, I encountered an error processing your request. Please try again later.";
   }
 }
