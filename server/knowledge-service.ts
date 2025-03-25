@@ -129,6 +129,7 @@ export function searchFAQs(searchTerm: string): FAQ[] {
  * Creates a context-specific system prompt for Claude based on the query topic
  */
 export function generateContextPrompt(query: string): string {
+  console.log(`[Knowledge Service] Generating context prompt for query: "${query}"`);
   const kb = loadKnowledgeBase();
   const lowerQuery = query.toLowerCase();
   
@@ -138,7 +139,10 @@ You help users understand deal submission processes, approval workflows, and fin
 You provide concise, accurate, and helpful answers to questions about deals, incentives, and the deal desk process.
 
 Be conversational but direct in your answers. If you don't know something, say so instead of making up information.
-Format your responses with clear sections and bullet points when appropriate.`;
+Format your responses with clear sections and bullet points when appropriate.
+
+IMPORTANT: Customize your answer to the exact question being asked. If asked "How many steps are in the deal process?", answer with the specific number first, then elaborate.
+If asked "What are the steps in the deal process?", list all the steps first, then provide details about each.`;
 
   // Add deal process information if the query is about deal steps or stages
   if (lowerQuery.includes('step') || lowerQuery.includes('stage') || 
@@ -220,14 +224,37 @@ Format your responses with clear sections and bullet points when appropriate.`;
  */
 export function findMatchingFAQ(query: string): FAQ | null {
   const kb = loadKnowledgeBase();
-  const lowerQuery = query.toLowerCase();
+  const lowerQuery = query.toLowerCase().trim();
+  
+  console.log(`[Knowledge Service] Finding matching FAQ for query: "${lowerQuery}"`);
+  
+  // Special case for "how many steps" questions since they're common
+  if (lowerQuery.includes("how many") && 
+     (lowerQuery.includes("steps") || lowerQuery.includes("stages")) &&
+     (lowerQuery.includes("deal") || lowerQuery.includes("process"))) {
+    console.log('[Knowledge Service] Detected steps count question, special handling');
+    
+    // Find the FAQ about deal process steps
+    const stepsCountFAQ = kb.faqs.find(faq => 
+      faq.question.toLowerCase().includes("how many steps") && 
+      faq.question.toLowerCase().includes("deal process")
+    );
+    
+    if (stepsCountFAQ) {
+      console.log('[Knowledge Service] Found exact steps count FAQ');
+      return stepsCountFAQ;
+    }
+  }
   
   // First try exact matches
   const exactMatch = kb.faqs.find(faq => 
     faq.question.toLowerCase() === lowerQuery
   );
   
-  if (exactMatch) return exactMatch;
+  if (exactMatch) {
+    console.log('[Knowledge Service] Found exact match for query');
+    return exactMatch;
+  }
   
   // Then try partial matches
   let bestMatch: FAQ | null = null;
@@ -237,9 +264,36 @@ export function findMatchingFAQ(query: string): FAQ | null {
     let score = 0;
     const questionWords = faq.question.toLowerCase().split(/\s+/);
     
+    // Check for significant keyword matches like "process", "steps", "approve", etc.
+    const significantKeywords = ['process', 'steps', 'stages', 'approval', 'submit', 'incentive', 
+                                'review', 'contract', 'negotiate', 'implement'];
+    
+    let hasSignificantMatch = false;
+    
     for (const word of questionWords) {
       if (word.length > 3 && lowerQuery.includes(word)) {
         score += 1;
+        
+        // Significant keywords get extra score
+        if (significantKeywords.includes(word)) {
+          score += 2;
+          hasSignificantMatch = true;
+        }
+      }
+    }
+    
+    // Boost score if the query and FAQ have similar lengths (likely more related)
+    const lengthDifference = Math.abs(lowerQuery.length - faq.question.toLowerCase().length);
+    if (lengthDifference < 10) {
+      score += 1;
+    }
+    
+    // Exact phrase matches get a big boost
+    const phrases = extractPhrases(faq.question.toLowerCase());
+    for (const phrase of phrases) {
+      if (phrase.length > 5 && lowerQuery.includes(phrase)) {
+        score += 3;
+        console.log(`[Knowledge Service] Found phrase match: "${phrase}"`);
       }
     }
     
@@ -250,5 +304,29 @@ export function findMatchingFAQ(query: string): FAQ | null {
   }
   
   // Only return matches with a minimum score
-  return highestScore >= 2 ? bestMatch : null;
+  const matchQuality = highestScore >= 5 ? "excellent" : highestScore >= 3 ? "good" : "minimal";
+  console.log(`[Knowledge Service] Best match found with score ${highestScore} (${matchQuality} match)`);
+  
+  return highestScore >= 3 ? bestMatch : null;
+}
+
+/**
+ * Helper function to extract phrases from text
+ */
+function extractPhrases(text: string): string[] {
+  // Split by common separators and extract 2-3 word phrases
+  const words = text.split(/\s+/);
+  const phrases: string[] = [];
+  
+  // Add 2-word phrases
+  for (let i = 0; i < words.length - 1; i++) {
+    phrases.push(`${words[i]} ${words[i+1]}`);
+  }
+  
+  // Add 3-word phrases
+  for (let i = 0; i < words.length - 2; i++) {
+    phrases.push(`${words[i]} ${words[i+1]} ${words[i+2]}`);
+  }
+  
+  return phrases;
 }

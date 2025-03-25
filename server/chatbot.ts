@@ -1,6 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { IStorage } from './storage';
 import { v4 as uuidv4 } from 'uuid';
+import { loadKnowledgeBase, searchFAQs, findMatchingFAQ } from './knowledge-service';
 
 // Message types
 export interface ChatMessage {
@@ -26,7 +27,6 @@ export interface IChatStorage {
 }
 
 // Chat storage implementation using MemStorage pattern
-import { loadKnowledgeBase, searchFAQs } from './knowledge-service';
 
 export class ChatMemStorage implements IChatStorage {
   private messages: Map<string, ChatMessage> = new Map();

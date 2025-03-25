@@ -54,6 +54,14 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     // Generate a dynamic system prompt based on the user's query
     const contextPrompt = generateContextPrompt(userQuery);
     console.log(`[Claude API] Using dynamic context prompt with length: ${contextPrompt.length}`);
+    
+    // Log the first 300 characters of the context prompt for debugging
+    console.log(`[Claude API] Start of context prompt: ${contextPrompt.substring(0, 300)}...`);
+    
+    // Check if the query is about steps specifically
+    if (userQuery.toLowerCase().includes('step') || userQuery.toLowerCase().includes('stage')) {
+      console.log('[Claude API] Step/stage related question detected - providing dynamic response');
+    }
 
     // Call Anthropic API with dynamic context system parameter
     const response = await anthropic.messages.create({
