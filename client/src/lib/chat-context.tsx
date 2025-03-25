@@ -1,9 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  simpleKnowledgeBase, 
-  advancedKnowledgeBase, 
-  keywordMapping 
-} from './chatbot-knowledge';
 
 // Types
 export type Message = {
@@ -95,6 +90,25 @@ export function ChatProvider({
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(defaultSuggestedQuestions);
   
+  // Fetch suggested questions from API
+  useEffect(() => {
+    const fetchSuggestedQuestions = async () => {
+      try {
+        const response = await fetch(`${apiBasePath}/chat/suggested-questions`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.suggestedQuestions) {
+            setSuggestedQuestions(data.suggestedQuestions);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching suggested questions:', error);
+      }
+    };
+    
+    fetchSuggestedQuestions();
+  }, [apiBasePath]);
+  
   // Save messages to localStorage when they change
   useEffect(() => {
     if (persistConversation && messages.length > 0) {
@@ -104,122 +118,15 @@ export function ChatProvider({
     }
   }, [messages, persistConversation, maxHistoryLength]);
 
-  // Function to get a response based on AI model
-  const getAIResponse = (text: string): string => {
-    const lowerText = text.toLowerCase();
-    
-    // Direct topic mapping for common questions
-    // First, check if we have any direct question matches
-    if (lowerText.includes("what is the deal process") || 
-        lowerText.includes("deal process workflow") || 
-        lowerText.includes("how does the deal process work")) {
-      return aiModel === 'advanced' ? advancedKnowledgeBase.dealProcess : simpleKnowledgeBase.dealProcess;
-    }
-    
-    if (lowerText.includes("how do i submit a deal") || 
-        lowerText.includes("how to submit a deal") || 
-        lowerText.includes("deal submission")) {
-      return aiModel === 'advanced' ? advancedKnowledgeBase.dealSubmission : simpleKnowledgeBase.dealSubmission;
-    }
-    
-    if (lowerText.includes("financial incentive") || 
-        lowerText.includes("money incentive") || 
-        lowerText.includes("revenue share")) {
-      return aiModel === 'advanced' ? advancedKnowledgeBase.financialIncentives : simpleKnowledgeBase.financialIncentives;
-    }
-
-    if (lowerText.includes("what incentives") || 
-        lowerText.includes("available incentives") || 
-        lowerText.includes("incentive types") ||
-        lowerText.includes("types of incentives")) {
-      return aiModel === 'advanced' ? advancedKnowledgeBase.generalIncentives : simpleKnowledgeBase.generalIncentives;
-    }
-    
-    if (lowerText.includes("documentation") || 
-        lowerText.includes("what documents") || 
-        lowerText.includes("required documentation") ||
-        lowerText.includes("what is required")) {
-      return aiModel === 'advanced' ? advancedKnowledgeBase.documentationRequirements : simpleKnowledgeBase.documentationRequirements;
-    }
-    
-    // Helper function to check if the user's query contains any of the keywords
-    const matchesKeywords = (keywords: string[]): boolean => {
-      return keywords.some(keyword => lowerText.includes(keyword));
-    };
-    
-    // Match the user's query against the keyword mapping to determine the appropriate response
-    const getTopicFromKeywords = (): string | null => {
-      for (const [topic, keywords] of Object.entries(keywordMapping)) {
-        // For compound topics that need multiple keyword matches
-        if (topic === 'financialIncentives' && 
-            (lowerText.includes('incentive') || lowerText.includes('bonus')) && 
-            (lowerText.includes('financial') || lowerText.includes('money') || lowerText.includes('revenue'))) {
-          return topic;
-        }
-        else if (topic === 'productIncentives' && 
-                (lowerText.includes('incentive') || lowerText.includes('bonus')) && 
-                (lowerText.includes('product') || lowerText.includes('feature'))) {
-          return topic;
-        }
-        else if (topic === 'resourceIncentives' && 
-                (lowerText.includes('incentive') || lowerText.includes('bonus')) && 
-                (lowerText.includes('resource') || lowerText.includes('training'))) {
-          return topic;
-        }
-        // For simple keyword matching
-        else if (matchesKeywords(keywords as string[])) {
-          return topic;
-        }
-      }
-      
-      // If the query mentions incentives generally
-      if (lowerText.includes('incentive') || lowerText.includes('bonus') || lowerText.includes('threshold')) {
-        return 'generalIncentives';
-      }
-      
-      // If query includes process or workflow
-      if (lowerText.includes('process') || lowerText.includes('workflow') || lowerText.includes('steps')) {
-        return 'dealProcess';
-      }
-      
-      return null;
-    };
-    
-    const topic = getTopicFromKeywords();
-    
-    // Simple model responses
-    if (aiModel === 'simple') {
-      if (topic) {
-        // Access the appropriate response from the knowledge base
-        const knowledgeKey = topic as keyof typeof simpleKnowledgeBase;
-        return simpleKnowledgeBase[knowledgeKey] || simpleKnowledgeBase.defaultResponse;
-      }
-      
-      // Default response if no specific topic is matched
-      return simpleKnowledgeBase.defaultResponse;
-    } 
-    // Advanced model responses
-    else if (aiModel === 'advanced') {
-      if (topic) {
-        // Access the appropriate detailed response from the advanced knowledge base
-        const knowledgeKey = topic as keyof typeof advancedKnowledgeBase;
-        return advancedKnowledgeBase[knowledgeKey] || advancedKnowledgeBase.defaultResponse;
-      }
-      
-      // Context-aware response for unmatched queries in advanced mode
-      const contextualIntro = 'I notice you\'re asking about ' + text.split(' ').slice(0, 3).join(' ') + '... \n\n';
-      return contextualIntro + advancedKnowledgeBase.generalResponse;
-    }
-    
-    // Default fallback (should never reach here since we always have simple or advanced)
-    return advancedKnowledgeBase.defaultResponse;
-  };
+  // We've removed the local response generation since we're now using the backend API
   
   // Function to clear chat history
   const clearChatHistory = () => {
+    // Remove both messages and conversation ID from localStorage
     if (persistConversation) {
       localStorage.removeItem('chatMessages');
     }
+    localStorage.removeItem('chatConversationId');
     
     setMessages([{
       id: Date.now().toString(),
@@ -233,6 +140,9 @@ export function ChatProvider({
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     
+    // Create a conversation ID if we don't have one already
+    let currentConversationId = localStorage.getItem('chatConversationId');
+    
     // Add user message to the chat
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -245,26 +155,55 @@ export function ChatProvider({
     setIsLoading(true);
     
     try {
-      // In a real implementation, we would send a request to the backend API
-      // For now, we'll simulate a response after a delay
-      setTimeout(() => {
-        // Get response from the appropriate AI model
-        const botResponse = getAIResponse(text);
+      // If we don't have a conversation ID, start a new one
+      if (!currentConversationId) {
+        const startResponse = await fetch(`${apiBasePath}/chat/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({})
+        });
         
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: botResponse,
-          sender: 'bot',
-          timestamp: new Date()
-        };
+        if (!startResponse.ok) {
+          throw new Error('Failed to start conversation');
+        }
         
-        setMessages(prev => [...prev, botMessage]);
-        setIsLoading(false);
-      }, 1000);
+        const startData = await startResponse.json();
+        currentConversationId = startData.conversationId;
+        localStorage.setItem('chatConversationId', currentConversationId);
+      }
+      
+      // Send the message to our API
+      const messageResponse = await fetch(`${apiBasePath}/chat/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          conversationId: currentConversationId,
+          text
+        })
+      });
+      
+      if (!messageResponse.ok) {
+        throw new Error('Failed to send message');
+      }
+      
+      const messageData = await messageResponse.json();
+      
+      // Add the bot's response to the chat
+      const botMessage: Message = {
+        id: messageData.message.id,
+        text: messageData.message.text,
+        sender: 'bot',
+        timestamp: new Date(messageData.message.timestamp)
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
       
     } catch (error) {
       console.error('Error sending message:', error);
-      setIsLoading(false);
       
       // Add error message
       const errorMessage: Message = {
@@ -275,6 +214,8 @@ export function ChatProvider({
       };
       
       setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
