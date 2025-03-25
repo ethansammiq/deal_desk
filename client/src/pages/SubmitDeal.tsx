@@ -850,7 +850,8 @@ export default function SubmitDeal() {
                   <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
                   <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
                 </div>
-                  
+                
+                <div className="space-y-6">
                   {/* Simplified approval alert based on basic deal parameters */}
                   {(watchTypedValue("annualRevenue") !== undefined && watchTypedValue("contractTerm") !== undefined) && (
                     <ApprovalAlert 
@@ -1555,6 +1556,7 @@ export default function SubmitDeal() {
                     </div>
                   )}
                 </div>
+                </div> {/* This is the closing tag for the div that opened on line 869 */}
                 
                 <div className="mt-8 flex justify-between">
                   <Button
@@ -1571,6 +1573,7 @@ export default function SubmitDeal() {
                     Next: Review & Submit
                   </Button>
                 </div>
+                </div> {/* Close div from line 854 */}
               </CardContent>
             )}
             
