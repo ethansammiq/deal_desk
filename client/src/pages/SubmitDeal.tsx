@@ -14,12 +14,18 @@ import {
 } from "@/components/ui/card";
 import { 
   formatCurrency,
+  formatPercentage,
   calculateMonthlyValue,
   calculateNetValue, 
   calculateProfit,
   calculateProfitMargin,
   calculateYOYGrowth,
   calculateIncentiveImpact,
+  calculateDealFinancialSummary,
+  calculateGrossMarginValue,
+  calculateTierContribution,
+  calculateEffectiveDiscountRate,
+  type DealFinancialSummary,
   cn
 } from "@/lib/utils";
 import { 
@@ -127,6 +133,16 @@ export default function SubmitDeal() {
   const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
   const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("tiered");
+  const [financialSummary, setFinancialSummary] = useState<DealFinancialSummary>({
+    totalAnnualRevenue: 0,
+    totalGrossMargin: 0,
+    averageGrossMarginPercent: 0,
+    totalIncentiveValue: 0,
+    effectiveDiscountRate: 0,
+    monthlyValue: 0,
+    yearOverYearGrowth: 0,
+    projectedNetValue: 0
+  });
   
   // Type-safe helper functions for getting form values
   function getTypedValue<T extends string>(
@@ -378,6 +394,37 @@ export default function SubmitDeal() {
   }, [
     form, // Include the entire form as a dependency
   ]);
+  
+  // Calculate real-time financial impact based on changes to dealTiers and contract term
+  useEffect(() => {
+    // Get current contract term
+    const contractTerm = Number(getTypedValue("contractTerm")) || 12;
+    
+    // Get advertiser/agency to find previous year revenue
+    const advertiserName = getTypedValue("advertiserName") as string;
+    const agencyName = getTypedValue("agencyName") as string;
+    
+    // Find the previous year revenue for YoY calculations
+    let previousYearRevenue = 0;
+    
+    if (salesChannel === "client_direct" && advertiserName) {
+      const advertiser = advertisers.find(a => a.name === advertiserName);
+      if (advertiser && advertiser.previousYearRevenue) {
+        previousYearRevenue = advertiser.previousYearRevenue;
+      }
+    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+      const agency = agencies.find(a => a.name === agencyName);
+      if (agency && agency.previousYearRevenue) {
+        previousYearRevenue = agency.previousYearRevenue;
+      }
+    }
+    
+    // Calculate financial summary
+    const summary = calculateDealFinancialSummary(dealTiers, contractTerm, previousYearRevenue);
+    
+    // Update the financial summary state
+    setFinancialSummary(summary);
+  }, [dealTiers, form, salesChannel, advertisers, agencies]);
 
   // Validates the current step and allows or prevents navigation
   function validateAndGoToStep(targetStep: number): boolean {
