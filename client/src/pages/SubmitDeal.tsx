@@ -329,14 +329,14 @@ export default function SubmitDeal() {
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = watchTypedValue("salesChannel");
-  const dealStructure = watchTypedValue("dealStructure");
+  const dealStructureValue = watchTypedValue("dealStructure");
   
   // Update dealStructureType when form value changes
   useEffect(() => {
-    if (dealStructure) {
-      setDealStructure(dealStructure as "tiered" | "flat_commit");
+    if (dealStructureValue) {
+      setDealStructure(dealStructureValue as "tiered" | "flat_commit");
     }
-  }, [dealStructure]);
+  }, [dealStructureValue]);
 
   // Auto-populate region when selecting advertiser or agency
   useEffect(() => {
