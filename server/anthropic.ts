@@ -1,0 +1,82 @@
+import Anthropic from '@anthropic-ai/sdk';
+
+// Initialize the Anthropic client
+// the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+// Define the system prompt
+const SYSTEM_PROMPT = `You are DealGenie, a helpful AI assistant for commercial deal desk operations.
+You help users understand deal submission processes, approval workflows, and financial incentive structures.
+You provide concise, accurate, and helpful answers to questions about deals, incentives, and the deal desk process.
+
+Here are key facts about the deal process:
+1. The deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.
+2. In the Scoping phase, clients identify requirements, deal type, and preliminary financial terms.
+3. The Submission phase requires completing the Deal Submission form with complete details and documentation.
+4. Review & Approval involves assessment by managers and executives based on deal value and complexity.
+5. Negotiation occurs if changes are requested or terms need adjustment.
+6. Contracting involves generating and executing formal agreements.
+7. Implementation includes setup, onboarding, and initial delivery.
+8. Evaluation measures performance against targets and identifies optimization opportunities.
+
+For incentive structures:
+1. Deals can use tiered structures (multiple revenue levels with increasing incentives) or flat commit (single threshold).
+2. Financial incentives include rebates, discounts, and volume-based bonuses.
+3. Each tier has specific revenue thresholds and associated incentive rates.
+4. All incentives require supporting documentation for approval.
+5. Higher incentive rates require approval from senior management.
+
+Be conversational but direct in your answers. If you don't know something, say so instead of making up information.
+Format your responses with clear sections and bullet points when appropriate.`;
+
+/**
+ * Generates a response using Anthropic Claude
+ * @param {string} userQuery The user's question or message
+ * @param {string[]} conversationHistory Optional array of previous messages to provide context
+ * @returns {Promise<string>} The AI-generated response
+ */
+export async function generateAIResponse(userQuery: string, conversationHistory: string[] = []): Promise<string> {
+  try {
+    // Prepare messages including conversation history
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT }
+    ];
+    
+    // Add conversation history if available (limited to last few messages to save tokens)
+    const recentHistory = conversationHistory.slice(-6); // Keep last 6 messages maximum
+    
+    for (let i = 0; i < recentHistory.length; i += 2) {
+      const userMessage = recentHistory[i];
+      const assistantMessage = recentHistory[i + 1];
+      
+      if (userMessage) {
+        messages.push({ role: 'user', content: userMessage });
+      }
+      
+      if (assistantMessage) {
+        messages.push({ role: 'assistant', content: assistantMessage });
+      }
+    }
+    
+    // Add the current user query
+    messages.push({ role: 'user', content: userQuery });
+
+    // Call Anthropic API
+    const response = await anthropic.messages.create({
+      model: 'claude-3-7-sonnet-20250219', 
+      max_tokens: 1024,
+      messages: messages as any,
+      // Use lower temperature for more deterministic responses
+      temperature: 0.2,
+    });
+
+    // Return the generated response
+    return response.content[0].text;
+    
+  } catch (error) {
+    console.error('Error generating AI response:', error);
+    return "I'm sorry, I encountered an error processing your request. Please try again later.";
+  }
+}
