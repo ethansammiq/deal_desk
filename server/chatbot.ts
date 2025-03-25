@@ -93,7 +93,7 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
     console.log(`[Chatbot][${requestId}] Cleaned message: "${message}"`);
   }
   
-  // First, try to use the Claude AI model for a response
+  // Use Claude AI model for response, with no fallback to pattern matching
   try {
     // Special topic detection for better debugging
     const lowerMessage = message.toLowerCase();
@@ -117,7 +117,7 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
     
     // Create a clean conversation history without metadata
     const conversationHistory = previousMessages
-      .filter(msg => !msg.text.includes('conversation-id:')) // Filter out any messages with ID metadata
+      .filter(msg => !msg.text.includes('conversation-id:') && !msg.text.includes('[QueryID:')) // Filter out metadata
       .map(msg => msg.text);
     
     console.log(`[Chatbot][${requestId}] Using ${conversationHistory.length} messages for context`);
@@ -126,42 +126,24 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
       console.log(`[Chatbot][${requestId}] Last message: "${conversationHistory[conversationHistory.length-1].substring(0, 30)}..."`);
     }
     
-    console.log(`[Chatbot][${requestId}] Attempting Claude API with query:`, message.substring(0, 50) + '...');
+    console.log(`[Chatbot][${requestId}] Calling Claude API with query:`, message.substring(0, 50) + '...');
     
     // Call Claude's API to get an AI-generated response
-    // Pass just the clean message (without conversation ID) but with conversation history
     const aiResponse = await claudeGenerate(message, conversationHistory);
     
-    // If we successfully get a response from Claude, use it
+    // Return the AI-generated response
     if (aiResponse) {
       console.log(`[Chatbot][${requestId}] Claude AI responded successfully with ${aiResponse.length} characters`);
       console.log(`[Chatbot][${requestId}] First 50 chars of response: "${aiResponse.substring(0, 50)}..."`);
       return aiResponse;
     } else {
       console.log(`[Chatbot][${requestId}] Claude returned empty or null response`);
+      return "I'm having trouble generating a response at the moment. Please try asking your question again.";
     }
   } catch (error) {
     console.error('[Chatbot] Error using Claude AI, details:', error);
-    console.log('[Chatbot] Falling back to pattern matching due to error');
-    // Fall back to pattern matching if AI fails
-  }
-  
-  // Fallback: Use pattern matching for response
-  const lowerText = message.toLowerCase().trim();
-  
-  // Skip pattern matching for questions about number of steps or stages - let Claude handle those
-  if (lowerText.includes("how many") && (lowerText.includes("steps") || lowerText.includes("stages"))) {
-    console.log("[Chatbot] Skipping pattern matching for step count question, Claude will handle this");
-    // We need to return a default response if Claude failed (we're in the fallback path)
-    return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
-  }
-  
-  // Check for specific question patterns that need direct answers
-  console.log("[Chatbot] Processing question: ", lowerText);
-  const directResponse = getDirectResponse(lowerText);
-  console.log("[Chatbot] Direct response match: ", directResponse ? "YES" : "NO");
-  if (directResponse) {
-    return directResponse;
+    // No fallback to pattern matching, just return a friendly error message
+    return "I apologize, but I'm experiencing a technical issue right now. Please try again in a moment.";
   }
   
   const kb = await storage.getAllKnowledgeBase();

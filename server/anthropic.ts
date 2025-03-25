@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { generateContextPrompt, findMatchingFAQ } from './knowledge-service';
+import { generateContextPrompt } from './knowledge-service';
 
 // Initialize the Anthropic client
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
@@ -37,9 +37,9 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       // We need to type 'role' properly as 'user' | 'assistant' for the Anthropic API
       let userTurn = true; // Start with user message
       for (const message of recentHistory) {
-        // Skip messages that contain conversation-id markers
-        if (message.includes('conversation-id:')) {
-          console.log(`[Claude API] Skipping message with conversation-id marker`);
+        // Skip messages that contain conversation-id markers or query ID markers
+        if (message.includes('conversation-id:') || message.includes('[QueryID:')) {
+          console.log(`[Claude API] Skipping message with metadata marker`);
           continue;
         }
         
@@ -57,18 +57,19 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       console.log(`[Claude API] No conversation history used (insufficient messages)`);
     }
     
-    // Add the current user query
-    messages.push({ role: "user", content: userQuery });
-
-    console.log("[Claude API] Processing request with message:", userQuery);
-    console.log("[Claude API] Messages array length:", messages.length);
+    // Generate a unique query ID for this specific request
+    // This helps ensure varied responses even for identical questions
+    const uniqueQueryId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     
-    // First check if this is an exact FAQ match
-    const exactFaqMatch = findMatchingFAQ(userQuery);
-    if (exactFaqMatch) {
-      console.log('[Claude API] Found exact FAQ match, returning direct answer');
-      return exactFaqMatch.answer;
-    }
+    // Add the current user query with a hidden unique identifier
+    // The unique ID is invisible to the user but makes each query technically unique to Claude
+    messages.push({ 
+      role: "user", 
+      content: `${userQuery} [QueryID:${uniqueQueryId}]` 
+    });
+
+    console.log("[Claude API] Processing request with unique query ID:", uniqueQueryId);
+    console.log("[Claude API] Messages array length:", messages.length);
     
     // Generate a dynamic system prompt based on the user's query
     const contextPrompt = generateContextPrompt(userQuery);
@@ -92,7 +93,7 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       temperature: 0.5,
       // Add a unique identifier as metadata to encourage distinct outputs
       metadata: {
-        requestId: `req-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        requestId: `req-${uniqueQueryId}`,
         queryTime: new Date().toISOString()
       }
     });
