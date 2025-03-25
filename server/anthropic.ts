@@ -8,6 +8,55 @@ const anthropic = new Anthropic({
 });
 
 /**
+ * Process the AI response to fix markdown formatting issues
+ * @param {string} text The original AI response text
+ * @returns {string} The processed text with formatting fixes
+ */
+function processResponseFormatting(text: string): string {
+  // Replace numbered lists with custom formatting
+  let lines = text.split('\n');
+  let inList = false;
+  let listCounter = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    // Check for numbered list format
+    const listMatch = lines[i].match(/^(\d+)\.\s(.+)$/);
+    
+    if (listMatch) {
+      // This is a list item
+      const num = parseInt(listMatch[1]);
+      const content = listMatch[2];
+      
+      if (!inList || num === 1) {
+        // Start of a new list
+        inList = true;
+        listCounter = num;
+      }
+      
+      // Check if there's text after the list
+      if (i < lines.length - 1 && !lines[i+1].match(/^(\d+)\./) && lines[i+1].trim() !== '') {
+        // Combine with the next line to prevent line breaks
+        const nextLine = lines[i+1].trim();
+        lines[i] = `${num}. ${content} ${nextLine}`;
+        lines[i+1] = '';
+      } else {
+        lines[i] = `${num}. ${content}`;
+      }
+    } else if (lines[i].trim() !== '' && inList) {
+      inList = false;
+    }
+  }
+
+  // Remove empty lines
+  let result = lines.filter(line => line !== '').join('\n');
+  
+  // Fix excessive spacing between paragraphs
+  result = result.replace(/\n\n\n+/g, '\n\n');
+  
+  return result;
+}
+
+/**
  * Generates a response using Anthropic Claude
  * @param {string} userQuery The user's question or message
  * @param {string[]} conversationHistory Optional array of previous messages to provide context
@@ -72,7 +121,21 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     console.log("[Claude API] Messages array length:", messages.length);
     
     // Generate a dynamic system prompt based on the user's query
-    const contextPrompt = generateContextPrompt(userQuery);
+    let contextPrompt = generateContextPrompt(userQuery);
+    
+    // Add additional formatting instructions to the system prompt
+    const formattingInstructions = `
+When formatting your responses:
+1. Use markdown for structure but keep it simple
+2. Limit empty lines between sections - use at most one blank line
+3. For bullet points, use dash (-) instead of asterisk (*) for better rendering
+4. For numbered lists, use standard numbering (1., 2., etc.)
+5. If text should follow immediately after a list, place it directly after the last list item without a line break
+6. Keep paragraphs short and concise
+7. Use ## for section headings instead of single # to keep them smaller
+`;
+    
+    contextPrompt = contextPrompt + formattingInstructions;
     console.log(`[Claude API] Using dynamic context prompt with length: ${contextPrompt.length}`);
     
     // Log the first 300 characters of the context prompt for debugging
@@ -96,9 +159,11 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     
     console.log("[Claude API] Received response from Claude");
 
-    // Return the generated response
+    // Return the processed response with formatting fixes
     if (response.content[0].type === 'text') {
-      return (response.content[0] as any).text;
+      const originalText = (response.content[0] as any).text;
+      const processedText = processResponseFormatting(originalText);
+      return processedText;
     }
     return 'I encountered an issue processing your request.';
     
