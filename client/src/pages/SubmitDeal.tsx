@@ -846,11 +846,10 @@ export default function SubmitDeal() {
             {/* Step 2: Deal Structure & Pricing */}
             {formStep === 1 && (
               <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="mb-6">
-                    <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
-                    <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
-                  </div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
+                  <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
+                </div>
                   
                   {/* Simplified approval alert based on basic deal parameters */}
                   {(watchTypedValue("annualRevenue") !== undefined && watchTypedValue("contractTerm") !== undefined) && (
