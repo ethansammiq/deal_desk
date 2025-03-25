@@ -157,6 +157,31 @@ function getDirectResponse(text: string): string | null {
     return "We offer three main incentive categories: 1) Financial Incentives (Added Value Media, Revenue Share), 2) Product Incentives (Feature Access, Integration Services), and 3) Resource Incentives (Technical Resources, Training). Each has specific eligibility criteria and approval processes.";
   }
   
+  // Check for threshold/eligibility questions
+  if (/(what|minimum|threshold|eligibility|qualify|requirement).{1,30}(incentive|deal|revenue|value)/.test(text)) {
+    return "Deal eligibility is based on several factors: 1) Annual commitment of at least $50K, 2) Minimum contract term of 12 months, 3) Strategic alignment with company priorities, and 4) Technical compatibility with our platform requirements.";
+  }
+  
+  // Check for deal structure questions
+  if (/(what|difference|explain|compare).{1,30}(tiered|flat commit|structure)/.test(text)) {
+    return "We offer two deal structures: 1) Tiered Commit - multiple spending thresholds with increasing incentives at each level, and 2) Flat Commit - a single spending threshold with a fixed incentive rate. Tiered is best for growing accounts, while Flat Commit provides predictability.";
+  }
+  
+  // Check for urgent deal questions
+  if (/(urgent|expedite|rush|emergency|fast(-| )track|priority|quick) .{1,30}(deal|approval)/.test(text)) {
+    return "For urgent deals, follow these steps: 1) Mark as 'Urgent' in the submission form, 2) Add business justification explaining the urgency, 3) Notify your manager, and 4) Email deal-desk@example.com with the reference number. Urgent deals are typically reviewed within 24 hours.";
+  }
+  
+  // Check for deal rejection questions
+  if (/(why|reason|reject|decline|denied|not approved).{1,30}(deal|submission)/.test(text)) {
+    return "Common reasons for deal rejection include: 1) Insufficient margin (below 15%), 2) Non-standard terms without proper justification, 3) Missing required documentation, 4) Incentives exceeding approval thresholds, and 5) Insufficient customer information or incomplete form submission.";
+  }
+  
+  // Check for questions about deal modifications
+  if (/(how|can I|update|modify|change|edit).{1,30}(submitted|existing) deal/.test(text)) {
+    return "To modify a submitted deal: 1) Go to the Deal Dashboard, 2) Find your deal and click 'Request Modification', 3) Complete the modification form with changes and justification, 4) Submit for review. Note that significant changes may require a new approval process.";
+  }
+  
   // No direct pattern match
   return null;
 }

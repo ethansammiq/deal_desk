@@ -15,11 +15,16 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatPercentage(value: number): string {
+  // Ensure value is between 0-1 for proper percentage formatting
+  // If value is already between 0-1, use as is
+  // If value is in percentage form (e.g., 25 for 25%), divide by 100
+  const normalizedValue = value > 1 ? value / 100 : value;
+  
   return new Intl.NumberFormat('en-US', {
     style: 'percent',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 1,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(normalizedValue);
 }
 
 export function calculateMonthlyValue(totalValue: number, contractTerm: number): number {
