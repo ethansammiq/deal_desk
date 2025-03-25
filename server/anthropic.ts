@@ -39,27 +39,31 @@ Format your responses with clear sections and bullet points when appropriate.`;
  */
 export async function generateAIResponse(userQuery: string, conversationHistory: string[] = []): Promise<string> {
   try {
-    // Prepare messages for conversation history
-    const messages = [];
+    // Prepare messages for conversation history with proper typing
+    type MessageRole = "user" | "assistant";
+    type Message = { role: MessageRole, content: string };
+    
+    const messages: Message[] = [];
     
     // Add conversation history if available (limited to last few messages to save tokens)
     const recentHistory = conversationHistory.slice(-6); // Keep last 6 messages maximum
     
+    // We need to type 'role' properly as 'user' | 'assistant' for the Anthropic API
     for (let i = 0; i < recentHistory.length; i += 2) {
       const userMessage = recentHistory[i];
       const assistantMessage = recentHistory[i + 1];
       
       if (userMessage) {
-        messages.push({ role: 'user', content: userMessage });
+        messages.push({ role: "user", content: userMessage });
       }
       
       if (assistantMessage) {
-        messages.push({ role: 'assistant', content: assistantMessage });
+        messages.push({ role: "assistant", content: assistantMessage });
       }
     }
     
     // Add the current user query
-    messages.push({ role: 'user', content: userQuery });
+    messages.push({ role: "user", content: userQuery });
 
     // Call Anthropic API with top-level system parameter
     const response = await anthropic.messages.create({

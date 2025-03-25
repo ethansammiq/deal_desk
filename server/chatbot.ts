@@ -240,14 +240,22 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
     const { generateAIResponse: claudeGenerate } = await import('./anthropic');
     
     // Get previous messages for context
-    const previousMessages = await storage.getMessagesByConversationId('default');
+    const previousMessages = await storage.getMessagesByConversationId(
+      // Use the actual conversation ID if available
+      message.includes('conversation-id:') 
+        ? message.split('conversation-id:')[1].trim() 
+        : 'default'
+    );
     const conversationHistory = previousMessages.map(msg => msg.text);
+    
+    console.log('[Chatbot] Attempting Claude API with query:', message);
     
     // Call Claude's API to get an AI-generated response
     const aiResponse = await claudeGenerate(message, conversationHistory);
     
     // If we successfully get a response from Claude, use it
     if (aiResponse) {
+      console.log('[Chatbot] Claude AI responded successfully');
       return aiResponse;
     }
   } catch (error) {
@@ -257,6 +265,13 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   
   // Fallback: Use pattern matching for response
   const lowerText = message.toLowerCase().trim();
+  
+  // Skip pattern matching for questions about number of steps or stages - let Claude handle those
+  if (lowerText.includes("how many") && (lowerText.includes("steps") || lowerText.includes("stages"))) {
+    console.log("[Chatbot] Skipping pattern matching for step count question, Claude will handle this");
+    // We're letting Claude handle this above, just return null to avoid pattern matching
+    return null;
+  }
   
   // Check for specific question patterns that need direct answers
   console.log("[Chatbot] Processing question: ", lowerText);
