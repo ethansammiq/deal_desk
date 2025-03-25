@@ -11,6 +11,8 @@ import { TopNavbar } from "@/components/layout/TopNavbar";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ChatProvider } from "@/lib/chat-context";
 import FloatingChatbot from "@/components/FloatingChatbot";
+import { PageTransition } from "@/components/ui/page-transition";
+import { SmartSearch } from "@/components/SmartSearch";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
