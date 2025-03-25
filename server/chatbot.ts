@@ -126,13 +126,55 @@ export class ChatMemStorage implements IChatStorage {
   }
 }
 
+// Function to handle specific question patterns with direct answers
+function getDirectResponse(text: string): string | null {
+  // Check for questions about deal process steps count
+  if (/(how many|number of|total) (steps|stages)/.test(text) && 
+      /(deal process|commercial process|process have)/.test(text)) {
+    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+  }
+  
+  // Check for timeframe questions about deal review
+  if (/(how long|timeframe|how many days|duration|time)/.test(text) && 
+      /(review|approval|process take)/.test(text)) {
+    return "Standard deals typically take 2-3 business days for review and approval. Non-standard deals may take 3-5 business days. Complex deals with technical requirements might need additional time for product team assessment.";
+  }
+  
+  // Check for questions about document requirements
+  if (/(what|which) (documents|documentation|files|paperwork)/.test(text) && 
+      /(need|required|submit|provide)/.test(text)) {
+    return "Required documentation includes: Deal Submission Form, Customer Requirements Document, Statement of Work (for service components), and Business Justification (for non-standard terms or pricing).";
+  }
+  
+  // Check for questions about approval levels
+  if (/(who|approval level|approver|sign off|authorization)/.test(text) && 
+      /(approves|approve|approval)/.test(text)) {
+    return "Approval levels depend on deal value and complexity. Managers can approve standard deals up to $50K, Directors for deals up to $250K, VPs for deals up to $1M, and SVP/C-Level executives for deals over $1M. Non-standard terms generally require higher-level approval.";
+  }
+  
+  // Check for questions about incentive types
+  if (/(what types of|what kind of|what|main|different) (incentives|rewards|bonuses)/.test(text)) {
+    return "We offer three main incentive categories: 1) Financial Incentives (Added Value Media, Revenue Share), 2) Product Incentives (Feature Access, Integration Services), and 3) Resource Incentives (Technical Resources, Training). Each has specific eligibility criteria and approval processes.";
+  }
+  
+  // No direct pattern match
+  return null;
+}
+
 // Enhanced AI response generator
 async function generateAIResponse(message: string, storage: IChatStorage): Promise<string> {
   // In a real implementation, this would call OpenAI API
   // For now, we'll do a sophisticated keyword matching response with our comprehensive knowledge base
   
-  const kb = await storage.getAllKnowledgeBase();
   const lowerText = message.toLowerCase().trim();
+  
+  // Check for specific question patterns that need direct answers
+  const directResponse = getDirectResponse(lowerText);
+  if (directResponse) {
+    return directResponse;
+  }
+  
+  const kb = await storage.getAllKnowledgeBase();
   
   // Import the keywords mapping from frontend to avoid duplication
   // This directly references client-side knowledge base since we're sharing logic
@@ -441,6 +483,8 @@ export interface ChatbotConfig {
 }
 
 // Register routes
+
+
 export function registerChatbotRoutes(
   app: Express,
   config: ChatbotConfig
