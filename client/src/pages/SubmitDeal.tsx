@@ -847,9 +847,10 @@ export default function SubmitDeal() {
             {formStep === 1 && (
               <CardContent className="p-6">
                 <div className="space-y-6">
-                  {/* Fields for industry, region, and companySize were removed for form simplification */}
-                  
-                  <hr className="my-4" />
+                  <div className="mb-6">
+                    <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
+                    <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
+                  </div>
                   
                   {/* Simplified approval alert based on basic deal parameters */}
                   {watchTypedValue("annualRevenue") && watchTypedValue("contractTerm") && (
