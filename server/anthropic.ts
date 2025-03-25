@@ -50,8 +50,12 @@ function processResponseFormatting(text: string): string {
   // Remove empty lines
   let result = lines.filter(line => line !== '').join('\n');
   
-  // Fix excessive spacing between paragraphs
-  result = result.replace(/\n\n\n+/g, '\n\n');
+  // Fix excessive spacing between paragraphs - replace all double newlines with single newlines
+  // This makes paragraphs appear closer together
+  result = result.replace(/\n\n/g, '\n');
+  
+  // Special case for headings - add a little space after headings
+  result = result.replace(/(\n#{1,3} .+)\n/g, '$1\n\n');
   
   return result;
 }
@@ -127,12 +131,13 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     const formattingInstructions = `
 When formatting your responses:
 1. Use markdown for structure but keep it simple
-2. Limit empty lines between sections - use at most one blank line
+2. Do not add blank lines between paragraphs - we will format them on display
 3. For bullet points, use dash (-) instead of asterisk (*) for better rendering
 4. For numbered lists, use standard numbering (1., 2., etc.)
 5. If text should follow immediately after a list, place it directly after the last list item without a line break
-6. Keep paragraphs short and concise
-7. Use ## for section headings instead of single # to keep them smaller
+6. Keep paragraphs short with 1-3 sentences each
+7. Use ## for section headings and ### for subsections
+8. Add a single empty line after each heading for proper spacing
 `;
     
     contextPrompt = contextPrompt + formattingInstructions;
