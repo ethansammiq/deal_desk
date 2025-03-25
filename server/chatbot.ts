@@ -132,6 +132,18 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   console.log(`[Chatbot][${requestId}] PROCESSING QUERY: "${message}"`);
   console.log(`==========================================================\n`);
   
+  // Extract conversation ID if it's embedded in the message
+  let conversationId = 'default';
+  const originalMessage = message;
+  
+  if (message.includes('conversation-id:')) {
+    const parts = message.split('conversation-id:');
+    conversationId = parts[1].trim();
+    message = parts[0].trim(); // Remove the conversation ID part from the actual message
+    console.log(`[Chatbot][${requestId}] Extracted conversation ID: ${conversationId}`);
+    console.log(`[Chatbot][${requestId}] Cleaned message: "${message}"`);
+  }
+  
   // First, try to use the Claude AI model for a response
   try {
     // Special topic detection for better debugging
@@ -151,27 +163,33 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
     console.log(`[Chatbot][${requestId}] Successfully imported Anthropic module`);
     
     // Get previous messages for context
-    const previousMessages = await storage.getMessagesByConversationId(
-      // Use the actual conversation ID if available
-      message.includes('conversation-id:') 
-        ? message.split('conversation-id:')[1].trim() 
-        : 'default'
-    );
-    const conversationHistory = previousMessages.map(msg => msg.text);
-    console.log(`[Chatbot][${requestId}] Retrieved ${conversationHistory.length} previous messages for context`);
+    const previousMessages = await storage.getMessagesByConversationId(conversationId);
+    console.log(`[Chatbot][${requestId}] Retrieved ${previousMessages.length} previous messages for conversation: ${conversationId}`);
     
-    console.log('[Chatbot] Attempting Claude API with query:', message.substring(0, 50) + '...');
+    // Create a clean conversation history without metadata
+    const conversationHistory = previousMessages
+      .filter(msg => !msg.text.includes('conversation-id:')) // Filter out any messages with ID metadata
+      .map(msg => msg.text);
+    
+    console.log(`[Chatbot][${requestId}] Using ${conversationHistory.length} messages for context`);
+    if (conversationHistory.length > 0) {
+      console.log(`[Chatbot][${requestId}] First message: "${conversationHistory[0].substring(0, 30)}..."`);
+      console.log(`[Chatbot][${requestId}] Last message: "${conversationHistory[conversationHistory.length-1].substring(0, 30)}..."`);
+    }
+    
+    console.log(`[Chatbot][${requestId}] Attempting Claude API with query:`, message.substring(0, 50) + '...');
     
     // Call Claude's API to get an AI-generated response
+    // Pass just the clean message (without conversation ID) but with conversation history
     const aiResponse = await claudeGenerate(message, conversationHistory);
     
     // If we successfully get a response from Claude, use it
     if (aiResponse) {
-      console.log('[Chatbot] Claude AI responded successfully, length:', aiResponse.length);
-      console.log('[Chatbot] First 50 chars of response:', aiResponse.substring(0, 50) + '...');
+      console.log(`[Chatbot][${requestId}] Claude AI responded successfully with ${aiResponse.length} characters`);
+      console.log(`[Chatbot][${requestId}] First 50 chars of response: "${aiResponse.substring(0, 50)}..."`);
       return aiResponse;
     } else {
-      console.log('[Chatbot] Claude returned empty or null response');
+      console.log(`[Chatbot][${requestId}] Claude returned empty or null response`);
     }
   } catch (error) {
     console.error('[Chatbot] Error using Claude AI, details:', error);
@@ -561,9 +579,13 @@ export function registerChatbotRoutes(
         });
       }
       
+      // Create unique message IDs for tracking
+      const userMsgId = uuidv4();
+      console.log(`[CHATBOT] Generated new user message ID: ${userMsgId}`);
+      
       // Create user message
       const userMessage: ChatMessage = {
-        id: uuidv4(),
+        id: userMsgId,
         conversationId,
         text,
         sender: 'user',
@@ -573,10 +595,12 @@ export function registerChatbotRoutes(
       await storage.createMessage(userMessage);
       console.log("[CHATBOT] User message saved to storage");
       
-      console.log("[CHATBOT] Calling generateAIResponse with:", text.substring(0, 50) + (text.length > 50 ? "..." : ""));
+      // Append the conversation ID to the message for proper threading
+      const annotatedText = `${text} [conversation-id:${conversationId}]`;
+      console.log("[CHATBOT] Calling generateAIResponse with annotated message");
       
-      // Generate AI response
-      const responseText = await generateAIResponse(text, storage);
+      // Generate AI response with conversation context
+      const responseText = await generateAIResponse(annotatedText, storage);
       
       // Create bot message
       const botMessage: ChatMessage = {

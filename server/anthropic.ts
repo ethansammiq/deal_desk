@@ -28,18 +28,33 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     // Add conversation history if available (limited to last few messages to save tokens)
     const recentHistory = conversationHistory.slice(-6); // Keep last 6 messages maximum
     
-    // We need to type 'role' properly as 'user' | 'assistant' for the Anthropic API
-    for (let i = 0; i < recentHistory.length; i += 2) {
-      const userMessage = recentHistory[i];
-      const assistantMessage = recentHistory[i + 1];
+    console.log(`[Claude API] Processing conversation history (${recentHistory.length} messages)`);
+    
+    // Only use conversation history if it contains at least 2 messages (user and response)
+    if (recentHistory.length >= 2) {
+      console.log(`[Claude API] Adding conversation history to context`);
       
-      if (userMessage) {
-        messages.push({ role: "user", content: userMessage });
+      // We need to type 'role' properly as 'user' | 'assistant' for the Anthropic API
+      let userTurn = true; // Start with user message
+      for (const message of recentHistory) {
+        // Skip messages that contain conversation-id markers
+        if (message.includes('conversation-id:')) {
+          console.log(`[Claude API] Skipping message with conversation-id marker`);
+          continue;
+        }
+        
+        // Alternate between user and assistant roles
+        messages.push({ 
+          role: userTurn ? "user" : "assistant", 
+          content: message 
+        });
+        
+        console.log(`[Claude API] Added ${userTurn ? "user" : "assistant"} message: ${message.substring(0, 30)}...`);
+        
+        userTurn = !userTurn; // Toggle for next message
       }
-      
-      if (assistantMessage) {
-        messages.push({ role: "assistant", content: assistantMessage });
-      }
+    } else {
+      console.log(`[Claude API] No conversation history used (insufficient messages)`);
     }
     
     // Add the current user query
