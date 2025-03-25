@@ -137,7 +137,7 @@ function getDirectResponse(text: string): string | null {
   // Special case for deal steps - highest priority
   if (normalizedText === "how many steps does the deal process have") {
     console.log("[Chatbot] EXACT MATCH for steps question!");
-    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+    return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
   }
   
   // Exact match for common phrasings
@@ -159,7 +159,7 @@ function getDirectResponse(text: string): string | null {
   for (const phrase of dealStepsExactPhrases) {
     if (normalizedText.includes(phrase)) {
       console.log(`[Chatbot] Matched exact steps phrase: "${phrase}"`);
-      return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+      return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
     }
   }
   
@@ -176,7 +176,7 @@ function getDirectResponse(text: string): string | null {
   for (const pattern of stepsPatterns) {
     if (pattern.test(normalizedText)) {
       console.log(`[Chatbot] Matched steps pattern: ${pattern}`);
-      return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+      return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
     }
   }
   
