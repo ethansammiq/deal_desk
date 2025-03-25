@@ -200,22 +200,22 @@ export default function FloatingChatbot({
         </div>
         
         {/* Chat messages */}
-        <div className="p-4 h-80 overflow-y-auto">
+        <div className="p-3 h-96 overflow-y-auto">
           {messages.map((message) => (
             <div 
               key={message.id} 
-              className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`mb-2 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
                 style={message.sender === 'user' && primaryColor ? {backgroundColor: primaryColor} : {}}
-                className={`max-w-[80%] rounded-lg px-4 py-2 group relative ${
+                className={`max-w-[85%] rounded-lg px-3 py-1.5 group relative ${
                   message.sender === 'user' 
                     ? primaryColor ? 'text-white rounded-tr-none' : 'bg-primary text-white rounded-tr-none' 
                     : 'bg-slate-100 text-slate-800 rounded-tl-none'
                 }`}
               >
                 {/* Message header */}
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-0.5">
                   <div className="flex items-center">
                     {message.sender === 'bot' && (avatarUrl ? 
                       <img src={avatarUrl} alt={title} className="h-3 w-3 rounded-full mr-1 object-cover" /> :
@@ -251,7 +251,7 @@ export default function FloatingChatbot({
                   {message.sender === 'user' ? (
                     <p className="whitespace-pre-wrap text-white m-0">{message.text}</p>
                   ) : (
-                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-2 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-1 prose-headings:leading-tight prose-p:my-1 prose-p:leading-snug prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 text-[0.9rem] leading-snug">
                       <ReactMarkdown>{message.text}</ReactMarkdown>
                     </div>
                   )}
