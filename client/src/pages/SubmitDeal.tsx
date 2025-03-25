@@ -846,10 +846,7 @@ export default function SubmitDeal() {
             {/* Step 2: Deal Structure & Pricing */}
             {formStep === 1 && (
               <CardContent className="p-6">
-
-                
                 <div className="space-y-6">
-                  
                   {/* Fields for industry, region, and companySize were removed for form simplification */}
                   
                   <hr className="my-4" />
