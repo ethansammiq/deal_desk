@@ -1068,9 +1068,9 @@ export default function SubmitDeal() {
 
                         {/* Incentives Section - Tabular Layout */}
                         <div className="mt-8 border border-[#e9ddff] rounded-lg p-4 bg-[#f8f5ff]">
-                          <h3 className="text-lg font-medium text-[#3e0075] mb-4">Progressive Incentives Structure</h3>
+                          <h3 className="text-lg font-medium text-[#3e0075] mb-4">Incentives Structure</h3>
                           <p className="text-sm text-slate-600 mb-4">
-                            Configure progressive incentives for each tier. Incentives are applied when the client reaches the specified revenue threshold.
+                            Configure incentives for each tier. Incentives are applied when the client reaches the specified revenue threshold.
                           </p>
                           
                           <div className="overflow-x-auto">
@@ -1078,8 +1078,8 @@ export default function SubmitDeal() {
                               <thead>
                                 <tr>
                                   <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Base</th>
-                                  {dealTiers.slice(1).map((tier) => (
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                  {dealTiers.map((tier) => (
                                     <th key={`incentive-th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                                       <div className="flex justify-between items-center">
                                         <span className="flex-1">Tier {tier.tierNumber}</span>
@@ -1089,56 +1089,23 @@ export default function SubmitDeal() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {/* Revenue Target Row */}
-                                <tr>
-                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue Target</td>
-                                  <td className="p-3 border border-slate-200 text-center">
-                                    {/* Base value column */}
-                                    <div className="text-slate-700">
-                                      {formatCurrency(dealTiers[0].annualRevenue)}
-                                    </div>
-                                  </td>
-                                  {dealTiers.slice(1).map((tier) => (
-                                    <td key={`revenue-target-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
-                                      <div className="text-slate-700">
-                                        {formatCurrency(tier.annualRevenue)}
-                                      </div>
-                                    </td>
-                                  ))}
-                                </tr>
-                                
                                 {/* Incentive Type Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
-                                  <td className="p-3 border border-slate-200">
-                                    <Select 
-                                      value={dealTiers[0].incentiveType}
-                                      onValueChange={(value) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[0].incentiveType = value as any; // Cast to any to avoid type issues
-                                        setDealTiers(newTiers);
-                                      }}
-                                    >
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select type" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="rebate">Rebate</SelectItem>
-                                        <SelectItem value="discount">Discount</SelectItem>
-                                        <SelectItem value="bonus">Bonus</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      Base
+                                    </div>
                                   </td>
-                                  {dealTiers.slice(1).map((tier, idx) => {
-                                    const index = idx + 1; // Account for base tier at index 0
+                                  {dealTiers.map((tier, idx) => {
                                     return (
                                       <td key={`incentive-type-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                         <Select 
                                           value={tier.incentiveType}
                                           onValueChange={(value) => {
                                             const newTiers = [...dealTiers];
-                                            newTiers[index].incentiveType = value as any; // Cast to any to avoid type issues
+                                            newTiers[idx].incentiveType = value as any; // Cast to any to avoid type issues
                                             setDealTiers(newTiers);
                                           }}
                                         >
@@ -1160,31 +1127,13 @@ export default function SubmitDeal() {
                                 {/* Incentive Percentage Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
-                                  <td className="p-3 border border-slate-200">
-                                    <div className="relative">
-                                      <Input
-                                        type="number"
-                                        className="pr-8 w-full"
-                                        placeholder="0.00"
-                                        min="0"
-                                        max="100"
-                                        value={dealTiers[0].incentivePercentage || 0}
-                                        onChange={(e) => {
-                                          const newTiers = [...dealTiers];
-                                          newTiers[0].incentivePercentage = parseFloat(e.target.value);
-                                          // Also calculate incentive amount based on percentage and revenue
-                                          const percent = parseFloat(e.target.value) / 100;
-                                          newTiers[0].incentiveAmount = newTiers[0].annualRevenue * percent;
-                                          setDealTiers(newTiers);
-                                        }}
-                                      />
-                                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span className="text-slate-500 sm:text-sm">%</span>
-                                      </div>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      0%
                                     </div>
                                   </td>
-                                  {dealTiers.slice(1).map((tier, idx) => {
-                                    const index = idx + 1; // Account for base tier at index 0
+                                  {dealTiers.map((tier, idx) => {
                                     return (
                                       <td key={`incentive-pct-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                         <div className="relative">
@@ -1197,10 +1146,10 @@ export default function SubmitDeal() {
                                             value={tier.incentivePercentage || 0}
                                             onChange={(e) => {
                                               const newTiers = [...dealTiers];
-                                              newTiers[index].incentivePercentage = parseFloat(e.target.value);
+                                              newTiers[idx].incentivePercentage = parseFloat(e.target.value);
                                               // Also calculate incentive amount based on percentage and revenue
                                               const percent = parseFloat(e.target.value) / 100;
-                                              newTiers[index].incentiveAmount = newTiers[index].annualRevenue * percent;
+                                              newTiers[idx].incentiveAmount = newTiers[idx].annualRevenue * percent;
                                               setDealTiers(newTiers);
                                             }}
                                           />
@@ -1216,31 +1165,13 @@ export default function SubmitDeal() {
                                 {/* Incentive Amount Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
-                                  <td className="p-3 border border-slate-200">
-                                    <div className="relative">
-                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span className="text-slate-500 sm:text-sm">$</span>
-                                      </div>
-                                      <Input
-                                        type="number"
-                                        className="pl-7 w-full"
-                                        placeholder="0.00"
-                                        value={dealTiers[0].incentiveAmount || 0}
-                                        onChange={(e) => {
-                                          const newTiers = [...dealTiers];
-                                          newTiers[0].incentiveAmount = parseFloat(e.target.value);
-                                          // Calculate percentage if revenue is not zero
-                                          if (newTiers[0].annualRevenue > 0) {
-                                            newTiers[0].incentivePercentage = 
-                                              (parseFloat(e.target.value) / newTiers[0].annualRevenue) * 100;
-                                          }
-                                          setDealTiers(newTiers);
-                                        }}
-                                      />
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      {formatCurrency(0)}
                                     </div>
                                   </td>
-                                  {dealTiers.slice(1).map((tier, idx) => {
-                                    const index = idx + 1; // Account for base tier at index 0
+                                  {dealTiers.map((tier, idx) => {
                                     return (
                                       <td key={`incentive-amt-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                         <div className="relative">
@@ -1254,11 +1185,11 @@ export default function SubmitDeal() {
                                             value={tier.incentiveAmount || 0}
                                             onChange={(e) => {
                                               const newTiers = [...dealTiers];
-                                              newTiers[index].incentiveAmount = parseFloat(e.target.value);
+                                              newTiers[idx].incentiveAmount = parseFloat(e.target.value);
                                               // Calculate percentage if revenue is not zero
-                                              if (newTiers[index].annualRevenue > 0) {
-                                                newTiers[index].incentivePercentage = 
-                                                  (parseFloat(e.target.value) / newTiers[index].annualRevenue) * 100;
+                                              if (newTiers[idx].annualRevenue > 0) {
+                                                newTiers[idx].incentivePercentage = 
+                                                  (parseFloat(e.target.value) / newTiers[idx].annualRevenue) * 100;
                                               }
                                               setDealTiers(newTiers);
                                             }}
@@ -1272,20 +1203,13 @@ export default function SubmitDeal() {
                                 {/* Incentive Notes Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
-                                  <td className="p-3 border border-slate-200">
-                                    <Textarea
-                                      placeholder="Enter any notes..."
-                                      value={dealTiers[0].incentiveNotes || ""}
-                                      onChange={(e) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[0].incentiveNotes = e.target.value;
-                                        setDealTiers(newTiers);
-                                      }}
-                                      className="min-h-[80px]"
-                                    />
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      N/A
+                                    </div>
                                   </td>
-                                  {dealTiers.slice(1).map((tier, idx) => {
-                                    const index = idx + 1; // Account for base tier at index 0
+                                  {dealTiers.map((tier, idx) => {
                                     return (
                                       <td key={`incentive-notes-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                         <Textarea
@@ -1293,7 +1217,7 @@ export default function SubmitDeal() {
                                           value={tier.incentiveNotes || ""}
                                           onChange={(e) => {
                                             const newTiers = [...dealTiers];
-                                            newTiers[index].incentiveNotes = e.target.value;
+                                            newTiers[idx].incentiveNotes = e.target.value;
                                             setDealTiers(newTiers);
                                           }}
                                           className="min-h-[80px]"
@@ -1308,7 +1232,7 @@ export default function SubmitDeal() {
 
                           <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
                             <Info className="h-4 w-4 inline mr-2" />
-                            Progressive incentives are typically structured to reward clients for reaching higher revenue tiers.
+                            Incentives are typically structured to reward clients for reaching higher revenue tiers.
                             Each tier can have its own incentive structure based on the revenue threshold.
                           </div>
                         </div>
@@ -1432,24 +1356,21 @@ export default function SubmitDeal() {
                             <table className="w-full border-collapse">
                               <thead>
                                 <tr>
-                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4">Field</th>
-                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-3/4">Value</th>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/4">Last Year</th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-2/4">Current</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {/* Annual Revenue Row */}
-                                <tr>
-                                  <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
-                                  <td className="p-3 border border-slate-200">
-                                    <div className="text-slate-700">
-                                      {formatCurrency(Number(watchTypedValue("annualRevenue")) || 0)}
-                                    </div>
-                                  </td>
-                                </tr>
-                                
                                 {/* Incentive Type Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      Base
+                                    </div>
+                                  </td>
                                   <td className="p-3 border border-slate-200">
                                     <Select 
                                       defaultValue="rebate"
@@ -1476,6 +1397,12 @@ export default function SubmitDeal() {
                                 {/* Incentive Percentage Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      0%
+                                    </div>
+                                  </td>
                                   <td className="p-3 border border-slate-200">
                                     <div className="relative">
                                       <Input
@@ -1508,6 +1435,12 @@ export default function SubmitDeal() {
                                 {/* Incentive Amount Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      {formatCurrency(0)}
+                                    </div>
+                                  </td>
                                   <td className="p-3 border border-slate-200">
                                     <div className="relative">
                                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1540,6 +1473,12 @@ export default function SubmitDeal() {
                                 {/* Incentive Notes Row */}
                                 <tr>
                                   <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {/* Last year column */}
+                                    <div className="text-slate-700">
+                                      N/A
+                                    </div>
+                                  </td>
                                   <td className="p-3 border border-slate-200">
                                     <Textarea
                                       placeholder="Enter any notes about this incentive..."
