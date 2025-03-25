@@ -104,7 +104,7 @@ export default function DealAssistantChatbot() {
       <button
         onClick={toggleChat}
         className={`fixed bottom-6 right-6 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none ${
-          isOpen ? 'bg-red-500 rotate-90' : 'bg-primary hover:bg-primary/90'
+          isOpen ? 'bg-red-500 rotate-90' : 'bg-[#3e0075] hover:bg-[#2d0055]'
         }`}
         aria-label={isOpen ? "Close chat assistant" : "Open chat assistant"}
       >
@@ -120,7 +120,7 @@ export default function DealAssistantChatbot() {
         isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
       }`}>
         {/* Chat header */}
-        <div className="bg-primary text-white p-4 rounded-t-lg flex justify-between items-center">
+        <div className="bg-[#3e0075] text-white p-4 rounded-t-lg flex justify-between items-center">
           <div className="flex items-center">
             <BotIcon className="h-5 w-5 mr-2" />
             <h3 className="font-medium">DealGenie</h3>
@@ -144,8 +144,8 @@ export default function DealAssistantChatbot() {
               <div 
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
                   message.sender === 'user' 
-                    ? 'bg-primary text-white rounded-tr-none' 
-                    : 'bg-slate-100 text-slate-800 rounded-tl-none'
+                    ? 'bg-[#3e0075] text-white rounded-tr-none' 
+                    : 'bg-[#f8f5ff] text-slate-800 rounded-tl-none'
                 }`}
               >
                 <div className="flex items-center mb-1">
@@ -170,7 +170,7 @@ export default function DealAssistantChatbot() {
               <button
                 key={index}
                 onClick={() => handleQuickQuestion(question)}
-                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-full"
+                className="text-xs bg-[#f8f5ff] hover:bg-[#e9ddff] text-[#3e0075] px-2 py-1 rounded-full transition-colors duration-200"
               >
                 {question}
               </button>
@@ -194,9 +194,8 @@ export default function DealAssistantChatbot() {
           />
           <Button 
             onClick={() => handleSendMessage()}
-            className="rounded-l-none"
+            className="rounded-l-none bg-[#3e0075] hover:bg-[#2d0055]"
             size="sm"
-            variant="default"
             type="button"
           >
             <SendIcon className="h-4 w-4" />

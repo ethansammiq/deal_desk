@@ -86,7 +86,7 @@ export function SmartSearch() {
   const handleSelectResult = (dealId: number) => {
     setIsOpen(false);
     // In a real app, navigate to the deal detail page
-    navigate(`/dashboard/deals/${dealId}`);
+    setLocation(`/dashboard/deals/${dealId}`);
   };
   
   // Handle selecting a history item
