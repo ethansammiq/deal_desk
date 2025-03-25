@@ -251,7 +251,7 @@ export default function FloatingChatbot({
                   {message.sender === 'user' ? (
                     <p className="whitespace-pre-wrap text-white m-0">{message.text}</p>
                   ) : (
-                    <div className="whitespace-pre-wrap markdown-body">
+                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-2 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
                       <ReactMarkdown>{message.text}</ReactMarkdown>
                     </div>
                   )}

@@ -11,3 +11,72 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Chatbot Markdown Styles */
+.whitespace-pre-wrap h1 {
+  font-size: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.whitespace-pre-wrap h2 {
+  font-size: 1.25em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.whitespace-pre-wrap h3 {
+  font-size: 1.1em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.whitespace-pre-wrap ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.whitespace-pre-wrap ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.whitespace-pre-wrap li {
+  margin-bottom: 0.25em;
+}
+
+.whitespace-pre-wrap p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.whitespace-pre-wrap code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.1em 0.2em;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.whitespace-pre-wrap pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5em;
+  border-radius: 3px;
+  overflow-x: auto;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.whitespace-pre-wrap blockquote {
+  border-left: 3px solid rgba(0, 0, 0, 0.1);
+  padding-left: 0.5em;
+  margin-left: 0.5em;
+  color: rgba(0, 0, 0, 0.7);
+}
