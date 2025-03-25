@@ -1138,12 +1138,13 @@ export default function SubmitDeal() {
                           Each tier should have a progressive revenue target and corresponding margin impact.
                         </div>
                       </div>
-
-                      {/* Incentives Section - Separate Box */}
-                      <div className="mt-8 bg-white p-6 rounded-lg border border-slate-200">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-medium text-slate-900">Incentives Structure</h3>
-                        </div>
+                    </div> {/* Close revenue-section div */}
+                    
+                    {/* Incentives Section - Separate Box - Now at the same level as Revenue Structure */}
+                    <div className="mt-8 bg-white p-6 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-slate-900">Incentives Structure</h3>
+                      </div>
                         
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
@@ -1573,7 +1574,6 @@ export default function SubmitDeal() {
                     Next: Review & Submit
                   </Button>
                 </div>
-                </div> {/* Close div from line 854 */}
               </CardContent>
             )}
             
