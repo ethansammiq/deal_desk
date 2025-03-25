@@ -59,7 +59,8 @@ export function loadKnowledgeBase(): KnowledgeBase {
   }
 
   try {
-    const filePath = path.join(__dirname, '../shared/knowledge-base.json');
+    // Use relative path instead of __dirname which isn't defined in ES modules
+    const filePath = path.join(process.cwd(), 'shared/knowledge-base.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     knowledgeBaseCache = JSON.parse(fileContent) as KnowledgeBase;
     return knowledgeBaseCache;

@@ -90,12 +90,8 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       system: contextPrompt,
       messages: messages,
       // Use moderate temperature for more varied responses
-      temperature: 0.5,
-      // Add a unique identifier as metadata to encourage distinct outputs
-      metadata: {
-        requestId: `req-${uniqueQueryId}`,
-        queryTime: new Date().toISOString()
-      }
+      temperature: 0.5
+      // Removed metadata as it's causing API errors
     });
     
     console.log("[Claude API] Received response from Claude");
