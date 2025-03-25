@@ -128,9 +128,15 @@ export class ChatMemStorage implements IChatStorage {
 
 // Function to handle specific question patterns with direct answers
 function getDirectResponse(text: string): string | null {
-  // Check for questions about deal process steps count
-  if (/(how many|number of|total) (steps|stages)/.test(text) && 
-      /(deal process|commercial process|process have)/.test(text)) {
+  console.log("[Chatbot] Inside getDirectResponse with text:", text);
+  
+  // Check for questions about deal process steps count - broader match
+  if (/(how many|number of|total).+?(steps|stages).+?(deal|process|commercial)/.test(text) || 
+      /(deal|process).+?(how many|number of|total).+?(steps|stages)/.test(text) ||
+      /(steps|stages).+?(in|of).+?(deal|process)/.test(text) ||
+      /(deal process|commercial process).+?(have|consist of|include)/.test(text) ||
+      text.includes("how many steps does the deal process have")) {
+    console.log("[Chatbot] Matched steps pattern!");
     return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
   }
   
@@ -194,7 +200,9 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   const lowerText = message.toLowerCase().trim();
   
   // Check for specific question patterns that need direct answers
+  console.log("[Chatbot] Processing question: ", lowerText);
   const directResponse = getDirectResponse(lowerText);
+  console.log("[Chatbot] Direct response match: ", directResponse ? "YES" : "NO");
   if (directResponse) {
     return directResponse;
   }
