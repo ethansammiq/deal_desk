@@ -162,6 +162,9 @@ export default function SubmitDeal() {
     annualGrossMarginPercent: number;
     incentivePercentage: number;
     incentiveNotes: string;
+    incentiveType: "rebate" | "discount" | "bonus" | "other";
+    incentiveThreshold: number; // Revenue threshold to achieve this incentive
+    incentiveAmount: number; // Monetary value of the incentive
   }
   
   // Type definitions for advertisers and agencies (simplified)
@@ -194,25 +197,34 @@ export default function SubmitDeal() {
       tierNumber: 1,
       annualRevenue: 0,
       annualGrossMargin: 0,
-      annualGrossMarginPercent: 0, // New field for percentage
+      annualGrossMarginPercent: 0,
       incentivePercentage: 0,
-      incentiveNotes: "Base tier - no incentives"
+      incentiveNotes: "Base tier - no incentives",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: 0,
+      incentiveAmount: 0
     },
     {
       tierNumber: 2,
       annualRevenue: 0,
       annualGrossMargin: 0,
-      annualGrossMarginPercent: 0, // New field for percentage
+      annualGrossMarginPercent: 0,
       incentivePercentage: 0,
-      incentiveNotes: ""
+      incentiveNotes: "",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: 0,
+      incentiveAmount: 0
     },
     {
       tierNumber: 3,
       annualRevenue: 0,
       annualGrossMargin: 0,
-      annualGrossMarginPercent: 0, // New field for percentage
+      annualGrossMarginPercent: 0,
       incentivePercentage: 0,
-      incentiveNotes: ""
+      incentiveNotes: "",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: 0,
+      incentiveAmount: 0
     }
   ]);
 
@@ -909,7 +921,10 @@ export default function SubmitDeal() {
                                   annualGrossMargin: 0,
                                   annualGrossMarginPercent: 0,
                                   incentivePercentage: 0,
-                                  incentiveNotes: ""
+                                  incentiveNotes: "",
+                                  incentiveType: "rebate" as const,
+                                  incentiveThreshold: 0,
+                                  incentiveAmount: 0
                                 }
                               ]);
                             } else {
