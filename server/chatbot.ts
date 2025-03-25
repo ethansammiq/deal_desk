@@ -134,13 +134,14 @@ function getDirectResponse(text: string): string | null {
   const normalizedText = text.toLowerCase().trim().replace(/\s+/g, ' ');
   console.log("[Chatbot] Normalized text:", normalizedText);
   
-  // Special case for deal steps - highest priority
+  // For step-related questions, return null to let Claude AI handle it
+  // First check for exact matches
   if (normalizedText === "how many steps does the deal process have") {
-    console.log("[Chatbot] EXACT MATCH for steps question!");
-    return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
+    console.log("[Chatbot] EXACT MATCH for steps question - delegating to Claude!");
+    return null; // Let Claude AI handle this
   }
   
-  // Exact match for common phrasings
+  // Check for common step-related phrasings
   const dealStepsExactPhrases = [
     "how many steps does the deal process have",
     "how many steps in the deal process",
@@ -158,12 +159,12 @@ function getDirectResponse(text: string): string | null {
   
   for (const phrase of dealStepsExactPhrases) {
     if (normalizedText.includes(phrase)) {
-      console.log(`[Chatbot] Matched exact steps phrase: "${phrase}"`);
-      return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
+      console.log(`[Chatbot] Matched exact steps phrase: "${phrase}" - delegating to Claude`);
+      return null; // Let Claude AI handle this
     }
   }
   
-  // Pattern match for variations
+  // Pattern match for step-related variations
   const stepsPatterns = [
     /(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/,
     /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/,
@@ -175,8 +176,8 @@ function getDirectResponse(text: string): string | null {
   
   for (const pattern of stepsPatterns) {
     if (pattern.test(normalizedText)) {
-      console.log(`[Chatbot] Matched steps pattern: ${pattern}`);
-      return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
+      console.log(`[Chatbot] Matched steps pattern: ${pattern} - delegating to Claude`);
+      return null; // Let Claude AI handle this
     }
   }
   
@@ -269,8 +270,8 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   // Skip pattern matching for questions about number of steps or stages - let Claude handle those
   if (lowerText.includes("how many") && (lowerText.includes("steps") || lowerText.includes("stages"))) {
     console.log("[Chatbot] Skipping pattern matching for step count question, Claude will handle this");
-    // We're letting Claude handle this above, just return null to avoid pattern matching
-    return null;
+    // We need to return a default response if Claude failed (we're in the fallback path)
+    return "There are 7 steps within the deal process: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation. Would you like to know more about a specific step?";
   }
   
   // Check for specific question patterns that need direct answers
