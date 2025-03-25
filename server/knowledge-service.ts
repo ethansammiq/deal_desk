@@ -133,6 +133,10 @@ export function generateContextPrompt(query: string): string {
   const kb = loadKnowledgeBase();
   const lowerQuery = query.toLowerCase();
   
+  // Generate a unique request ID and timestamp to ensure varied responses
+  const promptId = Math.random().toString(36).substring(2, 8);
+  const timestamp = new Date().toISOString();
+  
   // Build a base system prompt
   let contextPrompt = `You are DealGenie, a helpful AI assistant for commercial deal desk operations.
 You help users understand deal submission processes, approval workflows, and financial incentive structures.
@@ -141,8 +145,11 @@ You provide concise, accurate, and helpful answers to questions about deals, inc
 Be conversational but direct in your answers. If you don't know something, say so instead of making up information.
 Format your responses with clear sections and bullet points when appropriate.
 
-IMPORTANT: Customize your answer to the exact question being asked. If asked "How many steps are in the deal process?", answer with the specific number first, then elaborate.
-If asked "What are the steps in the deal process?", list all the steps first, then provide details about each.`;
+IMPORTANT INSTRUCTIONS FOR THIS SPECIFIC QUERY (ID: ${promptId}, Time: ${timestamp}):
+1. Customize your answer to the exact question being asked. If asked "How many steps are in the deal process?", answer with the specific number first, then elaborate.
+2. If asked "What are the steps in the deal process?", list all the steps first, then provide details about each.
+3. Always provide unique responses even for similar questions - vary your language and phrasing.
+4. For this specific query: "${query}", focus on addressing the exact question directly.`;
 
   // Add deal process information if the query is about deal steps or stages
   if (lowerQuery.includes('step') || lowerQuery.includes('stage') || 

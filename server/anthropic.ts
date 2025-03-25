@@ -88,8 +88,13 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
       max_tokens: 1024,
       system: contextPrompt,
       messages: messages,
-      // Use slight temperature increase for more natural responses
-      temperature: 0.3,
+      // Use moderate temperature for more varied responses
+      temperature: 0.5,
+      // Add a unique identifier as metadata to encourage distinct outputs
+      metadata: {
+        requestId: `req-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        queryTime: new Date().toISOString()
+      }
     });
     
     console.log("[Claude API] Received response from Claude");
