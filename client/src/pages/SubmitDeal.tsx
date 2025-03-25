@@ -10,7 +10,8 @@ import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { 
   Card,
-  CardContent
+  CardContent,
+  CardHeader
 } from "@/components/ui/card";
 import { 
   formatCurrency,
@@ -1647,6 +1648,64 @@ export default function SubmitDeal() {
                   )}
                 </div>
                 </div> {/* This is the closing tag for the div that opened on line 869 */}
+                
+                {/* Financial Impact Summary Card */}
+                <Card className="mt-6 mb-6 bg-gradient-to-br from-slate-50 to-white border-slate-200 shadow-sm">
+                  <CardHeader>
+                    <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                      Real-Time Financial Impact
+                    </h3>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Total Annual Revenue</p>
+                        <p className="text-xl font-bold text-slate-900">{formatCurrency(financialSummary.totalAnnualRevenue)}</p>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Total Gross Margin</p>
+                        <p className="text-xl font-bold text-slate-900">{formatCurrency(financialSummary.totalGrossMargin)}</p>
+                        <p className="text-xs text-slate-400">{formatPercentage(financialSummary.averageGrossMarginPercent)} margin</p>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Total Incentives</p>
+                        <p className="text-xl font-bold text-slate-900">{formatCurrency(financialSummary.totalIncentiveValue)}</p>
+                        <p className="text-xs text-slate-400">{formatPercentage(financialSummary.effectiveDiscountRate)} effective rate</p>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Monthly Value</p>
+                        <p className="text-xl font-bold text-slate-900">{formatCurrency(financialSummary.monthlyValue)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Year-over-Year Growth</p>
+                        <p className={cn(
+                          "text-xl font-bold",
+                          financialSummary.yearOverYearGrowth > 0 ? "text-green-600" : "text-red-600"
+                        )}>
+                          {formatPercentage(financialSummary.yearOverYearGrowth)}
+                        </p>
+                        <p className="text-xs text-slate-400">vs. last year</p>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Projected Net Value</p>
+                        <p className="text-xl font-bold text-slate-900">{formatCurrency(financialSummary.projectedNetValue)}</p>
+                        <p className="text-xs text-slate-400">Full contract term</p>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-500">Deal Term</p>
+                        <p className="text-xl font-bold text-slate-900">{form.watch("contractTerm")} months</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
                 
                 <div className="mt-8 flex justify-between">
                   <Button
