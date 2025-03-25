@@ -33,12 +33,14 @@ export function TopNavbar() {
           <div className="flex items-center w-full">
             {/* Logo - Fixed Width */}
             <div className="flex-shrink-0 flex items-center w-64">
-              <img 
-                src={companyLogo} 
-                alt="Logo" 
-                className="h-8 w-8 mr-2" 
-              />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
+              <div className="h-8 w-8 mr-2 flex-shrink-0 flex items-center justify-center">
+                <img 
+                  src={companyLogo} 
+                  alt="Logo" 
+                  className="h-full w-full object-contain" 
+                />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap truncate">
                 Commercial Deal Desk
               </h1>
             </div>
@@ -119,6 +121,19 @@ export function TopNavbar() {
       {/* Mobile menu, show/hide based on menu state */}
       <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b border-slate-200">
+          {/* Mobile Logo */}
+          <div className="flex items-center mb-3 px-3">
+            <div className="h-7 w-7 mr-2 flex-shrink-0 flex items-center justify-center">
+              <img 
+                src={companyLogo} 
+                alt="Logo" 
+                className="h-full w-full object-contain" 
+              />
+            </div>
+            <h2 className="text-lg font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent truncate">
+              Commercial Deal Desk
+            </h2>
+          </div>
           <Link href="/">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
