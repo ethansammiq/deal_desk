@@ -11,36 +11,98 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// Define the knowledge base entry type
+export interface KnowledgeBaseEntry {
+  question: string;
+  answer: string;
+  variants?: string[];
+}
+
 export interface IChatStorage {
   getMessage(id: string): Promise<ChatMessage | undefined>;
   getMessagesByConversationId(conversationId: string): Promise<ChatMessage[]>;
   createMessage(message: ChatMessage): Promise<ChatMessage>;
-  getAllKnowledgeBase(): Promise<Array<{ question: string; answer: string }>>;
+  getAllKnowledgeBase(): Promise<Array<KnowledgeBaseEntry>>;
 }
 
 // Chat storage implementation using MemStorage pattern
 export class ChatMemStorage implements IChatStorage {
   private messages: Map<string, ChatMessage> = new Map();
-  private knowledgeBase: Array<{ question: string; answer: string }> = [
+  private knowledgeBase: Array<KnowledgeBaseEntry> = [
     {
       question: "What are the incentive thresholds?",
-      answer: "Deal incentives are calculated based on total deal value, contract length, and growth metrics. Standard deals have a 2% incentive, while strategic deals can qualify for up to 5% incentives with proper approval."
+      answer: "Deal incentives are calculated based on total deal value, contract length, and growth metrics. Standard deals have a 2% incentive, while strategic deals can qualify for up to 5% incentives with proper approval.",
+      variants: [
+        "How are incentives calculated?",
+        "What incentive percentage can I get?",
+        "Tell me about incentive thresholds",
+        "Explain incentive calculations",
+        "What's the standard incentive rate?",
+        "Maximum incentive percentage?",
+        "How do deal incentives work?",
+        "What factors affect incentives?",
+        "When do I qualify for higher incentives?"
+      ]
     },
     {
       question: "What are the approval requirements?",
-      answer: "Discount approval follows a tiered process: up to 10% can be approved by team leads, 10-20% by managers, and anything over 20% requires director approval. All discounts must be documented with business justification."
+      answer: "Discount approval follows a tiered process: up to 10% can be approved by team leads, 10-20% by managers, and anything over 20% requires director approval. All discounts must be documented with business justification.",
+      variants: [
+        "Who needs to approve my deal?",
+        "What's the approval process?",
+        "How do I get deal approval?",
+        "Approval hierarchy for deals",
+        "Discount approval process",
+        "Which discounts need director approval?",
+        "Deal approval workflow",
+        "Approval matrix explained",
+        "Documentation needed for approval"
+      ]
     },
     {
       question: "How do I submit a new deal?",
-      answer: "To submit a new deal, navigate to the \"Submit Deal\" page from the main menu. Fill out all required fields, attach any necessary documentation, and then click \"Submit for Review\". You'll receive a confirmation email with the deal reference number."
+      answer: "To submit a new deal, navigate to the \"Submit Deal\" page from the main menu. Fill out all required fields, attach any necessary documentation, and then click \"Submit for Review\". You'll receive a confirmation email with the deal reference number.",
+      variants: [
+        "Deal submission process",
+        "Steps to submit a deal",
+        "Where do I create a new deal?",
+        "What's the deal submission workflow?",
+        "How to create deals in the system",
+        "New deal creation steps",
+        "Required fields for deal submission",
+        "Documentation needed for new deals",
+        "Deal submission confirmation process"
+      ]
     },
     {
       question: "How are urgent deals handled?",
-      answer: "For urgent deals, mark \"High Priority\" in the submission form and add [URGENT] to the beginning of the deal name. Also, reach out directly to your regional deal desk manager to notify them of the urgent request."
+      answer: "For urgent deals, mark \"High Priority\" in the submission form and add [URGENT] to the beginning of the deal name. Also, reach out directly to your regional deal desk manager to notify them of the urgent request.",
+      variants: [
+        "Fast-tracking urgent deals",
+        "Emergency deal process",
+        "Expedited deal approval",
+        "Rush deal submission process",
+        "How to mark a deal as urgent",
+        "Priority deals handling",
+        "Escalating time-sensitive deals",
+        "Quick approval for urgent deals",
+        "Who to contact for urgent deals"
+      ]
     },
     {
       question: "What growth opportunities qualify for incentives?",
-      answer: "Growth opportunities that qualify for incentives include: expanding to new markets, increasing contract value by at least 20%, extending contract terms beyond 24 months, or adding new product lines to existing contracts."
+      answer: "Growth opportunities that qualify for incentives include: expanding to new markets, increasing contract value by at least 20%, extending contract terms beyond 24 months, or adding new product lines to existing contracts.",
+      variants: [
+        "Which growth metrics earn incentives?",
+        "Qualifying for growth incentives",
+        "Contract value increase incentives",
+        "New market expansion benefits",
+        "Extended contract term incentives",
+        "When do I qualify for growth incentives?",
+        "Types of growth that earn bonuses",
+        "Incentive-eligible growth metrics",
+        "Revenue growth incentive qualification"
+      ]
     }
   ];
 
@@ -59,7 +121,7 @@ export class ChatMemStorage implements IChatStorage {
     return message;
   }
 
-  async getAllKnowledgeBase(): Promise<Array<{ question: string; answer: string }>> {
+  async getAllKnowledgeBase(): Promise<Array<KnowledgeBaseEntry>> {
     return this.knowledgeBase;
   }
 }
@@ -155,11 +217,52 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
                          'product expansion', 'strategic alignment', 'growth incentives', 'enhancing incentives']
   };
 
-  // First check for exact matches in the knowledge base
+  // First check for exact matches in the knowledge base including variants
   for (const entry of kb) {
-    const keywords = entry.question.toLowerCase().split(' ');
-    if (keywords.some(keyword => lowerText.includes(keyword) && keyword.length > 3)) {
+    // Check main question
+    const mainKeywords = entry.question.toLowerCase().split(' ');
+    
+    // Score match for main question
+    let mainMatchScore = 0;
+    for (const keyword of mainKeywords) {
+      if (lowerText.includes(keyword) && keyword.length > 3) {
+        mainMatchScore += 1;
+      }
+    }
+    
+    // If main question is a strong match, return answer immediately
+    if (mainMatchScore >= 2 || (mainKeywords.length === 1 && mainMatchScore === 1)) {
       return entry.answer;
+    }
+    
+    // Check variants if they exist
+    if (entry.variants) {
+      for (const variant of entry.variants) {
+        // For exact variant matches
+        if (lowerText === variant.toLowerCase()) {
+          return entry.answer;
+        }
+        
+        // For strong partial matches in variants
+        const variantKeywords = variant.toLowerCase().split(' ');
+        let variantMatchScore = 0;
+        let containsSignificantKeyword = false;
+        
+        for (const keyword of variantKeywords) {
+          if (lowerText.includes(keyword) && keyword.length > 3) {
+            variantMatchScore += 1;
+            // Some keywords are more significant
+            if (keyword.length > 6) {
+              containsSignificantKeyword = true;
+            }
+          }
+        }
+        
+        // Return answer if variant is a very strong match or contains a significant keyword
+        if (variantMatchScore >= 2 || (containsSignificantKeyword && variantMatchScore >= 1)) {
+          return entry.answer;
+        }
+      }
     }
   }
   
@@ -201,7 +304,7 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   
   // Map to handle different naming between keywordMapping and the response objects
   // This allows us to look up responses with the appropriate key
-  const topicToResponseKey = {
+  const topicToResponseKey: Record<string, string> = {
     dealProcess: 'dealProcess',
     dealScoping: 'dealScoping',
     dealSubmission: 'dealSubmission',
@@ -225,7 +328,7 @@ async function generateAIResponse(message: string, storage: IChatStorage): Promi
   if (bestMatch && highestScore >= 1) {
     // These are predefined comprehensive responses for each topic
     // The actual responses are from our advanced knowledge base in client/src/lib/chatbot-knowledge.ts
-    const responses: { [key: string]: string } = {
+    const responses: Record<string, string> = {
       dealProcess: '# MIQ Deal Process Overview\n\nThe MIQ deal process follows these key stages:\n\n1. **Scoping**: Define customer needs and potential solutions\n2. **Submission**: Complete deal forms with all required details\n3. **Review & Approval**: Deal desk assesses and approves terms based on deal value\n4. **Negotiation**: Finalize terms with the customer\n5. **Contracting**: Execute legal agreements\n6. **Implementation**: Solution deployment and customer onboarding\n7. **Evaluation**: Post-deal review and performance tracking\n\nEach stage has specific requirements and documentation. Would you like more details about a particular stage?',
       
       dealScoping: '# Deal Scoping Stage\n\nDeal scoping is the critical first stage of our deal process where we define what the customer needs and how we can help them.\n\n## Key Components\n• **Customer Analysis**: Understand customer\'s business, market position, and challenges\n• **Needs Assessment**: Identify specific requirements and success criteria\n• **Solution Design**: Develop preliminary solution architecture\n• **Value Proposition**: Define ROI and strategic benefits for customer\n\n## Required Information\n• Customer profile and background\n• Business needs and challenges\n• Potential solutions and approaches\n• Preliminary deal size estimate\n• Timeline and key milestones\n• Competitive landscape\n\n## Process Steps\n1. Complete the Deal Scoping Request form in the system\n2. Schedule initial customer discovery meeting\n3. Document all findings in the Deal Scoping Document\n4. Submit for initial assessment\n5. Receive approval to proceed to formal submission\n\n## Timeline & Next Steps\n• Typical review time: 1-3 business days\n• After approval, proceed to formal deal submission\n• Deal scoping document becomes foundation for full deal submission\n\n> **Pro Tip**: The more detailed your scoping information, the faster your deal can progress through later stages. Don\'t skip important details!',
