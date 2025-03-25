@@ -1,0 +1,405 @@
+{
+  "dealProcess": {
+    "overview": "The MIQ deal process follows 7 key stages from initial scoping through evaluation.",
+    "stages": [
+      {
+        "name": "Scoping",
+        "description": "Initial definition of customer needs and potential solutions",
+        "details": "Deal scoping is the critical first stage of our deal process where we define what the customer needs and how we can help them. It involves customer analysis, needs assessment, preliminary solution design, and value proposition definition.",
+        "requiredInformation": [
+          "Customer profile and background",
+          "Business needs and challenges",
+          "Potential solutions and approaches",
+          "Preliminary deal size estimate",
+          "Timeline and key milestones",
+          "Competitive landscape"
+        ],
+        "processSteps": [
+          "Complete the Deal Scoping Request form in the system",
+          "Schedule initial customer discovery meeting",
+          "Document all findings in the Deal Scoping Document",
+          "Submit for initial assessment",
+          "Receive approval to proceed to formal submission"
+        ],
+        "timeline": "1-3 business days",
+        "tips": "The more detailed your scoping information, the faster your deal can progress through later stages."
+      },
+      {
+        "name": "Submission",
+        "description": "Formal documentation of all deal details",
+        "details": "The deal submission stage formalizes your opportunity with complete details needed for review and approval.",
+        "requiredInformation": [
+          "Customer details (full company profile)",
+          "Deal specifics (products, services, pricing)",
+          "Contract terms (duration, payment schedule)",
+          "Deal value breakdown",
+          "Incentive requests (if applicable)",
+          "Special terms or customizations",
+          "Competitive situation"
+        ],
+        "documentation": [
+          "Deal Submission Form (required)",
+          "Statement of Work (for service components)",
+          "Customer Requirements Document",
+          "Price Quote and Discount Approval Forms",
+          "Technical Specifications (if applicable)",
+          "Business Justification (for non-standard terms)"
+        ],
+        "processSteps": [
+          "Log into the Deal Management System",
+          "Select 'New Deal Submission'",
+          "Complete all required fields in the submission form",
+          "Attach all supporting documentation",
+          "Review all details for accuracy",
+          "Submit for approval"
+        ],
+        "timeline": "Submission process takes 15-30 minutes with all documentation ready",
+        "bestPractices": [
+          "Pre-gather all documentation before starting",
+          "Be specific about special terms or requirements",
+          "Include clear business justification for any non-standard requests",
+          "Document competitive situations thoroughly"
+        ]
+      },
+      {
+        "name": "Review & Approval",
+        "description": "Deal desk assessment and approval based on financial metrics",
+        "details": "The Review & Approval stage involves multiple stakeholders reviewing the deal terms, pricing, legal considerations, and strategic fit.",
+        "approvalLevels": [
+          {
+            "level": "Manager",
+            "authority": "Standard deals up to $50K",
+            "timeframe": "1-2 business days"
+          },
+          {
+            "level": "Director",
+            "authority": "Standard deals up to $250K, non-standard terms",
+            "timeframe": "2-3 business days"
+          },
+          {
+            "level": "VP",
+            "authority": "Deals up to $1M, strategic partnerships",
+            "timeframe": "3-5 business days"
+          },
+          {
+            "level": "SVP/C-Level",
+            "authority": "Deals over $1M, major strategic initiatives",
+            "timeframe": "5-7 business days"
+          }
+        ],
+        "reviewComponents": [
+          "Financial terms and profitability",
+          "Contract length and commitment",
+          "Technical feasibility and resource requirements",
+          "Legal terms and risk assessment",
+          "Strategic alignment with business objectives"
+        ],
+        "commonIssues": [
+          "Insufficient margin (below 15%)",
+          "Non-standard terms without proper justification",
+          "Missing required documentation",
+          "Incentives exceeding approval thresholds",
+          "Insufficient customer information"
+        ],
+        "escalationProcess": "If a deal is urgent, mark as 'High Priority' in the system and notify your manager directly."
+      },
+      {
+        "name": "Negotiation",
+        "description": "Finalizing terms with the customer",
+        "details": "During Negotiation, any requested changes from either party are discussed and terms are finalized.",
+        "keyConsiderations": [
+          "Pricing boundaries and minimum acceptable terms",
+          "Implementation timeline flexibility",
+          "Contract length and renewal terms",
+          "Service level agreements and support provisions",
+          "Payment terms and schedules"
+        ],
+        "bestPractices": [
+          "Document all change requests formally",
+          "Maintain clear communication between all stakeholders",
+          "Focus on value creation over price concessions",
+          "Address technical concerns with solution engineering",
+          "Be clear about approval requirements for changes"
+        ],
+        "timeline": "Varies based on complexity - typically 1-2 weeks"
+      },
+      {
+        "name": "Contracting",
+        "description": "Legal agreement creation and execution",
+        "details": "The Contracting stage involves generating legal documents, collecting signatures, and finalizing the formal agreement.",
+        "documentTypes": [
+          "Master Services Agreement (MSA)",
+          "Statement of Work (SOW)",
+          "Order Form",
+          "Service Level Agreement (SLA)",
+          "Custom Terms Addendum (if applicable)"
+        ],
+        "processSteps": [
+          "Generate contract documents from approved deal terms",
+          "Legal review and approval",
+          "Send documents to customer for signature",
+          "Track signature status",
+          "Counter-sign and return fully executed documents",
+          "Store final documentation in the contract management system"
+        ],
+        "timeline": "3-5 business days for standard agreements, 1-2 weeks for complex deals"
+      },
+      {
+        "name": "Implementation",
+        "description": "Solution deployment and customer onboarding",
+        "details": "Implementation covers technical setup, customer training, and initial service delivery.",
+        "keyPhases": [
+          "Project kickoff and planning",
+          "Technical configuration and setup",
+          "Data migration (if applicable)",
+          "Integration with customer systems",
+          "User training and documentation",
+          "Initial deployment and testing",
+          "Go-live and handoff to operations"
+        ],
+        "roles": [
+          "Implementation Manager",
+          "Technical Specialist",
+          "Customer Success Manager",
+          "Subject Matter Experts",
+          "Project Manager"
+        ],
+        "timeline": "Varies by deal complexity - 2-6 weeks typical"
+      },
+      {
+        "name": "Evaluation",
+        "description": "Performance tracking and optimization",
+        "details": "The Evaluation stage involves measuring deal performance against targets and identifying optimization opportunities.",
+        "keyMetrics": [
+          "Revenue achievement vs. forecasts",
+          "Profitability and margin maintenance",
+          "Customer satisfaction scores",
+          "Solution utilization rates",
+          "Expansion opportunities",
+          "Renewal likelihood"
+        ],
+        "reviewProcess": [
+          "30-day initial performance review",
+          "Quarterly business reviews",
+          "Mid-term contract assessment",
+          "Pre-renewal planning (3-6 months before term end)"
+        ],
+        "optimization": [
+          "Performance improvement recommendations",
+          "Additional training or resources",
+          "Contract adjustments if necessary",
+          "Expansion opportunity identification"
+        ]
+      }
+    ]
+  },
+  "incentivePrograms": {
+    "overview": "MIQ offers various incentive programs to drive customer success and growth.",
+    "types": [
+      {
+        "name": "Financial Incentives",
+        "description": "Monetary benefits that reduce overall costs",
+        "varieties": [
+          "Volume-based rebates",
+          "Growth-based discounts",
+          "Tiered pricing structures",
+          "Added value media",
+          "Performance bonuses",
+          "Early payment discounts"
+        ],
+        "eligibility": "Typically requires minimum annual commitment of $50K and contract term of 12+ months.",
+        "approvalProcess": "Requires financial review and manager approval, with higher tiers needing director-level sign-off."
+      },
+      {
+        "name": "Product Incentives",
+        "description": "Value-added product capabilities and features",
+        "varieties": [
+          "Early access to new features",
+          "Premium integrations",
+          "Enhanced API access",
+          "Platform customizations",
+          "Beta program participation",
+          "Extended functionality"
+        ],
+        "eligibility": "Strategic accounts with annual commitment of $100K+ with multi-year agreements.",
+        "approvalProcess": "Requires product team assessment and director approval."
+      },
+      {
+        "name": "Resource Incentives",
+        "description": "Additional implementation and support resources",
+        "varieties": [
+          "Dedicated implementation specialist",
+          "Technical account manager",
+          "Premium support package",
+          "Advanced training services",
+          "Consultative services",
+          "Custom documentation"
+        ],
+        "eligibility": "Available for enterprise accounts with complex implementation needs.",
+        "approvalProcess": "Requires resource planning approval and operations review."
+      }
+    ],
+    "dealStructures": [
+      {
+        "name": "Tiered Commit",
+        "description": "Multiple spending thresholds with increasing incentives at each level",
+        "bestFor": "Growing accounts with increasing usage patterns",
+        "example": "Tier 1: $100K (2% rebate), Tier 2: $250K (3% rebate), Tier 3: $500K (5% rebate)",
+        "benefits": [
+          "Rewards growth throughout contract",
+          "Lower initial commitment with upside",
+          "Aligns incentives with customer success",
+          "Flexible structure for changing needs"
+        ],
+        "considerations": [
+          "More complex to track and report",
+          "Requires clear tier documentation",
+          "Need for accurate forecasting",
+          "Regular performance reviews"
+        ]
+      },
+      {
+        "name": "Flat Commit",
+        "description": "Single spending threshold with fixed incentive rate",
+        "bestFor": "Stable accounts with predictable spending",
+        "example": "$500K annual commitment with fixed 4% rebate on all spend",
+        "benefits": [
+          "Simpler to understand and administer",
+          "More predictable financial outcomes",
+          "Easier budgeting for both parties",
+          "Streamlined approval process"
+        ],
+        "considerations": [
+          "Less flexibility for growth scenarios",
+          "May leave value on table for high-growth accounts",
+          "Requires accurate initial commitment sizing"
+        ]
+      }
+    ],
+    "approvalMatrix": {
+      "levels": [
+        {
+          "title": "Manager",
+          "approvalThreshold": "Standard incentives up to 5% on deals under $100K",
+          "processingTime": "1-2 business days"
+        },
+        {
+          "title": "Director",
+          "approvalThreshold": "Incentives up to 10% on deals under $500K",
+          "processingTime": "2-3 business days"
+        },
+        {
+          "title": "VP",
+          "approvalThreshold": "Incentives up to 15% on deals under $1M",
+          "processingTime": "3-5 business days"
+        },
+        {
+          "title": "SVP/C-Level",
+          "approvalThreshold": "Any incentives on deals over $1M or above 15%",
+          "processingTime": "5-7 business days"
+        }
+      ]
+    }
+  },
+  "documentationRequirements": {
+    "overview": "Proper documentation is essential for efficient deal processing and approval.",
+    "requiredDocuments": [
+      {
+        "name": "Deal Submission Form",
+        "purpose": "Captures all essential deal details including customer information, deal structure, and financial terms",
+        "required": true,
+        "format": "Online form in Deal Management System",
+        "tips": "Complete all fields, even if some are marked optional, for faster processing."
+      },
+      {
+        "name": "Customer Requirements Document",
+        "purpose": "Details specific customer needs, technical requirements, and success criteria",
+        "required": true,
+        "format": "PDF or Word document",
+        "template": "Available in Resource Center > Templates > Customer Requirements"
+      },
+      {
+        "name": "Statement of Work",
+        "purpose": "Defines specific deliverables, timeline, resources, and success criteria for service components",
+        "required": "Only for deals with service components",
+        "format": "PDF or Word document using company template",
+        "template": "Available in Resource Center > Templates > SOW"
+      },
+      {
+        "name": "Business Justification",
+        "purpose": "Explains rationale for non-standard terms, pricing exceptions, or special requirements",
+        "required": "Only for non-standard deals",
+        "format": "Brief document (1-2 pages) outlining business case",
+        "tips": "Focus on strategic value, competitive situation, and long-term potential."
+      },
+      {
+        "name": "Technical Specifications",
+        "purpose": "Details technical implementation requirements, integrations, and customizations",
+        "required": "Only for complex technical implementations",
+        "format": "Technical document with architecture diagrams if applicable",
+        "approvals": "Requires technical team review before submission"
+      }
+    ],
+    "bestPractices": [
+      "Use the latest document templates from the Resource Center",
+      "Include detailed contact information for all stakeholders",
+      "Be specific about any special terms or requirements",
+      "Include competitive information when relevant to negotiations",
+      "Attach all supporting materials as separate files rather than embedded",
+      "Name files consistently with deal ID and document type",
+      "Ensure all financial information is accurate and consistent across documents"
+    ]
+  },
+  "specialProcesses": {
+    "urgentDeals": {
+      "definition": "Deals requiring expedited processing due to valid business reasons",
+      "process": [
+        "Mark as 'Urgent' in submission form",
+        "Add business justification explaining urgency",
+        "Notify your manager",
+        "Email deal-desk@example.com with reference number"
+      ],
+      "timeline": "Typically reviewed within 24 hours",
+      "validReasons": [
+        "Customer deadline requiring immediate response",
+        "Competitive situation with time-sensitive decision",
+        "Fiscal year or budget expiration",
+        "Regulatory or compliance requirements"
+      ],
+      "limitations": "Urgent process should be used sparingly and only for genuine business needs."
+    },
+    "dealModifications": {
+      "definition": "Changes to existing deals already in the system",
+      "process": [
+        "Go to Deal Dashboard",
+        "Find deal and click 'Request Modification'",
+        "Complete modification form with changes and justification",
+        "Submit for review"
+      ],
+      "approvalRequirements": "Significant changes may require new approval process.",
+      "timeline": "Minor modifications: 1-2 days; Major changes: follows standard approval timeline"
+    }
+  },
+  "faqs": [
+    {
+      "question": "What are the incentive thresholds?",
+      "answer": "Deal incentives are calculated based on total deal value, contract length, and growth metrics. Standard deals have a 2% incentive, while strategic deals can qualify for up to 5% incentives with proper approval."
+    },
+    {
+      "question": "How are urgent deals handled?",
+      "answer": "For urgent deals, follow these steps: 1) Mark as 'Urgent' in the submission form, 2) Add business justification explaining the urgency, 3) Notify your manager, and 4) Email deal-desk@example.com with the reference number. Urgent deals are typically reviewed within 24 hours."
+    },
+    {
+      "question": "What growth opportunities qualify for incentives?",
+      "answer": "Growth opportunities that qualify for incentives include: expanding to new markets, increasing contract value by at least 20%, extending contract terms beyond 24 months, or adding new product lines to existing contracts."
+    },
+    {
+      "question": "What are the approval requirements?",
+      "answer": "Discount approval follows a tiered process: up to 10% can be approved by team leads, 10-20% by managers, and anything over 20% requires director approval. All discounts must be documented with business justification."
+    },
+    {
+      "question": "How do I submit a new deal?",
+      "answer": "To submit a new deal, navigate to the 'Submit Deal' page from the main menu. Fill out all required fields, attach any necessary documentation, and then click 'Submit for Review'. You'll receive a confirmation email with the deal reference number."
+    }
+  ]
+}

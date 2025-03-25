@@ -1,35 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { generateContextPrompt, findMatchingFAQ } from './knowledge-service';
 
 // Initialize the Anthropic client
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
-
-// Define the system prompt
-const SYSTEM_PROMPT = `You are DealGenie, a helpful AI assistant for commercial deal desk operations.
-You help users understand deal submission processes, approval workflows, and financial incentive structures.
-You provide concise, accurate, and helpful answers to questions about deals, incentives, and the deal desk process.
-
-Here are key facts about the deal process:
-1. The deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.
-2. In the Scoping phase, clients identify requirements, deal type, and preliminary financial terms.
-3. The Submission phase requires completing the Deal Submission form with complete details and documentation.
-4. Review & Approval involves assessment by managers and executives based on deal value and complexity.
-5. Negotiation occurs if changes are requested or terms need adjustment.
-6. Contracting involves generating and executing formal agreements.
-7. Implementation includes setup, onboarding, and initial delivery.
-8. Evaluation measures performance against targets and identifies optimization opportunities.
-
-For incentive structures:
-1. Deals can use tiered structures (multiple revenue levels with increasing incentives) or flat commit (single threshold).
-2. Financial incentives include rebates, discounts, and volume-based bonuses.
-3. Each tier has specific revenue thresholds and associated incentive rates.
-4. All incentives require supporting documentation for approval.
-5. Higher incentive rates require approval from senior management.
-
-Be conversational but direct in your answers. If you don't know something, say so instead of making up information.
-Format your responses with clear sections and bullet points when appropriate.`;
 
 /**
  * Generates a response using Anthropic Claude
@@ -68,14 +44,25 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     console.log("[Claude API] Sending request to Claude with message:", userQuery.substring(0, 50) + "...");
     console.log("[Claude API] Messages array length:", messages.length);
     
-    // Call Anthropic API with top-level system parameter
+    // First check if this is an exact FAQ match
+    const exactFaqMatch = findMatchingFAQ(userQuery);
+    if (exactFaqMatch) {
+      console.log('[Claude API] Found exact FAQ match, returning direct answer');
+      return exactFaqMatch.answer;
+    }
+    
+    // Generate a dynamic system prompt based on the user's query
+    const contextPrompt = generateContextPrompt(userQuery);
+    console.log(`[Claude API] Using dynamic context prompt with length: ${contextPrompt.length}`);
+
+    // Call Anthropic API with dynamic context system parameter
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219', 
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: contextPrompt,
       messages: messages,
-      // Use lower temperature for more deterministic responses
-      temperature: 0.2,
+      // Use slight temperature increase for more natural responses
+      temperature: 0.3,
     });
     
     console.log("[Claude API] Received response from Claude");
