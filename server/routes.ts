@@ -225,6 +225,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertisers endpoints
+  router.get("/advertisers", async (req: Request, res: Response) => {
+    try {
+      const advertisers = await storage.getAdvertisers();
+      res.status(200).json(advertisers);
+    } catch (error) {
+      console.error("Error fetching advertisers:", error);
+      res.status(500).json({ message: "Failed to fetch advertisers" });
+    }
+  });
+
+  // Agencies endpoints
+  router.get("/agencies", async (req: Request, res: Response) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const filters = type ? { type } : undefined;
+      const agencies = await storage.getAgencies(filters);
+      res.status(200).json(agencies);
+    } catch (error) {
+      console.error("Error fetching agencies:", error);
+      res.status(500).json({ message: "Failed to fetch agencies" });
+    }
+  });
+
   // Initialize and register chatbot routes
   const chatStorage = new ChatMemStorage();
   registerChatbotRoutes(app, {
