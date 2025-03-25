@@ -26,85 +26,10 @@ export interface IChatStorage {
 }
 
 // Chat storage implementation using MemStorage pattern
+import { loadKnowledgeBase, searchFAQs } from './knowledge-service';
+
 export class ChatMemStorage implements IChatStorage {
   private messages: Map<string, ChatMessage> = new Map();
-  private knowledgeBase: Array<KnowledgeBaseEntry> = [
-    {
-      question: "What are the incentive thresholds?",
-      answer: "Deal incentives are calculated based on total deal value, contract length, and growth metrics. Standard deals have a 2% incentive, while strategic deals can qualify for up to 5% incentives with proper approval.",
-      variants: [
-        "How are incentives calculated?",
-        "What incentive percentage can I get?",
-        "Tell me about incentive thresholds",
-        "Explain incentive calculations",
-        "What's the standard incentive rate?",
-        "Maximum incentive percentage?",
-        "How do deal incentives work?",
-        "What factors affect incentives?",
-        "When do I qualify for higher incentives?"
-      ]
-    },
-    {
-      question: "What are the approval requirements?",
-      answer: "Discount approval follows a tiered process: up to 10% can be approved by team leads, 10-20% by managers, and anything over 20% requires director approval. All discounts must be documented with business justification.",
-      variants: [
-        "Who needs to approve my deal?",
-        "What's the approval process?",
-        "How do I get deal approval?",
-        "Approval hierarchy for deals",
-        "Discount approval process",
-        "Which discounts need director approval?",
-        "Deal approval workflow",
-        "Approval matrix explained",
-        "Documentation needed for approval"
-      ]
-    },
-    {
-      question: "How do I submit a new deal?",
-      answer: "To submit a new deal, navigate to the \"Submit Deal\" page from the main menu. Fill out all required fields, attach any necessary documentation, and then click \"Submit for Review\". You'll receive a confirmation email with the deal reference number.",
-      variants: [
-        "Deal submission process",
-        "Steps to submit a deal",
-        "Where do I create a new deal?",
-        "What's the deal submission workflow?",
-        "How to create deals in the system",
-        "New deal creation steps",
-        "Required fields for deal submission",
-        "Documentation needed for new deals",
-        "Deal submission confirmation process"
-      ]
-    },
-    {
-      question: "How are urgent deals handled?",
-      answer: "For urgent deals, mark \"High Priority\" in the submission form and add [URGENT] to the beginning of the deal name. Also, reach out directly to your regional deal desk manager to notify them of the urgent request.",
-      variants: [
-        "Fast-tracking urgent deals",
-        "Emergency deal process",
-        "Expedited deal approval",
-        "Rush deal submission process",
-        "How to mark a deal as urgent",
-        "Priority deals handling",
-        "Escalating time-sensitive deals",
-        "Quick approval for urgent deals",
-        "Who to contact for urgent deals"
-      ]
-    },
-    {
-      question: "What growth opportunities qualify for incentives?",
-      answer: "Growth opportunities that qualify for incentives include: expanding to new markets, increasing contract value by at least 20%, extending contract terms beyond 24 months, or adding new product lines to existing contracts.",
-      variants: [
-        "Which growth metrics earn incentives?",
-        "Qualifying for growth incentives",
-        "Contract value increase incentives",
-        "New market expansion benefits",
-        "Extended contract term incentives",
-        "When do I qualify for growth incentives?",
-        "Types of growth that earn bonuses",
-        "Incentive-eligible growth metrics",
-        "Revenue growth incentive qualification"
-      ]
-    }
-  ];
 
   async getMessage(id: string): Promise<ChatMessage | undefined> {
     return this.messages.get(id);
@@ -122,7 +47,13 @@ export class ChatMemStorage implements IChatStorage {
   }
 
   async getAllKnowledgeBase(): Promise<Array<KnowledgeBaseEntry>> {
-    return this.knowledgeBase;
+    // Convert FAQs from the knowledge base to the format expected by the chatbot
+    const kb = loadKnowledgeBase();
+    return kb.faqs.map(faq => ({
+      question: faq.question,
+      answer: faq.answer,
+      variants: [] // We don't have variants in our knowledge base structure
+    }));
   }
 }
 
@@ -134,6 +65,13 @@ function getDirectResponse(text: string): string | null {
   const normalizedText = text.toLowerCase().trim().replace(/\s+/g, ' ');
   console.log("[Chatbot] Normalized text:", normalizedText);
   
+  // First, check if there's a direct FAQ match from the knowledge base
+  const faqMatch = findMatchingFAQ(normalizedText);
+  if (faqMatch) {
+    console.log("[Chatbot] Found matching FAQ in knowledge base");
+    return faqMatch.answer;
+  }
+  
   // For step-related questions, return null to let Claude AI handle it
   // First check for exact matches
   if (normalizedText === "how many steps does the deal process have") {
@@ -141,7 +79,7 @@ function getDirectResponse(text: string): string | null {
     return null; // Let Claude AI handle this
   }
   
-  // Check for common step-related phrasings
+  // Check for common step-related phrasings that should be handled by Claude
   const dealStepsExactPhrases = [
     "how many steps does the deal process have",
     "how many steps in the deal process",
@@ -164,7 +102,7 @@ function getDirectResponse(text: string): string | null {
     }
   }
   
-  // Pattern match for step-related variations
+  // Pattern match for step-related variations that should be handled by Claude
   const stepsPatterns = [
     /(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/,
     /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/,
@@ -181,55 +119,8 @@ function getDirectResponse(text: string): string | null {
     }
   }
   
-  // Check for timeframe questions about deal review
-  if (/(how long|timeframe|how many days|duration|time)/.test(normalizedText) && 
-      /(review|approval|process take)/.test(normalizedText)) {
-    return "Standard deals typically take 2-3 business days for review and approval. Non-standard deals may take 3-5 business days. Complex deals with technical requirements might need additional time for product team assessment.";
-  }
-  
-  // Check for questions about document requirements
-  if (/(what|which) (documents|documentation|files|paperwork)/.test(normalizedText) && 
-      /(need|required|submit|provide)/.test(normalizedText)) {
-    return "Required documentation includes: Deal Submission Form, Customer Requirements Document, Statement of Work (for service components), and Business Justification (for non-standard terms or pricing).";
-  }
-  
-  // Check for questions about approval levels
-  if (/(who|approval level|approver|sign off|authorization)/.test(normalizedText) && 
-      /(approves|approve|approval)/.test(normalizedText)) {
-    return "Approval levels depend on deal value and complexity. Managers can approve standard deals up to $50K, Directors for deals up to $250K, VPs for deals up to $1M, and SVP/C-Level executives for deals over $1M. Non-standard terms generally require higher-level approval.";
-  }
-  
-  // Check for questions about incentive types
-  if (/(what types of|what kind of|what|main|different) (incentives|rewards|bonuses)/.test(normalizedText)) {
-    return "We offer three main incentive categories: 1) Financial Incentives (Added Value Media, Revenue Share), 2) Product Incentives (Feature Access, Integration Services), and 3) Resource Incentives (Technical Resources, Training). Each has specific eligibility criteria and approval processes.";
-  }
-  
-  // Check for threshold/eligibility questions
-  if (/(what|minimum|threshold|eligibility|qualify|requirement).{1,30}(incentive|deal|revenue|value)/.test(normalizedText)) {
-    return "Deal eligibility is based on several factors: 1) Annual commitment of at least $50K, 2) Minimum contract term of 12 months, 3) Strategic alignment with company priorities, and 4) Technical compatibility with our platform requirements.";
-  }
-  
-  // Check for deal structure questions
-  if (/(what|difference|explain|compare).{1,30}(tiered|flat commit|structure)/.test(normalizedText)) {
-    return "We offer two deal structures: 1) Tiered Commit - multiple spending thresholds with increasing incentives at each level, and 2) Flat Commit - a single spending threshold with a fixed incentive rate. Tiered is best for growing accounts, while Flat Commit provides predictability.";
-  }
-  
-  // Check for urgent deal questions
-  if (/(urgent|expedite|rush|emergency|fast(-| )track|priority|quick) .{1,30}(deal|approval)/.test(normalizedText)) {
-    return "For urgent deals, follow these steps: 1) Mark as 'Urgent' in the submission form, 2) Add business justification explaining the urgency, 3) Notify your manager, and 4) Email deal-desk@example.com with the reference number. Urgent deals are typically reviewed within 24 hours.";
-  }
-  
-  // Check for deal rejection questions
-  if (/(why|reason|reject|decline|denied|not approved).{1,30}(deal|submission)/.test(normalizedText)) {
-    return "Common reasons for deal rejection include: 1) Insufficient margin (below 15%), 2) Non-standard terms without proper justification, 3) Missing required documentation, 4) Incentives exceeding approval thresholds, and 5) Insufficient customer information or incomplete form submission.";
-  }
-  
-  // Check for questions about deal modifications
-  if (/(how|can I|update|modify|change|edit).{1,30}(submitted|existing) deal/.test(normalizedText)) {
-    return "To modify a submitted deal: 1) Go to the Deal Dashboard, 2) Find your deal and click 'Request Modification', 3) Complete the modification form with changes and justification, 4) Submit for review. Note that significant changes may require a new approval process.";
-  }
-  
-  // No direct pattern match
+  // For all other questions, let Claude handle with dynamic context
+  console.log("[Chatbot] No direct pattern match, letting Claude handle with knowledge context");
   return null;
 }
 
