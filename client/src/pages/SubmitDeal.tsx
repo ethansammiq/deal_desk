@@ -866,46 +866,115 @@ export default function SubmitDeal() {
                   
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
-                  {/* Deal Structure Field - Moved from Deal Details tab */}
-                  <FormField
-                    control={form.control}
-                    name="dealStructure"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
-                        <Select 
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            setDealStructure(value as "tiered" | "flat_commit");
-                          }}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select deal structure" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="flat_commit">Flat Commit</SelectItem>
-                            <SelectItem value="tiered">Tiered Revenue</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          The revenue structure for this deal
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Deal Structure & Pricing Card */}
+                  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Deal Structure & Pricing</h3>
+                    
+                    {/* 2-column layout for structure selection and dates */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                      <FormField
+                        control={form.control}
+                        name="dealStructure"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
+                            <Select 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setDealStructure(value as "tiered" | "flat_commit");
+                              }}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="bg-slate-50">
+                                  <SelectValue placeholder="Select deal structure" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="flat_commit">Flat Commit</SelectItem>
+                                <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              The revenue structure for this deal
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      {/* Contract Term Field */}
+                      <FormField
+                        control={form.control}
+                        name="contractTerm"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contract Term (Months) <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="1"
+                                max="60"
+                                className="bg-slate-50"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value);
+                                  field.onChange(isNaN(value) ? 12 : value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Length of the contract in months
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  {/* Revenue Structure Section - Default for all deal structures */}
-                  <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    {/* Collapsible Revenue Structure Section - Default for all deal structures */}
+                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
+                    {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium text-slate-900">Revenue Structure</h3>
+                      <div 
+                        className="flex items-center cursor-pointer" 
+                        onClick={() => {
+                          // Toggle collapse state using a new state variable
+                          const revenueSection = document.getElementById('revenue-section');
+                          const chevron = document.getElementById('revenue-chevron');
+                          if (revenueSection?.classList.contains('h-0')) {
+                            revenueSection.classList.remove('h-0', 'overflow-hidden', 'py-0');
+                            revenueSection.classList.add('h-auto');
+                            chevron?.classList.remove('transform', 'rotate-180');
+                          } else {
+                            revenueSection?.classList.add('h-0', 'overflow-hidden', 'py-0');
+                            revenueSection?.classList.remove('h-auto');
+                            chevron?.classList.add('transform', 'rotate-180');
+                          }
+                        }}
+                      >
+                        <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Revenue Structure</h3>
+                        <svg 
+                          id="revenue-chevron"
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="20" 
+                          height="20" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="ml-2 text-slate-500 transition-transform"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </div>
                       <Button 
                         variant="outline" 
                         size="sm"
                         type="button"
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
                           // Add a new tier to the dealTiers state
                           if (dealTiers.length < 6) {
@@ -936,6 +1005,9 @@ export default function SubmitDeal() {
                         Add Tier
                       </Button>
                     </div>
+                    
+                    {/* Collapsible content section */}
+                    <div id="revenue-section" className="transition-all h-auto">
                         
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
@@ -1237,122 +1309,119 @@ export default function SubmitDeal() {
                         </div>
                       </div>
                   
-                  {/* This section is hidden and will be replaced by the default Tiered Revenue view */}
+                  {/* This section is hidden - we use tiered view for all deal types */}
                   {false && dealStructureType === "flat_commit" && (
-                    <>
-                      {/* Revenue Structure Box */}
-                      <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-medium text-slate-900">Flat Commitment Structure</h3>
+                    <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-slate-900">Flat Commitment Structure</h3>
+                      </div>
+                      
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Annual Revenue */}
+                          <FormField
+                            control={form.control}
+                            name="annualRevenue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Annual Revenue <span className="text-red-500">*</span></FormLabel>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">$</span>
+                                  </div>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="0.00" 
+                                      className="pl-7" 
+                                      min="0"
+                                      {...field} 
+                                      onChange={e => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormDescription>
+                                  Total annual revenue expectation for this deal
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {/* Annual Gross Margin Percentage */}
+                          <FormField
+                            control={form.control}
+                            name="annualGrossMargin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Annual Gross Margin (%) <span className="text-red-500">*</span></FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="0" 
+                                      className="pr-8"
+                                      min="0"
+                                      max="100" 
+                                      {...field} 
+                                      onChange={e => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">%</span>
+                                  </div>
+                                </div>
+                                <FormDescription>
+                                  Expected gross margin percentage for this revenue
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                         
-                        <div className="space-y-8">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Annual Revenue */}
-                            <FormField
-                              control={form.control}
-                              name="annualRevenue"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Annual Revenue <span className="text-red-500">*</span></FormLabel>
-                                  <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">$</span>
-                                    </div>
-                                    <FormControl>
-                                      <Input 
-                                        type="number" 
-                                        placeholder="0.00" 
-                                        className="pl-7" 
-                                        min="0"
-                                        {...field} 
-                                        onChange={e => {
-                                          const value = e.target.value ? parseFloat(e.target.value) : 0;
-                                          field.onChange(value);
-                                        }}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormDescription>
-                                    Total annual revenue expectation for this deal
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            {/* Annual Gross Margin Percentage */}
-                            <FormField
-                              control={form.control}
-                              name="annualGrossMargin"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Annual Gross Margin (%) <span className="text-red-500">*</span></FormLabel>
-                                  <div className="relative">
-                                    <FormControl>
-                                      <Input 
-                                        type="number" 
-                                        placeholder="0" 
-                                        className="pr-8"
-                                        min="0"
-                                        max="100" 
-                                        {...field} 
-                                        onChange={e => {
-                                          const value = e.target.value ? parseFloat(e.target.value) : 0;
-                                          field.onChange(value);
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                      <span className="text-slate-500 sm:text-sm">%</span>
-                                    </div>
-                                  </div>
-                                  <FormDescription>
-                                    Expected gross margin percentage for this revenue
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                        {/* Calculated Values */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-slate-200">
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">Total Revenue</h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(Number(watchTypedValue("annualRevenue")) || 0)}
+                            </div>
                           </div>
-                          
-                          {/* Calculated Values */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-slate-200">
-                            <div>
-                              <h4 className="text-sm font-medium text-slate-700 mb-1">Total Revenue</h4>
-                              <div className="text-xl font-semibold text-slate-900">
-                                {formatCurrency(Number(watchTypedValue("annualRevenue")) || 0)}
-                              </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">Gross Margin</h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency((Number(watchTypedValue("annualRevenue")) || 0) * (Number(watchTypedValue("annualGrossMargin")) || 0) / 100)}
                             </div>
-                            <div>
-                              <h4 className="text-sm font-medium text-slate-700 mb-1">Gross Margin</h4>
-                              <div className="text-xl font-semibold text-slate-900">
-                                {formatCurrency((Number(watchTypedValue("annualRevenue")) || 0) * (Number(watchTypedValue("annualGrossMargin")) || 0) / 100)}
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="text-sm font-medium text-slate-700 mb-1">Monthly Revenue</h4>
-                              <div className="text-xl font-semibold text-slate-900">
-                                {formatCurrency((Number(watchTypedValue("annualRevenue")) || 0) / (Number(watchTypedValue("contractTerm")) || 12))}
-                              </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">Monthly Revenue</h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency((Number(watchTypedValue("annualRevenue")) || 0) / (Number(watchTypedValue("contractTerm")) || 12))}
                             </div>
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Incentives Section - Separate Box */}
-                      <div className="mt-8 bg-white p-6 rounded-lg border border-slate-200">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-medium text-slate-900">Incentives Structure</h3>
+
+                      {/* Incentive Structure for Flat Commit */}
+                      <div className="mt-6">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-medium">Incentives Structure</h3>
                         </div>
                         
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
                               <tr>
-                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
-                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/4">Last Year</th>
-                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-2/4">Current</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200">Field</th>
+                                <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200">Current</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1360,17 +1429,14 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Last year column */}
-                                  <div className="text-slate-700">
-                                    Base
-                                  </div>
+                                  <div className="text-slate-700">Base</div>
                                 </td>
                                 <td className="p-3 border border-slate-200">
                                   <Select 
                                     defaultValue="rebate"
                                     onValueChange={(value) => {
                                       const newTier = {...dealTiers[0]};
-                                      newTier.incentiveType = value as any; // Cast to any to avoid type issues
+                                      newTier.incentiveType = value as any;
                                       const newTiers = [newTier, ...dealTiers.slice(1)];
                                       setDealTiers(newTiers);
                                     }}
@@ -1392,10 +1458,7 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Last year column */}
-                                  <div className="text-slate-700">
-                                    0%
-                                  </div>
+                                  <div className="text-slate-700">0%</div>
                                 </td>
                                 <td className="p-3 border border-slate-200">
                                   <div className="relative">
@@ -1430,10 +1493,7 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Last year column */}
-                                  <div className="text-slate-700">
-                                    {formatCurrency(0)}
-                                  </div>
+                                  <div className="text-slate-700">{formatCurrency(0)}</div>
                                 </td>
                                 <td className="p-3 border border-slate-200">
                                   <div className="relative">
@@ -1468,10 +1528,7 @@ export default function SubmitDeal() {
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
                                 <td className="p-3 border border-slate-200 text-center">
-                                  {/* Last year column */}
-                                  <div className="text-slate-700">
-                                    N/A
-                                  </div>
+                                  <div className="text-slate-700">N/A</div>
                                 </td>
                                 <td className="p-3 border border-slate-200">
                                   <Textarea
@@ -1496,7 +1553,7 @@ export default function SubmitDeal() {
                           Flat commitment deals typically have a single incentive structure based on the total annual revenue.
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
                 
