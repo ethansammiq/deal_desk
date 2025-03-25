@@ -234,9 +234,28 @@ function getDirectResponse(text: string): string | null {
 
 // Enhanced AI response generator
 async function generateAIResponse(message: string, storage: IChatStorage): Promise<string> {
-  // In a real implementation, this would call OpenAI API
-  // For now, we'll do a sophisticated keyword matching response with our comprehensive knowledge base
+  // First, try to use the Claude AI model for a response
+  try {
+    // Import the Anthropic integration service
+    const { generateAIResponse: claudeGenerate } = await import('./anthropic');
+    
+    // Get previous messages for context
+    const previousMessages = await storage.getMessagesByConversationId('default');
+    const conversationHistory = previousMessages.map(msg => msg.text);
+    
+    // Call Claude's API to get an AI-generated response
+    const aiResponse = await claudeGenerate(message, conversationHistory);
+    
+    // If we successfully get a response from Claude, use it
+    if (aiResponse) {
+      return aiResponse;
+    }
+  } catch (error) {
+    console.log('Error using Claude AI, falling back to pattern matching:', error);
+    // Fall back to pattern matching if AI fails
+  }
   
+  // Fallback: Use pattern matching for response
   const lowerText = message.toLowerCase().trim();
   
   // Check for specific question patterns that need direct answers

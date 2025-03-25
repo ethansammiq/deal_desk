@@ -73,7 +73,10 @@ export async function generateAIResponse(userQuery: string, conversationHistory:
     });
 
     // Return the generated response
-    return response.content[0].text;
+    if (response.content[0].type === 'text') {
+      return (response.content[0] as any).text;
+    }
+    return 'I encountered an issue processing your request.';
     
   } catch (error) {
     console.error('Error generating AI response:', error);
