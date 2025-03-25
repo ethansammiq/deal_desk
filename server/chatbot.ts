@@ -130,61 +130,80 @@ export class ChatMemStorage implements IChatStorage {
 function getDirectResponse(text: string): string | null {
   console.log("[Chatbot] Inside getDirectResponse with text:", text);
   
-  // Check for questions about deal process steps count - broader match
-  if (/(how many|number of|total).+?(steps|stages).+?(deal|process|commercial)/.test(text) || 
-      /(deal|process).+?(how many|number of|total).+?(steps|stages)/.test(text) ||
-      /(steps|stages).+?(in|of).+?(deal|process)/.test(text) ||
-      /(deal process|commercial process).+?(have|consist of|include)/.test(text) ||
-      text.includes("how many steps does the deal process have")) {
+  // Normalize the text for more reliable pattern matching
+  const normalizedText = text.toLowerCase().trim().replace(/\s+/g, ' ');
+  
+  // Exact match for common phrasings
+  const dealStepsExactPhrases = [
+    "how many steps does the deal process have",
+    "how many steps in the deal process",
+    "how many stages in the deal process",
+    "how many steps are in the commercial process",
+    "what are the steps in the deal process",
+    "what steps are in the deal process",
+    "steps in deal process",
+    "stages in deal process"
+  ];
+  
+  if (dealStepsExactPhrases.some(phrase => normalizedText.includes(phrase))) {
+    console.log("[Chatbot] Matched exact steps phrase!");
+    return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
+  }
+  
+  // Pattern match for variations
+  if (/(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/.test(normalizedText) || 
+      /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/.test(normalizedText) ||
+      /(steps|stages).+?(in|of|for).+?(deal|process)/.test(normalizedText) ||
+      /(deal process|commercial process).+?(have|consist of|include|involve)/.test(normalizedText)) {
     console.log("[Chatbot] Matched steps pattern!");
     return "The commercial deal process has 7 steps: Scoping, Submission, Review & Approval, Negotiation, Contracting, Implementation, and Evaluation.";
   }
   
   // Check for timeframe questions about deal review
-  if (/(how long|timeframe|how many days|duration|time)/.test(text) && 
-      /(review|approval|process take)/.test(text)) {
+  if (/(how long|timeframe|how many days|duration|time)/.test(normalizedText) && 
+      /(review|approval|process take)/.test(normalizedText)) {
     return "Standard deals typically take 2-3 business days for review and approval. Non-standard deals may take 3-5 business days. Complex deals with technical requirements might need additional time for product team assessment.";
   }
   
   // Check for questions about document requirements
-  if (/(what|which) (documents|documentation|files|paperwork)/.test(text) && 
-      /(need|required|submit|provide)/.test(text)) {
+  if (/(what|which) (documents|documentation|files|paperwork)/.test(normalizedText) && 
+      /(need|required|submit|provide)/.test(normalizedText)) {
     return "Required documentation includes: Deal Submission Form, Customer Requirements Document, Statement of Work (for service components), and Business Justification (for non-standard terms or pricing).";
   }
   
   // Check for questions about approval levels
-  if (/(who|approval level|approver|sign off|authorization)/.test(text) && 
-      /(approves|approve|approval)/.test(text)) {
+  if (/(who|approval level|approver|sign off|authorization)/.test(normalizedText) && 
+      /(approves|approve|approval)/.test(normalizedText)) {
     return "Approval levels depend on deal value and complexity. Managers can approve standard deals up to $50K, Directors for deals up to $250K, VPs for deals up to $1M, and SVP/C-Level executives for deals over $1M. Non-standard terms generally require higher-level approval.";
   }
   
   // Check for questions about incentive types
-  if (/(what types of|what kind of|what|main|different) (incentives|rewards|bonuses)/.test(text)) {
+  if (/(what types of|what kind of|what|main|different) (incentives|rewards|bonuses)/.test(normalizedText)) {
     return "We offer three main incentive categories: 1) Financial Incentives (Added Value Media, Revenue Share), 2) Product Incentives (Feature Access, Integration Services), and 3) Resource Incentives (Technical Resources, Training). Each has specific eligibility criteria and approval processes.";
   }
   
   // Check for threshold/eligibility questions
-  if (/(what|minimum|threshold|eligibility|qualify|requirement).{1,30}(incentive|deal|revenue|value)/.test(text)) {
+  if (/(what|minimum|threshold|eligibility|qualify|requirement).{1,30}(incentive|deal|revenue|value)/.test(normalizedText)) {
     return "Deal eligibility is based on several factors: 1) Annual commitment of at least $50K, 2) Minimum contract term of 12 months, 3) Strategic alignment with company priorities, and 4) Technical compatibility with our platform requirements.";
   }
   
   // Check for deal structure questions
-  if (/(what|difference|explain|compare).{1,30}(tiered|flat commit|structure)/.test(text)) {
+  if (/(what|difference|explain|compare).{1,30}(tiered|flat commit|structure)/.test(normalizedText)) {
     return "We offer two deal structures: 1) Tiered Commit - multiple spending thresholds with increasing incentives at each level, and 2) Flat Commit - a single spending threshold with a fixed incentive rate. Tiered is best for growing accounts, while Flat Commit provides predictability.";
   }
   
   // Check for urgent deal questions
-  if (/(urgent|expedite|rush|emergency|fast(-| )track|priority|quick) .{1,30}(deal|approval)/.test(text)) {
+  if (/(urgent|expedite|rush|emergency|fast(-| )track|priority|quick) .{1,30}(deal|approval)/.test(normalizedText)) {
     return "For urgent deals, follow these steps: 1) Mark as 'Urgent' in the submission form, 2) Add business justification explaining the urgency, 3) Notify your manager, and 4) Email deal-desk@example.com with the reference number. Urgent deals are typically reviewed within 24 hours.";
   }
   
   // Check for deal rejection questions
-  if (/(why|reason|reject|decline|denied|not approved).{1,30}(deal|submission)/.test(text)) {
+  if (/(why|reason|reject|decline|denied|not approved).{1,30}(deal|submission)/.test(normalizedText)) {
     return "Common reasons for deal rejection include: 1) Insufficient margin (below 15%), 2) Non-standard terms without proper justification, 3) Missing required documentation, 4) Incentives exceeding approval thresholds, and 5) Insufficient customer information or incomplete form submission.";
   }
   
   // Check for questions about deal modifications
-  if (/(how|can I|update|modify|change|edit).{1,30}(submitted|existing) deal/.test(text)) {
+  if (/(how|can I|update|modify|change|edit).{1,30}(submitted|existing) deal/.test(normalizedText)) {
     return "To modify a submitted deal: 1) Go to the Deal Dashboard, 2) Find your deal and click 'Request Modification', 3) Complete the modification form with changes and justification, 4) Submit for review. Note that significant changes may require a new approval process.";
   }
   

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useChat } from '@/lib/chat-context';
 import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from 'react-markdown';
 
 interface FloatingChatbotProps {
   title?: string;
@@ -246,7 +247,15 @@ export default function FloatingChatbot({
                 </div>
                 
                 {/* Message content */}
-                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                <div className="text-sm prose prose-sm max-w-none">
+                  {message.sender === 'user' ? (
+                    <p className="whitespace-pre-wrap text-white m-0">{message.text}</p>
+                  ) : (
+                    <div className="whitespace-pre-wrap markdown-body">
+                      <ReactMarkdown>{message.text}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}

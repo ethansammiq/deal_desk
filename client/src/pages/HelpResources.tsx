@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useChat } from "@/lib/chat-context";
 import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 
 // Embedded Chat Component for the Help Resources Page
 function EmbeddedChat() {
@@ -111,7 +112,13 @@ function EmbeddedChat() {
                 </div>
                 
                 {/* Message content */}
-                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                {message.sender === 'user' ? (
+                  <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                ) : (
+                  <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none">
+                    <ReactMarkdown>{message.text}</ReactMarkdown>
+                  </div>
+                )}
               </div>
             </div>
           ))
