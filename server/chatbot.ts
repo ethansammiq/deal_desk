@@ -61,66 +61,15 @@ export class ChatMemStorage implements IChatStorage {
 function getDirectResponse(text: string): string | null {
   console.log("[Chatbot] Inside getDirectResponse with text:", text);
   
-  // Normalize the text for more reliable pattern matching
+  // We're now bypassing all preconfigured answers and patterns, sending all queries to Claude AI
+  console.log("[Chatbot] Bypassing direct responses, delegating all queries to Claude AI");
+
+  // Store the text in logs for debugging
   const normalizedText = text.toLowerCase().trim().replace(/\s+/g, ' ');
   console.log("[Chatbot] Normalized text:", normalizedText);
   
-  // First, check if there's a direct FAQ match from the knowledge base
-  const faqMatch = findMatchingFAQ(normalizedText);
-  if (faqMatch) {
-    console.log("[Chatbot] Found matching FAQ in knowledge base");
-    return faqMatch.answer;
-  }
-  
-  // For step-related questions, return null to let Claude AI handle it
-  // First check for exact matches
-  if (normalizedText === "how many steps does the deal process have") {
-    console.log("[Chatbot] EXACT MATCH for steps question - delegating to Claude!");
-    return null; // Let Claude AI handle this
-  }
-  
-  // Check for common step-related phrasings that should be handled by Claude
-  const dealStepsExactPhrases = [
-    "how many steps does the deal process have",
-    "how many steps in the deal process",
-    "how many stages in the deal process",
-    "how many steps are in the commercial process",
-    "what are the steps in the deal process",
-    "what steps are in the deal process",
-    "steps in deal process",
-    "stages in deal process",
-    "deal process steps",
-    "deal steps",
-    "how many deal steps",
-    "number of steps in deal process"
-  ];
-  
-  for (const phrase of dealStepsExactPhrases) {
-    if (normalizedText.includes(phrase)) {
-      console.log(`[Chatbot] Matched exact steps phrase: "${phrase}" - delegating to Claude`);
-      return null; // Let Claude AI handle this
-    }
-  }
-  
-  // Pattern match for step-related variations that should be handled by Claude
-  const stepsPatterns = [
-    /(how many|number of|total|what).+?(steps|stages).+?(deal|process|commercial)/,
-    /(deal|process).+?(how many|number of|total|what).+?(steps|stages)/,
-    /(steps|stages).+?(in|of|for).+?(deal|process)/,
-    /(deal process|commercial process).+?(have|consist of|include|involve)/,
-    /(how many).+?(steps)/,
-    /(deal).+?(steps)/
-  ];
-  
-  for (const pattern of stepsPatterns) {
-    if (pattern.test(normalizedText)) {
-      console.log(`[Chatbot] Matched steps pattern: ${pattern} - delegating to Claude`);
-      return null; // Let Claude AI handle this
-    }
-  }
-  
-  // For all other questions, let Claude handle with dynamic context
-  console.log("[Chatbot] No direct pattern match, letting Claude handle with knowledge context");
+  // Always return null to let Claude AI handle all responses
+  // This ensures varied responses every time based on the unique context ID in the prompt
   return null;
 }
 
