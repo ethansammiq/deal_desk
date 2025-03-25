@@ -1176,6 +1176,109 @@ export default function SubmitDeal() {
                                   </td>
                                 ))}
                               </tr>
+                              
+                              {/* Revenue Growth Rate Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {/* Base value column - not applicable */}
+                                  <div className="text-slate-700">
+                                    N/A
+                                  </div>
+                                </td>
+                                {dealTiers.map((tier) => {
+                                  // Find previous year revenue
+                                  let previousYearRevenue = 0;
+                                  const salesChannel = form.watch("salesChannel");
+                                  const advertiserName = form.watch("advertiserName");
+                                  const agencyName = form.watch("agencyName");
+                                  
+                                  if (salesChannel === "client_direct" && advertiserName) {
+                                    const advertiser = advertisers.find(a => a.name === advertiserName);
+                                    if (advertiser && advertiser.previousYearRevenue) {
+                                      previousYearRevenue = advertiser.previousYearRevenue;
+                                    }
+                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                    const agency = agencies.find(a => a.name === agencyName);
+                                    if (agency && agency.previousYearRevenue) {
+                                      previousYearRevenue = agency.previousYearRevenue;
+                                    }
+                                  }
+                                  
+                                  // Calculate growth rate
+                                  let growthRate = 0;
+                                  if (previousYearRevenue && previousYearRevenue > 0) {
+                                    growthRate = (tier.annualRevenue / previousYearRevenue) - 1;
+                                  }
+                                  
+                                  return (
+                                    <td key={`revenue-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      {/* Not editable, calculated field */}
+                                      <div className={cn(
+                                        "text-slate-700",
+                                        growthRate > 0 ? "text-green-600" : growthRate < 0 ? "text-red-600" : ""
+                                      )}>
+                                        {formatPercentage(growthRate)}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              
+                              {/* Gross Profit Growth Rate Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {/* Base value column - not applicable */}
+                                  <div className="text-slate-700">
+                                    N/A
+                                  </div>
+                                </td>
+                                {dealTiers.map((tier) => {
+                                  // Find previous year revenue and margin
+                                  let previousYearRevenue = 0;
+                                  let previousYearMargin = 0;
+                                  const salesChannel = form.watch("salesChannel");
+                                  const advertiserName = form.watch("advertiserName");
+                                  const agencyName = form.watch("agencyName");
+                                  
+                                  if (salesChannel === "client_direct" && advertiserName) {
+                                    const advertiser = advertisers.find(a => a.name === advertiserName);
+                                    if (advertiser) {
+                                      previousYearRevenue = advertiser.previousYearRevenue || 0;
+                                      previousYearMargin = advertiser.previousYearMargin || 0;
+                                    }
+                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                    const agency = agencies.find(a => a.name === agencyName);
+                                    if (agency) {
+                                      previousYearRevenue = agency.previousYearRevenue || 0;
+                                      previousYearMargin = agency.previousYearMargin || 0;
+                                    }
+                                  }
+                                  
+                                  // Calculate previous year profit and current profit
+                                  const previousYearProfit = previousYearRevenue * (previousYearMargin / 100);
+                                  const currentProfit = tier.annualRevenue * ((tier.annualGrossMarginPercent || 0) / 100);
+                                  
+                                  // Calculate growth rate
+                                  let profitGrowthRate = 0;
+                                  if (previousYearProfit && previousYearProfit > 0) {
+                                    profitGrowthRate = (currentProfit / previousYearProfit) - 1;
+                                  }
+                                  
+                                  return (
+                                    <td key={`profit-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      {/* Not editable, calculated field */}
+                                      <div className={cn(
+                                        "text-slate-700",
+                                        profitGrowthRate > 0 ? "text-green-600" : profitGrowthRate < 0 ? "text-red-600" : ""
+                                      )}>
+                                        {formatPercentage(profitGrowthRate)}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
                             </tbody>
                           </table>
                         </div>
