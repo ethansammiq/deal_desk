@@ -853,7 +853,7 @@ export default function SubmitDeal() {
                   </div>
                   
                   {/* Simplified approval alert based on basic deal parameters */}
-                  {watchTypedValue("annualRevenue") && watchTypedValue("contractTerm") && (
+                  {(watchTypedValue("annualRevenue") !== undefined && watchTypedValue("contractTerm") !== undefined) && (
                     <ApprovalAlert 
                       totalValue={Number(watchTypedValue("annualRevenue")) || 0}
                       contractTerm={Number(watchTypedValue("contractTerm")) || 12}
