@@ -134,6 +134,24 @@ export class MemStorage implements IStorage {
         previousYearRevenue: 1800000, 
         previousYearMargin: 22.4, 
         region: "west" 
+      },
+      { 
+        name: "Amazon", 
+        previousYearRevenue: 5500000, 
+        previousYearMargin: 25.7, 
+        region: "west" 
+      },
+      { 
+        name: "Microsoft", 
+        previousYearRevenue: 4800000, 
+        previousYearMargin: 31.2, 
+        region: "west" 
+      },
+      { 
+        name: "Target", 
+        previousYearRevenue: 3200000, 
+        previousYearMargin: 15.8, 
+        region: "midwest" 
       }
     ];
     
@@ -154,6 +172,20 @@ export class MemStorage implements IStorage {
         region: "northeast" 
       },
       { 
+        name: "Publicis", 
+        type: "holding_company", 
+        previousYearRevenue: 7200000, 
+        previousYearMargin: 26.8, 
+        region: "midatlantic" 
+      },
+      { 
+        name: "IPG", 
+        type: "holding_company", 
+        previousYearRevenue: 6900000, 
+        previousYearMargin: 25.5, 
+        region: "northeast" 
+      },
+      { 
         name: "Droga5", 
         type: "independent", 
         previousYearRevenue: 950000, 
@@ -165,6 +197,13 @@ export class MemStorage implements IStorage {
         type: "independent", 
         previousYearRevenue: 620000, 
         previousYearMargin: 31.5, 
+        region: "west" 
+      },
+      { 
+        name: "Wieden+Kennedy", 
+        type: "independent", 
+        previousYearRevenue: 780000, 
+        previousYearMargin: 33.2, 
         region: "west" 
       },
       { 
