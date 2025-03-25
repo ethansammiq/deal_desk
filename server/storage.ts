@@ -43,7 +43,7 @@ export interface IStorage {
   getDeal(id: number): Promise<Deal | undefined>;
   getDealByReference(referenceNumber: string): Promise<Deal | undefined>;
   getDeals(filters?: { status?: string, dealType?: string, salesChannel?: string }): Promise<Deal[]>;
-  createDeal(deal: InsertDeal): Promise<Deal>;
+  createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
   updateDealStatus(id: number, status: string): Promise<Deal | undefined>;
   
   // Deal tier methods
@@ -620,16 +620,22 @@ export class MemStorage implements IStorage {
     return deals.sort((a, b) => b.id - a.id);
   }
   
-  async createDeal(insertDeal: InsertDeal): Promise<Deal> {
+  async createDeal(insertDeal: InsertDeal, referenceNumber?: string): Promise<Deal> {
     const id = this.dealCurrentId++;
     const now = new Date();
+    
+    // Use provided reference number or generate a new one
+    const dealReferenceNumber = referenceNumber || 
+      `DEAL-${now.getFullYear()}-${String(id).padStart(3, '0')}`;
     
     // Create a new deal with the provided data and default values
     const deal: Deal = {
       ...insertDeal,
       id,
+      status: "submitted",
       createdAt: now,
       updatedAt: now,
+      referenceNumber: dealReferenceNumber
     };
     
     this.deals.set(id, deal);

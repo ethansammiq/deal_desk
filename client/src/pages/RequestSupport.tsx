@@ -411,10 +411,11 @@ export default function RequestSupport() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="agency1">Agency 1</SelectItem>
-                                  <SelectItem value="agency2">Agency 2</SelectItem>
-                                  <SelectItem value="agency3">Agency 3</SelectItem>
-                                  {/* This would be populated from the database in production */}
+                                  {agencies.map(agency => (
+                                    <SelectItem key={agency.id} value={agency.name}>
+                                      {agency.name}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />

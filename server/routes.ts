@@ -54,10 +54,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   router.post("/deals", async (req: Request, res: Response) => {
     try {
       // Extract dealTiers from request body if present
-      const { dealTiers, ...dealData } = req.body;
+      const { dealTiers, ...reqData } = req.body;
       
       // Validate the deal data against the schema
-      const validatedData = insertDealSchema.safeParse(dealData);
+      const validatedData = insertDealSchema.safeParse(reqData);
       
       if (!validatedData.success) {
         const errorMessage = fromZodError(validatedData.error).message;
@@ -71,11 +71,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const referenceNumber = `DEAL-${year}-${String(nextSequence).padStart(3, '0')}`;
       
       // Create the deal with the generated reference number
-      // @ts-ignore - referenceNumber is handled by the storage layer
-      const newDeal = await storage.createDeal({
-        ...validatedData.data,
+      // We need to pass both the deal data and reference number to the storage layer
+      // which will handle adding the referenceNumber during creation
+      const newDeal = await storage.createDeal(
+        validatedData.data as any, 
         referenceNumber
-      });
+      );
       
       // If this is a tiered deal structure and dealTiers were provided, create them
       if (validatedData.data.dealStructure === "tiered" && Array.isArray(dealTiers) && dealTiers.length > 0) {
