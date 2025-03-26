@@ -33,7 +33,7 @@ export function TopNavbar() {
           <div className="flex items-center w-full">
             {/* Logo - Fixed Width */}
             <div className="flex-shrink-0 flex items-center w-64">
-              <div className="h-8 w-8 mr-2 flex-shrink-0 flex items-center justify-center">
+              <div className="h-10 w-10 mr-3 flex-shrink-0 flex items-center justify-center">
                 <img 
                   src={companyLogo} 
                   alt="Logo" 
@@ -123,7 +123,7 @@ export function TopNavbar() {
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b border-slate-200">
           {/* Mobile Logo */}
           <div className="flex items-center mb-3 px-3">
-            <div className="h-7 w-7 mr-2 flex-shrink-0 flex items-center justify-center">
+            <div className="h-9 w-9 mr-2 flex-shrink-0 flex items-center justify-center">
               <img 
                 src={companyLogo} 
                 alt="Logo" 
