@@ -278,41 +278,38 @@ export default function RequestSupport() {
   
   return (
     <div className="p-6">
-      {/* About Deal Scoping Section - Moved to top */}
-      <Card className="mb-6">
-        <div className="px-4 py-4 border-b border-slate-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-slate-900">About Deal Scoping</h3>
-        </div>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <h4 className="font-medium text-slate-900">What is Deal Scoping?</h4>
-              <p className="mt-1 text-sm text-slate-500">
-                Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities to provide better support.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-slate-900">What Happens Next?</h4>
-              <ol className="mt-1 text-sm text-slate-500 list-decimal list-inside space-y-1">
-                <li>Our partnership team reviews your request</li>
-                <li>A team member contacts you to schedule a discovery call</li>
-                <li>Together, we'll craft a tailored proposal</li>
-                <li>Once aligned, you can proceed to deal submission</li>
-              </ol>
-            </div>
-            
-            <div className="bg-blue-50 p-3 rounded-md">
-              <h4 className="font-medium text-blue-800">Need Help?</h4>
-              <p className="mt-1 text-sm text-blue-700">
-                For assistance with deal scoping, contact the partnership team at partnerships@example.com or check out our Help & Resources page.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* About Deal Scoping Section - Separate from request form */}
       <div className="mb-6">
+        <h3 className="text-xl font-medium text-slate-800 mb-3">About Deal Scoping</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow p-5 border border-slate-100">
+            <h4 className="font-medium text-slate-900 mb-2">What is Deal Scoping?</h4>
+            <p className="text-sm text-slate-500">
+              Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities to provide better support.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-5 border border-slate-100">
+            <h4 className="font-medium text-slate-900 mb-2">What Happens Next?</h4>
+            <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
+              <li>Our partnership team reviews your request</li>
+              <li>A team member contacts you to schedule a discovery call</li>
+              <li>Together, we'll craft a tailored proposal</li>
+              <li>Once aligned, you can proceed to deal submission</li>
+            </ol>
+          </div>
+          
+          <div className="bg-blue-50 rounded-lg shadow p-5 border border-blue-100">
+            <h4 className="font-medium text-blue-800 mb-2">Need Help?</h4>
+            <p className="text-sm text-blue-700">
+              For assistance with deal scoping, contact the partnership team at partnerships@example.com or check out our Help & Resources page.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Submit Deal Requests Section */}
+      <div className="mt-8 mb-6">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
@@ -326,9 +323,9 @@ export default function RequestSupport() {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6">
         {/* Deal Scoping Form */}
-        <div className="lg:col-span-3">
+        <div>
           <Card>
             <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
               <h3 className="text-lg font-medium leading-6 text-slate-900">Deal Scoping Request Form</h3>
