@@ -249,6 +249,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch agencies" });
     }
   });
+  
+  // Incentive values endpoints
+  router.get("/deals/:dealId/incentives", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const incentives = await storage.getIncentiveValues(dealId);
+      res.status(200).json(incentives);
+    } catch (error) {
+      console.error("Error fetching incentives:", error);
+      res.status(500).json({ message: "Failed to fetch incentives" });
+    }
+  });
+  
+  router.post("/deals/:dealId/incentives", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      const incentiveData = {
+        ...req.body,
+        dealId
+      };
+      
+      const incentive = await storage.createIncentiveValue(incentiveData);
+      res.status(201).json(incentive);
+    } catch (error) {
+      console.error("Error creating incentive:", error);
+      res.status(500).json({ message: "Failed to create incentive" });
+    }
+  });
+  
+  router.patch("/deals/:dealId/incentives/:id", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(dealId) || isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const incentive = await storage.updateIncentiveValue(id, req.body);
+      if (!incentive) {
+        return res.status(404).json({ message: "Incentive value not found" });
+      }
+      
+      res.status(200).json(incentive);
+    } catch (error) {
+      console.error("Error updating incentive:", error);
+      res.status(500).json({ message: "Failed to update incentive" });
+    }
+  });
+  
+  router.delete("/deals/:dealId/incentives/:id", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(dealId) || isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const success = await storage.deleteIncentiveValue(id);
+      if (!success) {
+        return res.status(404).json({ message: "Incentive value not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting incentive:", error);
+      res.status(500).json({ message: "Failed to delete incentive" });
+    }
+  });
 
   // Initialize and register chatbot routes
   const chatStorage = new ChatMemStorage();
