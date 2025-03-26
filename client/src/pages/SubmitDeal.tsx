@@ -2174,7 +2174,12 @@ export default function SubmitDeal() {
                                         )}
                                       </div>
                                       <div className="text-sm font-medium">
-                                        {formatCurrency(incentive.value)}
+                                        {formatCurrency(
+                                          incentive.tierIds.length > 0 && 
+                                          incentive.tierValues && 
+                                          incentive.tierValues[tier.tierNumber] ? 
+                                          incentive.tierValues[tier.tierNumber] : 0
+                                        )}
                                       </div>
                                     </div>
                                   );
