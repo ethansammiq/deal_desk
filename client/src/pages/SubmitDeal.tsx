@@ -167,6 +167,11 @@ export default function SubmitDeal() {
     setCurrentApprover(approvalInfo);
   };
   
+  // Handle incentive selection changes
+  const handleIncentiveChange = (incentives: SelectedIncentive[]) => {
+    setSelectedIncentives(incentives);
+  };
+  
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
@@ -245,6 +250,9 @@ export default function SubmitDeal() {
       incentiveAmount: 0
     }
   ]);
+  
+  // State for selected incentives from the hierarchical selector
+  const [selectedIncentives, setSelectedIncentives] = useState<SelectedIncentive[]>([]);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -570,12 +578,14 @@ export default function SubmitDeal() {
     
     const dealName = `${dealTypeMap[data.dealType]}_${salesChannelMap[data.salesChannel]}_${clientName}_${dealStructureMap[data.dealStructure]}_${startDateFormatted}-${endDateFormatted}`;
     
-    // Include generated deal name and deal tiers data for tiered structure
+    // Include generated deal name, deal tiers data for tiered structure, and selected incentives
     const dealData = {
       ...data,
       dealName: dealName,
       // Only include dealTiers if the structure is tiered
-      ...(dealStructureType === "tiered" ? { dealTiers } : {})
+      ...(dealStructureType === "tiered" ? { dealTiers } : {}),
+      // Include selected incentives
+      selectedIncentives
     };
     
     createDeal.mutate(dealData);
@@ -1500,6 +1510,18 @@ export default function SubmitDeal() {
                           <Info className="h-4 w-4 inline mr-2" />
                           Incentives are typically structured to reward clients for reaching higher revenue tiers.
                           Each tier can have its own incentive structure based on the revenue threshold.
+                        </div>
+                        
+                        {/* Hierarchical Incentive Selector */}
+                        <div className="mt-6">
+                          <h3 className="text-lg font-medium mb-2">Additional Incentives</h3>
+                          <p className="text-sm text-slate-500 mb-4">
+                            Select additional incentives to include in this deal across various categories.
+                          </p>
+                          <IncentiveSelector 
+                            selectedIncentives={selectedIncentives}
+                            onChange={handleIncentiveChange}
+                          />
                         </div>
                       </div>
                     </div> {/* Close the main incentives section container div */}
