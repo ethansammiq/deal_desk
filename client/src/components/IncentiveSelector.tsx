@@ -124,8 +124,8 @@ export function IncentiveSelector({
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
-                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-12">Actions</th>
+                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-10">Actions</th>
                   {availableTiers.map(tierId => (
                     <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                       <div className="flex justify-between items-center">
@@ -276,7 +276,7 @@ export function IncentiveSelector({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr>
-                        <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
+                        <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
                         {availableTiers.map(tierId => (
                           <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                             <div className="flex justify-between items-center">
