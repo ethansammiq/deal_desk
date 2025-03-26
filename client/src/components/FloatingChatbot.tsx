@@ -251,14 +251,40 @@ export default function FloatingChatbot({
                   {message.sender === 'user' ? (
                     <p className="whitespace-pre-wrap text-white m-0">{message.text}</p>
                   ) : (
-                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-sm prose-headings:text-slate-800 prose-headings:font-semibold prose-headings:my-0.5 prose-headings:leading-tight prose-p:my-0.5 prose-p:leading-tight prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 text-[0.9rem] leading-tight">
+                    <div className="whitespace-pre-wrap dark:prose-invert prose prose-sm text-[0.9rem]">
                       {/* Apply custom components to fix markdown rendering issues */}
                       <ReactMarkdown
                         components={{
-                          // Fix for line breaks after lists
-                          ol: ({node, ...props}) => <ol className="mb-0.5 pb-0" {...props} />,
-                          // Ensure text after lists doesn't break to a new line
-                          p: ({node, ...props}) => <p className="inline-block my-0.5" {...props} />
+                          // Fix paragraphs with correct spacing
+                          p: ({node, children, ...props}) => (
+                            <p style={{marginTop: '0.25em', marginBottom: '0.25em', lineHeight: '1.5'}} {...props}>
+                              {children}
+                            </p>
+                          ),
+                          // Fix heading spacing
+                          h1: ({node, children, ...props}) => (
+                            <h1 style={{marginTop: '0.5em', marginBottom: '0.3em', fontWeight: 'bold', fontSize: '1.3em'}} {...props}>
+                              {children}
+                            </h1>
+                          ),
+                          h2: ({node, children, ...props}) => (
+                            <h2 style={{marginTop: '0.5em', marginBottom: '0.3em', fontWeight: 'bold', fontSize: '1.2em'}} {...props}>
+                              {children}
+                            </h2>
+                          ),
+                          h3: ({node, children, ...props}) => (
+                            <h3 style={{marginTop: '0.4em', marginBottom: '0.25em', fontWeight: 'bold', fontSize: '1.1em'}} {...props}>
+                              {children}
+                            </h3>
+                          ),
+                          // Fix lists with better spacing
+                          ul: ({node, ...props}) => <ul style={{marginTop: '0.25em', marginBottom: '0.25em', paddingLeft: '1.2em'}} {...props} />,
+                          ol: ({node, ...props}) => <ol style={{marginTop: '0.25em', marginBottom: '0.25em', paddingLeft: '1.2em'}} {...props} />,
+                          li: ({node, children, ...props}) => (
+                            <li style={{marginBottom: '0.15em', lineHeight: '1.4'}} {...props}>
+                              {children}
+                            </li>
+                          ),
                         }}
                       >
                         {message.text}
