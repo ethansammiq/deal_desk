@@ -5,6 +5,7 @@ import {
   advertisers,
   agencies,
   dealTiers,
+  incentiveValues,
   type User, 
   type InsertUser, 
   type Deal, 
@@ -16,7 +17,9 @@ import {
   type Agency,
   type InsertAgency,
   type DealTier,
-  type InsertDealTier
+  type InsertDealTier,
+  type IncentiveValue,
+  type InsertIncentiveValue
 } from "@shared/schema";
 import { AirtableStorage } from "./airtableStorage";
 
@@ -80,6 +83,7 @@ export class MemStorage implements IStorage {
   private deals: Map<number, Deal>;
   private dealTiers: Map<number, DealTier>;
   private dealScopingRequests: Map<number, DealScopingRequest>;
+  private incentiveValues: Map<number, IncentiveValue>;
   
   private userCurrentId: number;
   private advertiserCurrentId: number;
@@ -87,6 +91,7 @@ export class MemStorage implements IStorage {
   private dealCurrentId: number;
   private dealTierCurrentId: number;
   private dealScopingRequestCurrentId: number;
+  private incentiveValueCurrentId: number;
 
   constructor() {
     this.users = new Map();
@@ -95,6 +100,7 @@ export class MemStorage implements IStorage {
     this.deals = new Map();
     this.dealTiers = new Map();
     this.dealScopingRequests = new Map();
+    this.incentiveValues = new Map();
     
     this.userCurrentId = 1;
     this.advertiserCurrentId = 1;
@@ -102,6 +108,7 @@ export class MemStorage implements IStorage {
     this.dealCurrentId = 1;
     this.dealTierCurrentId = 1;
     this.dealScopingRequestCurrentId = 1;
+    this.incentiveValueCurrentId = 1;
     
     // Initialize with some sample data
     this.initSampleData();
@@ -708,6 +715,53 @@ export class MemStorage implements IStorage {
     
     this.dealScopingRequests.set(id, updatedRequest);
     return updatedRequest;
+  }
+  
+  // Incentive Value methods
+  async getIncentiveValues(dealId: number): Promise<IncentiveValue[]> {
+    return Array.from(this.incentiveValues.values())
+      .filter(incentive => incentive.dealId === dealId)
+      .sort((a, b) => a.id - b.id);
+  }
+  
+  async createIncentiveValue(incentive: InsertIncentiveValue): Promise<IncentiveValue> {
+    const id = this.incentiveValueCurrentId++;
+    const now = new Date();
+    
+    const newIncentive: IncentiveValue = {
+      ...incentive,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    this.incentiveValues.set(id, newIncentive);
+    return newIncentive;
+  }
+  
+  async updateIncentiveValue(id: number, update: Partial<InsertIncentiveValue>): Promise<IncentiveValue | undefined> {
+    const existing = this.incentiveValues.get(id);
+    if (!existing) {
+      return undefined;
+    }
+    
+    const updatedIncentive: IncentiveValue = {
+      ...existing,
+      ...update,
+      updatedAt: new Date()
+    };
+    
+    this.incentiveValues.set(id, updatedIncentive);
+    return updatedIncentive;
+  }
+  
+  async deleteIncentiveValue(id: number): Promise<boolean> {
+    if (!this.incentiveValues.has(id)) {
+      return false;
+    }
+    
+    this.incentiveValues.delete(id);
+    return true;
   }
   
   // Stats methods
