@@ -455,40 +455,21 @@ export function IncentiveSelector({
                 />
               </div>
               
-              {/* Apply to Tiers section - modified to be simpler since we're using the table */}
-              <div className="space-y-2 pt-2">
-                <Label>Which tiers does this incentive apply to?</Label>
-                <div className="flex flex-wrap gap-2">
-                  {availableTiers.map(tierId => (
-                    <Button
-                      key={tierId}
-                      type="button"
-                      variant={(tempIncentive.tierIds || []).includes(tierId) ? "default" : "outline"}
-                      onClick={() => {
-                        const currentTierIds = tempIncentive.tierIds || [];
-                        let newTierIds: number[];
-                        
-                        if (currentTierIds.includes(tierId)) {
-                          // Remove tier if already selected
-                          newTierIds = currentTierIds.filter(id => id !== tierId);
-                        } else {
-                          // Add tier if not already selected
-                          newTierIds = [...currentTierIds, tierId];
-                        }
-                        
-                        setTempIncentive({
-                          ...tempIncentive,
-                          tierIds: newTierIds
-                        });
-                      }}
-                    >
-                      Tier {tierId}
-                    </Button>
-                  ))}
-                </div>
-                {(!tempIncentive.tierIds || tempIncentive.tierIds.length === 0) && (
-                  <p className="text-xs text-red-500 mt-1">Please select at least one tier</p>
-                )}
+              {/* Apply to Tiers section - automatically adds all tiers */}
+              <div className="hidden">
+                {/* Hidden but still functional - automatically selects all available tiers */}
+                {(() => {
+                  // Set all available tiers when component loads
+                  React.useEffect(() => {
+                    if (availableTiers.length > 0 && (!tempIncentive.tierIds || tempIncentive.tierIds.length === 0)) {
+                      setTempIncentive({
+                        ...tempIncentive,
+                        tierIds: [...availableTiers]
+                      });
+                    }
+                  }, [availableTiers, tempIncentive.categoryId, tempIncentive.subCategoryId, tempIncentive.option]);
+                  return null;
+                })()}
               </div>
             </div>
           )}
