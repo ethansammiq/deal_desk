@@ -57,6 +57,12 @@ export interface IStorage {
   createDealScopingRequest(request: InsertDealScopingRequest): Promise<DealScopingRequest>;
   updateDealScopingRequestStatus(id: number, status: string): Promise<DealScopingRequest | undefined>;
   
+  // Incentive value methods
+  getIncentiveValues(dealId: number): Promise<IncentiveValue[]>;
+  createIncentiveValue(incentive: InsertIncentiveValue): Promise<IncentiveValue>;
+  updateIncentiveValue(id: number, incentive: Partial<InsertIncentiveValue>): Promise<IncentiveValue | undefined>;
+  deleteIncentiveValue(id: number): Promise<boolean>;
+  
   // Stats methods
   getDealStats(): Promise<{
     activeDeals: number;

@@ -187,5 +187,24 @@ export type InsertDeal = z.infer<typeof insertDealSchema>;
 export type DealTier = typeof dealTiers.$inferSelect;
 export type InsertDealTier = z.infer<typeof insertDealTierSchema>;
 
+// Incentives value table
+export const incentiveValues = pgTable("incentive_values", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  categoryId: text("category_id").notNull(),
+  subCategoryId: text("subcategory_id").notNull(),
+  option: text("option").notNull(),
+  value: doublePrecision("value").default(0),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertIncentiveValueSchema = createInsertSchema(incentiveValues)
+  .omit({ id: true, createdAt: true, updatedAt: true });
+
 export type DealScopingRequest = typeof dealScopingRequests.$inferSelect;
 export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSchema>;
+
+export type IncentiveValue = typeof incentiveValues.$inferSelect;
+export type InsertIncentiveValue = z.infer<typeof insertIncentiveValueSchema>;
