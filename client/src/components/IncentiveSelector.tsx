@@ -151,6 +151,11 @@ export function IncentiveSelector({
                             <div className="text-xs text-gray-500">
                               {info.categoryName} → {info.subCategoryName}
                             </div>
+                            {incentive.notes && (
+                              <div className="text-xs text-gray-500 mt-1 italic">
+                                {incentive.notes}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
