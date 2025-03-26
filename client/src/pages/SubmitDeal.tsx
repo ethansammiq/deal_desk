@@ -1316,50 +1316,7 @@ export default function SubmitDeal() {
                     
                     {/* Incentives Section - Separate Box - Now at the same level as Revenue Structure */}
                     <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
-                      {/* Incentives section header with collapsible control */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div 
-                          className="flex items-center cursor-pointer" 
-                          onClick={() => {
-                            const incentivesSection = document.getElementById('incentives-section');
-                            const chevron = document.getElementById('incentives-chevron');
-                            
-                            if (incentivesSection && chevron) {
-                              if (incentivesSection.classList.contains('h-0')) {
-                                // Expand
-                                incentivesSection.classList.remove('h-0');
-                                incentivesSection.classList.remove('overflow-hidden');
-                                incentivesSection.classList.add('h-auto');
-                                chevron.classList.remove('transform', 'rotate-180');
-                              } else {
-                                // Collapse
-                                incentivesSection.classList.add('h-0', 'overflow-hidden');
-                                incentivesSection.classList.remove('h-auto');
-                                chevron.classList.add('transform', 'rotate-180');
-                              }
-                            }
-                          }}
-                        >
-                          <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Incentives Structure</h3>
-                          <svg 
-                            id="incentives-chevron"
-                            xmlns="http://www.w3.org/2000/svg" 
-                            width="20" 
-                            height="20" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            className="ml-2 text-slate-500"
-                          >
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
-                        </div>
-                      </div>
-                      
-                      {/* Collapsible content section */}
+                      {/* Incentive Values section - header removed as requested */}
                       <div id="incentives-section" className="transition-all h-auto">
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
@@ -1635,9 +1592,8 @@ export default function SubmitDeal() {
                         </div>
                       </div>
 
-                      {/* Incentive Structure for Flat Commit - Header removed as requested */}
+                      {/* Incentive Value for Flat Commit - No header as requested */}
                       <div className="mt-6">
-                        
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
