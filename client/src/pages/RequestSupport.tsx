@@ -123,8 +123,19 @@ export default function RequestSupport() {
         description: data.description || `Request from ${data.email || 'unknown'}`
       };
       
-      const res = await apiRequest("/api/deal-scoping-requests", "POST", formData);
-      return res;
+      const res = await fetch("/api/deal-scoping-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`${res.status}: ${errorText || res.statusText}`);
+      }
+      
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -168,8 +179,15 @@ export default function RequestSupport() {
   useEffect(() => {
     async function fetchAgencies() {
       try {
-        const response = await apiRequest("/api/agencies", "GET");
-        setAgencies(response);
+        const response = await fetch("/api/agencies", {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch agencies");
+        }
+        const data = await response.json();
+        setAgencies(data as AgencyData[]);
       } catch (error) {
         toast({
           title: "Error Fetching Agencies",
@@ -181,8 +199,15 @@ export default function RequestSupport() {
     
     async function fetchAdvertisers() {
       try {
-        const response = await apiRequest("/api/advertisers", "GET");
-        setAdvertisers(response);
+        const response = await fetch("/api/advertisers", {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch advertisers");
+        }
+        const data = await response.json();
+        setAdvertisers(data as AdvertiserData[]);
       } catch (error) {
         toast({
           title: "Error Fetching Advertisers",
