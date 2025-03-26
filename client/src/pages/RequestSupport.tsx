@@ -222,7 +222,7 @@ export default function RequestSupport() {
   }, [toast]);
   
   return (
-    <div className="p-0">
+    <div>
       {/* About Deal Scoping Section */}
       <div className="mb-8 p-6 rounded-lg bg-[#f6f0ff]">
         <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Scoping</h3>
@@ -254,7 +254,7 @@ export default function RequestSupport() {
       </div>
 
       {/* Submit Deal Requests Section */}
-      <div className="p-6 mt-4 rounded-lg bg-white shadow-md">
+      <div className="mb-8 p-6 rounded-lg bg-white shadow-md">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
