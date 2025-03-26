@@ -250,7 +250,7 @@ export function IncentiveSelector({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Incentive Values</h3>
+      <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Incentive Structure</h3>
       
       {/* Display selected incentives as a table */}
       {selectedIncentives.length > 0 && (
