@@ -16,7 +16,9 @@ import { SmartSearch } from "@/components/SmartSearch";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   // Get the current path to determine special styling for certain pages
-  const isSupportPage = window.location.pathname === "/support";
+  const currentPath = window.location.pathname;
+  const isSupportPage = currentPath === "/support";
+  const isSubmitDealPage = currentPath === "/submit-deal";
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -26,8 +28,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 overflow-auto bg-gradient-to-b from-[#f8f5ff] to-slate-50 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs />
-          {isSupportPage ? (
-            // For the RequestSupport page, don't add the white background container
+          {isSupportPage || isSubmitDealPage ? (
+            // For the RequestSupport and SubmitDeal pages, don't add the white background container
             <div className="max-w-full">
               {children}
             </div>
