@@ -47,6 +47,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2, Info } from "lucide-react";
+import { IncentiveSelector, type SelectedIncentive } from "@/components/IncentiveSelector";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z.object({
