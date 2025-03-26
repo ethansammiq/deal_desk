@@ -15,6 +15,9 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { SmartSearch } from "@/components/SmartSearch";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
+  // Get the current path to determine special styling for certain pages
+  const isSupportPage = window.location.pathname === "/support";
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TopNavbar />
@@ -23,11 +26,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 overflow-auto bg-gradient-to-b from-[#f8f5ff] to-slate-50 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs />
-          <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+          {isSupportPage ? (
+            // For the RequestSupport page, don't add the white background container
             <div className="max-w-full">
               {children}
             </div>
-          </div>
+          ) : (
+            // For all other pages, use the standard white background container
+            <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+              <div className="max-w-full">
+                {children}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
