@@ -1086,6 +1086,7 @@ export default function SubmitDeal() {
                             <thead>
                               <tr>
                                 <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
+                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                                 {dealTiers.map((tier) => (
                                   <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                                     <div className="flex justify-between items-center">
@@ -1117,6 +1118,33 @@ export default function SubmitDeal() {
                               {/* Annual Revenue Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {(() => {
+                                    // Find previous year revenue
+                                    let previousYearRevenue = 850000; // Default to mock value
+                                    const salesChannel = form.watch("salesChannel");
+                                    const advertiserName = form.watch("advertiserName");
+                                    const agencyName = form.watch("agencyName");
+                                    
+                                    if (salesChannel === "client_direct" && advertiserName) {
+                                      const advertiser = advertisers.find(a => a.name === advertiserName);
+                                      if (advertiser && advertiser.previousYearRevenue) {
+                                        previousYearRevenue = advertiser.previousYearRevenue;
+                                      }
+                                    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                      const agency = agencies.find(a => a.name === agencyName);
+                                      if (agency && agency.previousYearRevenue) {
+                                        previousYearRevenue = agency.previousYearRevenue;
+                                      }
+                                    }
+                                    
+                                    return (
+                                      <div className="text-slate-700">
+                                        {formatCurrency(previousYearRevenue)}
+                                      </div>
+                                    );
+                                  })()}
+                                </td>
                                 {dealTiers.map((tier, index) => (
                                   <td key={`revenue-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                     <div className="relative">
@@ -1142,6 +1170,33 @@ export default function SubmitDeal() {
                               {/* Annual Gross Margin (Base) Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Gross Margin (Base)</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {(() => {
+                                    // Find previous year margin
+                                    let previousYearMargin = 35; // Default to mock value
+                                    const salesChannel = form.watch("salesChannel");
+                                    const advertiserName = form.watch("advertiserName");
+                                    const agencyName = form.watch("agencyName");
+                                    
+                                    if (salesChannel === "client_direct" && advertiserName) {
+                                      const advertiser = advertisers.find(a => a.name === advertiserName);
+                                      if (advertiser && advertiser.previousYearMargin) {
+                                        previousYearMargin = advertiser.previousYearMargin;
+                                      }
+                                    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                      const agency = agencies.find(a => a.name === agencyName);
+                                      if (agency && agency.previousYearMargin) {
+                                        previousYearMargin = agency.previousYearMargin;
+                                      }
+                                    }
+                                    
+                                    return (
+                                      <div className="text-slate-700">
+                                        {formatPercentage(previousYearMargin / 100)}
+                                      </div>
+                                    );
+                                  })()}
+                                </td>
                                 {dealTiers.map((tier, index) => (
                                   <td key={`margin-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                     <div className="relative">
@@ -1172,6 +1227,38 @@ export default function SubmitDeal() {
                               {/* Gross Profit (Base) Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  {(() => {
+                                    // Find previous year revenue and margin
+                                    let previousYearRevenue = 850000; // Default to mock value
+                                    let previousYearMargin = 35; // Default to mock value
+                                    const salesChannel = form.watch("salesChannel");
+                                    const advertiserName = form.watch("advertiserName");
+                                    const agencyName = form.watch("agencyName");
+                                    
+                                    if (salesChannel === "client_direct" && advertiserName) {
+                                      const advertiser = advertisers.find(a => a.name === advertiserName);
+                                      if (advertiser) {
+                                        previousYearRevenue = advertiser.previousYearRevenue || previousYearRevenue;
+                                        previousYearMargin = advertiser.previousYearMargin || previousYearMargin;
+                                      }
+                                    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                      const agency = agencies.find(a => a.name === agencyName);
+                                      if (agency) {
+                                        previousYearRevenue = agency.previousYearRevenue || previousYearRevenue;
+                                        previousYearMargin = agency.previousYearMargin || previousYearMargin;
+                                      }
+                                    }
+                                    
+                                    const previousYearProfit = previousYearRevenue * (previousYearMargin / 100);
+                                    
+                                    return (
+                                      <div className="text-slate-700">
+                                        {formatCurrency(previousYearProfit)}
+                                      </div>
+                                    );
+                                  })()}
+                                </td>
                                 {dealTiers.map((tier) => (
                                   <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
                                     {/* Not editable, calculated field */}
