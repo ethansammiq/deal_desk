@@ -252,53 +252,66 @@ export function IncentiveSelector({
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Incentive Values</h3>
       
-      {/* Display selected incentives */}
+      {/* Display selected incentives as a table */}
       {selectedIncentives.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-500">Selected Incentives</h4>
-          <div className="space-y-2">
-            {selectedIncentives.map((incentive, index) => {
-              const info = getIncentiveInfo(incentive);
-              
-              return (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-md bg-slate-50">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 p-1.5 rounded-md text-primary">
-                      {info.icon}
-                    </div>
-                    <div>
-                      <div className="font-medium">{incentive.option}</div>
-                      <div className="text-sm text-gray-500">
-                        {info.categoryName} <ChevronRight className="inline h-3 w-3" /> {info.subCategoryName}
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {incentive.tierIds.map(tierId => (
-                          <Badge key={tierId} variant="secondary" className="text-xs">
-                            Tier {tierId}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge variant="outline" className="font-medium">
-                      {incentive.tierIds.length > 0 && incentive.tierValues && incentive.tierValues[incentive.tierIds[0]] ?
-                        (incentive.tierValues[incentive.tierIds[0]] > 999 ? 
-                          `$${(incentive.tierValues[incentive.tierIds[0]]/1000).toFixed(1)}k` : 
-                          `$${incentive.tierValues[incentive.tierIds[0]]}`) : 
-                        '—'}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveIncentive(index)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="overflow-x-auto border rounded-md">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left p-2 bg-slate-100 border-b border-slate-200">Incentive</th>
+                  <th className="text-center p-2 bg-slate-100 border-b border-slate-200">Last Year</th>
+                  {availableTiers.map(tierId => (
+                    <th key={tierId} className="text-center p-2 bg-slate-100 border-b border-slate-200">
+                      Tier {tierId}
+                    </th>
+                  ))}
+                  <th className="text-center p-2 bg-slate-100 border-b border-slate-200 w-12">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedIncentives.map((incentive, index) => {
+                  const info = getIncentiveInfo(incentive);
+                  
+                  return (
+                    <tr key={index} className="border-b border-slate-200 last:border-b-0">
+                      <td className="p-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="bg-primary/10 p-1 rounded-md text-primary hidden md:block">
+                            {info.icon}
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{incentive.option}</div>
+                            <div className="text-xs text-gray-500">
+                              {info.categoryName} → {info.subCategoryName}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-2 text-center text-sm">—</td>
+                      {availableTiers.map(tierId => (
+                        <td key={tierId} className="p-2 text-center text-sm font-medium">
+                          {incentive.tierValues && incentive.tierValues[tierId] ? 
+                            `$${incentive.tierValues[tierId].toLocaleString()}` : 
+                            '—'}
+                        </td>
+                      ))}
+                      <td className="p-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveIncentive(index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
