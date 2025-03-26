@@ -1054,14 +1054,14 @@ export default function SubmitDeal() {
                               ...dealTiers,
                               {
                                 tierNumber: dealTiers.length + 1,
-                                annualRevenue: 0,
-                                annualGrossMargin: 0,
-                                annualGrossMarginPercent: 0,
-                                incentivePercentage: 0,
+                                annualRevenue: undefined as number | undefined,
+                                annualGrossMargin: undefined as number | undefined,
+                                annualGrossMarginPercent: undefined as number | undefined,
+                                incentivePercentage: undefined as number | undefined,
                                 incentiveNotes: "",
                                 incentiveType: "rebate" as const,
-                                incentiveThreshold: 0,
-                                incentiveAmount: 0
+                                incentiveThreshold: undefined as number | undefined,
+                                incentiveAmount: undefined as number | undefined
                               }
                             ]);
                           } else {
