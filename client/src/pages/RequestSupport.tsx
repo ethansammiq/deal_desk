@@ -224,7 +224,7 @@ export default function RequestSupport() {
   return (
     <div>
       {/* About Deal Scoping Section */}
-      <div className="mb-8 pb-8 bg-gradient-to-b from-purple-50 to-transparent rounded-lg p-8">
+      <div className="mb-8 bg-gradient-to-b from-purple-50 to-transparent rounded-lg p-8">
         <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Scoping</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-5 border-0">
@@ -253,8 +253,8 @@ export default function RequestSupport() {
         </div>
       </div>
 
-      {/* Submit Deal Requests Section */}
-      <div className="mb-8">
+      {/* Deal Scoping Request Section */}
+      <div className="mb-8 bg-white rounded-lg shadow-md p-8">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Scoping Request</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
