@@ -1085,8 +1085,7 @@ export default function SubmitDeal() {
                           <table className="w-full border-collapse">
                             <thead>
                               <tr>
-                                <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
                                 {dealTiers.map((tier) => (
                                   <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                                     <div className="flex justify-between items-center">
@@ -1118,12 +1117,6 @@ export default function SubmitDeal() {
                               {/* Annual Revenue Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - simplified UI */}
-                                  <div className="text-slate-700">
-                                    {formatCurrency(850000)}
-                                  </div>
-                                </td>
                                 {dealTiers.map((tier, index) => (
                                   <td key={`revenue-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                     <div className="relative">
