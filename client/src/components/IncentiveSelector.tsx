@@ -124,8 +124,8 @@ export function IncentiveSelector({
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-12">Actions</th>
                   {availableTiers.map(tierId => (
                     <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                       <div className="flex justify-between items-center">
@@ -133,7 +133,6 @@ export function IncentiveSelector({
                       </div>
                     </th>
                   ))}
-                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-12">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,14 +154,6 @@ export function IncentiveSelector({
                           </div>
                         </div>
                       </td>
-                      <td className="p-3 text-center text-sm">—</td>
-                      {availableTiers.map(tierId => (
-                        <td key={tierId} className="p-3 text-center text-sm font-medium">
-                          {incentive.tierValues && incentive.tierValues[tierId] ? 
-                            `$${incentive.tierValues[tierId].toLocaleString()}` : 
-                            '—'}
-                        </td>
-                      ))}
                       <td className="p-3 text-center">
                         <Button
                           variant="ghost"
@@ -173,6 +164,13 @@ export function IncentiveSelector({
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </td>
+                      {availableTiers.map(tierId => (
+                        <td key={tierId} className="p-3 text-center text-sm font-medium">
+                          {incentive.tierValues && incentive.tierValues[tierId] ? 
+                            `$${incentive.tierValues[tierId].toLocaleString()}` : 
+                            '—'}
+                        </td>
+                      ))}
                     </tr>
                   );
                 })}
@@ -278,8 +276,7 @@ export function IncentiveSelector({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr>
-                        <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-                        <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                        <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/4"></th>
                         {availableTiers.map(tierId => (
                           <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                             <div className="flex justify-between items-center">
@@ -294,9 +291,6 @@ export function IncentiveSelector({
                       <tr>
                         <td className="font-medium p-3 border border-slate-200 bg-slate-50">
                           Incentive Value (USD)
-                        </td>
-                        <td className="p-3 border border-slate-200 text-center">
-                          <div className="text-slate-700">-</div>
                         </td>
                         {availableTiers.map(tierId => (
                           <td key={tierId} className="p-3 border border-slate-200">
