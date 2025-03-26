@@ -48,7 +48,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2, Info } from "lucide-react";
-import { IncentiveSelector, type SelectedIncentive, incentiveCategories } from "@/components/IncentiveSelector";
+import { IncentiveSelector } from "@/components/IncentiveSelector";
+import { type SelectedIncentive, incentiveCategories } from "@/lib/incentive-data";
 import TierSpecificIncentives, { type TierIncentive } from "@/components/TierSpecificIncentives";
 
 // Simplified deal schema with only essential fields
