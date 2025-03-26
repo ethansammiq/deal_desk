@@ -173,6 +173,11 @@ export default function SubmitDeal() {
     setSelectedIncentives(incentives);
   };
   
+  // Handle tier-specific incentive changes
+  const handleTierIncentiveChange = (incentives: TierIncentive[]) => {
+    setTierIncentives(incentives);
+  };
+  
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);

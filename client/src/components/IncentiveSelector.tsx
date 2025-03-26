@@ -15,12 +15,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ChevronRight, DollarSign, BarChart, BriefcaseBusiness, Lightbulb, LayoutGrid, Megaphone } from "lucide-react";
@@ -49,6 +43,16 @@ export interface SelectedIncentive {
   value: number;
   notes: string;
   tierIds: number[]; // Array of tier IDs this incentive applies to
+}
+
+// Define temporary incentive type for state management
+interface TempIncentive {
+  categoryId?: string;
+  subCategoryId?: string;
+  option?: string;
+  value?: number;
+  notes?: string;
+  tierIds?: number[];
 }
 
 export const incentiveCategories: IncentiveCategory[] = [
@@ -180,14 +184,8 @@ export function IncentiveSelector({
   const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null);
   
   // Temporary state for creating a new incentive
-  const [tempCategory, setTempCategory] = useState<string | null>(null);
-  const [tempSubCategory, setTempSubCategory] = useState<string | null>(null);
-  const [tempOption, setTempOption] = useState<string | null>(null);
-  const [tempNotes, setTempNotes] = useState<string>('');
+  const [tempIncentive, setTempIncentive] = useState<TempIncentive>({});
   
-  // Track tier-specific values
-  const [tierValues, setTierValues] = useState<TierIncentiveValue[]>([]);
-
   // Find currently selected category and subcategory
   const currentCategory = incentiveCategories.find(c => c.id === activeCategory);
   const currentSubCategory = currentCategory?.subCategories.find(s => s.id === activeSubCategory);
@@ -197,23 +195,25 @@ export function IncentiveSelector({
 
   // Handle adding a new incentive
   const handleAddIncentive = () => {
-    if (tempCategory && tempSubCategory && tempOption && tierValues.length > 0) {
+    if (tempIncentive.categoryId && 
+        tempIncentive.subCategoryId && 
+        tempIncentive.option && 
+        tempIncentive.tierIds && 
+        tempIncentive.tierIds.length > 0) {
+      
       const newIncentive: SelectedIncentive = {
-        categoryId: tempCategory,
-        subCategoryId: tempSubCategory,
-        option: tempOption,
-        notes: tempNotes || '',
-        tierValues: tierValues
+        categoryId: tempIncentive.categoryId,
+        subCategoryId: tempIncentive.subCategoryId,
+        option: tempIncentive.option,
+        value: tempIncentive.value || 0,
+        notes: tempIncentive.notes || '',
+        tierIds: tempIncentive.tierIds
       };
       
       onChange([...selectedIncentives, newIncentive]);
       
       // Reset temporary state
-      setTempCategory(null);
-      setTempSubCategory(null);
-      setTempOption(null);
-      setTempNotes('');
-      setTierValues([]);
+      setTempIncentive({});
       setActiveCategory(null);
       setActiveSubCategory(null);
     }
@@ -476,40 +476,6 @@ export function IncentiveSelector({
           </Button>
         </CardFooter>
       </Card>
-      
-      {/* Incentives Categories Reference */}
-      <Accordion type="single" collapsible className="mt-4">
-        <AccordionItem value="categories-info">
-          <AccordionTrigger className="text-sm">View All Incentive Categories</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 p-2">
-              {incentiveCategories.map(category => (
-                <div key={category.id} className="border-b pb-3 last:border-0">
-                  <div className="flex items-center mb-2">
-                    <div className="bg-primary/10 p-1.5 rounded-md text-primary mr-2">
-                      {category.icon}
-                    </div>
-                    <h4 className="font-medium">{category.name}</h4>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{category.description}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {category.subCategories.map(subCategory => (
-                      <div key={subCategory.id} className="text-sm">
-                        <p className="font-medium text-gray-800">{subCategory.name}</p>
-                        <ul className="list-disc list-inside pl-2 text-gray-600 text-xs">
-                          {subCategory.options.map(option => (
-                            <li key={option}>{option}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </div>
   );
 }
