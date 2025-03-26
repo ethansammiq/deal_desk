@@ -1526,10 +1526,6 @@ export default function SubmitDeal() {
                         
                         {/* Hierarchical Incentive Selector */}
                         <div className="mt-6">
-                          <h3 className="text-lg font-medium mb-2">Deal Incentives</h3>
-                          <p className="text-sm text-slate-500 mb-4">
-                            Select and configure incentives across tiers for this deal.
-                          </p>
                           <IncentiveSelector 
                             selectedIncentives={selectedIncentives}
                             dealTiers={dealTiers}
@@ -1639,11 +1635,8 @@ export default function SubmitDeal() {
                         </div>
                       </div>
 
-                      {/* Incentive Structure for Flat Commit */}
+                      {/* Incentive Structure for Flat Commit - Header removed as requested */}
                       <div className="mt-6">
-                        <div className="mb-4">
-                          <h3 className="text-lg font-medium">Incentives Structure</h3>
-                        </div>
                         
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
@@ -2134,8 +2127,8 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                   
-                  {/* Deal Incentives Information */}
-                  {selectedIncentives.length > 0 && (
+                  {/* Section removed as requested */}
+                  {false && selectedIncentives.length > 0 && (
                     <div className="border border-slate-200 rounded-lg overflow-hidden mt-6">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
                         <h3 className="text-sm font-medium text-slate-700">Additional Incentives</h3>
