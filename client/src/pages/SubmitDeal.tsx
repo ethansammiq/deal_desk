@@ -1263,7 +1263,7 @@ export default function SubmitDeal() {
                                   <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
                                     {/* Not editable, calculated field */}
                                     <div className="text-slate-700">
-                                      {formatCurrency(tier.annualRevenue * ((tier.annualGrossMarginPercent || 0) / 100))}
+                                      {formatCurrency((tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100))}
                                     </div>
                                   </td>
                                 ))}
@@ -1296,7 +1296,7 @@ export default function SubmitDeal() {
                                   
                                   // Calculate growth rate
                                   let growthRate = 0;
-                                  if (previousYearRevenue > 0) {
+                                  if (previousYearRevenue > 0 && tier.annualRevenue) {
                                     growthRate = (tier.annualRevenue / previousYearRevenue) - 1;
                                   }
                                   
@@ -1344,7 +1344,7 @@ export default function SubmitDeal() {
                                   
                                   // Calculate previous year profit and current profit
                                   const previousYearProfit = previousYearRevenue * (previousYearMargin / 100);
-                                  const currentProfit = tier.annualRevenue * ((tier.annualGrossMarginPercent || 0) / 100);
+                                  const currentProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
                                   
                                   // Calculate growth rate
                                   let profitGrowthRate = 0;

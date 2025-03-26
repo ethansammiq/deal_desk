@@ -136,11 +136,11 @@ export interface DealFinancialSummary {
 
 export function calculateDealFinancialSummary(
   tiers: Array<{
-    annualRevenue: number,
-    annualGrossMargin: number,
-    annualGrossMarginPercent: number,
-    incentivePercentage: number,
-    incentiveAmount: number
+    annualRevenue?: number,
+    annualGrossMargin?: number,
+    annualGrossMarginPercent?: number,
+    incentivePercentage?: number,
+    incentiveAmount?: number
   }>,
   contractTerm: number,
   previousYearRevenue: number = 0
