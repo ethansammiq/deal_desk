@@ -51,28 +51,23 @@ const dealScopingSchema = z.object({
   if (data.salesChannel === "client_direct" && !data.advertiserName) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Advertiser name is required for client direct sales channel",
-      path: ["advertiserName"]
+      message: "Advertiser name is required for client direct sales",
+      path: ["advertiserName"],
     });
-    return false;
   }
   
   // If sales channel is holding_company or independent_agency, agencyName is required
   if ((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && !data.agencyName) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Agency name is required for this sales channel",
-      path: ["agencyName"]
+      message: "Agency name is required for agency sales",
+      path: ["agencyName"],
     });
-    return false;
   }
-  
-  return true;
 });
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
 
-// Type definitions for advertisers and agencies
 interface AdvertiserData {
   id: number;
   name: string;
@@ -128,168 +123,93 @@ export default function RequestSupport() {
         description: data.description || `Request from ${data.email || 'unknown'}`
       };
       
-      console.log("Processed form data:", formData);
-      
-      try {
-        const response = await apiRequest("POST", "/api/deal-scoping-requests", formData);
-        console.log("API response status:", response.status);
-        const responseData = await response.json();
-        console.log("API response data:", responseData);
-        return responseData;
-      } catch (error) {
-        console.error("Error in API request:", error);
-        throw error;
-      }
+      const res = await apiRequest("/api/deal-scoping-requests", "POST", formData);
+      return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
       toast({
-        title: "Success",
-        description: "Deal scoping request submitted successfully! A team member will contact you to set up a discovery call.",
-        variant: "default",
+        title: "Request Submitted",
+        description: "Your deal scoping request has been submitted successfully. The partnership team will contact you shortly.",
       });
+      
+      // Reset form and return to dashboard
       form.reset();
+      navigate("/dashboard");
+      
+      // Clear cached data
+      queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
     },
-    onError: (error: any) => {
-      console.error("Error submitting deal scoping request:", error);
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit deal scoping request",
+        title: "Error Submitting Request",
+        description: "There was an error submitting your request. Please try again.",
         variant: "destructive",
       });
     }
   });
   
   async function onSubmit(data: DealScopingFormValues) {
-    console.log("Form submitted with data:", data);
-    // Check form validation errors
-    console.log("Form validation errors:", form.formState.errors);
-    
-    // We'll skip the form validity check since it's causing issues with optional fields
-    // and we already have validation through Zod
-    
-    // Try a direct fetch instead of using React Query
-    try {
-      console.log("Trying direct fetch instead of React Query");
-      
-      // Format the data
-      const formData = {
-        ...data,
-        requestTitle: data.requestTitle || "Deal Scoping Request",
-        description: data.description || `Request from ${data.email || 'unknown'}`
-      };
-      
-      // Send direct fetch request
-      const response = await fetch("/api/deal-scoping-requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Direct fetch success:", result);
-        
-        toast({
-          title: "Success",
-          description: "Deal scoping request submitted successfully! A team member will contact you to set up a discovery call.",
-          variant: "default",
-        });
-        
-        form.reset();
-      } else {
-        console.error("Direct fetch failed:", response.status, response.statusText);
-        try {
-          const errorData = await response.json();
-          console.error("Error details:", errorData);
-        } catch (e) {
-          console.error("Could not parse error response");
-        }
-        
-        toast({
-          title: "Error",
-          description: `Failed to submit deal scoping request: ${response.statusText}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error in direct fetch:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit deal scoping request. Please try again.",
-        variant: "destructive",
-      });
-    }
+    createDealScopingRequest.mutate(data);
   }
   
   function goToNextTab() {
-    if (activeTab === "sales-channel") {
-      setActiveTab("growth-opportunity");
-    }
+    setActiveTab("growth-opportunity");
   }
   
   function goToPrevTab() {
-    if (activeTab === "growth-opportunity") {
-      setActiveTab("sales-channel");
-    }
-  }
-
-  function goToDealSubmission() {
-    navigate("/submit-deal");
+    setActiveTab("sales-channel");
   }
   
-  // Fetch advertisers and agencies on component mount
+  function goToDealSubmission() {
+    navigate("/deals/new");
+  }
+  
+  // Fetch agencies and advertisers on component mount
   useEffect(() => {
-    const fetchAgencies = async () => {
+    async function fetchAgencies() {
       try {
-        const response = await apiRequest("GET", "/api/agencies");
-        const data = await response.json();
-        setAgencies(data);
+        const response = await apiRequest("/api/agencies", "GET");
+        setAgencies(response);
       } catch (error) {
-        console.error("Failed to fetch agencies:", error);
         toast({
-          title: "Error",
-          description: "Failed to load agencies data",
+          title: "Error Fetching Agencies",
+          description: "Could not load agency data. Please refresh the page.",
           variant: "destructive",
         });
       }
-    };
-
-    const fetchAdvertisers = async () => {
+    }
+    
+    async function fetchAdvertisers() {
       try {
-        const response = await apiRequest("GET", "/api/advertisers");
-        const data = await response.json();
-        setAdvertisers(data);
+        const response = await apiRequest("/api/advertisers", "GET");
+        setAdvertisers(response);
       } catch (error) {
-        console.error("Failed to fetch advertisers:", error);
         toast({
-          title: "Error",
-          description: "Failed to load advertisers data",
+          title: "Error Fetching Advertisers",
+          description: "Could not load advertiser data. Please refresh the page.",
           variant: "destructive",
         });
       }
-    };
+    }
 
     fetchAgencies();
     fetchAdvertisers();
   }, [toast]);
   
   return (
-    <div className="p-6">
-      {/* About Deal Scoping Section - Separate from request form */}
-      <div className="mb-6">
-        <h3 className="text-xl font-medium text-slate-800 mb-3">About Deal Scoping</h3>
+    <div className="p-0">
+      {/* About Deal Scoping Section */}
+      <div className="mb-8 p-6 rounded-lg bg-[#f6f0ff]">
+        <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Scoping</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow p-5 border border-slate-100">
+          <div className="bg-white rounded-lg shadow-md p-5 border-0">
             <h4 className="font-medium text-slate-900 mb-2">What is Deal Scoping?</h4>
             <p className="text-sm text-slate-500">
               Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities to provide better support.
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow p-5 border border-slate-100">
+          <div className="bg-white rounded-lg shadow-md p-5 border-0">
             <h4 className="font-medium text-slate-900 mb-2">What Happens Next?</h4>
             <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
               <li>Our partnership team reviews your request</li>
@@ -299,7 +219,7 @@ export default function RequestSupport() {
             </ol>
           </div>
           
-          <div className="bg-blue-50 rounded-lg shadow p-5 border border-blue-100">
+          <div className="bg-blue-50 rounded-lg shadow-md p-5 border-0">
             <h4 className="font-medium text-blue-800 mb-2">Need Help?</h4>
             <p className="text-sm text-blue-700">
               For assistance with deal scoping, contact the partnership team at partnerships@example.com or check out our Help & Resources page.
@@ -309,7 +229,7 @@ export default function RequestSupport() {
       </div>
 
       {/* Submit Deal Requests Section */}
-      <div className="mt-8 mb-6">
+      <div className="p-6 mt-4 rounded-lg bg-white shadow-md">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
@@ -321,12 +241,9 @@ export default function RequestSupport() {
             Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
           </span>
         </p>
-      </div>
       
-      <div className="grid grid-cols-1 gap-6">
-        {/* Deal Scoping Form */}
-        <div>
-          <Card>
+        <div className="mt-6">
+          <Card className="border border-slate-200">
             <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
               <h3 className="text-lg font-medium leading-6 text-slate-900">Deal Scoping Request Form</h3>
               <p className="mt-1 text-sm text-slate-500">
