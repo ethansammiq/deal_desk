@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Card,
   CardContent,
@@ -192,6 +192,16 @@ export function IncentiveSelector({
   
   // Available tiers from props
   const availableTiers = dealTiers.map(tier => tier.tierNumber);
+  
+  // Automatically select all tiers when an option is selected
+  useEffect(() => {
+    if (tempIncentive.option && availableTiers.length > 0) {
+      setTempIncentive(prev => ({
+        ...prev,
+        tierIds: [...availableTiers]
+      }));
+    }
+  }, [tempIncentive.option, availableTiers]);
 
   // Handle adding a new incentive
   const handleAddIncentive = () => {
@@ -457,19 +467,7 @@ export function IncentiveSelector({
               
               {/* Apply to Tiers section - automatically adds all tiers */}
               <div className="hidden">
-                {/* Hidden but still functional - automatically selects all available tiers */}
-                {(() => {
-                  // Set all available tiers when component loads
-                  React.useEffect(() => {
-                    if (availableTiers.length > 0 && (!tempIncentive.tierIds || tempIncentive.tierIds.length === 0)) {
-                      setTempIncentive({
-                        ...tempIncentive,
-                        tierIds: [...availableTiers]
-                      });
-                    }
-                  }, [availableTiers, tempIncentive.categoryId, tempIncentive.subCategoryId, tempIncentive.option]);
-                  return null;
-                })()}
+                {/* Hidden but still functional - auto-selection happens in useEffect below */}
               </div>
             </div>
           )}
