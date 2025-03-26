@@ -172,7 +172,7 @@ export default function RequestSupport() {
   }
   
   function goToDealSubmission() {
-    navigate("/deals/new");
+    navigate("/submit-deal");
   }
   
   // Fetch agencies and advertisers on component mount
