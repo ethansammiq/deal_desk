@@ -2121,6 +2121,59 @@ export default function SubmitDeal() {
                       </dl>
                     </div>
                   </div>
+                  
+                  {/* Incentives Information */}
+                  {selectedIncentives.length > 0 && (
+                    <div className="border border-slate-200 rounded-lg overflow-hidden mt-6">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                        <h3 className="text-sm font-medium text-slate-700">Additional Incentives</h3>
+                      </div>
+                      <div className="p-4">
+                        {/* Group incentives by tier */}
+                        {dealTiers.map((tier) => {
+                          const tierIncentives = selectedIncentives.filter(
+                            incentive => incentive.tierIds.includes(tier.tierNumber)
+                          );
+                          
+                          if (tierIncentives.length === 0) return null;
+                          
+                          return (
+                            <div key={`tier-${tier.tierNumber}`} className="mb-4 last:mb-0">
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">
+                                Tier {tier.tierNumber} Incentives
+                              </h4>
+                              <div className="space-y-2">
+                                {tierIncentives.map((incentive, idx) => {
+                                  // Find category and subcategory info
+                                  const category = incentiveCategories.find(c => c.id === incentive.categoryId);
+                                  const subCategory = category?.subCategories.find(s => s.id === incentive.subCategoryId);
+                                  
+                                  return (
+                                    <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 rounded-md">
+                                      <div>
+                                        <div className="text-sm font-medium">{incentive.option}</div>
+                                        <div className="text-xs text-slate-500">
+                                          {category?.name} &gt; {subCategory?.name}
+                                        </div>
+                                        {incentive.notes && (
+                                          <div className="text-xs italic text-slate-500 mt-1">
+                                            Note: {incentive.notes}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="text-sm font-medium">
+                                        {formatCurrency(incentive.value)}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mt-8 flex justify-between">
