@@ -51,7 +51,7 @@ export interface SelectedIncentive {
   tierIds: number[]; // Array of tier IDs this incentive applies to
 }
 
-const incentiveCategories: IncentiveCategory[] = [
+export const incentiveCategories: IncentiveCategory[] = [
   {
     id: "financial",
     name: "Financial",

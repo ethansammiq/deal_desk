@@ -47,7 +47,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2, Info } from "lucide-react";
-import { IncentiveSelector, type SelectedIncentive } from "@/components/IncentiveSelector";
+import { IncentiveSelector, type SelectedIncentive, incentiveCategories } from "@/components/IncentiveSelector";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z.object({
@@ -2145,8 +2145,8 @@ export default function SubmitDeal() {
                               <div className="space-y-2">
                                 {tierIncentives.map((incentive, idx) => {
                                   // Find category and subcategory info
-                                  const category = incentiveCategories.find(c => c.id === incentive.categoryId);
-                                  const subCategory = category?.subCategories.find(s => s.id === incentive.subCategoryId);
+                                  const category = incentiveCategories.find((c: { id: string }) => c.id === incentive.categoryId);
+                                  const subCategory = category?.subCategories.find((s: { id: string }) => s.id === incentive.subCategoryId);
                                   
                                   return (
                                     <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 rounded-md">
