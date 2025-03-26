@@ -256,18 +256,18 @@ export function IncentiveSelector({
       {selectedIncentives.length > 0 && (
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-500">Selected Incentives</h4>
-          <div className="overflow-x-auto border rounded-md">
+          <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left p-2 bg-slate-100 border-b border-slate-200">Incentive</th>
-                  <th className="text-center p-2 bg-slate-100 border-b border-slate-200">Last Year</th>
+                  <th className="text-left p-3 bg-slate-100 border border-slate-200">Incentive</th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                   {availableTiers.map(tierId => (
-                    <th key={tierId} className="text-center p-2 bg-slate-100 border-b border-slate-200">
+                    <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                       Tier {tierId}
                     </th>
                   ))}
-                  <th className="text-center p-2 bg-slate-100 border-b border-slate-200 w-12">Actions</th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-12">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -275,8 +275,8 @@ export function IncentiveSelector({
                   const info = getIncentiveInfo(incentive);
                   
                   return (
-                    <tr key={index} className="border-b border-slate-200 last:border-b-0">
-                      <td className="p-2">
+                    <tr key={index} className="border border-slate-200">
+                      <td className="p-3">
                         <div className="flex items-center space-x-2">
                           <div className="bg-primary/10 p-1 rounded-md text-primary hidden md:block">
                             {info.icon}
@@ -289,15 +289,15 @@ export function IncentiveSelector({
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 text-center text-sm">—</td>
+                      <td className="p-3 text-center text-sm">—</td>
                       {availableTiers.map(tierId => (
-                        <td key={tierId} className="p-2 text-center text-sm font-medium">
+                        <td key={tierId} className="p-3 text-center text-sm font-medium">
                           {incentive.tierValues && incentive.tierValues[tierId] ? 
                             `$${incentive.tierValues[tierId].toLocaleString()}` : 
                             '—'}
                         </td>
                       ))}
-                      <td className="p-2 text-center">
+                      <td className="p-3 text-center">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -412,10 +412,10 @@ export function IncentiveSelector({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr>
-                        <th className="text-left p-2 bg-slate-100 border border-slate-200">Field</th>
-                        <th className="text-center p-2 bg-slate-100 border border-slate-200">Last Year</th>
+                        <th className="text-left p-3 bg-slate-100 border border-slate-200">Field</th>
+                        <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                         {availableTiers.map(tierId => (
-                          <th key={tierId} className="text-center p-2 bg-slate-100 border border-slate-200">
+                          <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                             Tier {tierId}
                           </th>
                         ))}
@@ -424,14 +424,14 @@ export function IncentiveSelector({
                     <tbody>
                       {/* Incentive Value Row */}
                       <tr>
-                        <td className="font-medium p-2 border border-slate-200 bg-slate-50">
+                        <td className="font-medium p-3 border border-slate-200 bg-slate-50">
                           Incentive Value (USD)
                         </td>
-                        <td className="p-2 border border-slate-200 text-center">
+                        <td className="p-3 border border-slate-200 text-center">
                           <div className="text-slate-700">-</div>
                         </td>
                         {availableTiers.map(tierId => (
-                          <td key={tierId} className="p-2 border border-slate-200">
+                          <td key={tierId} className="p-3 border border-slate-200">
                             <div className="relative">
                               <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                               <Input
