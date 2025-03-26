@@ -178,7 +178,15 @@ export function IncentiveSelector({
 }) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null);
-  const [tempIncentive, setTempIncentive] = useState<Partial<SelectedIncentive>>({});
+  
+  // Temporary state for creating a new incentive
+  const [tempCategory, setTempCategory] = useState<string | null>(null);
+  const [tempSubCategory, setTempSubCategory] = useState<string | null>(null);
+  const [tempOption, setTempOption] = useState<string | null>(null);
+  const [tempNotes, setTempNotes] = useState<string>('');
+  
+  // Track tier-specific values
+  const [tierValues, setTierValues] = useState<TierIncentiveValue[]>([]);
 
   // Find currently selected category and subcategory
   const currentCategory = incentiveCategories.find(c => c.id === activeCategory);
@@ -189,20 +197,23 @@ export function IncentiveSelector({
 
   // Handle adding a new incentive
   const handleAddIncentive = () => {
-    if (tempIncentive.categoryId && tempIncentive.subCategoryId && tempIncentive.option && tempIncentive.tierIds && tempIncentive.tierIds.length > 0) {
+    if (tempCategory && tempSubCategory && tempOption && tierValues.length > 0) {
       const newIncentive: SelectedIncentive = {
-        categoryId: tempIncentive.categoryId,
-        subCategoryId: tempIncentive.subCategoryId,
-        option: tempIncentive.option,
-        value: tempIncentive.value || 0,
-        notes: tempIncentive.notes || '',
-        tierIds: tempIncentive.tierIds || []
+        categoryId: tempCategory,
+        subCategoryId: tempSubCategory,
+        option: tempOption,
+        notes: tempNotes || '',
+        tierValues: tierValues
       };
       
       onChange([...selectedIncentives, newIncentive]);
       
       // Reset temporary state
-      setTempIncentive({});
+      setTempCategory(null);
+      setTempSubCategory(null);
+      setTempOption(null);
+      setTempNotes('');
+      setTierValues([]);
       setActiveCategory(null);
       setActiveSubCategory(null);
     }

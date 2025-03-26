@@ -48,6 +48,7 @@ import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/com
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2, Info } from "lucide-react";
 import { IncentiveSelector, type SelectedIncentive, incentiveCategories } from "@/components/IncentiveSelector";
+import TierSpecificIncentives, { type TierIncentive } from "@/components/TierSpecificIncentives";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z.object({
@@ -253,6 +254,9 @@ export default function SubmitDeal() {
   
   // State for selected incentives from the hierarchical selector
   const [selectedIncentives, setSelectedIncentives] = useState<SelectedIncentive[]>([]);
+  
+  // State for tier-specific incentives (volume discount, rebates, etc.)
+  const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>([]);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
