@@ -594,7 +594,9 @@ export default function SubmitDeal() {
       // Only include dealTiers if the structure is tiered
       ...(dealStructureType === "tiered" ? { dealTiers } : {}),
       // Include selected incentives
-      selectedIncentives
+      selectedIncentives,
+      // Include tier-specific incentives
+      tierIncentives
     };
     
     createDeal.mutate(dealData);
@@ -1523,6 +1525,18 @@ export default function SubmitDeal() {
                         
                         {/* Hierarchical Incentive Selector */}
                         <div className="mt-6">
+                          <h3 className="text-lg font-medium mb-2">Tier-Specific Volume Discounts</h3>
+                          <p className="text-sm text-slate-500 mb-4">
+                            Set specific discount percentages for each tier.
+                          </p>
+                          <TierSpecificIncentives
+                            dealTiers={dealTiers}
+                            incentives={tierIncentives}
+                            onChange={handleTierIncentiveChange}
+                          />
+                        </div>
+
+                        <div className="mt-6">
                           <h3 className="text-lg font-medium mb-2">Additional Incentives</h3>
                           <p className="text-sm text-slate-500 mb-4">
                             Select additional incentives to include in this deal across various categories.
@@ -2131,7 +2145,47 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                   
-                  {/* Incentives Information */}
+                  {/* Tier-Specific Incentives Information */}
+                  {tierIncentives.length > 0 && (
+                    <div className="border border-slate-200 rounded-lg overflow-hidden mt-6">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                        <h3 className="text-sm font-medium text-slate-700">Tier-Specific Volume Discounts</h3>
+                      </div>
+                      <div className="bg-white p-4">
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr>
+                                <th className="text-left p-2 text-xs font-medium text-slate-500 border-b">Tier</th>
+                                <th className="text-left p-2 text-xs font-medium text-slate-500 border-b">Type</th>
+                                <th className="text-right p-2 text-xs font-medium text-slate-500 border-b">Percentage</th>
+                                <th className="text-right p-2 text-xs font-medium text-slate-500 border-b">Value</th>
+                                <th className="text-left p-2 text-xs font-medium text-slate-500 border-b">Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tierIncentives.map((incentive, index) => {
+                                const tier = dealTiers.find(t => t.tierNumber === incentive.tierId);
+                                const value = tier ? tier.annualRevenue * (incentive.percentage / 100) : 0;
+                                
+                                return (
+                                  <tr key={index} className={index % 2 === 0 ? "bg-slate-50" : ""}>
+                                    <td className="p-2 text-sm">Tier {incentive.tierId}</td>
+                                    <td className="p-2 text-sm">{incentive.type.replace("_", " ")}</td>
+                                    <td className="p-2 text-sm text-right">{incentive.percentage}%</td>
+                                    <td className="p-2 text-sm text-right">{formatCurrency(value)}</td>
+                                    <td className="p-2 text-sm">{incentive.notes || "—"}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Incentives Information */}
                   {selectedIncentives.length > 0 && (
                     <div className="border border-slate-200 rounded-lg overflow-hidden mt-6">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
