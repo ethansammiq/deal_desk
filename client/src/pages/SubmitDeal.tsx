@@ -1520,6 +1520,7 @@ export default function SubmitDeal() {
                           </p>
                           <IncentiveSelector 
                             selectedIncentives={selectedIncentives}
+                            dealTiers={dealTiers}
                             onChange={handleIncentiveChange}
                           />
                         </div>
