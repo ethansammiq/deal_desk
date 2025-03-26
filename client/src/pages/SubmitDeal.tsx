@@ -41,6 +41,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -2170,10 +2171,17 @@ export default function SubmitDeal() {
                                 
                                 return (
                                   <tr key={index} className={index % 2 === 0 ? "bg-slate-50" : ""}>
-                                    <td className="p-2 text-sm">Tier {incentive.tierId}</td>
-                                    <td className="p-2 text-sm">{incentive.type.replace("_", " ")}</td>
-                                    <td className="p-2 text-sm text-right">{incentive.percentage}%</td>
-                                    <td className="p-2 text-sm text-right">{formatCurrency(value)}</td>
+                                    <td className="p-2 text-sm">
+                                      <Badge 
+                                        variant="outline" 
+                                        className="font-medium"
+                                      >
+                                        Tier {incentive.tierId}
+                                      </Badge>
+                                    </td>
+                                    <td className="p-2 text-sm font-medium capitalize">{incentive.type.replace("_", " ")}</td>
+                                    <td className="p-2 text-sm text-right font-semibold">{incentive.percentage}%</td>
+                                    <td className="p-2 text-sm text-right font-semibold text-primary">{formatCurrency(value)}</td>
                                     <td className="p-2 text-sm">{incentive.notes || "—"}</td>
                                   </tr>
                                 );
