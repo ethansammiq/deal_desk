@@ -40,7 +40,7 @@ export interface SelectedIncentive {
   categoryId: string;
   subCategoryId: string;
   option: string;
-  value: number;
+  tierValues: { [tierId: number]: number }; // Map of tier IDs to values
   notes: string;
   tierIds: number[]; // Array of tier IDs this incentive applies to
 }
@@ -50,7 +50,7 @@ interface TempIncentive {
   categoryId?: string;
   subCategoryId?: string;
   option?: string;
-  value?: number;
+  tierValues?: { [tierId: number]: number };
   notes?: string;
   tierIds?: number[];
 }
@@ -205,7 +205,7 @@ export function IncentiveSelector({
         categoryId: tempIncentive.categoryId,
         subCategoryId: tempIncentive.subCategoryId,
         option: tempIncentive.option,
-        value: tempIncentive.value || 0,
+        tierValues: tempIncentive.tierValues || {},
         notes: tempIncentive.notes || '',
         tierIds: tempIncentive.tierIds
       };
@@ -272,10 +272,10 @@ export function IncentiveSelector({
                   </div>
                   <div className="flex items-center space-x-3">
                     <Badge variant="outline" className="font-medium">
-                      {typeof incentive.value === 'number' ? 
-                        (incentive.value > 999 ? 
-                          `$${(incentive.value/1000).toFixed(1)}k` : 
-                          `$${incentive.value}`) : 
+                      {incentive.tierIds.length > 0 && incentive.tierValues && incentive.tierValues[incentive.tierIds[0]] ?
+                        (incentive.tierValues[incentive.tierIds[0]] > 999 ? 
+                          `$${(incentive.tierValues[incentive.tierIds[0]]/1000).toFixed(1)}k` : 
+                          `$${incentive.tierValues[incentive.tierIds[0]]}`) : 
                         '—'}
                     </Badge>
                     <Button
@@ -380,23 +380,66 @@ export function IncentiveSelector({
             </div>
           )}
           
-          {/* Step 4: Enter value and notes (if option is selected) */}
+          {/* Step 4: Configure incentive by tier */}
           {tempIncentive.option && (
             <div className="space-y-3 pt-2">
               <div className="space-y-2">
-                <Label>4. Enter Incentive Value (USD)</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    className="pl-8"
-                    value={tempIncentive.value || ''}
-                    onChange={(e) => setTempIncentive({
-                      ...tempIncentive,
-                      value: parseFloat(e.target.value) || 0
-                    })}
-                  />
+                <Label>4. Configure Incentive by Tier</Label>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left p-2 bg-slate-100 border border-slate-200">Field</th>
+                        <th className="text-center p-2 bg-slate-100 border border-slate-200">Last Year</th>
+                        {availableTiers.map(tierId => (
+                          <th key={tierId} className="text-center p-2 bg-slate-100 border border-slate-200">
+                            Tier {tierId}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Incentive Value Row */}
+                      <tr>
+                        <td className="font-medium p-2 border border-slate-200 bg-slate-50">
+                          Incentive Value (USD)
+                        </td>
+                        <td className="p-2 border border-slate-200 text-center">
+                          <div className="text-slate-700">-</div>
+                        </td>
+                        {availableTiers.map(tierId => (
+                          <td key={tierId} className="p-2 border border-slate-200">
+                            <div className="relative">
+                              <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="pl-8 w-full"
+                                value={(tempIncentive.tierValues && tempIncentive.tierValues[tierId]) || ''}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  const newTierValues = { ...(tempIncentive.tierValues || {}) };
+                                  newTierValues[tierId] = value;
+                                  
+                                  // Include this tier in the tierIds array if it's not already there
+                                  const currentTierIds = tempIncentive.tierIds || [];
+                                  const newTierIds = currentTierIds.includes(tierId) 
+                                    ? currentTierIds 
+                                    : [...currentTierIds, tierId];
+                                    
+                                  setTempIncentive({
+                                    ...tempIncentive,
+                                    tierValues: newTierValues,
+                                    tierIds: newTierIds // Auto-select this tier when entering a value
+                                  });
+                                }}
+                              />
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
               
@@ -412,9 +455,9 @@ export function IncentiveSelector({
                 />
               </div>
               
-              {/* Step 5: Select which tiers this incentive applies to */}
+              {/* Apply to Tiers section - modified to be simpler since we're using the table */}
               <div className="space-y-2 pt-2">
-                <Label>5. Apply to Tiers</Label>
+                <Label>Which tiers does this incentive apply to?</Label>
                 <div className="flex flex-wrap gap-2">
                   {availableTiers.map(tierId => (
                     <Button
