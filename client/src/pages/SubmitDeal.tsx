@@ -1477,9 +1477,6 @@ export default function SubmitDeal() {
                               {/* Incentive Percentage Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Percentage</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">0%</div>
-                                </td>
                                 <td className="p-3 border border-slate-200">
                                   <div className="relative">
                                     <Input
@@ -1512,9 +1509,6 @@ export default function SubmitDeal() {
                               {/* Incentive Amount Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Amount</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">{formatCurrency(0)}</div>
-                                </td>
                                 <td className="p-3 border border-slate-200">
                                   <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1547,9 +1541,6 @@ export default function SubmitDeal() {
                               {/* Incentive Notes Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Notes</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">N/A</div>
-                                </td>
                                 <td className="p-3 border border-slate-200">
                                   <Textarea
                                     placeholder="Enter any notes about this incentive..."
