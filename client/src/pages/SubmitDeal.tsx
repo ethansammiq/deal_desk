@@ -607,7 +607,7 @@ export default function SubmitDeal() {
   return (
     <div className="p-6">
       {/* About Deal Submission Section */}
-      <div className="mb-8 p-6 rounded-lg bg-[#f6f0ff]">
+      <div className="mb-8">
         <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-5 border-0">
@@ -640,7 +640,7 @@ export default function SubmitDeal() {
       </div>
       
       {/* Submit Deal Form Section */}
-      <div className="mb-8 p-6 rounded-lg bg-white shadow-md">
+      <div className="mb-8">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Process</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
