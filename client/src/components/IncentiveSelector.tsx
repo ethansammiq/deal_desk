@@ -48,6 +48,7 @@ export interface SelectedIncentive {
   option: string;
   value: number;
   notes: string;
+  tierIds: number[]; // Array of tier IDs this incentive applies to
 }
 
 const incentiveCategories: IncentiveCategory[] = [
@@ -168,9 +169,11 @@ const incentiveCategories: IncentiveCategory[] = [
 
 export function IncentiveSelector({
   selectedIncentives = [],
+  dealTiers = [],
   onChange
 }: {
   selectedIncentives: SelectedIncentive[];
+  dealTiers: Array<{tierNumber: number, [key: string]: any}>;
   onChange: (incentives: SelectedIncentive[]) => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -180,16 +183,20 @@ export function IncentiveSelector({
   // Find currently selected category and subcategory
   const currentCategory = incentiveCategories.find(c => c.id === activeCategory);
   const currentSubCategory = currentCategory?.subCategories.find(s => s.id === activeSubCategory);
+  
+  // Available tiers from props
+  const availableTiers = dealTiers.map(tier => tier.tierNumber);
 
   // Handle adding a new incentive
   const handleAddIncentive = () => {
-    if (tempIncentive.categoryId && tempIncentive.subCategoryId && tempIncentive.option) {
+    if (tempIncentive.categoryId && tempIncentive.subCategoryId && tempIncentive.option && tempIncentive.tierIds && tempIncentive.tierIds.length > 0) {
       const newIncentive: SelectedIncentive = {
         categoryId: tempIncentive.categoryId,
         subCategoryId: tempIncentive.subCategoryId,
         option: tempIncentive.option,
         value: tempIncentive.value || 0,
-        notes: tempIncentive.notes || ''
+        notes: tempIncentive.notes || '',
+        tierIds: tempIncentive.tierIds || []
       };
       
       onChange([...selectedIncentives, newIncentive]);
@@ -242,6 +249,13 @@ export function IncentiveSelector({
                       <div className="font-medium">{incentive.option}</div>
                       <div className="text-sm text-gray-500">
                         {info.categoryName} <ChevronRight className="inline h-3 w-3" /> {info.subCategoryName}
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {incentive.tierIds.map(tierId => (
+                          <Badge key={tierId} variant="secondary" className="text-xs">
+                            Tier {tierId}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -386,6 +400,42 @@ export function IncentiveSelector({
                   })}
                 />
               </div>
+              
+              {/* Step 5: Select which tiers this incentive applies to */}
+              <div className="space-y-2 pt-2">
+                <Label>5. Apply to Tiers</Label>
+                <div className="flex flex-wrap gap-2">
+                  {availableTiers.map(tierId => (
+                    <Button
+                      key={tierId}
+                      type="button"
+                      variant={(tempIncentive.tierIds || []).includes(tierId) ? "default" : "outline"}
+                      onClick={() => {
+                        const currentTierIds = tempIncentive.tierIds || [];
+                        let newTierIds: number[];
+                        
+                        if (currentTierIds.includes(tierId)) {
+                          // Remove tier if already selected
+                          newTierIds = currentTierIds.filter(id => id !== tierId);
+                        } else {
+                          // Add tier if not already selected
+                          newTierIds = [...currentTierIds, tierId];
+                        }
+                        
+                        setTempIncentive({
+                          ...tempIncentive,
+                          tierIds: newTierIds
+                        });
+                      }}
+                    >
+                      Tier {tierId}
+                    </Button>
+                  ))}
+                </div>
+                {(!tempIncentive.tierIds || tempIncentive.tierIds.length === 0) && (
+                  <p className="text-xs text-red-500 mt-1">Please select at least one tier</p>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
@@ -402,7 +452,13 @@ export function IncentiveSelector({
           </Button>
           <Button
             variant="default"
-            disabled={!tempIncentive.categoryId || !tempIncentive.subCategoryId || !tempIncentive.option}
+            disabled={
+              !tempIncentive.categoryId || 
+              !tempIncentive.subCategoryId || 
+              !tempIncentive.option || 
+              !tempIncentive.tierIds || 
+              tempIncentive.tierIds.length === 0
+            }
             onClick={handleAddIncentive}
           >
             Add Incentive
