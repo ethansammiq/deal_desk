@@ -188,14 +188,14 @@ export default function SubmitDeal() {
   
   interface DealTierData {
     tierNumber: number;
-    annualRevenue: number;
-    annualGrossMargin: number;
-    annualGrossMarginPercent: number;
-    incentivePercentage: number;
-    incentiveNotes: string;
-    incentiveType: "rebate" | "discount" | "bonus" | "other";
-    incentiveThreshold: number; // Revenue threshold to achieve this incentive
-    incentiveAmount: number; // Monetary value of the incentive
+    annualRevenue?: number;
+    annualGrossMargin?: number;
+    annualGrossMarginPercent?: number;
+    incentivePercentage?: number;
+    incentiveNotes?: string;
+    incentiveType?: "rebate" | "discount" | "bonus" | "other";
+    incentiveThreshold?: number; // Revenue threshold to achieve this incentive
+    incentiveAmount?: number; // Monetary value of the incentive
   }
   
   // Type definitions for advertisers and agencies (simplified)
@@ -226,36 +226,36 @@ export default function SubmitDeal() {
   const [dealTiers, setDealTiers] = useState([
     {
       tierNumber: 1,
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-      annualGrossMarginPercent: 0,
-      incentivePercentage: 0,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
       incentiveNotes: "Base tier - no incentives",
       incentiveType: "rebate" as const,
-      incentiveThreshold: 0,
-      incentiveAmount: 0
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined
     },
     {
       tierNumber: 2,
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-      annualGrossMarginPercent: 0,
-      incentivePercentage: 0,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
       incentiveNotes: "",
       incentiveType: "rebate" as const,
-      incentiveThreshold: 0,
-      incentiveAmount: 0
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined
     },
     {
       tierNumber: 3,
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-      annualGrossMarginPercent: 0,
-      incentivePercentage: 0,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
       incentiveNotes: "",
       incentiveType: "rebate" as const,
-      incentiveThreshold: 0,
-      incentiveAmount: 0
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined
     }
   ]);
   
@@ -1155,10 +1155,10 @@ export default function SubmitDeal() {
                                         type="number"
                                         className="pl-7 w-full"
                                         placeholder="0.00"
-                                        value={tier.annualRevenue}
+                                        value={tier.annualRevenue || ''}
                                         onChange={(e) => {
                                           const newTiers = [...dealTiers];
-                                          newTiers[index].annualRevenue = parseFloat(e.target.value);
+                                          newTiers[index].annualRevenue = e.target.value ? parseFloat(e.target.value) : undefined;
                                           setDealTiers(newTiers);
                                         }}
                                       />
@@ -1206,13 +1206,13 @@ export default function SubmitDeal() {
                                         placeholder="0.00"
                                         min="0"
                                         max="100"
-                                        value={tier.annualGrossMarginPercent || 0}
+                                        value={tier.annualGrossMarginPercent || ''}
                                         onChange={(e) => {
                                           const newTiers = [...dealTiers];
-                                          newTiers[index].annualGrossMarginPercent = parseFloat(e.target.value);
+                                          newTiers[index].annualGrossMarginPercent = e.target.value ? parseFloat(e.target.value) : undefined;
                                           // Also update the gross margin value based on percentage and revenue
-                                          const percent = parseFloat(e.target.value) / 100;
-                                          newTiers[index].annualGrossMargin = newTiers[index].annualRevenue * percent;
+                                          const percent = e.target.value ? parseFloat(e.target.value) / 100 : 0;
+                                          newTiers[index].annualGrossMargin = (newTiers[index].annualRevenue || 0) * percent;
                                           setDealTiers(newTiers);
                                         }}
                                       />
@@ -1272,6 +1272,9 @@ export default function SubmitDeal() {
                               {/* Revenue Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  <div className="text-slate-700">-</div>
+                                </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue
                                   let previousYearRevenue = 850000; // Default to mock value
@@ -1314,6 +1317,9 @@ export default function SubmitDeal() {
                               {/* Gross Profit Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  <div className="text-slate-700">-</div>
+                                </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue and margin
                                   let previousYearRevenue = 850000; // Default to mock value
