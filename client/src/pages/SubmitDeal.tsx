@@ -1142,12 +1142,6 @@ export default function SubmitDeal() {
                               {/* Annual Gross Margin (Base) Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Gross Margin (Base)</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - simplified UI */}
-                                  <div className="text-slate-700">
-                                    35%
-                                  </div>
-                                </td>
                                 {dealTiers.map((tier, index) => (
                                   <td key={`margin-${tier.tierNumber}`} className="p-3 border border-slate-200">
                                     <div className="relative">
@@ -1178,12 +1172,6 @@ export default function SubmitDeal() {
                               {/* Gross Profit (Base) Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - calculated from mock values */}
-                                  <div className="text-slate-700">
-                                    {formatCurrency(850000 * 0.35)}
-                                  </div>
-                                </td>
                                 {dealTiers.map((tier) => (
                                   <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
                                     {/* Not editable, calculated field */}
@@ -1197,12 +1185,6 @@ export default function SubmitDeal() {
                               {/* Revenue Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - not applicable */}
-                                  <div className="text-slate-700">
-                                    N/A
-                                  </div>
-                                </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue
                                   let previousYearRevenue = 850000; // Default to mock value
@@ -1245,12 +1227,6 @@ export default function SubmitDeal() {
                               {/* Gross Profit Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit Growth Rate</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  {/* Base value column - not applicable */}
-                                  <div className="text-slate-700">
-                                    N/A
-                                  </div>
-                                </td>
                                 {dealTiers.map((tier) => {
                                   // Find previous year revenue and margin
                                   let previousYearRevenue = 850000; // Default to mock value
@@ -1467,8 +1443,7 @@ export default function SubmitDeal() {
                           <table className="w-full border-collapse">
                             <thead>
                               <tr>
-                                <th className="text-left p-3 bg-slate-100 border border-slate-200">Field</th>
-                                <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Field</th>
                                 <th className="text-left p-3 bg-slate-100 border border-slate-200">Current</th>
                               </tr>
                             </thead>
@@ -1476,9 +1451,6 @@ export default function SubmitDeal() {
                               {/* Incentive Type Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Incentive Type</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">Base</div>
-                                </td>
                                 <td className="p-3 border border-slate-200">
                                   <Select 
                                     defaultValue="rebate"
