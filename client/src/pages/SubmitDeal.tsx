@@ -1297,7 +1297,8 @@ export default function SubmitDeal() {
                                   // Calculate growth rate
                                   let growthRate = 0;
                                   if (previousYearRevenue > 0 && tier.annualRevenue) {
-                                    growthRate = (tier.annualRevenue / previousYearRevenue) - 1;
+                                    // Calculate as percentage (135% instead of 1.35)
+                                    growthRate = ((tier.annualRevenue / previousYearRevenue) - 1);
                                   }
                                   
                                   return (
@@ -1349,6 +1350,7 @@ export default function SubmitDeal() {
                                   // Calculate growth rate
                                   let profitGrowthRate = 0;
                                   if (previousYearProfit > 0) {
+                                    // Calculate as percentage (169% instead of 1.69)
                                     profitGrowthRate = (currentProfit / previousYearProfit) - 1;
                                   }
                                   
