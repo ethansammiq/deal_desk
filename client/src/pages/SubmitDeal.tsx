@@ -631,10 +631,16 @@ export default function SubmitDeal() {
               1
             </div>
             
-            {/* First Connecting Line */}
+            {/* First connecting line (between step 1 and 2) */}
             <div className={cn(
-              "absolute h-1 bg-slate-200 left-10 right-[calc(66.67%+5px)] top-5",
+              "absolute h-1 bg-slate-200 left-10 w-[calc(50%-20px)] top-5",
               formStep >= 1 ? "bg-primary" : ""
+            )}></div>
+            
+            {/* Second connecting line (between step 2 and 3) */}
+            <div className={cn(
+              "absolute h-1 bg-slate-200 right-10 w-[calc(50%-20px)] top-5 left-[50%]",
+              formStep >= 2 ? "bg-primary" : ""
             )}></div>
             
             {/* Step 2 */}
@@ -647,12 +653,6 @@ export default function SubmitDeal() {
             >
               2
             </div>
-            
-            {/* Second Connecting Line */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 left-[calc(33.33%+5px)] right-[calc(33.33%+5px)] top-5",
-              formStep >= 2 ? "bg-primary" : ""
-            )}></div>
             
             {/* Step 3 */}
             <div 
