@@ -2307,36 +2307,123 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                   
-                  {/* DealGenie Assessment */}
-                  <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">DealGenie Assessment</h3>
+                  {/* DealGenie AI Assessment */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden bg-gradient-to-r from-purple-50 to-slate-50">
+                    <div className="px-4 py-3 bg-gradient-to-r from-purple-100 to-slate-100 border-b border-slate-200 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        DealGenie AI Assessment
+                      </h3>
+                      <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                        AI-Powered
+                      </span>
                     </div>
-                    <div className="p-4">
-                      <div className="mb-6">
-                        <StandardDealCriteriaHelp />
+                    <div className="p-5">
+                      {/* AI Analysis Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-yellow-400 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">Deal Classification</h4>
+                        </div>
+                        <div className="flex items-center mb-4">
+                          <span className="inline-flex items-center rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-800 mr-3">
+                            Non-Standard Deal
+                          </span>
+                          <span className="text-sm text-slate-500">Manual review required</span>
+                        </div>
+                        <p className="text-sm text-slate-700 mb-3">
+                          This deal falls outside standard guidelines for the following reasons:
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1 mb-3">
+                          <li>Incentive structure exceeds standard thresholds</li>
+                          <li>Tiered revenue structure with potential margin impact</li>
+                          <li>Growth rate projections exceed benchmark ranges</li>
+                        </ul>
                       </div>
                       
-                      <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">Required Approvals</dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            <ul className="list-disc pl-5 text-sm">
-                              <li>Finance Team</li>
-                              <li>Regional Director</li>
-                            </ul>
-                          </dd>
+                      {/* AI Insights Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-purple-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">Deal Structure Analysis</h4>
                         </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">Deal Classification</dt>
-                          <dd className="mt-1 text-sm">
-                            <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                              Non-Standard Deal
-                            </span>
-                            <p className="mt-1 text-slate-700">Based on the incentive structure and revenue thresholds, this deal requires additional review.</p>
-                          </dd>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="p-3 bg-slate-50 rounded-md">
+                            <div className="text-sm font-medium text-slate-700 mb-1">Profitability Impact</div>
+                            <div className="text-xl font-semibold text-red-600">-4.2%</div>
+                            <div className="text-xs text-slate-500">vs. Standard Deal</div>
+                          </div>
+                          <div className="p-3 bg-slate-50 rounded-md">
+                            <div className="text-sm font-medium text-slate-700 mb-1">Revenue Growth</div>
+                            <div className="text-xl font-semibold text-green-600">+12.5%</div>
+                            <div className="text-xs text-slate-500">vs. Last Year</div>
+                          </div>
                         </div>
-                      </dl>
+                        <p className="text-sm text-slate-700">
+                          The proposed structure offers higher revenue growth but with reduced profitability compared to standard deals. Consider adjusting tier thresholds or incentive amounts.
+                        </p>
+                      </div>
+                      
+                      {/* Approval Workflow Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">Required Approval Workflow</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Finance Team
+                          </div>
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Regional Director
+                          </div>
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Legal Review
+                          </div>
+                        </div>
+                        <div className="text-sm text-slate-700">
+                          <p>Estimated approval time: <span className="font-medium">3-5 business days</span></p>
+                        </div>
+                      </div>
+                      
+                      {/* Recommendations Section */}
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-green-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">Recommendations</h4>
+                        </div>
+                        <ul className="space-y-2">
+                          <li className="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm text-slate-700">Consider adjusting Tier 1 incentive to stay within standard margin parameters</span>
+                          </li>
+                          <li className="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm text-slate-700">Include a quarterly performance review clause to re-evaluate tiers</span>
+                          </li>
+                          <li className="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm text-slate-700">Prepare detailed business justification for non-standard incentive structure</span>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
