@@ -811,32 +811,6 @@ export default function SubmitDeal() {
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
-                      name="salesChannel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select sales channel" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="client_direct">Client Direct</SelectItem>
-                              <SelectItem value="holding_company">Holding Company</SelectItem>
-                              <SelectItem value="independent_agency">Independent Agency</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
                       name="region"
                       render={({ field }) => (
                         <FormItem>
@@ -856,6 +830,32 @@ export default function SubmitDeal() {
                               <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
                               <SelectItem value="south">South</SelectItem>
                               <SelectItem value="west">West</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="salesChannel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select sales channel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="client_direct">Client Direct</SelectItem>
+                              <SelectItem value="holding_company">Holding Company</SelectItem>
+                              <SelectItem value="independent_agency">Independent Agency</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
