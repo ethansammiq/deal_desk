@@ -277,62 +277,59 @@ export default function RequestSupport() {
       <Card className="mt-6 border border-slate-200">
         <CardContent className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                {/* Custom Step Navigation */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-full flex items-center">
-                      <div 
-                        onClick={() => setActiveTab("sales-channel")}
-                        className={cn(
-                          "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                          activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-                        )}
-                      >
-                        1
-                      </div>
-                      <div className={cn(
-                        "w-full h-1 bg-slate-200",
-                        activeTab === "growth-opportunity" || activeTab === "sales-channel" ? "bg-primary" : ""
-                      )}></div>
-                      <div 
-                        onClick={() => setActiveTab("growth-opportunity")}
-                        className={cn(
-                          "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                          activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-                        )}
-                      >
-                        2
-                      </div>
-                    </div>
+            {/* Form Progress - Matches style from Deal Submission page */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-full flex items-center">
+                  <div 
+                    onClick={() => setActiveTab("sales-channel")}
+                    className={cn(
+                      "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                      activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                    )}
+                  >
+                    1
                   </div>
-                  
-                  {/* Step Labels */}
-                  <div className="flex justify-between text-sm text-slate-600">
-                    <div 
-                      onClick={() => setActiveTab("sales-channel")} 
-                      className={cn(
-                        "cursor-pointer hover:text-primary transition-colors", 
-                        activeTab === "sales-channel" ? "font-medium text-primary" : ""
-                      )}
-                    >
-                      Sales Channel Info
-                    </div>
-                    <div 
-                      onClick={() => setActiveTab("growth-opportunity")} 
-                      className={cn(
-                        "cursor-pointer hover:text-primary transition-colors", 
-                        activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
-                      )}
-                    >
-                      Growth Opportunity
-                    </div>
+                  <div className={cn(
+                    "w-full h-1 bg-slate-200",
+                    activeTab === "growth-opportunity" ? "bg-primary" : ""
+                  )}></div>
+                  <div 
+                    onClick={() => setActiveTab("growth-opportunity")}
+                    className={cn(
+                      "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                      activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                    )}
+                  >
+                    2
                   </div>
                 </div>
+              </div>
+              <div className="flex justify-between text-sm text-slate-600">
+                <div 
+                  onClick={() => setActiveTab("sales-channel")} 
+                  className={cn(
+                    "cursor-pointer hover:text-primary transition-colors", 
+                    activeTab === "sales-channel" ? "font-medium text-primary" : ""
+                  )}
+                >
+                  Sales Channel Info
+                </div>
+                <div 
+                  onClick={() => setActiveTab("growth-opportunity")} 
+                  className={cn(
+                    "cursor-pointer hover:text-primary transition-colors", 
+                    activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
+                  )}
+                >
+                  Growth Opportunity
+                </div>
+              </div>
+            </div>
                 
-                {/* Sales Channel Info Tab */}
-                <TabsContent value="sales-channel" className="space-y-6 pt-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsContent value="sales-channel" className="space-y-6 pt-4">
+                <form id="sales-channel-form" className="space-y-6">
                   <FormField
                     control={form.control}
                     name="email"
@@ -443,16 +440,16 @@ export default function RequestSupport() {
                       )}
                     />
                   )}
-                  
-                  <div className="pt-4 flex justify-end">
-                    <Button type="button" onClick={goToNextTab}>
-                      Next: Growth Opportunity
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                {/* Growth Opportunity Tab */}
-                <TabsContent value="growth-opportunity" className="space-y-6 pt-4">
+                </form>
+                <div className="pt-4 flex justify-end">
+                  <Button type="button" onClick={goToNextTab}>
+                    Next: Growth Opportunity
+                  </Button>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="growth-opportunity" className="space-y-6 pt-4">
+                <form id="growth-opportunity-form" className="space-y-6">
                   <FormField
                     control={form.control}
                     name="growthOpportunityMIQ"
@@ -541,25 +538,28 @@ export default function RequestSupport() {
                       </FormItem>
                     )}
                   />
-                  
-                  <div className="pt-4 flex justify-between">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={goToPrevTab}
-                    >
-                      Back: Sales Channel Info
-                    </Button>
-                    <Button type="submit" disabled={createDealScopingRequest.isPending}>
-                      {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
-                    </Button>
-                  </div>
-                  </TabsContent>
-                </Tabs>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                </form>
+                <div className="pt-4 flex justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={goToPrevTab}
+                  >
+                    Back: Sales Channel Info
+                  </Button>
+                  <Button 
+                    type="button" 
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={createDealScopingRequest.isPending}
+                  >
+                    {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
