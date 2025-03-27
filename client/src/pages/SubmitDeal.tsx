@@ -218,6 +218,22 @@ export default function SubmitDeal() {
     return previousValue * previousMarginPercent;
   };
   
+  // Get previous year margin percentage
+  const getPreviousYearMargin = (): number => {
+    const advertiserName = getTypedValue("advertiserName") as string;
+    const agencyName = getTypedValue("agencyName") as string;
+    
+    if (salesChannel === "client_direct" && advertiserName) {
+      const advertiser = advertisers.find(a => a.name === advertiserName);
+      return advertiser?.previousYearMargin || 35; // Default value as fallback (35%)
+    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+      const agency = agencies.find(a => a.name === agencyName);
+      return agency?.previousYearMargin || 35; // Default value as fallback (35%)
+    }
+    
+    return 35; // Default value as fallback (35%)
+  };
+  
   // Calculate total incentive cost for a tier
   const calculateTierIncentiveCost = (tierNumber: number): number => {
     let totalCost = 0;
@@ -1907,10 +1923,34 @@ export default function SubmitDeal() {
                           })}
                         </tr>
                         
-                        {/* Gross Profit (New) */}
+                        {/* Adjusted Gross Margin */}
                         <tr>
                           <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Gross Profit (New)</div>
+                            <div className="font-medium">Adjusted Gross Margin</div>
+                            <div className="text-xs text-slate-500">Gross margin after incentives</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatPercentage(getPreviousYearMargin() / 100)} {/* Last year value */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin = revenue > 0 ? grossProfit / revenue : 0;
+                            
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                {formatPercentage(adjustedMargin)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Adjusted Gross Profit */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Adjusted Gross Profit</div>
                             <div className="text-xs text-slate-500">Revenue minus cost and incentives</div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
@@ -1949,11 +1989,43 @@ export default function SubmitDeal() {
                           })}
                         </tr>
                         
-                        {/* Gross Profit (New) Growth Rate */}
+                        {/* Adjusted Gross Margin Growth Rate */}
                         <tr>
                           <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Gross Profit (New) Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in new profit vs last year</div>
+                            <div className="font-medium">Adjusted Gross Margin Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage change in adjusted margin</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin = revenue > 0 ? grossProfit / revenue : 0;
+                            
+                            // Get previous year margin for comparison
+                            const previousYearMargin = getPreviousYearMargin() / 100;
+                            
+                            // Calculate growth rate
+                            const marginGrowthRate = previousYearMargin > 0 ? (adjustedMargin / previousYearMargin) - 1 : 0;
+                            
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={marginGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                  {formatPercentage(marginGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Adjusted Gross Profit Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Adjusted Gross Profit Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in adjusted profit vs last year</div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
                             — {/* Baseline */}
