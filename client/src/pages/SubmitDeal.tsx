@@ -642,7 +642,7 @@ export default function SubmitDeal() {
             <div className={cn(
               "absolute h-1 bg-slate-200 top-5",
               formStep >= 2 ? "bg-primary" : ""
-            )} style={{ left: "50%", right: "10px", marginLeft: "20px" }}></div>
+            )} style={{ left: "50%", width: "calc(33.33% - 40px)", marginLeft: "20px" }}></div>
             
             {/* Step 2 Circle */}
             <div 
