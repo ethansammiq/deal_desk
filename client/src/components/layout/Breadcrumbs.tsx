@@ -4,11 +4,13 @@ import { useLocation } from "wouter";
 
 // Define the path to title mapping
 const pathToTitle: Record<string, string> = {
-  "/": "Support Desk",
-  "/help": "Help Resources",
+  "/": "Home",
+  "/help": "Support Desk",
   "/support": "Deal Scoping",
+  "/request-support": "Deal Scoping",
   "/submit-deal": "Deal Submission",
-  "/dashboard": "Deal Dashboard"
+  "/dashboard": "Deal Dashboard",
+  "/deals": "Deals"
 };
 
 // Define breadcrumb structure for hierarchical paths
@@ -31,9 +33,9 @@ export function Breadcrumbs() {
     ];
     
     // Deal Scoping has a parent of Deal Requests (non-clickable grouping)
-    if (location === "/support") {
+    if (location === "/support" || location === "/request-support") {
       breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
-      breadcrumbs.push({ title: "Deal Scoping", path: "/support", isActive: true, id: "deal-scoping" });
+      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
@@ -56,6 +58,11 @@ export function Breadcrumbs() {
   };
   
   const breadcrumbs = getBreadcrumbs();
+  
+  // Don't show breadcrumbs on the home page
+  if (location === "/") {
+    return null;
+  }
   
   return (
     <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2.5 rounded-md shadow-sm border border-[#f0e6ff]">
