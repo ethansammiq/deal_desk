@@ -2220,7 +2220,8 @@ export default function SubmitDeal() {
                             <table className="w-full border-collapse text-sm">
                               <thead>
                                 <tr>
-                                  <th className="text-left p-2 bg-slate-100 border border-slate-200">Metric</th>
+                                  <th className="text-left p-2 bg-slate-100 border border-slate-200"></th>
+                                  <th className="text-left p-2 bg-slate-100 border border-slate-200">Last Year</th>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
                                     <th key={tier.tierNumber} className="text-left p-2 bg-slate-100 border border-slate-200">
                                       Tier {tier.tierNumber}
@@ -2232,6 +2233,9 @@ export default function SubmitDeal() {
                                 {/* Annual Revenue */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Annual Revenue</td>
+                                  <td className="p-2 border border-slate-200">
+                                    {formatCurrency(850000)}
+                                  </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
                                     <td key={tier.tierNumber} className="p-2 border border-slate-200">
                                       {formatCurrency(tier.annualRevenue || 0)}
@@ -2242,6 +2246,7 @@ export default function SubmitDeal() {
                                 {/* Revenue Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Revenue Growth Rate</td>
+                                  <td className="p-2 border border-slate-200">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     const growthRate = calculateValueGrowthRate(tier);
                                     return (
@@ -2257,6 +2262,7 @@ export default function SubmitDeal() {
                                 {/* Gross Margin Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Gross Margin (Adjusted) Growth Rate</td>
+                                  <td className="p-2 border border-slate-200">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     const profitGrowthRate = calculateProfitGrowthRate(tier);
                                     return (
@@ -2272,6 +2278,9 @@ export default function SubmitDeal() {
                                 {/* Total Incentive Cost */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Total Incentive Cost</td>
+                                  <td className="p-2 border border-slate-200">
+                                    {formatCurrency(0)}
+                                  </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
                                     return (
@@ -2285,6 +2294,7 @@ export default function SubmitDeal() {
                                 {/* Client Value Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Client Value Growth Rate</td>
+                                  <td className="p-2 border border-slate-200">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     // Using a fixed calculation for client value as 40% of revenue
                                     const clientValue = (tier.annualRevenue || 0) * 0.4;
