@@ -149,7 +149,6 @@ export default function SubmitDeal() {
   const [formStep, setFormStep] = useState(0);
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
   const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("tiered");
   const [financialSummary, setFinancialSummary] = useState<DealFinancialSummary>({
@@ -1092,7 +1091,6 @@ export default function SubmitDeal() {
                     <ApprovalAlert 
                       totalValue={Number(watchTypedValue("annualRevenue")) || 0}
                       contractTerm={Number(watchTypedValue("contractTerm")) || 12}
-                      hasNonStandardTerms={hasNonStandardTerms}
                       dealType={String(watchTypedValue("dealType")) || "grow"}
                       salesChannel={String(watchTypedValue("salesChannel")) || "independent_agency"}
                       onChange={handleApprovalChange}
@@ -2009,27 +2007,7 @@ export default function SubmitDeal() {
                   </div>
                 </div>
                 
-                {/* Non-standard terms checkbox - moved here from Client & Pricing tab */}
-                <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="nonStandardTerms" 
-                      checked={hasNonStandardTerms} 
-                      onCheckedChange={(checked) => {
-                        setHasNonStandardTerms(checked === true);
-                      }}
-                    />
-                    <label
-                      htmlFor="nonStandardTerms"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      This deal includes non-standard terms
-                    </label>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500 ml-6">
-                    Any modifications to standard contract language, special provisions, or custom pricing structures
-                  </p>
-                </div>
+
                 
                 {/* Standard Deal Criteria Help moved here from Step 2 */}
                 <div className="mb-12">

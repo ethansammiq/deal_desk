@@ -65,11 +65,10 @@ function getHigherLevel(level1: ApproverLevel, level2: ApproverLevel): ApproverL
 /**
  * Determines the required approver level based on deal parameters
  */
-export function determineRequiredApprover(totalValue: number, hasNonStandardTerms: boolean, 
+export function determineRequiredApprover(totalValue: number, 
                                          dealType?: string, salesChannel?: string): ApproverLevel {
   // If any condition is met for Executive approval, return that
   if (totalValue > standardDealCriteria.maxValue || 
-      hasNonStandardTerms || 
       (dealType && dealType !== standardDealCriteria.dealType) ||
       (salesChannel && !standardDealCriteria.salesChannel.includes(salesChannel))) {
     return 'Executive';

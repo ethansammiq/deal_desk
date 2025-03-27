@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 
 interface ApprovalAlertProps {
   totalValue: number;
-  hasNonStandardTerms: boolean;
   contractTerm: number;
   dealType?: string;
   salesChannel?: string;
@@ -19,7 +18,6 @@ interface ApprovalAlertProps {
 
 export function ApprovalAlert({
   totalValue,
-  hasNonStandardTerms,
   contractTerm,
   dealType = "grow",
   salesChannel = "independent_agency",
@@ -36,8 +34,7 @@ export function ApprovalAlert({
     if (totalValue > 0) {
       // Use the simplified approval matrix logic
       const approverLevel = determineRequiredApprover(
-        totalValue, 
-        hasNonStandardTerms,
+        totalValue,
         dealType,
         salesChannel
       );
@@ -72,7 +69,6 @@ export function ApprovalAlert({
     }
   }, [
     totalValue, 
-    hasNonStandardTerms, 
     contractTerm, 
     dealType,
     salesChannel,
@@ -167,7 +163,6 @@ export function StandardDealCriteriaHelp() {
         <li>Deal type: Grow</li>
         <li>Sales channel: Independent Agency or Client Direct</li>
         <li>Projected Annual Spend: Under $500,000</li>
-        <li>No non-standard terms or special conditions</li>
       </ul>
     </div>
   );
