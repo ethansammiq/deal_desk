@@ -2352,17 +2352,62 @@ export default function SubmitDeal() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                           <div className="p-3 bg-slate-50 rounded-md">
                             <div className="text-sm font-medium text-slate-700 mb-1">Profitability Impact</div>
-                            <div className="text-xl font-semibold text-red-600">-4.2%</div>
-                            <div className="text-xs text-slate-500">vs. Standard Deal</div>
+                            <div className="text-xl font-semibold">
+                              {(() => {
+                                // Use the first tier's profit growth rate calculation
+                                if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
+                                  const profitGrowthRate = calculateProfitGrowthRate(dealTiers[0]);
+                                  const formattedRate = (profitGrowthRate * 100).toFixed(1);
+                                  const isPositive = profitGrowthRate > 0;
+                                  return (
+                                    <span className={isPositive ? "text-green-600" : "text-red-600"}>
+                                      {isPositive ? "+" : ""}{formattedRate}%
+                                    </span>
+                                  );
+                                }
+                                return <span className="text-slate-700">N/A</span>;
+                              })()}
+                            </div>
+                            <div className="text-xs text-slate-500">vs. Last Year</div>
                           </div>
                           <div className="p-3 bg-slate-50 rounded-md">
                             <div className="text-sm font-medium text-slate-700 mb-1">Revenue Growth</div>
-                            <div className="text-xl font-semibold text-green-600">+12.5%</div>
+                            <div className="text-xl font-semibold">
+                              {(() => {
+                                // Use the first tier's revenue growth rate calculation
+                                if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
+                                  const growthRate = calculateValueGrowthRate(dealTiers[0]);
+                                  const formattedRate = (growthRate * 100).toFixed(1);
+                                  const isPositive = growthRate > 0;
+                                  return (
+                                    <span className={isPositive ? "text-green-600" : "text-red-600"}>
+                                      {isPositive ? "+" : ""}{formattedRate}%
+                                    </span>
+                                  );
+                                }
+                                return <span className="text-slate-700">N/A</span>;
+                              })()}
+                            </div>
                             <div className="text-xs text-slate-500">vs. Last Year</div>
                           </div>
                         </div>
                         <p className="text-sm text-slate-700">
-                          The proposed structure offers higher revenue growth but with reduced profitability compared to standard deals. Consider adjusting tier thresholds or incentive amounts.
+                          {(() => {
+                            if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
+                              const profitGrowthRate = calculateProfitGrowthRate(dealTiers[0]);
+                              const revenueGrowthRate = calculateValueGrowthRate(dealTiers[0]);
+                              
+                              if (revenueGrowthRate > 0 && profitGrowthRate < 0) {
+                                return "The proposed structure offers higher revenue growth but with reduced profitability compared to standard deals. Consider adjusting tier thresholds or incentive amounts.";
+                              } else if (revenueGrowthRate > 0 && profitGrowthRate > 0) {
+                                return "This deal structure shows positive growth in both revenue and profitability, though the approval matrix indicates additional oversight required.";
+                              } else if (revenueGrowthRate < 0) {
+                                return "This deal structure shows a revenue decrease compared to last year. Recommend revisiting revenue targets before submission.";
+                              }
+                            }
+                            
+                            return "Unable to analyze deal structure with the current data. Please ensure all tier values are completed.";
+                          })()}
                         </p>
                       </div>
                       
