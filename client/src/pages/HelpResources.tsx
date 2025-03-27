@@ -29,10 +29,13 @@ function EmbeddedChat() {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Scroll to bottom of chat only when messages change and not on initial load
+  // Scroll chat container to bottom when messages change (not the page)
   useEffect(() => {
     if (messages.length > 1) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const chatContainer = messagesEndRef.current?.parentElement;
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
     }
   }, [messages]);
   
@@ -211,6 +214,11 @@ enum TabTypes {
 
 export default function HelpResources() {
   const [activeTab, setActiveTab] = useState<TabTypes>(TabTypes.GUIDES);
+  
+  // Force scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   return (
     <div className="p-6 relative">

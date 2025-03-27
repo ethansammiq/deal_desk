@@ -27,6 +27,8 @@ interface FloatingChatbotProps {
   bubbleSize?: 'small' | 'medium' | 'large';
   avatarUrl?: string;
   showTimestamps?: boolean;
+  // Control whether opening the chatbot causes the page to scroll
+  preventScrollOnOpen?: boolean;
 }
 
 export default function FloatingChatbot({
@@ -37,7 +39,8 @@ export default function FloatingChatbot({
   bubblePosition = 'bottom-right',
   bubbleSize = 'medium',
   avatarUrl,
-  showTimestamps = false
+  showTimestamps = false,
+  preventScrollOnOpen = true
 }: FloatingChatbotProps) {
   const { messages, sendMessage, clearChatHistory, isLoading, suggestedQuestions, model } = useChat();
   const { toast } = useToast();
@@ -70,7 +73,19 @@ export default function FloatingChatbot({
   
   // Toggle chat open/closed
   const toggleChat = () => {
-    setIsOpen(!isOpen);
+    // When opening the chat and preventScrollOnOpen is true, we'll focus on the chat
+    // without scrolling the page
+    if (!isOpen && preventScrollOnOpen) {
+      // Save current scroll position
+      const scrollPos = window.scrollY;
+      setIsOpen(true);
+      // Restore scroll position after state update
+      setTimeout(() => {
+        window.scrollTo(0, scrollPos);
+      }, 0);
+    } else {
+      setIsOpen(!isOpen);
+    }
   };
   
   // Handle sending a message
