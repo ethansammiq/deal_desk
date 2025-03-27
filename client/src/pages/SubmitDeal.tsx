@@ -2086,11 +2086,21 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Region</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("region") ? 
-                              String(getTypedValue("region"))
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
-                              "Not provided"}
+                            {(() => {
+                              const regionValue = getTypedValue("region");
+                              if (!regionValue) return "Not provided";
+                              
+                              // Use the same mapping as in the dropdown
+                              const regionMap: Record<string, string> = {
+                                "northeast": "Northeast",
+                                "midwest": "Midwest",
+                                "midatlantic": "Mid-Atlantic",
+                                "south": "South",
+                                "west": "West"
+                              };
+                              
+                              return regionMap[String(regionValue)] || String(regionValue);
+                            })()}
                           </dd>
                         </div>
                         <div>
