@@ -194,6 +194,94 @@ export default function SubmitDeal() {
     setTierIncentives(incentives);
   };
   
+  // Financial calculation helper functions for the Financial Summary table
+  
+  // Get previous year values
+  const getPreviousYearValue = (): number => {
+    const advertiserName = getTypedValue("advertiserName") as string;
+    const agencyName = getTypedValue("agencyName") as string;
+    
+    if (salesChannel === "client_direct" && advertiserName) {
+      const advertiser = advertisers.find(a => a.name === advertiserName);
+      return advertiser?.previousYearRevenue || 850000; // Default value as fallback
+    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+      const agency = agencies.find(a => a.name === agencyName);
+      return agency?.previousYearRevenue || 850000; // Default value as fallback
+    }
+    
+    return 850000; // Default value as fallback
+  };
+  
+  // Get previous year gross profit
+  const getPreviousYearGrossProfit = (): number => {
+    const previousValue = getPreviousYearValue();
+    const previousMarginPercent = 0.35; // Default 35% margin for last year
+    return previousValue * previousMarginPercent;
+  };
+  
+  // Calculate total incentive cost for a tier
+  const calculateTierIncentiveCost = (tierNumber: number): number => {
+    let totalCost = 0;
+    
+    // Add costs from the selected hierarchical incentives
+    selectedIncentives.forEach(incentive => {
+      if (incentive.tierIds.includes(tierNumber) && incentive.tierValues && incentive.tierValues[tierNumber]) {
+        totalCost += incentive.tierValues[tierNumber];
+      }
+    });
+    
+    // Add costs from tier-specific incentives
+    tierIncentives.forEach(incentive => {
+      if (incentive.tierNumber === tierNumber && incentive.incentiveAmount) {
+        totalCost += incentive.incentiveAmount;
+      }
+    });
+    
+    return totalCost;
+  };
+  
+  // Calculate gross profit for a tier
+  const calculateTierGrossProfit = (tier: DealTierData): number => {
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0.35; // Default to 35% if not specified
+    const grossMargin = revenue * (marginPercent / 100);
+    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+    
+    return grossMargin - incentiveCost;
+  };
+  
+  // Calculate cost growth rate compared to previous year
+  const calculateCostGrowthRate = (tier: DealTierData): number => {
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0.35; // Default to 35% if not specified
+    const currentCost = revenue - (revenue * (marginPercent / 100));
+    
+    const previousRevenue = getPreviousYearValue();
+    const previousMarginPercent = 0.35; // Default 35% margin
+    const previousCost = previousRevenue - (previousRevenue * previousMarginPercent);
+    
+    if (previousCost === 0) return 0;
+    return (currentCost - previousCost) / previousCost;
+  };
+  
+  // Calculate profit growth rate compared to previous year
+  const calculateProfitGrowthRate = (tier: DealTierData): number => {
+    const currentProfit = calculateTierGrossProfit(tier);
+    const previousProfit = getPreviousYearGrossProfit();
+    
+    if (previousProfit === 0) return 0;
+    return (currentProfit - previousProfit) / previousProfit;
+  };
+  
+  // Calculate value growth rate compared to previous year
+  const calculateValueGrowthRate = (tier: DealTierData): number => {
+    const currentValue = tier.annualRevenue || 0;
+    const previousValue = getPreviousYearValue();
+    
+    if (previousValue === 0) return 0;
+    return (currentValue - previousValue) / previousValue;
+  };
+  
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
@@ -1759,7 +1847,157 @@ export default function SubmitDeal() {
                 </div>
                 </div> {/* This is the closing tag for the div that opened on line 869 */}
                 
-                {/* Space for new financial calculation structure - will be implemented separately */}
+                {/* Financial Summary Table - Calculated values for each tier */}
+                <div className="mt-8 mb-6 bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                    Financial Summary (Automatic Calculations)
+                  </h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Financial Metric</th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                          {dealTiers.map(tier => (
+                            <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
+                              Tier {tier.tierNumber}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Total Incentive Cost */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Total Incentive Cost</div>
+                            <div className="text-xs text-slate-500">All incentives applied to this tier</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(0)} {/* Last year value */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate total incentive cost for this tier
+                            const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(incentiveCost)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Gross Profit (New) */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Gross Profit (New)</div>
+                            <div className="text-xs text-slate-500">Revenue minus cost and incentives</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(getPreviousYearGrossProfit())} {/* Last year value */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate gross profit for this tier
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(grossProfit)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Cost Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Cost Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in costs vs last year</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate cost growth rate for this tier
+                            const costGrowthRate = calculateCostGrowthRate(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={costGrowthRate > 0 ? "text-red-600" : "text-green-600"}>
+                                  {formatPercentage(costGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Gross Profit Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Gross Profit Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in profit vs last year</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate profit growth rate for this tier
+                            const profitGrowthRate = calculateProfitGrowthRate(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                  {formatPercentage(profitGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Total Client Value */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Total Client Value</div>
+                            <div className="text-xs text-slate-500">Projected value over contract term</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(getPreviousYearValue())} {/* Last year value */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate total value for this tier over contract term
+                            const contractTerm = Number(form.getValues("contractTerm")) || 12;
+                            const monthlyValue = (tier.annualRevenue || 0) / 12;
+                            const totalValue = monthlyValue * contractTerm;
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(totalValue)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Client Value Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Client Value Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in client value</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate client value growth rate for this tier
+                            const valueGrowthRate = calculateValueGrowthRate(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                  {formatPercentage(valueGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
                 
                 <div className="mt-8 flex justify-between">
                   <Button
