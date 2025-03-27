@@ -335,41 +335,37 @@ export default function SubmitDeal() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-slate-50 to-white">
       <div className="container mx-auto py-8 px-4 md:px-8">
-        {/* Page Header with Improved Styling */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 pb-6 border-b border-purple-100">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">Deal Submission</h1>
-            <p className="text-slate-600 text-lg">Submit and track commercial deals for approval</p>
+            <h1 className="text-3xl font-bold mb-2">Deal Submission</h1>
+            <p className="text-gray-600">Submit and track commercial deals for approval</p>
           </div>
-          <div className="mt-4 md:mt-0 flex items-center">
-            <div className="mr-3 text-sm text-slate-500">Current phase:</div>
-            <span className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm">Step 2 of 2</span>
+          <div className="mt-4 md:mt-0">
+            <span className="px-3 py-1 text-sm rounded bg-blue-100 text-blue-800">Step 2 of 2</span>
           </div>
         </div>
         
-        {/* About Deal Section with Enhanced Cards */}
-        <div className="mb-12">
-          <h3 className="text-xl font-semibold text-slate-800 mb-6 flex items-center">
-            <span className="h-6 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-3"></span>
+        {/* About Deal Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">
             About Deal Submission
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-md p-6 border-0 hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1">
-              <h4 className="font-semibold text-slate-900 mb-3 text-lg flex items-center">
-                <span className="w-8 h-8 mr-2 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">1</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border p-4 rounded-md">
+              <h4 className="font-medium mb-2">
                 What is Deal Submission?
               </h4>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-gray-600">
                 Deal submission is where you formally propose a commercial deal for approval. This form collects all required information about deal structure, revenue, and incentives.
               </p>
             </div>
             
-            <div className="bg-white rounded-xl shadow-md p-6 border-0 hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1">
-              <h4 className="font-semibold text-slate-900 mb-3 text-lg flex items-center">
-                <span className="w-8 h-8 mr-2 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">2</span>
+            <div className="border p-4 rounded-md">
+              <h4 className="font-medium mb-2">
                 Deal Approval Process
               </h4>
-              <ol className="text-sm text-slate-600 list-decimal list-outside ml-5 space-y-2">
+              <ol className="text-sm text-gray-600 list-decimal list-outside ml-5 space-y-1">
                 <li>Complete and submit this form</li>
                 <li>Appropriate approvers review the deal terms</li>
                 <li>You'll receive updates on approval status</li>
@@ -377,12 +373,11 @@ export default function SubmitDeal() {
               </ol>
             </div>
             
-            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl shadow-md p-6 border-0 hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1">
-              <h4 className="font-semibold text-indigo-800 mb-3 text-lg flex items-center">
-                <span className="w-8 h-8 mr-2 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700">✓</span>
+            <div className="border p-4 rounded-md">
+              <h4 className="font-medium mb-2">
                 Tips for Faster Approval
               </h4>
-              <ul className="text-sm text-indigo-700 list-disc list-outside ml-5 space-y-2">
+              <ul className="text-sm text-gray-600 list-disc list-outside ml-5 space-y-1">
                 <li>Include all required documentation</li>
                 <li>Clearly explain any non-standard terms</li>
                 <li>For urgent deals, add a note in the comments</li>
@@ -392,13 +387,12 @@ export default function SubmitDeal() {
           </div>
         </div>
         
-        {/* Submit Deal Form Section - Enhanced */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-10 border border-purple-50">
-          <div className="flex items-center mb-2">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h2>
-            <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
+        {/* Submit Deal Form Section */}
+        <div className="bg-white p-6 mb-8 border rounded-md">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold">Submit New Deal</h2>
+            <p className="text-sm text-gray-500">Complete the form below to submit a new commercial deal for approval</p>
           </div>
-          <p className="mt-1 mb-6 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
         
           {/* Form Progress - Redesigned with better visual indicators */}
           <div className="mb-12">
@@ -489,11 +483,10 @@ export default function SubmitDeal() {
               {formStep === 0 && (
                 <CardContent className="p-8">
                   <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-slate-900 flex items-center">
-                      <span className="h-7 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-3"></span>
+                    <h2 className="text-xl font-semibold mb-2">
                       Basic Deal Information
                     </h2>
-                    <p className="mt-2 text-sm text-slate-500 ml-4 border-l-2 border-slate-200 pl-3">Provide the basic details about this commercial deal</p>
+                    <p className="text-sm text-gray-500 mb-4">Provide the basic details about this commercial deal</p>
                   </div>
                   
                   <div className="space-y-6">
@@ -698,10 +691,8 @@ export default function SubmitDeal() {
                       <Button 
                         type="button" 
                         onClick={() => nextStep()}
-                        className="px-8 py-6 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium flex items-center shadow-md hover:shadow-lg transition-all duration-200"
                       >
                         Next: Deal Structure & Pricing
-                        <ChevronRight className="ml-2 h-5 w-5" />
                       </Button>
                     </div>
                   </div>
@@ -712,8 +703,8 @@ export default function SubmitDeal() {
               {formStep === 1 && (
                 <CardContent className="p-6">
                   <div className="mb-6">
-                    <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
-                    <p className="mt-1 text-sm text-slate-500">Define your deal's structure, revenue tiers, and incentives</p>
+                    <h2 className="text-xl font-semibold mb-2">Deal Structure & Pricing</h2>
+                    <p className="text-sm text-gray-500 mb-4">Define your deal's structure, revenue tiers, and incentives</p>
                   </div>
                   
                   <div className="space-y-8">
@@ -803,7 +794,7 @@ export default function SubmitDeal() {
                       {dealStructureType === "tiered" && (
                         <div className="space-y-4 mt-6">
                           <div className="flex justify-between items-center">
-                            <h3 className="text-base font-medium text-slate-900">Tier Revenue Structure</h3>
+                            <h3 className="font-medium text-gray-800">Tier Revenue Structure</h3>
                             <div className="flex space-x-2">
                               <Button 
                                 variant="outline" 
@@ -938,7 +929,7 @@ export default function SubmitDeal() {
                       {/* Flat commit structure */}
                       {dealStructureType === "flat_commit" && (
                         <div className="space-y-4 mt-6">
-                          <h3 className="text-base font-medium text-slate-900">Flat Commit Structure</h3>
+                          <h3 className="font-medium text-gray-800">Flat Commit Structure</h3>
                           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -1014,8 +1005,8 @@ export default function SubmitDeal() {
                       
                       {/* Incentives Section */}
                       <div className="space-y-4 mt-8">
-                        <h3 className="text-base font-medium text-slate-900">Deal Incentives</h3>
-                        <p className="text-sm text-slate-500">Add incentives that will be offered as part of this deal</p>
+                        <h3 className="font-medium text-gray-800">Deal Incentives</h3>
+                        <p className="text-sm text-gray-500">Add incentives that will be offered as part of this deal</p>
                         
                         <IncentiveSelector 
                           dealTiers={dealTiers}
@@ -1099,26 +1090,9 @@ export default function SubmitDeal() {
                       </div>
                     </div>
                     
-                    <div className="flex justify-between pt-8">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={prevStep}
-                        className="px-6 py-5 rounded-full border-indigo-300 hover:bg-indigo-50 text-indigo-700 font-medium flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                          <path d="m15 18-6-6 6-6"/>
-                        </svg>
-                        Back: Deal Details
-                      </Button>
-                      <Button 
-                        type="button" 
-                        onClick={() => nextStep()}
-                        className="px-8 py-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium flex items-center shadow-md hover:shadow-lg transition-all duration-200"
-                      >
-                        Next: Review & Submit
-                        <ChevronRight className="ml-2 h-5 w-5" />
-                      </Button>
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>Back: Deal Details</Button>
+                      <Button type="button" onClick={() => nextStep()}>Next: Review & Submit</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -1128,19 +1102,17 @@ export default function SubmitDeal() {
               {formStep === 2 && (
                 <CardContent className="p-8">
                   <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-slate-900 flex items-center">
-                      <span className="h-7 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-3"></span>
+                    <h2 className="text-xl font-semibold mb-2">
                       Review & Submit
                     </h2>
-                    <p className="mt-2 text-sm text-slate-500 ml-4 border-l-2 border-slate-200 pl-3">Review your deal details before submission</p>
+                    <p className="text-sm text-gray-500 mb-4">Review your deal details before submission</p>
                   </div>
                   
                   <div className="space-y-8">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                       {/* Deal Details Summary */}
                       <div className="space-y-4">
-                        <h3 className="text-base font-medium text-indigo-800 flex items-center mb-4">
-                          <span className="h-5 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-2"></span>
+                        <h3 className="text-base font-medium text-gray-800 mb-4">
                           Deal Details
                         </h3>
                         <div className="grid grid-cols-1 gap-4">
@@ -1176,8 +1148,7 @@ export default function SubmitDeal() {
                       
                       {/* Structure & Pricing Summary */}
                       <div className="space-y-4">
-                        <h3 className="text-base font-medium text-indigo-800 flex items-center mb-4">
-                          <span className="h-5 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-2"></span>
+                        <h3 className="text-base font-medium text-gray-800 mb-4">
                           Deal Structure
                         </h3>
                         <div className="grid grid-cols-1 gap-4">
@@ -1219,67 +1190,54 @@ export default function SubmitDeal() {
                     
                     {/* Incentives */}
                     <div className="space-y-4">
-                      <h3 className="text-base font-medium text-indigo-800 flex items-center mb-4">
-                        <span className="h-5 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-2"></span>
+                      <h3 className="text-base font-medium text-gray-800 mb-4">
                         Incentives & Benefits
                       </h3>
                       
                       {selectedIncentives.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {selectedIncentives.map((incentive, index) => (
-                            <div 
-                              key={index} 
-                              className="bg-gradient-to-br from-white to-indigo-50 rounded-xl p-5 shadow-sm border border-indigo-100 hover:shadow-md transition-shadow duration-200"
-                            >
+                            <div key={index} className="border p-4 rounded-md">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <div className="text-indigo-900 font-medium mb-1">{incentive.option}</div>
-                                  <div className="text-xs text-indigo-600 bg-indigo-100 rounded-full px-2 py-0.5 inline-block">
+                                  <div className="font-medium">{incentive.option}</div>
+                                  <div className="text-sm text-gray-600">
                                     {incentive.categoryId} / {incentive.subCategoryId}
                                   </div>
                                 </div>
-                                <div className="flex flex-col items-end">
-                                  <div className="text-sm font-medium text-slate-700 bg-white rounded-full px-3 py-1 shadow-sm flex items-center">
-                                    <span className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></span>
+                                <div>
+                                  <div>
                                     {Object.keys(incentive.tierValues).length} {dealStructureType === "tiered" ? "Tiers" : "Value"}
                                   </div>
                                   {Object.values(incentive.tierValues).reduce((total, val) => total + val, 0) > 0 && (
-                                    <div className="text-sm text-green-700 font-medium mt-2">
+                                    <div>
                                       {formatCurrency(Object.values(incentive.tierValues).reduce((total, val) => total + val, 0))}
                                     </div>
                                   )}
                                 </div>
                               </div>
                               {incentive.notes && (
-                                <div className="mt-3 text-xs text-slate-600 bg-white p-3 rounded-lg border border-indigo-100">
-                                  <span className="font-semibold text-indigo-800">Notes:</span> {incentive.notes}
+                                <div className="mt-3 text-sm border-t pt-2">
+                                  <span className="font-medium">Notes:</span> {incentive.notes}
                                 </div>
                               )}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 text-center">
-                          <div className="text-slate-400 mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                              <polygon points="7 10 12 15 17 10"></polygon>
-                              <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                          </div>
-                          <div className="text-sm text-slate-500 font-medium">No incentives added to this deal</div>
+                        <div className="border p-4 rounded-md text-center">
+                          <div className="text-gray-500">No incentives added to this deal</div>
                         </div>
                       )}
                     </div>
                     
                     {/* Approval Requirements */}
-                    <div className="space-y-4 bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
-                      <h3 className="text-base font-medium text-indigo-800 flex items-center mb-4">
-                        <span className="h-5 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full mr-2"></span>
+                    <div className="space-y-4 border p-4 rounded-md">
+                      <h3 className="font-medium">
                         Approval Requirements
                       </h3>
                       
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div>
                         <ApprovalAlert 
                           totalValue={dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)}
                           hasNonStandardTerms={!!form.getValues("hasNonStandardTerms")}
@@ -1291,98 +1249,52 @@ export default function SubmitDeal() {
                       </div>
                       
                       {hasNonStandardTerms && (
-                        <Alert className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg shadow-sm">
-                          <div className="flex items-start">
-                            <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
-                            <div>
-                              <AlertTitle className="text-amber-800 font-semibold">Non-standard Terms</AlertTitle>
-                              <AlertDescription className="text-amber-700">
-                                {form.getValues("nonStandardTermsDetails")}
-                              </AlertDescription>
-                            </div>
-                          </div>
+                        <Alert variant="destructive">
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          <AlertTitle>Non-standard Terms</AlertTitle>
+                          <AlertDescription>
+                            {form.getValues("nonStandardTermsDetails")}
+                          </AlertDescription>
                         </Alert>
                       )}
                     </div>
                     
-                    <div className="flex justify-between pt-8">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={prevStep}
-                        className="px-6 py-5 rounded-full border-indigo-300 hover:bg-indigo-50 text-indigo-700 font-medium flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                          <path d="m15 18-6-6 6-6"/>
-                        </svg>
-                        Back: Deal Structure
-                      </Button>
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>Back: Deal Structure</Button>
                       
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button 
-                            className="px-8 py-5 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium flex items-center shadow-md hover:shadow-lg transition-all duration-200"
-                            disabled={createDeal.isPending}
-                          >
-                            {createDeal.isPending ? (
-                              <>
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Submitting...
-                              </>
-                            ) : (
-                              <>
-                                Submit Deal for Approval
-                                <CheckCircle className="ml-2 h-5 w-5" />
-                              </>
-                            )}
+                          <Button disabled={createDeal.isPending}>
+                            {createDeal.isPending ? "Submitting..." : "Submit Deal for Approval"}
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="rounded-xl border-0 shadow-xl">
+                        <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="text-xl font-semibold text-slate-900 flex items-center">
-                              <CheckCircle className="h-6 w-6 text-green-500 mr-2" />
+                            <AlertDialogTitle>
                               Confirm Deal Submission
                             </AlertDialogTitle>
-                            <AlertDialogDescription className="mt-3 text-base text-slate-600">
-                              <p className="mb-4">
+                            <AlertDialogDescription>
+                              <p>
                                 Are you sure you want to submit this deal for approval? Once submitted, you won't be able to edit the details until it's reviewed.
                               </p>
-                              <div className="bg-amber-50 p-4 rounded-lg mb-3 text-amber-800 border border-amber-200 text-sm">
-                                <div className="flex items-start">
-                                  <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                                  <div>
-                                    <p className="font-medium mb-1">Important: Required Approvals</p>
-                                    <p>This deal will require approval from: <span className="font-semibold">{requiredApprover}</span></p>
-                                    {approvalInfo && (
-                                      <p className="mt-1 text-xs">Estimated approval time: {approvalInfo.estimatedTime}</p>
-                                    )}
-                                  </div>
-                                </div>
+                              <div className="border p-4 rounded-md my-4">
+                                <p className="font-medium">Required Approvals</p>
+                                <p>This deal will require approval from: {requiredApprover}</p>
+                                {approvalInfo && (
+                                  <p>Estimated approval time: {approvalInfo.estimatedTime}</p>
+                                )}
                               </div>
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter className="gap-3">
-                            <AlertDialogCancel className="rounded-full px-4 py-2 border-slate-300">
+                            <AlertDialogCancel>
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction 
                               onClick={() => form.handleSubmit(onSubmit)()}
                               disabled={createDeal.isPending}
-                              className="rounded-full px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                             >
-                              {createDeal.isPending ? (
-                                <span className="flex items-center">
-                                  <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                  </svg>
-                                  Submitting...
-                                </span>
-                              ) : "Submit Deal"
-                              }
+                              {createDeal.isPending ? "Submitting..." : "Submit Deal"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
