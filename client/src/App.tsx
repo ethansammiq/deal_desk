@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import SubmitDeal from "@/pages/SubmitDeal";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
+import Home from "@/pages/Home";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ChatProvider } from "@/lib/chat-context";
@@ -48,11 +49,13 @@ function Router() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={HelpResources} />
+        <Route path="/" component={Home} />
         <Route path="/support" component={RequestSupport} />
+        <Route path="/request-support" component={RequestSupport} />
         <Route path="/submit-deal" component={SubmitDeal} />
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/help" component={HelpResources} /> {/* Keep support for old URL */}
+        <Route path="/help" component={HelpResources} />
+        <Route path="/deals" component={Dashboard} />
         {/* Fallback to 404 */}
         <Route component={NotFound} />
       </Switch>
