@@ -2276,7 +2276,17 @@ export default function SubmitDeal() {
                                   <tr key={incentive.tierId}>
                                     <td className="p-2 border border-slate-200">Tier {incentive.tierId}</td>
                                     <td className="p-2 border border-slate-200">
-                                      {incentive.type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                                      {(() => {
+                                        // Use a mapping for incentive types
+                                        const incentiveTypeMap: Record<string, string> = {
+                                          "rebate": "Rebate",
+                                          "discount": "Discount",
+                                          "bonus": "Bonus",
+                                          "other": "Other"
+                                        };
+                                        
+                                        return incentiveTypeMap[incentive.type] || incentive.type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+                                      })()}
                                     </td>
                                     <td className="p-2 border border-slate-200">{incentive.percentage}%</td>
                                     <td className="p-2 border border-slate-200">
