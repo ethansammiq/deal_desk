@@ -321,7 +321,7 @@ export default function RequestSupport() {
                 activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
               )}
             >
-              Opportunity Identification
+              Opportunity Assessment
             </div>
           </div>
         </div>
