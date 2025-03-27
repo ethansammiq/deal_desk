@@ -552,7 +552,7 @@ export default function RequestSupport() {
       </Card>
       
       {/* Navigation Buttons - Completely moved outside card and form */}
-      <div className="border-t border-slate-200 mt-10 pt-10">
+      <div className="mt-5">
         {activeTab === "sales-channel" && (
           <div className="flex justify-end">
             <Button 
