@@ -2008,11 +2008,6 @@ export default function SubmitDeal() {
                 
 
                 
-                {/* Standard Deal Criteria Help moved here from Step 2 */}
-                <div className="mb-12">
-                  <StandardDealCriteriaHelp />
-                </div>
-                
                 {/* Review Sections */}
                 <div className="space-y-10">
                   {/* Deal Information Section */}
@@ -2312,12 +2307,16 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                   
-                  {/* Approval Information */}
+                  {/* DealGenie Assessment */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">Approval Information</h3>
+                      <h3 className="text-sm font-medium text-slate-700">DealGenie Assessment</h3>
                     </div>
                     <div className="p-4">
+                      <div className="mb-6">
+                        <StandardDealCriteriaHelp />
+                      </div>
+                      
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Required Approvals</dt>
@@ -2326,6 +2325,15 @@ export default function SubmitDeal() {
                               <li>Finance Team</li>
                               <li>Regional Director</li>
                             </ul>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Deal Classification</dt>
+                          <dd className="mt-1 text-sm">
+                            <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                              Non-Standard Deal
+                            </span>
+                            <p className="mt-1 text-slate-700">Based on the incentive structure and revenue thresholds, this deal requires additional review.</p>
                           </dd>
                         </div>
                       </dl>
