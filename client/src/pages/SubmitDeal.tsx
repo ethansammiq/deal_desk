@@ -615,75 +615,88 @@ export default function SubmitDeal() {
         <p className="mt-1 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
       </div>
       
-      {/* Form Progress - Modified to be clickable with closer spacing and centered labels */}
+      {/* Form Progress - Modified to be clickable with centered labels */}
       <div className="mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-3/4 flex items-center">
-            <div 
-              onClick={() => prevStep()}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                formStep >= 0 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-              )}
-            >
-              1
+        <div className="flex items-center justify-center mb-6">
+          <div className="w-3/4 flex items-center relative">
+            {/* Step lines (connecting lines) */}
+            <div className="absolute top-1/2 left-0 w-full transform -translate-y-1/2 z-0">
+              <div className="flex">
+                <div className={cn(
+                  "h-1 flex-1 mx-5",
+                  formStep >= 1 ? "bg-primary" : "bg-slate-200"
+                )}></div>
+                <div className={cn(
+                  "h-1 flex-1 mx-5",
+                  formStep >= 2 ? "bg-primary" : "bg-slate-200"
+                )}></div>
+              </div>
             </div>
-            <div className={cn(
-              "w-full h-1 bg-slate-200 mx-1", // Added mx-1 to bring steps closer
-              formStep >= 1 ? "bg-primary" : ""
-            )}></div>
-            <div 
-              onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-              )}
-            >
-              2
-            </div>
-            <div className={cn(
-              "w-full h-1 bg-slate-200 mx-1", // Added mx-1 to bring steps closer
-              formStep >= 2 ? "bg-primary" : ""
-            )}></div>
-            <div 
-              onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-              )}
-            >
-              3
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-center text-sm text-slate-600">
-          <div className="w-3/4 flex justify-between">
-            <div 
-              onClick={() => prevStep()}
-              className={cn(
-                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
-                formStep === 0 ? "font-medium text-primary" : ""
-              )}
-            >
-              Deal Details
-            </div>
-            <div 
-              onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)} 
-              className={cn(
-                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
-                formStep === 1 ? "font-medium text-primary" : ""
-              )}
-            >
-              Deal Structure & Pricing
-            </div>
-            <div 
-              onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
-              className={cn(
-                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
-                formStep === 2 ? "font-medium text-primary" : ""
-              )}
-            >
-              Review & Submit
+            
+            {/* Step indicators with absolute positioning for the labels */}
+            <div className="flex justify-between w-full relative z-10">
+              <div className="flex flex-col items-center">
+                <div 
+                  onClick={() => prevStep()}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity mb-3",
+                    formStep >= 0 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  1
+                </div>
+                <div 
+                  onClick={() => prevStep()}
+                  className={cn(
+                    "text-center whitespace-nowrap cursor-pointer hover:text-primary transition-colors w-28", 
+                    formStep === 0 ? "font-medium text-primary" : "text-slate-600"
+                  )}
+                >
+                  Deal Details
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div 
+                  onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity mb-3",
+                    formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  2
+                </div>
+                <div 
+                  onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)}
+                  className={cn(
+                    "text-center whitespace-nowrap cursor-pointer hover:text-primary transition-colors w-40", 
+                    formStep === 1 ? "font-medium text-primary" : "text-slate-600"
+                  )}
+                >
+                  Deal Structure & Pricing
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div 
+                  onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity mb-3",
+                    formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  3
+                </div>
+                <div 
+                  onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
+                  className={cn(
+                    "text-center whitespace-nowrap cursor-pointer hover:text-primary transition-colors w-28", 
+                    formStep === 2 ? "font-medium text-primary" : "text-slate-600"
+                  )}
+                >
+                  Review & Submit
+                </div>
+              </div>
             </div>
           </div>
         </div>
