@@ -48,6 +48,17 @@ export function TopNavbar() {
             {/* Navigation Links - Each with fixed width */}
             <nav className="hidden md:flex md:space-x-2 flex-1 justify-center">
               {/* Each nav item has fixed width to prevent shifting */}
+              <Link href="/">
+                <div className={cn(
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  location === "/" 
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                )}>
+                  <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Home</span>
+                </div>
+              </Link>
               <Link href="/help">
                 <div className={cn(
                   "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
@@ -68,17 +79,6 @@ export function TopNavbar() {
                 )}>
                   <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
                   <span className="whitespace-nowrap">Deal Requests</span>
-                </div>
-              </Link>
-              <Link href="/">
-                <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/" 
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Home</span>
                 </div>
               </Link>
             </nav>
@@ -134,6 +134,19 @@ export function TopNavbar() {
               Commercial Deal Desk
             </h2>
           </div>
+          <Link href="/">
+            <div className={cn(
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
+              location === "/" 
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
+            )}>
+              <div className="flex items-center">
+                <LayoutDashboardIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Home</span>
+              </div>
+            </div>
+          </Link>
           <Link href="/help">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
@@ -157,19 +170,6 @@ export function TopNavbar() {
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2 flex-shrink-0" />
                 <span>Deal Requests</span>
-              </div>
-            </div>
-          </Link>
-          <Link href="/">
-            <div className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              location === "/" 
-                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
-            )}>
-              <div className="flex items-center">
-                <LayoutDashboardIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Home</span>
               </div>
             </div>
           </Link>

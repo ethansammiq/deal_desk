@@ -1,21 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   BarChart3, 
   ClipboardList, 
   FileQuestion, 
   FileText, 
-  LifeBuoy, 
-  PieChart, 
   PlusCircle, 
-  Users2,
   TrendingUp,
-  LucideIcon
+  type LucideIcon
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -37,35 +34,7 @@ interface Deal {
   status: string;
 }
 
-interface QuickLinkCardProps {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  linkTo: string;
-  buttonText: string;
-  color: string;
-}
 
-const QuickLinkCard = ({ title, description, icon: Icon, linkTo, buttonText, color }: QuickLinkCardProps) => (
-  <Card className="h-full">
-    <CardHeader className="pb-2">
-      <div className="flex items-center space-x-2">
-        <div className={`p-2 rounded-md ${color}`}>
-          <Icon className="h-5 w-5 text-white" />
-        </div>
-        <CardTitle className="text-lg">{title}</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="pb-4">
-      <CardDescription className="mt-2 min-h-[60px]">{description}</CardDescription>
-    </CardContent>
-    <CardFooter>
-      <Button asChild className="w-full">
-        <Link to={linkTo}>{buttonText}</Link>
-      </Button>
-    </CardFooter>
-  </Card>
-);
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("pending");
@@ -126,10 +95,10 @@ export default function Home() {
       </div>
       
       {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Total Deals</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Active Deals</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -138,7 +107,13 @@ export default function Home() {
                 <BarChart3 className="h-5 w-5 text-slate-600" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-2">Total value: {formatCurrency(dealStats.totalValue)}</p>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-slate-500">Total value</p>
+              <p className="text-xs font-semibold">{formatCurrency(dealStats.totalValue)}</p>
+            </div>
+            <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
+              <div className="bg-slate-400 h-1 rounded-full" style={{ width: '100%' }}></div>
+            </div>
           </CardContent>
         </Card>
         
@@ -153,13 +128,19 @@ export default function Home() {
                 <ClipboardList className="h-5 w-5 text-amber-600" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-2">{pendingPercentage}% of total deals</p>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-slate-500">Of total deals</p>
+              <p className="text-xs font-semibold">{pendingPercentage}%</p>
+            </div>
+            <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
+              <div className="bg-amber-400 h-1 rounded-full" style={{ width: `${pendingPercentage}%` }}></div>
+            </div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Approved</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Approved Deals</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -168,65 +149,101 @@ export default function Home() {
                 <TrendingUp className="h-5 w-5 text-green-600" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-2">{approvedPercentage}% of total deals</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Team Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">7</div>
-              <div className="p-2 bg-indigo-100 rounded-full">
-                <Users2 className="h-5 w-5 text-indigo-600" />
-              </div>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-slate-500">Of total deals</p>
+              <p className="text-xs font-semibold">{approvedPercentage}%</p>
             </div>
-            <p className="text-xs text-slate-500 mt-2">Across 3 regions</p>
+            <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
+              <div className="bg-green-400 h-1 rounded-full" style={{ width: `${approvedPercentage}%` }}></div>
+            </div>
           </CardContent>
         </Card>
       </div>
       
-      {/* Quick Links */}
+      {/* Actions Required */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <QuickLinkCard
-            title="Deal Scoping"
-            description="Need help scoping a new commercial deal? Start here for guided assistance."
-            icon={FileQuestion}
-            linkTo="/request-support"
-            buttonText="Start Scoping"
-            color="bg-blue-600"
-          />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Actions Required</h2>
+          <Button variant="outline" size="sm" className="text-sm">
+            View all
+          </Button>
+        </div>
+        
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between">
+                <div className="flex items-start space-x-4">
+                  <div className="p-2 bg-amber-100 rounded-md">
+                    <FileQuestion className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-base mb-1">Additional Information Required</h3>
+                    <p className="text-sm text-slate-600">
+                      Deal <Link to="/deals/3" className="text-primary font-medium hover:underline">Nike Digital Transformation (DL-2023-89)</Link> requires additional tier information for Q3 incentives.
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 mr-2">High Priority</Badge>
+                      <span className="text-xs text-slate-500">Requested by Olivia Chen • Due in 2 days</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Button size="sm">Respond</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
-          <QuickLinkCard
-            title="Submit Deal"
-            description="Ready to submit a fully formed deal? Complete the submission form."
-            icon={FileText}
-            linkTo="/submit-deal"
-            buttonText="Submit Deal"
-            color="bg-purple-600"
-          />
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between">
+                <div className="flex items-start space-x-4">
+                  <div className="p-2 bg-blue-100 rounded-md">
+                    <ClipboardList className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-base mb-1">Deal Approval Pending</h3>
+                    <p className="text-sm text-slate-600">
+                      Deal <Link to="/deals/5" className="text-primary font-medium hover:underline">Amazon Prime Video (DL-2023-92)</Link> is awaiting your review and approval.
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 mr-2">Medium Priority</Badge>
+                      <span className="text-xs text-slate-500">Submitted by Thomas Wright • 1 day ago</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Button size="sm">Review</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
-          <QuickLinkCard
-            title="Help Resources"
-            description="Browse our knowledge base, processes, and best practices."
-            icon={LifeBuoy}
-            linkTo="/help"
-            buttonText="View Resources"
-            color="bg-emerald-600"
-          />
-          
-          <QuickLinkCard
-            title="Analytics"
-            description="View detailed reports and insights on your commercial deal performance."
-            icon={PieChart}
-            linkTo="/analytics"
-            buttonText="View Analytics"
-            color="bg-amber-600"
-          />
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between">
+                <div className="flex items-start space-x-4">
+                  <div className="p-2 bg-purple-100 rounded-md">
+                    <FileText className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-base mb-1">Contract Documentation Needed</h3>
+                    <p className="text-sm text-slate-600">
+                      Deal <Link to="/deals/7" className="text-primary font-medium hover:underline">Microsoft Enterprise (DL-2023-95)</Link> is missing required legal documentation.
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Badge className="bg-purple-100 text-purple-800 border-purple-200 mr-2">Low Priority</Badge>
+                      <span className="text-xs text-slate-500">Requested by Legal Team • Due in 5 days</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Button size="sm">Upload</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       
