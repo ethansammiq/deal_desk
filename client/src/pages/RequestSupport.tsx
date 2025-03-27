@@ -311,11 +311,11 @@ export default function RequestSupport() {
           
           {/* Labels */}
           <div className="flex justify-between mt-2 text-sm">
-            <div className="w-32 text-center -ml-11">
+            <div className="w-44 text-center" style={{ marginLeft: "-68px" }}>
               <span 
                 onClick={() => setActiveTab("sales-channel")} 
                 className={cn(
-                  "cursor-pointer hover:text-primary transition-colors", 
+                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap", 
                   activeTab === "sales-channel" ? "font-medium text-primary" : "text-slate-600"
                 )}
               >
@@ -323,11 +323,11 @@ export default function RequestSupport() {
               </span>
             </div>
             
-            <div className="w-32 text-center -mr-11">
+            <div className="w-44 text-center" style={{ marginRight: "-68px" }}>
               <span 
                 onClick={() => setActiveTab("growth-opportunity")} 
                 className={cn(
-                  "cursor-pointer hover:text-primary transition-colors", 
+                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap", 
                   activeTab === "growth-opportunity" ? "font-medium text-primary" : "text-slate-600"
                 )}
               >
