@@ -620,21 +620,7 @@ export default function SubmitDeal() {
         <div className="w-3/4 mx-auto relative">
           {/* Progress Bar */}
           <div className="flex items-center justify-between">
-            {/* Create each connecting line as a separate element */}
-            
-            {/* First connecting line - Between step 1 and 2 (stops at step 2) */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 top-5",
-              formStep >= 1 ? "bg-primary" : ""
-            )} style={{ left: "10px", width: "calc(33.3% - 15px)" }}></div>
-            
-            {/* Second connecting line - Between step 2 and 3 (starts after step 2) */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 top-5",
-              formStep >= 2 ? "bg-primary" : ""
-            )} style={{ left: "calc(66.6% - 5px)", width: "calc(33.3% - 5px)" }}></div>
-            
-            {/* Step 1 */}
+            {/* Step 1 Circle */}
             <div 
               onClick={() => prevStep()}
               className={cn(
@@ -645,7 +631,14 @@ export default function SubmitDeal() {
               1
             </div>
             
-            {/* Step 2 */}
+            {/* Connecting Line */}
+            <div className={cn(
+              "absolute h-1 bg-slate-200 left-10 right-10 top-5",
+              formStep >= 1 && formStep < 2 ? "bg-gradient-to-r from-primary via-primary to-slate-200" : 
+              formStep >= 2 ? "bg-primary" : ""
+            )}></div>
+            
+            {/* Step 2 Circle */}
             <div 
               onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)}
               className={cn(
@@ -656,7 +649,7 @@ export default function SubmitDeal() {
               2
             </div>
             
-            {/* Step 3 */}
+            {/* Step 3 Circle */}
             <div 
               onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
               className={cn(
