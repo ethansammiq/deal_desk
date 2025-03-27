@@ -27,7 +27,7 @@ export function Breadcrumbs() {
       </Link>
       
       <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
-      <span className="font-medium text-[#3e0075] bg-[#f1e9fd] px-3 py-1 rounded-md border border-[#e9ddff] shadow-sm">{currentTitle}</span>
+      <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">{currentTitle}</span>
     </div>
   );
 }
