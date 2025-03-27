@@ -30,16 +30,16 @@ export function Breadcrumbs() {
       { title: "Home", path: "/", id: "home" }
     ];
     
-    // Deal Scoping has a parent of Deal Requests
+    // Deal Scoping has a parent of Deal Requests (non-clickable grouping)
     if (location === "/request-support") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", id: "deal-requests" });
+      breadcrumbs.push({ title: "Deal Requests", path: "#", id: "deal-requests-group" });
       breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
-    // Deal Submission has a parent of Deal Requests but shows "Deal Submission" text
+    // Deal Submission has a parent of Deal Requests (non-clickable grouping)
     if (location === "/submit-deal") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", id: "deal-requests" });
+      breadcrumbs.push({ title: "Deal Requests", path: "#", id: "deal-requests-group" });
       breadcrumbs.push({ title: "Deal Submission", path: "/submit-deal", isActive: true, id: "deal-submission" });
       return breadcrumbs;
     }
