@@ -6,8 +6,7 @@ import { useLocation } from "wouter";
 const pathToTitle: Record<string, string> = {
   "/": "Support Desk",
   "/help": "Help Resources",
-  "/support": "Deal Requests",
-  "/request-support": "Deal Scoping",
+  "/support": "Deal Scoping",
   "/submit-deal": "Deal Submission",
   "/dashboard": "Deal Dashboard"
 };
@@ -32,9 +31,9 @@ export function Breadcrumbs() {
     ];
     
     // Deal Scoping has a parent of Deal Requests (non-clickable grouping)
-    if (location === "/request-support") {
+    if (location === "/support") {
       breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
-      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
+      breadcrumbs.push({ title: "Deal Scoping", path: "/support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
