@@ -2206,11 +2206,105 @@ export default function SubmitDeal() {
                       <h3 className="text-sm font-medium text-slate-700">Deal Structure Summary</h3>
                     </div>
                     <div className="p-4">
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-slate-600 mb-6">
                         {dealStructureType === "tiered" 
                           ? `This deal uses a tiered structure with ${dealTiers.length} tier${dealTiers.length !== 1 ? 's' : ''}.`
                           : "This deal uses a flat commitment structure."}
                       </div>
+                      
+                      {/* Financial Summary */}
+                      {dealTiers.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-slate-700 mb-3">Financial Summary</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-sm">
+                              <thead>
+                                <tr>
+                                  <th className="text-left p-2 bg-slate-100 border border-slate-200">Metric</th>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
+                                    <th key={tier.tierNumber} className="text-left p-2 bg-slate-100 border border-slate-200">
+                                      Tier {tier.tierNumber}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Annual Revenue */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Annual Revenue</td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
+                                    <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      {formatCurrency(tier.annualRevenue || 0)}
+                                    </td>
+                                  ))}
+                                </tr>
+                                
+                                {/* Revenue Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Revenue Growth Rate</td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
+                                    const growthRate = calculateValueGrowthRate(tier);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                        <span className={growthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {(growthRate * 100).toFixed(1)}%
+                                        </span>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Gross Margin Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Gross Margin (Adjusted) Growth Rate</td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
+                                    const profitGrowthRate = calculateProfitGrowthRate(tier);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                        <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {(profitGrowthRate * 100).toFixed(1)}%
+                                        </span>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Total Incentive Cost */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Total Incentive Cost</td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
+                                    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                        {formatCurrency(incentiveCost)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Client Value Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Client Value Growth Rate</td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
+                                    // Using a fixed calculation for client value as 40% of revenue
+                                    const clientValue = (tier.annualRevenue || 0) * 0.4;
+                                    const lastYearValue = 850000 * 0.4; // 40% of last year's revenue
+                                    const growthRate = (clientValue / lastYearValue) - 1;
+                                    
+                                    return (
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                        <span className={growthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {(growthRate * 100).toFixed(1)}%
+                                        </span>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
