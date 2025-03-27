@@ -1929,11 +1929,11 @@ export default function SubmitDeal() {
                           })}
                         </tr>
                         
-                        {/* Gross Profit Growth Rate */}
+                        {/* Gross Profit (New) Growth Rate */}
                         <tr>
                           <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Gross Profit Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in profit vs last year</div>
+                            <div className="font-medium">Gross Profit (New) Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in new profit vs last year</div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
                             — {/* Baseline */}
@@ -1958,16 +1958,14 @@ export default function SubmitDeal() {
                             <div className="text-xs text-slate-500">Projected value over contract term</div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(getPreviousYearValue())} {/* Last year value */}
+                            {formatCurrency(getPreviousYearValue() * 0.4)} {/* Last year value * 40% */}
                           </td>
                           {dealTiers.map(tier => {
-                            // Calculate total value for this tier over contract term
-                            const contractTerm = Number(form.getValues("contractTerm")) || 12;
-                            const monthlyValue = (tier.annualRevenue || 0) / 12;
-                            const totalValue = monthlyValue * contractTerm;
+                            // Calculate total value as 40% of the tier's revenue
+                            const clientValue = (tier.annualRevenue || 0) * 0.4;
                             return (
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                {formatCurrency(totalValue)}
+                                {formatCurrency(clientValue)}
                               </td>
                             );
                           })}
