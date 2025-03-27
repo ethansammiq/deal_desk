@@ -25,7 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { InfoIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
 // Schema for deal scoping requests
@@ -231,39 +232,28 @@ export default function RequestSupport() {
           <h1 className="text-2xl font-bold text-slate-900">Deal Scoping</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 ml-2">
-                <InfoIcon className="h-4 w-4 text-primary" />
-                <span className="sr-only">Deal Scoping Information</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-0">
-              <div className="p-4 bg-[#f6f0ff] border-b border-slate-200">
-                <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
-                <p className="text-sm text-slate-600 mt-1">
-                  Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities.
-                </p>
-              </div>
-            
-              <div className="p-4">
-                <h5 className="font-medium text-slate-800 mb-2">What Happens Next?</h5>
-                <ol className="text-sm text-slate-600 list-decimal list-inside space-y-1">
-                  <li>Our partnership team reviews your request</li>
-                  <li>A team member contacts you to schedule a discovery call</li>
-                  <li>Together, we'll craft a tailored proposal</li>
-                  <li>Once aligned, you can proceed to deal submission</li>
-                </ol>
-                
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <h5 className="font-medium text-blue-700 mb-1">Need Help?</h5>
-                  <p className="text-sm text-blue-600">
-                    For assistance, contact the partnership team at partnerships@example.com
-                  </p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="ml-2 cursor-help">
+                  <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </TooltipTrigger>
+              <TooltipContent className="w-80 p-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
+                  <p className="text-sm text-slate-700">Deal scoping is the first step in our deal process:</p>
+                  <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
+                    <li>Our partnership team reviews your request</li>
+                    <li>A team member contacts you to schedule a discovery call</li>
+                    <li>Together, we craft a tailored proposal</li>
+                    <li>Once aligned, you can proceed to deal submission</li>
+                  </ol>
+                  <p className="text-sm text-slate-700 mt-2">For assistance, contact the partnership team at partnerships@example.com</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         {/* Description */}
