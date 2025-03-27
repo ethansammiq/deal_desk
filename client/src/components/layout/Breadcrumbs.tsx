@@ -2,32 +2,80 @@ import { ChevronRight, Home } from "lucide-react";
 import { Link } from "wouter";
 import { useLocation } from "wouter";
 
+// Define the path to title mapping
 const pathToTitle: Record<string, string> = {
   "/": "Support Desk",
   "/help": "Help Resources",
-  "/support": "Deal Scoping",
+  "/support": "Deal Requests",
   "/request-support": "Deal Scoping",
   "/submit-deal": "Deal Submission",
   "/dashboard": "Deal Dashboard"
 };
 
+// Define breadcrumb structure for hierarchical paths
+interface BreadcrumbPath {
+  title: string;
+  path: string;
+  isActive?: boolean;
+}
+
 export function Breadcrumbs() {
   const [location] = useLocation();
   
-  // Get current path title
-  const currentTitle = pathToTitle[location] || "Page Not Found";
+  // Generate breadcrumb trail based on current path
+  const getBreadcrumbs = (): BreadcrumbPath[] => {
+    // Start with Home
+    const breadcrumbs: BreadcrumbPath[] = [
+      { title: "Home", path: "/" }
+    ];
+    
+    // Deal Scoping has a parent of Deal Requests
+    if (location === "/request-support") {
+      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal" });
+      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true });
+      return breadcrumbs;
+    }
+    
+    // Deal Submission has a parent of Deal Requests (which is itself)
+    if (location === "/submit-deal") {
+      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", isActive: true });
+      return breadcrumbs;
+    }
+    
+    // For other paths, just use the direct mapping
+    breadcrumbs.push({ 
+      title: pathToTitle[location] || "Page Not Found",
+      path: location,
+      isActive: true
+    });
+    
+    return breadcrumbs;
+  };
+  
+  const breadcrumbs = getBreadcrumbs();
   
   return (
     <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2.5 rounded-md shadow-sm border border-[#f0e6ff]">
-      <Link href="/">
-        <div className="flex items-center hover:text-[#3e0075] transition-all duration-200 cursor-pointer group">
-          <Home className="h-3.5 w-3.5 mr-1 group-hover:scale-110 transition-transform" />
-          <span className="group-hover:font-medium">Home</span>
+      {breadcrumbs.map((breadcrumb, index) => (
+        <div key={breadcrumb.path} className="flex items-center">
+          {index > 0 && <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />}
+          
+          {breadcrumb.isActive ? (
+            <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">
+              {breadcrumb.title}
+            </span>
+          ) : (
+            <Link href={breadcrumb.path}>
+              <div className="flex items-center hover:text-[#3e0075] transition-all duration-200 cursor-pointer group">
+                {index === 0 && (
+                  <Home className="h-3.5 w-3.5 mr-1 group-hover:scale-110 transition-transform" />
+                )}
+                <span className="group-hover:font-medium">{breadcrumb.title}</span>
+              </div>
+            </Link>
+          )}
         </div>
-      </Link>
-      
-      <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
-      <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">{currentTitle}</span>
+      ))}
     </div>
   );
 }
