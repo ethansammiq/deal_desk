@@ -287,8 +287,8 @@ export default function SubmitDeal() {
       businessSummary: "",
       
       // Client/Agency information
-      salesChannel: "independent_agency",
-      region: "west",
+      salesChannel: undefined,
+      region: undefined,
       advertiserName: "",
       agencyName: "",
       
@@ -762,7 +762,7 @@ export default function SubmitDeal() {
                           <FormLabel>Deal Type <span className="text-red-500">*</span></FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                            value={field.value || ""}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -795,7 +795,7 @@ export default function SubmitDeal() {
                           <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                            value={field.value || ""}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -823,7 +823,7 @@ export default function SubmitDeal() {
                           <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                            value={field.value || ""}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -855,7 +855,7 @@ export default function SubmitDeal() {
                             <FormLabel>Advertiser Name <span className="text-red-500">*</span></FormLabel>
                             <Select 
                               onValueChange={field.onChange} 
-                              defaultValue={field.value}
+                              value={field.value || ""}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -888,7 +888,7 @@ export default function SubmitDeal() {
                             <FormLabel>Agency Name <span className="text-red-500">*</span></FormLabel>
                             <Select 
                               onValueChange={field.onChange} 
-                              defaultValue={field.value}
+                              value={field.value || ""}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -992,7 +992,7 @@ export default function SubmitDeal() {
                                 field.onChange(value);
                                 setDealStructure(value as "tiered" | "flat_commit");
                               }}
-                              defaultValue={field.value}
+                              value={field.value || ""}
                             >
                               <FormControl>
                                 <SelectTrigger className="bg-slate-50">
