@@ -1997,8 +1997,7 @@ export default function SubmitDeal() {
             {formStep === 2 && (
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">Review and Submit</h2>
-                  <p className="mt-1 text-sm text-slate-500">Please review all information before submitting</p>
+                  <h2 className="text-lg font-medium text-slate-900">Review & Submit</h2>
                 </div>
                 
                 <div className="bg-slate-50 p-4 rounded-lg mb-6">
@@ -2206,11 +2205,7 @@ export default function SubmitDeal() {
                       <h3 className="text-sm font-medium text-slate-700">Deal Structure Summary</h3>
                     </div>
                     <div className="p-4">
-                      <div className="text-sm text-slate-600 mb-6">
-                        {dealStructureType === "tiered" 
-                          ? `This deal uses a tiered structure with ${dealTiers.length} tier${dealTiers.length !== 1 ? 's' : ''}.`
-                          : "This deal uses a flat commitment structure."}
-                      </div>
+
                       
                       {/* Financial Summary Table */}
                       {dealTiers.length > 0 && (
