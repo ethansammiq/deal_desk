@@ -1446,6 +1446,30 @@ export default function SubmitDeal() {
                                 ))}
                               </tr>
                               
+                              {/* Gross Margin Growth Rate Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  <div className="text-slate-700">-</div>
+                                </td>
+                                {dealTiers.map((tier) => {
+                                  // Get previous year margin
+                                  const previousYearMargin = getPreviousYearMargin() / 100;
+                                  // Calculate current tier margin
+                                  const currentMargin = (tier.annualGrossMarginPercent || 0) / 100;
+                                  // Calculate growth rate
+                                  const growthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
+                                  
+                                  return (
+                                    <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      <div className={`${growthRate > 0 ? "text-green-600" : "text-red-600"}`}>
+                                        {formatPercentage(growthRate)}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              
                               {/* Revenue Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
@@ -1486,48 +1510,6 @@ export default function SubmitDeal() {
                                         growthRate > 0 ? "text-green-600" : growthRate < 0 ? "text-red-600" : ""
                                       )}>
                                         {formatPercentage(growthRate)}
-                                      </div>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                              
-                              {/* Gross Margin Growth Rate Row */}
-                              <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">-</div>
-                                </td>
-                                {dealTiers.map((tier) => {
-                                  // Find previous year margin
-                                  let previousYearMargin = 35; // Default to mock value
-                                  const salesChannel = form.watch("salesChannel");
-                                  const advertiserName = form.watch("advertiserName");
-                                  const agencyName = form.watch("agencyName");
-                                  
-                                  if (salesChannel === "client_direct" && advertiserName) {
-                                    const advertiser = advertisers.find(a => a.name === advertiserName);
-                                    if (advertiser && advertiser.previousYearMargin) {
-                                      previousYearMargin = advertiser.previousYearMargin;
-                                    }
-                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
-                                    const agency = agencies.find(a => a.name === agencyName);
-                                    if (agency && agency.previousYearMargin) {
-                                      previousYearMargin = agency.previousYearMargin;
-                                    }
-                                  }
-                                  
-                                  // Calculate margin growth rate (current margin percentage - previous year margin percentage)
-                                  const marginGrowthRate = ((tier.annualGrossMarginPercent || 0) - previousYearMargin) / 100;
-                                  
-                                  return (
-                                    <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
-                                      {/* Not editable, calculated field */}
-                                      <div className={cn(
-                                        "text-slate-700",
-                                        marginGrowthRate > 0 ? "text-green-600" : marginGrowthRate < 0 ? "text-red-600" : ""
-                                      )}>
-                                        {formatPercentage(marginGrowthRate)}
                                       </div>
                                     </td>
                                   );
@@ -1638,8 +1620,113 @@ export default function SubmitDeal() {
                         </div>
                       </div>
                       
-                      {/* Incentive Values section - using only IncentiveSelector component */}
-                      <div id="incentives-section" className="transition-all h-auto">
+                      {/* Incentive Values section - with table and IncentiveSelector component */}
+                      <div id="incentives-section" className="transition-all h-auto space-y-6">
+                        {/* Financial metrics table */}
+                        <div className="mt-4 mb-6">
+                          <h4 className="text-sm font-medium text-gray-500 mb-3">Key Financial Metrics</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                              <thead>
+                                <tr>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Metric</th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                                  {dealTiers.map(tier => (
+                                    <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
+                                      Tier {tier.tierNumber}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Total Incentive Cost */}
+                                <tr>
+                                  <td className="p-3 border border-slate-200 bg-slate-50">
+                                    <div className="font-medium">Total Incentive Cost</div>
+                                    <div className="text-xs text-slate-500">All incentives applied to this tier</div>
+                                  </td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {formatCurrency(0)} {/* Last year value */}
+                                  </td>
+                                  {dealTiers.map(tier => {
+                                    // Calculate total incentive cost for this tier
+                                    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                        {formatCurrency(incentiveCost)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Total Client Value */}
+                                <tr>
+                                  <td className="p-3 border border-slate-200 bg-slate-50">
+                                    <div className="font-medium">Total Client Value</div>
+                                    <div className="text-xs text-slate-500">Projected value over contract term</div>
+                                  </td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    {formatCurrency(getPreviousYearValue() * 0.4)} {/* Last year value * 40% */}
+                                  </td>
+                                  {dealTiers.map(tier => {
+                                    // Calculate total value as 40% of the tier's revenue
+                                    const clientValue = (tier.annualRevenue || 0) * 0.4;
+                                    return (
+                                      <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                        {formatCurrency(clientValue)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Cost Growth Rate */}
+                                <tr>
+                                  <td className="p-3 border border-slate-200 bg-slate-50">
+                                    <div className="font-medium">Cost Growth Rate</div>
+                                    <div className="text-xs text-slate-500">Percentage increase in costs vs last year</div>
+                                  </td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    — {/* Baseline */}
+                                  </td>
+                                  {dealTiers.map(tier => {
+                                    // Calculate cost growth rate for this tier
+                                    const costGrowthRate = calculateCostGrowthRate(tier);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                        <span className={costGrowthRate > 0 ? "text-red-600" : "text-green-600"}>
+                                          {formatPercentage(costGrowthRate)}
+                                        </span>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Client Value Growth Rate */}
+                                <tr>
+                                  <td className="p-3 border border-slate-200 bg-slate-50">
+                                    <div className="font-medium">Client Value Growth Rate</div>
+                                    <div className="text-xs text-slate-500">Percentage increase in client value</div>
+                                  </td>
+                                  <td className="p-3 border border-slate-200 text-center">
+                                    — {/* Baseline */}
+                                  </td>
+                                  {dealTiers.map(tier => {
+                                    // Calculate client value growth rate for this tier
+                                    const valueGrowthRate = calculateValueGrowthRate(tier);
+                                    return (
+                                      <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                        <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {formatPercentage(valueGrowthRate)}
+                                        </span>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        
                         {/* Hierarchical Incentive Selector */}
                         <div>
                           <IncentiveSelector 
@@ -1903,7 +1990,7 @@ export default function SubmitDeal() {
                         </tr>
                       </thead>
                       <tbody>
-                        {/* Total Incentive Cost */}
+                        {/* Adjusted Gross Margin */}
                         <tr>
                           <td className="p-3 border border-slate-200 bg-slate-50">
                             <div className="font-medium">Total Incentive Cost</div>
