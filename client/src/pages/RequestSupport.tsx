@@ -36,6 +36,9 @@ const dealScopingSchema = z.object({
   
   // Sales channel and client information
   salesChannel: z.string().min(1, "Sales channel is required"),
+  region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
+    required_error: "Region is required",
+  }),
   advertiserName: z.string().optional(),
   agencyName: z.string().optional(),
   
@@ -102,6 +105,7 @@ export default function RequestSupport() {
     defaultValues: {
       email: "",
       salesChannel: "",
+      region: undefined,
       advertiserName: "",
       agencyName: "",
       growthOpportunityMIQ: "",
@@ -373,6 +377,34 @@ export default function RequestSupport() {
                           <SelectItem value="holding_company">Holding Company</SelectItem>
                           <SelectItem value="independent_agency">Independent Agency</SelectItem>
                           <SelectItem value="client_direct">Client Direct</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="region"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
+                      <Select 
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select region" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="northeast">Northeast</SelectItem>
+                          <SelectItem value="midwest">Midwest</SelectItem>
+                          <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
+                          <SelectItem value="south">South</SelectItem>
+                          <SelectItem value="west">West</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
