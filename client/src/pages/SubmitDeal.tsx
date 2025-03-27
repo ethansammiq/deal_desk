@@ -1328,9 +1328,9 @@ export default function SubmitDeal() {
                                 ))}
                               </tr>
                               
-                              {/* Annual Gross Margin (Base) Row */}
+                              {/* Gross Margin (Base) Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Gross Margin (Base)</td>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin (Base)</td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year margin
@@ -1470,6 +1470,48 @@ export default function SubmitDeal() {
                                         growthRate > 0 ? "text-green-600" : growthRate < 0 ? "text-red-600" : ""
                                       )}>
                                         {formatPercentage(growthRate)}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              
+                              {/* Gross Margin Growth Rate Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  <div className="text-slate-700">-</div>
+                                </td>
+                                {dealTiers.map((tier) => {
+                                  // Find previous year margin
+                                  let previousYearMargin = 35; // Default to mock value
+                                  const salesChannel = form.watch("salesChannel");
+                                  const advertiserName = form.watch("advertiserName");
+                                  const agencyName = form.watch("agencyName");
+                                  
+                                  if (salesChannel === "client_direct" && advertiserName) {
+                                    const advertiser = advertisers.find(a => a.name === advertiserName);
+                                    if (advertiser && advertiser.previousYearMargin) {
+                                      previousYearMargin = advertiser.previousYearMargin;
+                                    }
+                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                    const agency = agencies.find(a => a.name === agencyName);
+                                    if (agency && agency.previousYearMargin) {
+                                      previousYearMargin = agency.previousYearMargin;
+                                    }
+                                  }
+                                  
+                                  // Calculate margin growth rate (current margin percentage - previous year margin percentage)
+                                  const marginGrowthRate = ((tier.annualGrossMarginPercent || 0) - previousYearMargin) / 100;
+                                  
+                                  return (
+                                    <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      {/* Not editable, calculated field */}
+                                      <div className={cn(
+                                        "text-slate-700",
+                                        marginGrowthRate > 0 ? "text-green-600" : marginGrowthRate < 0 ? "text-red-600" : ""
+                                      )}>
+                                        {formatPercentage(marginGrowthRate)}
                                       </div>
                                     </td>
                                   );
@@ -1635,13 +1677,13 @@ export default function SubmitDeal() {
                             )}
                           />
                           
-                          {/* Annual Gross Margin Percentage */}
+                          {/* Gross Margin Percentage */}
                           <FormField
                             control={form.control}
                             name="annualGrossMargin"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Annual Gross Margin (%) <span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>Gross Margin (%) <span className="text-red-500">*</span></FormLabel>
                                 <div className="relative">
                                   <FormControl>
                                     <Input 
