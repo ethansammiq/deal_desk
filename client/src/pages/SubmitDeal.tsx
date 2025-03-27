@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
@@ -29,9 +29,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Select,
@@ -194,7 +191,7 @@ export default function SubmitDeal() {
     fetchData();
   }, [toast]);
   
-  async function validateAndGoToStep(targetStep: number): Promise<boolean> {
+  async function validateAndGoToStep(targetStep: number) {
     let isValid = true;
     
     if (targetStep === 1) {
@@ -222,7 +219,7 @@ export default function SubmitDeal() {
       ];
       
       // If hasNonStandardTerms is true, validate nonStandardTermsDetails
-      if (!!hasNonStandardTerms) {
+      if (hasNonStandardTerms) {
         step2Fields.push("nonStandardTermsDetails");
       }
       
@@ -335,14 +332,24 @@ export default function SubmitDeal() {
     createDeal.mutate(data);
   }
   
-  // Direct sibling sections with no wrapper
   return (
-    <div className="deal-submission-page">
-      {/* About Deal Submission Section */}
-      <section className="bg-gradient-to-b from-purple-50 to-transparent">
-        <div className="container mx-auto p-6">
-          <h3 className="text-xl font-bold text-slate-800 mb-5 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div className="bg-slate-50 min-h-screen">
+      <div className="container mx-auto py-6 px-4 md:px-6">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-2">Deal Submission</h1>
+            <p className="text-slate-600">Submit and track commercial deals for approval</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
+          </div>
+        </div>
+        
+        {/* About Deal Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-slate-800 mb-4">About Deal Submission</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow-md p-5 border-0">
               <h4 className="font-medium text-slate-900 mb-2">What is Deal Submission?</h4>
               <p className="text-sm text-slate-500">
@@ -371,16 +378,15 @@ export default function SubmitDeal() {
             </div>
           </div>
         </div>
-      </section>
-      
-      {/* Submit Deal Form Section */}
-      <section className="container mx-auto p-6 bg-white mb-8 rounded-lg shadow-md">
-            <div className="flex items-center mb-2">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h1>
-              <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
-            </div>
-            <p className="mt-1 mb-6 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
-      
+        
+        {/* Submit Deal Form Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center mb-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h2>
+            <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
+          </div>
+          <p className="mt-1 mb-6 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
+        
           {/* Form Progress - Modified to be clickable for back and forth navigation */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -399,7 +405,13 @@ export default function SubmitDeal() {
                   formStep >= 1 ? "bg-primary" : ""
                 )}></div>
                 <div 
-                  onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1).then()}
+                  onClick={async () => {
+                    if (formStep >= 1) {
+                      setFormStep(1);
+                    } else {
+                      await validateAndGoToStep(1);
+                    }
+                  }}
                   className={cn(
                     "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                     formStep >= 1 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
@@ -412,7 +424,13 @@ export default function SubmitDeal() {
                   formStep >= 2 ? "bg-primary" : ""
                 )}></div>
                 <div 
-                  onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2).then()}
+                  onClick={async () => {
+                    if (formStep >= 2) {
+                      setFormStep(2);
+                    } else {
+                      await validateAndGoToStep(2);
+                    }
+                  }}
                   className={cn(
                     "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                     formStep >= 2 ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
@@ -433,7 +451,13 @@ export default function SubmitDeal() {
                 Deal Details
               </div>
               <div 
-                onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1).then()} 
+                onClick={async () => {
+                  if (formStep >= 1) {
+                    setFormStep(1);
+                  } else {
+                    await validateAndGoToStep(1);
+                  }
+                }} 
                 className={cn(
                   "cursor-pointer hover:text-primary transition-colors", 
                   formStep === 1 ? "font-medium text-primary" : ""
@@ -442,7 +466,13 @@ export default function SubmitDeal() {
                 Deal Structure & Pricing
               </div>
               <div 
-                onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2).then()}
+                onClick={async () => {
+                  if (formStep >= 2) {
+                    setFormStep(2);
+                  } else {
+                    await validateAndGoToStep(2);
+                  }
+                }}
                 className={cn(
                   "cursor-pointer hover:text-primary transition-colors", 
                   formStep === 2 ? "font-medium text-primary" : ""
@@ -592,8 +622,6 @@ export default function SubmitDeal() {
                           </FormItem>
                         )}
                       />
-                      
-
                     </div>
                     
                     {/* Conditional fields based on sales channel */}
@@ -666,7 +694,7 @@ export default function SubmitDeal() {
                     </div>
                     
                     <div className="flex justify-end mt-6">
-                      <Button type="button" onClick={nextStep}>Next: Deal Structure & Pricing</Button>
+                      <Button type="button" onClick={() => nextStep()}>Next: Deal Structure & Pricing</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -689,65 +717,39 @@ export default function SubmitDeal() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Deal Structure Type <span className="text-red-500">*</span></FormLabel>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div 
-                                className={cn(
-                                  "flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-all hover:border-primary",
-                                  field.value === "tiered" ? "border-primary bg-primary/5" : "border-slate-200"
-                                )}
-                                onClick={() => field.onChange("tiered")}
-                              >
-                                <div className={cn(
-                                  "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                                  field.value === "tiered" ? "border-primary" : "border-slate-300"
-                                )}>
-                                  {field.value === "tiered" && (
-                                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                  )}
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-slate-900">Tiered Structure</h4>
-                                  <p className="text-sm text-slate-500">Increasing incentives at different revenue tiers</p>
-                                </div>
-                              </div>
-                              
-                              <div 
-                                className={cn(
-                                  "flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-all hover:border-primary",
-                                  field.value === "flat_commit" ? "border-primary bg-primary/5" : "border-slate-200"
-                                )}
-                                onClick={() => field.onChange("flat_commit")}
-                              >
-                                <div className={cn(
-                                  "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                                  field.value === "flat_commit" ? "border-primary" : "border-slate-300"
-                                )}>
-                                  {field.value === "flat_commit" && (
-                                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                  )}
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-slate-900">Flat Commitment</h4>
-                                  <p className="text-sm text-slate-500">Single revenue target with fixed incentives</p>
-                                </div>
-                              </div>
-                            </div>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                              disabled={selectedIncentives.length > 0}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select structure type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="tiered">Tiered Revenue Structure</SelectItem>
+                                <SelectItem value="flat_commit">Flat Commit</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              {field.value === "tiered" 
+                                ? "Tiered structure includes multiple revenue thresholds with potential for increased incentives at higher tiers" 
+                                : "Flat commit is a guaranteed level of spending across the contract period"}
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                    
-                    {/* Contract Period */}
-                    <div className="space-y-4">
-                      <h3 className="text-md font-medium text-slate-900">Contract Period</h3>
+                      
+                      {/* Contract Term */}
                       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         <FormField
                           control={form.control}
                           name="contractStartDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Start Date <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Contract Start Date <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input type="date" {...field} />
                               </FormControl>
@@ -761,7 +763,7 @@ export default function SubmitDeal() {
                           name="contractEndDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>End Date <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Contract End Date <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input type="date" {...field} />
                               </FormControl>
@@ -775,14 +777,12 @@ export default function SubmitDeal() {
                           name="contractTerm"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Term (Months) <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Contract Term (Months) <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  min="1"
-                                  placeholder="Enter contract length in months" 
-                                  {...field}
-                                  onChange={e => field.onChange(parseInt(e.target.value))}
+                                  {...field} 
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -790,257 +790,310 @@ export default function SubmitDeal() {
                           )}
                         />
                       </div>
-                    </div>
-                    
-                    {/* Revenue Structure - Improved with table layout and tier management */}
-                    <Accordion type="single" collapsible defaultValue="revenue-structure" className="w-full">
-                      <AccordionItem value="revenue-structure" className="border rounded-lg">
-                        <AccordionTrigger className="px-6 hover:no-underline font-medium">
-                          Revenue Structure
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                          <div className="mb-2">
-                            <p className="text-sm text-slate-500 mb-2">Define annual revenue targets for each tier{dealStructureType === "flat_commit" ? "" : "s"}</p>
-                            
-                            <div className="flex justify-between mb-4">
-                              <div className="flex space-x-2">
-                                {dealStructureType === "tiered" && (
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      if (dealTiers.length < 6) {
-                                        setDealTiers([
-                                          ...dealTiers,
-                                          {
-                                            tierNumber: dealTiers.length + 1,
-                                            annualRevenue: 0,
-                                            annualMargin: 0
-                                          }
-                                        ]);
-                                      } else {
-                                        toast({
-                                          title: "Maximum tiers reached",
-                                          description: "You can add a maximum of 6 tiers.",
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    }}
-                                    disabled={dealTiers.length >= 6}
-                                  >
-                                    Add Tier
-                                  </Button>
-                                )}
-                              </div>
+                      
+                      {/* Revenue Structure */}
+                      {dealStructureType === "tiered" && (
+                        <div className="space-y-4 mt-6">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-base font-medium text-slate-900">Tier Revenue Structure</h3>
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                type="button"
+                                onClick={() => {
+                                  if (dealTiers.length > 1) {
+                                    setDealTiers(dealTiers.slice(0, -1));
+                                  }
+                                }}
+                                disabled={dealTiers.length <= 1}
+                              >
+                                Remove Tier
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                type="button"
+                                onClick={() => {
+                                  const newTierNumber = dealTiers.length + 1;
+                                  setDealTiers([...dealTiers, { 
+                                    tierNumber: newTierNumber, 
+                                    annualRevenue: 0, 
+                                    annualMargin: 0
+                                  }]);
+                                }}
+                                disabled={dealTiers.length >= 6}
+                              >
+                                Add Tier
+                              </Button>
                             </div>
-                            
-                            <div className="overflow-x-auto">
-                              <Table className="border border-slate-200">
-                                <TableHeader>
-                                  <TableRow className="bg-slate-50">
-                                    <TableHead className="w-1/3 font-medium text-slate-800">Tier</TableHead>
-                                    <TableHead className="font-medium text-slate-800">Last Year</TableHead>
-                                    <TableHead className="font-medium text-slate-800">{new Date().getFullYear()} Target</TableHead>
-                                    <TableHead className="font-medium text-slate-800">Margin %</TableHead>
-                                    <TableHead className="font-medium text-slate-800">Margin Value</TableHead>
-                                    {dealStructureType === "tiered" && (
-                                      <TableHead className="w-10 font-medium text-slate-800">Actions</TableHead>
-                                    )}
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {dealTiers.map((tier, index) => (
-                                    <TableRow key={index} className="hover:bg-slate-50">
-                                      <TableCell className="font-medium text-slate-900">
-                                        {dealStructureType === "tiered" 
-                                          ? `Tier ${tier.tierNumber}` 
-                                          : "Annual Commitment"}
-                                      </TableCell>
-                                      <TableCell className="text-slate-800">
-                                        {formatCurrency(850000)} <br />
-                                        <span className="text-xs text-slate-500">35% margin</span>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Input
+                          </div>
+                          
+                          <div className="bg-white rounded-lg border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-20">Tier</TableHead>
+                                  <TableHead>Annual Revenue</TableHead>
+                                  <TableHead>Annual Margin %</TableHead>
+                                  <TableHead>Annual Margin Value</TableHead>
+                                  <TableHead>Last Year</TableHead>
+                                  <TableHead>Growth</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {dealTiers.map((tier, index) => (
+                                  <TableRow key={tier.tierNumber}>
+                                    <TableCell className="font-medium">Tier {tier.tierNumber}</TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center">
+                                        <span className="text-sm text-slate-500 mr-2">$</span>
+                                        <Input 
                                           type="number"
-                                          placeholder="Enter annual revenue"
-                                          value={tier.annualRevenue || ""}
+                                          value={tier.annualRevenue} 
                                           onChange={(e) => {
+                                            const newValue = parseFloat(e.target.value) || 0;
                                             const newTiers = [...dealTiers];
-                                            newTiers[index].annualRevenue = parseFloat(e.target.value) || 0;
+                                            newTiers[index].annualRevenue = newValue;
                                             setDealTiers(newTiers);
+                                            
+                                            // Update total revenue
+                                            const totalRevenue = newTiers.reduce((sum, t) => sum + t.annualRevenue, 0);
+                                            setRevenue(totalRevenue);
                                           }}
-                                          className="max-w-[150px]"
+                                          className="max-w-[120px]"
                                         />
-                                      </TableCell>
-                                      <TableCell>
-                                        <Input
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center">
+                                        <Input 
                                           type="number"
-                                          placeholder="%"
-                                          value={tier.annualMargin ? (tier.annualMargin / tier.annualRevenue * 100).toFixed(1) : ""}
+                                          value={tier.annualMargin} 
                                           onChange={(e) => {
+                                            const newValue = parseFloat(e.target.value) || 0;
                                             const newTiers = [...dealTiers];
-                                            const marginPercent = parseFloat(e.target.value) || 0;
-                                            newTiers[index].annualMargin = (marginPercent / 100) * tier.annualRevenue;
+                                            newTiers[index].annualMargin = newValue;
                                             setDealTiers(newTiers);
+                                            
+                                            // Update total margin
+                                            const totalMargin = newTiers.reduce((sum, t) => sum + (t.annualMargin || 0), 0);
+                                            setMargin(totalMargin);
                                           }}
                                           className="max-w-[80px]"
                                         />
-                                      </TableCell>
-                                      <TableCell>
-                                        {tier.annualMargin ? formatCurrency(tier.annualMargin) : "-"}
-                                      </TableCell>
-                                      {dealStructureType === "tiered" && (
-                                        <TableCell>
-                                          <Button
-                                            type="button"
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-8 w-8"
-                                            onClick={() => {
-                                              if (dealTiers.length > 1) {
-                                                const newTiers = dealTiers.filter((_, i) => i !== index);
-                                                // Renumber tiers
-                                                const renumberedTiers = newTiers.map((t, i) => ({
-                                                  ...t,
-                                                  tierNumber: i + 1
-                                                }));
-                                                setDealTiers(renumberedTiers);
-                                              } else {
-                                                toast({
-                                                  title: "Cannot remove",
-                                                  description: "You must have at least one tier.",
-                                                  variant: "destructive",
-                                                });
-                                              }
-                                            }}
-                                            disabled={dealTiers.length <= 1}
-                                          >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
-                                              <path d="M3 6h18"></path>
-                                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                            </svg>
-                                          </Button>
-                                        </TableCell>
-                                      )}
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                            
-                            {dealStructureType === "tiered" && (
-                              <div className="mt-2 text-sm text-slate-500">
-                                <p>Tiers represent increasing revenue targets with corresponding incentive levels.</p>
-                              </div>
-                            )}
+                                        <span className="text-sm text-slate-500 ml-2">%</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      {formatCurrency(tier.annualRevenue * (tier.annualMargin / 100))}
+                                    </TableCell>
+                                    <TableCell className="text-slate-500">
+                                      {formatCurrency(tier.annualRevenue * 0.85)} {/* Sample "last year" value */}
+                                    </TableCell>
+                                    <TableCell className="text-green-600">
+                                      {formatPercentage(15)} {/* Sample growth rate */}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                                <TableRow className="bg-slate-50">
+                                  <TableCell className="font-semibold">Total</TableCell>
+                                  <TableCell className="font-semibold">
+                                    {formatCurrency(dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0))}
+                                  </TableCell>
+                                  <TableCell className="font-semibold">
+                                    {formatPercentage(
+                                      dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0) > 0
+                                        ? (dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue * tier.annualMargin / 100), 0) / 
+                                          dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)) * 100
+                                        : 0
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="font-semibold">
+                                    {formatCurrency(
+                                      dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue * tier.annualMargin / 100), 0)
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="font-semibold text-slate-500">
+                                    {formatCurrency(dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0) * 0.85)}
+                                  </TableCell>
+                                  <TableCell className="font-semibold text-green-600">
+                                    {formatPercentage(15)}
+                                  </TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                    
-                    {/* Incentive Structure - Using dedicated component */}
-                    <Accordion type="single" collapsible defaultValue="incentive-structure" className="w-full">
-                      <AccordionItem value="incentive-structure" className="border rounded-lg">
-                        <AccordionTrigger className="px-6 hover:no-underline font-medium">
-                          Incentive Structure
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                          <div className="space-y-4">
-                            <p className="text-sm text-slate-500">Configure incentives for this deal</p>
-                            
-                            {/* Incentive Selector Component */}
-                            <div className="pt-2">
-                              <IncentiveSelector 
-                                dealTiers={dealTiers.map(tier => ({ 
-                                  tierNumber: tier.tierNumber, 
-                                  annualRevenue: tier.annualRevenue 
-                                }))}
-                                onChange={(incentives) => setSelectedIncentives(incentives)}
-                                selectedIncentives={selectedIncentives}
-                              />
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                    
-                    {/* Additional Terms */}
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Additional Notes</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Add any additional information about this deal"
-                                className="resize-none"
-                                rows={4}
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Include any other relevant information that would help with deal approval.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="hasNonStandardTerms"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>This deal has non-standard terms</FormLabel>
-                              <FormDescription>
-                                Check this box if this deal includes terms that deviate from standard agreements
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {!!hasNonStandardTerms && (
-                        <FormField
-                          control={form.control}
-                          name="nonStandardTermsDetails"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Non-Standard Terms Details <span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Describe the non-standard terms in detail"
-                                  className="resize-none"
-                                  rows={4}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        </div>
                       )}
-
-                      <div className="flex justify-between mt-6">
-                        <Button type="button" variant="outline" onClick={prevStep}>
-                          Back: Deal Details
-                        </Button>
-                        <Button type="button" onClick={nextStep}>
-                          Next: Review & Submit
-                        </Button>
+                      
+                      {/* Flat commit structure */}
+                      {dealStructureType === "flat_commit" && (
+                        <div className="space-y-4 mt-6">
+                          <h3 className="text-base font-medium text-slate-900">Flat Commit Structure</h3>
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Annual Revenue <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex items-center">
+                                <span className="text-sm text-slate-500 mr-2">$</span>
+                                <Input 
+                                  type="number"
+                                  value={dealTiers[0].annualRevenue} 
+                                  onChange={(e) => {
+                                    const newValue = parseFloat(e.target.value) || 0;
+                                    const newTiers = [...dealTiers];
+                                    newTiers[0].annualRevenue = newValue;
+                                    setDealTiers(newTiers);
+                                    setRevenue(newValue);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Annual Margin % <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex items-center">
+                                <Input 
+                                  type="number"
+                                  value={dealTiers[0].annualMargin} 
+                                  onChange={(e) => {
+                                    const newValue = parseFloat(e.target.value) || 0;
+                                    const newTiers = [...dealTiers];
+                                    newTiers[0].annualMargin = newValue;
+                                    setDealTiers(newTiers);
+                                    setMargin(newValue);
+                                  }}
+                                  className="max-w-[120px]"
+                                />
+                                <span className="text-sm text-slate-500 ml-2">%</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <span className="text-sm text-slate-500">Annual Margin Value:</span>
+                                <p className="font-semibold">
+                                  {formatCurrency(dealTiers[0].annualRevenue * (dealTiers[0].annualMargin / 100))}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-slate-500">YOY Growth:</span>
+                                <p className="font-semibold text-green-600">
+                                  {formatPercentage(15)} {/* Sample growth rate */}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-slate-500">Monthly Revenue:</span>
+                                <p className="font-semibold">
+                                  {formatCurrency(dealTiers[0].annualRevenue / 12)}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-sm text-slate-500">Previous Year Revenue:</span>
+                                <p className="font-semibold text-slate-500">
+                                  {formatCurrency(dealTiers[0].annualRevenue * 0.85)} {/* Sample "last year" value */}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Incentives Section */}
+                      <div className="space-y-4 mt-8">
+                        <h3 className="text-base font-medium text-slate-900">Deal Incentives</h3>
+                        <p className="text-sm text-slate-500">Add incentives that will be offered as part of this deal</p>
+                        
+                        <IncentiveSelector 
+                          dealTiers={dealTiers}
+                          selectedIncentives={selectedIncentives}
+                          onChange={setSelectedIncentives}
+                          dealStructureType={dealStructureType as string}
+                        />
+                        
+                        {/* Non-standard Terms */}
+                        <div className="space-y-4 mt-8 pt-6 border-t border-slate-200">
+                          <div className="flex items-start">
+                            <FormField
+                              control={form.control}
+                              name="hasNonStandardTerms"
+                              render={({ field }) => (
+                                <FormItem className="flex items-start">
+                                  <FormControl>
+                                    <Checkbox 
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="ml-2">
+                                    <FormLabel>This deal includes non-standard terms</FormLabel>
+                                    <FormDescription>
+                                      Select this option if the deal includes any custom or non-standard terms
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          {hasNonStandardTerms && (
+                            <FormField
+                              control={form.control}
+                              name="nonStandardTermsDetails"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Non-standard Terms Details <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Please describe the non-standard terms in detail..."
+                                      className="resize-none"
+                                      rows={4}
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Provide clear details about any custom or non-standard terms included in this deal
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          
+                          {/* Notes */}
+                          <FormField
+                            control={form.control}
+                            name="notes"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Additional Notes</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Add any additional notes about this deal..."
+                                    className="resize-none"
+                                    rows={3}
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Optional notes for the approval team
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
+                    </div>
+                    
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>Back: Deal Details</Button>
+                      <Button type="button" onClick={() => nextStep()}>Next: Review & Submit</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -1051,162 +1104,154 @@ export default function SubmitDeal() {
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <h2 className="text-lg font-medium text-slate-900">Review & Submit</h2>
-                    <p className="mt-1 text-sm text-slate-500">Please review all information before submitting your deal</p>
+                    <p className="mt-1 text-sm text-slate-500">Review your deal details before submission</p>
                   </div>
                   
                   <div className="space-y-8">
-                    {/* Deal Summary */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-                      <h3 className="text-md font-medium text-slate-900 mb-4">Deal Summary</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-sm font-medium text-slate-800 mb-2">Basic Information</h4>
-                          <dl className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Deal Type:</dt>
-                              <dd className="text-slate-900 font-medium capitalize">{dealType || "-"}</dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Sales Channel:</dt>
-                              <dd className="text-slate-900 font-medium capitalize">
-                                {typeof salesChannel === 'string' ? salesChannel.replace(/_/g, " ") : "-"}
-                              </dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Region:</dt>
-                              <dd className="text-slate-900 font-medium capitalize">{form.getValues("region") || "-"}</dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Company:</dt>
-                              <dd className="text-slate-900 font-medium">
-                                {form.getValues("advertiserName") || form.getValues("agencyName") || "-"}
-                              </dd>
-                            </div>
-                          </dl>
-                        </div>
-                        
-                        <div>
-                          <h4 className="text-sm font-medium text-slate-800 mb-2">Deal Structure</h4>
-                          <dl className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Structure Type:</dt>
-                              <dd className="text-slate-900 font-medium capitalize">
-                                {typeof dealStructureType === 'string' ? dealStructureType.replace(/_/g, " ") : "-"}
-                              </dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Contract Term:</dt>
-                              <dd className="text-slate-900 font-medium">{contractTerm || 0} months</dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Total Annual Revenue:</dt>
-                              <dd className="text-slate-900 font-medium">
-                                {formatCurrency(dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0))}
-                              </dd>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <dt className="text-slate-500">Number of Tiers:</dt>
-                              <dd className="text-slate-900 font-medium">{dealTiers.length}</dd>
-                            </div>
-                          </dl>
-                        </div>
-                      </div>
-                      
-                      {/* Business Summary */}
-                      <div className="mt-6">
-                        <h4 className="text-sm font-medium text-slate-800 mb-2">Business Summary</h4>
-                        <div className="bg-white border border-slate-200 rounded-md p-3 text-sm text-slate-700">
-                          {form.getValues("businessSummary") || "No business summary provided."}
-                        </div>
-                      </div>
-                      
-                      {/* Selected Incentives */}
-                      {selectedIncentives.length > 0 && (
-                        <div className="mt-6">
-                          <h4 className="text-sm font-medium text-slate-800 mb-2">Selected Incentives</h4>
-                          <div className="overflow-x-auto">
-                            <Table className="w-full border border-slate-200">
-                              <TableHeader>
-                                <TableRow className="bg-slate-50">
-                                  <TableHead className="font-medium text-slate-800">Type</TableHead>
-                                  <TableHead className="font-medium text-slate-800">Tiers</TableHead>
-                                  <TableHead className="font-medium text-slate-800">Value</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {selectedIncentives.map((incentive, index) => (
-                                  <TableRow key={index} className="hover:bg-slate-50">
-                                    <TableCell className="font-medium">
-                                      <div className="space-y-1">
-                                        <div className="text-slate-900">{incentive.option}</div>
-                                        <div className="text-xs text-slate-500">{incentive.categoryId}/{incentive.subCategoryId}</div>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex gap-1 flex-wrap">
-                                        {incentive.tierIds.map(tierId => (
-                                          <Badge key={tierId} variant="outline">
-                                            Tier {tierId}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="space-y-1">
-                                        {Object.entries(incentive.tierValues).map(([tierId, value]) => (
-                                          <div key={tierId} className="text-slate-900">
-                                            T{tierId}: {formatCurrency(value)}
-                                          </div>
-                                        ))}
-                                        {incentive.notes && (
-                                          <div className="text-xs text-slate-500 mt-1 italic">
-                                            {incentive.notes}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                      {/* Deal Details Summary */}
+                      <div className="space-y-4">
+                        <h3 className="text-base font-medium text-slate-900 border-b pb-2">Deal Details</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div>
+                            <span className="text-sm text-slate-500 block">Deal Type:</span>
+                            <p className="font-medium">{salesChannel && salesChannel.replace('_', ' ').replace(/\w\S*/g, w => w.replace(/^\w/, c => c.toUpperCase()))}</p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Company:</span>
+                            <p className="font-medium">
+                              {salesChannel === "client_direct" 
+                                ? form.getValues("advertiserName")
+                                : form.getValues("agencyName")}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Region:</span>
+                            <p className="font-medium">
+                              {form.getValues("region")?.replace(/\w\S*/g, w => w.replace(/^\w/, c => c.toUpperCase()))}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Business Summary:</span>
+                            <p className="text-sm">
+                              {form.getValues("businessSummary")}
+                            </p>
                           </div>
                         </div>
+                      </div>
+                      
+                      {/* Structure & Pricing Summary */}
+                      <div className="space-y-4">
+                        <h3 className="text-base font-medium text-slate-900 border-b pb-2">Deal Structure</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div>
+                            <span className="text-sm text-slate-500 block">Structure Type:</span>
+                            <p className="font-medium">
+                              {dealStructureType && dealStructureType.replace('_', ' ').replace(/\w\S*/g, w => w.replace(/^\w/, c => c.toUpperCase()))}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Contract Period:</span>
+                            <p className="font-medium">
+                              {form.getValues("contractStartDate")} to {form.getValues("contractEndDate")} ({form.getValues("contractTerm")} months)
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Total Annual Revenue:</span>
+                            <p className="font-semibold text-lg">
+                              {formatCurrency(dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0))}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <span className="text-sm text-slate-500 block">Average Margin:</span>
+                            <p className="font-medium">
+                              {formatPercentage(
+                                dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0) > 0
+                                  ? (dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue * tier.annualMargin / 100), 0) / 
+                                    dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)) * 100
+                                  : 0
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Incentives */}
+                    <div className="space-y-4">
+                      <h3 className="text-base font-medium text-slate-900 border-b pb-2">Incentives</h3>
+                      
+                      {selectedIncentives.length > 0 ? (
+                        <div className="space-y-3">
+                          {selectedIncentives.map((incentive, index) => (
+                            <div key={index} className="bg-slate-50 rounded-lg p-4">
+                              <div className="flex justify-between">
+                                <div>
+                                  <div className="text-slate-900">{incentive.option}</div>
+                                  <div className="text-xs text-slate-500">{incentive.categoryId}/{incentive.subCategoryId}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm text-slate-500">
+                                    {Object.keys(incentive.tierValues).length} {dealStructureType === "tiered" ? "Tiers" : "Value"}
+                                  </div>
+                                  <div className="text-xs text-slate-400">
+                                    {Object.values(incentive.tierValues).reduce((total, val) => total + val, 0) > 0 && (
+                                      <>Value: {formatCurrency(Object.values(incentive.tierValues).reduce((total, val) => total + val, 0))}</>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              {incentive.notes && (
+                                <div className="mt-2 text-xs text-slate-500 border-t pt-2">
+                                  <span className="font-medium">Notes:</span> {incentive.notes}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-slate-500 italic">No incentives added to this deal</div>
                       )}
                     </div>
                     
                     {/* Approval Requirements */}
-                    <div>
-                      <h3 className="text-md font-medium text-slate-900 mb-2">Approval Requirements</h3>
+                    <div className="space-y-4 bg-slate-50 p-4 rounded-lg">
+                      <h3 className="text-base font-medium text-slate-900">Approval Requirements</h3>
                       
-                      <ApprovalAlert
+                      <ApprovalAlert 
                         totalValue={dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)}
-                        hasNonStandardTerms={!!hasNonStandardTerms}
-                        contractTerm={Number(contractTerm) || 12}
-                        dealType={typeof dealType === 'string' ? dealType : undefined}
-                        salesChannel={typeof salesChannel === 'string' ? salesChannel : undefined}
+                        hasNonStandardTerms={!!form.getValues("hasNonStandardTerms")}
+                        contractTerm={form.getValues("contractTerm") || 12}
+                        dealType={form.getValues("dealType")}
+                        salesChannel={form.getValues("salesChannel")}
                         onChange={handleApprovalChange}
                       />
                       
-                      {!!hasNonStandardTerms && (
-                        <Alert className="mt-4 bg-amber-50 border-amber-200 text-amber-800">
+                      {hasNonStandardTerms && (
+                        <Alert className="bg-amber-50 border-amber-100 text-amber-800">
                           <AlertTriangle className="h-4 w-4" />
-                          <AlertTitle>Non-Standard Terms</AlertTitle>
+                          <AlertTitle>Non-standard Terms</AlertTitle>
                           <AlertDescription>
-                            This deal includes non-standard terms which may require additional approval steps.
+                            {form.getValues("nonStandardTermsDetails")}
                           </AlertDescription>
                         </Alert>
                       )}
                     </div>
                     
-                    <div className="flex justify-between mt-6">
-                      <Button type="button" variant="outline" onClick={prevStep}>
-                        Back: Deal Structure & Pricing
-                      </Button>
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>Back: Deal Structure</Button>
                       
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button type="button">Submit Deal for Approval</Button>
+                          <Button disabled={createDeal.isPending}>
+                            {createDeal.isPending ? "Submitting..." : "Submit Deal for Approval"}
+                          </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -1233,7 +1278,8 @@ export default function SubmitDeal() {
               </form>
             </Form>
           </Card>
-        </section>
+        </div>
+      </div>
     </div>
   );
 }
