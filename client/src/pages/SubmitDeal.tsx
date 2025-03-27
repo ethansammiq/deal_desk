@@ -2032,12 +2032,12 @@ export default function SubmitDeal() {
                 </div>
                 
                 {/* Standard Deal Criteria Help moved here from Step 2 */}
-                <div className="mb-8">
+                <div className="mb-12">
                   <StandardDealCriteriaHelp />
                 </div>
                 
                 {/* Review Sections */}
-                <div className="space-y-8">
+                <div className="space-y-10">
                   {/* Deal Information Section */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
@@ -2230,7 +2230,7 @@ export default function SubmitDeal() {
                               <tbody>
                                 {selectedIncentives.map((incentive, index) => (
                                   <tr key={index}>
-                                    <td className="p-2 border border-slate-200">{incentive.type}</td>
+                                    <td className="p-2 border border-slate-200">{incentive.option}</td>
                                     <td className="p-2 border border-slate-200">
                                       {incentive.tierIds.map(tierId => `Tier ${tierId}`).join(", ")}
                                     </td>
@@ -2332,24 +2332,14 @@ export default function SubmitDeal() {
                     <div className="p-4">
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
                         <div>
-                          <dt className="text-sm font-medium text-slate-500">Non-Standard Terms</dt>
+                          <dt className="text-sm font-medium text-slate-500">Required Approvals</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {hasNonStandardTerms ? "Yes" : "No"}
+                            <ul className="list-disc pl-5 text-sm">
+                              <li>Finance Team</li>
+                              <li>Regional Director</li>
+                            </ul>
                           </dd>
                         </div>
-                        {hasNonStandardTerms && (
-                          <div>
-                            <dt className="text-sm font-medium text-slate-500">Required Approvals</dt>
-                            <dd className="mt-1 text-sm text-slate-900">
-                              <ul className="list-disc pl-5 text-sm">
-                                <li>Finance Team</li>
-                                <li>Regional Director</li>
-                                <li>Legal Department</li>
-                                <li>Executive Committee</li>
-                              </ul>
-                            </dd>
-                          </div>
-                        )}
                       </dl>
                     </div>
                   </div>
