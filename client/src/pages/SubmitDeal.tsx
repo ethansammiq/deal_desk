@@ -336,48 +336,44 @@ export default function SubmitDeal() {
   }
   
   return (
-    <div>
+    <>
       {/* About Deal Submission Section */}
       <div className="bg-gradient-to-b from-purple-50 to-transparent">
         <div className="container mx-auto p-6">
-          <div className="mb-8 rounded-lg p-8">
-            <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg shadow-md p-5 border-0">
-                <h4 className="font-medium text-slate-900 mb-2">What is Deal Submission?</h4>
-                <p className="text-sm text-slate-500">
-                  Deal submission is where you formally propose a commercial deal for approval. This form collects all required information about deal structure, revenue, and incentives.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow-md p-5 border-0">
-                <h4 className="font-medium text-slate-900 mb-2">Deal Approval Process</h4>
-                <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
-                  <li>Complete and submit this form</li>
-                  <li>Appropriate approvers review the deal terms</li>
-                  <li>You'll receive updates on approval status</li>
-                  <li>Once approved, the deal will be finalized for execution</li>
-                </ol>
-              </div>
-              
-              <div className="bg-blue-50 rounded-lg shadow-md p-5 border-0">
-                <h4 className="font-medium text-blue-800 mb-2">Tips for Faster Approval</h4>
-                <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
-                  <li>Include all required documentation</li>
-                  <li>Clearly explain any non-standard terms</li>
-                  <li>For urgent deals, add a note in the comments</li>
-                  <li>Use the chatbot for help with any questions</li>
-                </ul>
-              </div>
+          <h3 className="text-xl font-bold text-slate-800 mb-5 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-5 border-0">
+              <h4 className="font-medium text-slate-900 mb-2">What is Deal Submission?</h4>
+              <p className="text-sm text-slate-500">
+                Deal submission is where you formally propose a commercial deal for approval. This form collects all required information about deal structure, revenue, and incentives.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md p-5 border-0">
+              <h4 className="font-medium text-slate-900 mb-2">Deal Approval Process</h4>
+              <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
+                <li>Complete and submit this form</li>
+                <li>Appropriate approvers review the deal terms</li>
+                <li>You'll receive updates on approval status</li>
+                <li>Once approved, the deal will be finalized for execution</li>
+              </ol>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg shadow-md p-5 border-0">
+              <h4 className="font-medium text-blue-800 mb-2">Tips for Faster Approval</h4>
+              <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+                <li>Include all required documentation</li>
+                <li>Clearly explain any non-standard terms</li>
+                <li>For urgent deals, add a note in the comments</li>
+                <li>Use the chatbot for help with any questions</li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
       
       {/* Submit Deal Form Section */}
-      <div className="bg-white">
-        <div className="container mx-auto p-6">
-          <div className="mb-8 bg-white rounded-lg shadow-md p-8">
+      <div className="container mx-auto p-6 bg-white mb-8 rounded-lg shadow-md">
             <div className="flex items-center mb-2">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h1>
               <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
@@ -1236,9 +1232,7 @@ export default function SubmitDeal() {
               </form>
             </Form>
           </Card>
-          </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }
