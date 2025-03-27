@@ -2032,14 +2032,16 @@ export default function SubmitDeal() {
                 </div>
                 
                 {/* Standard Deal Criteria Help moved here from Step 2 */}
-                <StandardDealCriteriaHelp />
+                <div className="mb-8">
+                  <StandardDealCriteriaHelp />
+                </div>
                 
                 {/* Review Sections */}
-                <div className="space-y-6">
-                  {/* Deal Details Summary */}
+                <div className="space-y-8">
+                  {/* Deal Information Section */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">Deal Details</h3>
+                      <h3 className="text-sm font-medium text-slate-700">Deal Information</h3>
                     </div>
                     <div className="p-4">
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
@@ -2108,6 +2110,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {getTypedValue("region") ? 
                               String(getTypedValue("region"))
+                                .replace(/_/g, " ")
                                 .replace(/\b\w/g, (char) => char.toUpperCase()) : 
                               "Not provided"}
                           </dd>
@@ -2128,8 +2131,8 @@ export default function SubmitDeal() {
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {salesChannel === "client_direct" 
-                              ? (getTypedValue("advertiserName") || "Not provided") 
-                              : (getTypedValue("agencyName") || "Not provided")}
+                              ? (String(getTypedValue("advertiserName") || "Not provided"))
+                              : (String(getTypedValue("agencyName") || "Not provided"))}
                           </dd>
                         </div>
                         <div>
@@ -2155,7 +2158,7 @@ export default function SubmitDeal() {
                   {/* Deal Structure & Pricing Summary */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">Deal Structure & Pricing</h3>
+                      <h3 className="text-sm font-medium text-slate-700">Pricing Information</h3>
                     </div>
                     <div className="p-4">
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
@@ -2177,22 +2180,7 @@ export default function SubmitDeal() {
                               "Not provided"}
                           </dd>
                         </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">Term Start Date</dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("termStartDate") ? 
-                              format(getTypedValue("termStartDate") as Date, 'MMMM d, yyyy') : 
-                              "Not provided"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">Term End Date</dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("termEndDate") ? 
-                              format(getTypedValue("termEndDate") as Date, 'MMMM d, yyyy') : 
-                              "Not provided"}
-                          </dd>
-                        </div>
+
                       </dl>
                       
                       {/* Revenue Structure Summary */}
@@ -2240,9 +2228,9 @@ export default function SubmitDeal() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {selectedIncentives.map(incentive => (
-                                  <tr key={incentive.id}>
-                                    <td className="p-2 border border-slate-200">{incentive.name}</td>
+                                {selectedIncentives.map((incentive, index) => (
+                                  <tr key={index}>
+                                    <td className="p-2 border border-slate-200">{incentive.type}</td>
                                     <td className="p-2 border border-slate-200">
                                       {incentive.tierIds.map(tierId => `Tier ${tierId}`).join(", ")}
                                     </td>
