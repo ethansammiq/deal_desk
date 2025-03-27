@@ -280,7 +280,7 @@ export default function RequestSupport() {
         <div className="flex flex-col items-center">
           <div className="flex items-center w-3/4 mb-4">
             {/* Step 1 */}
-            <div className="flex flex-col items-center" style={{ width: "calc(50% - 0.5px)" }}>
+            <div className="flex flex-col items-center w-[120px]">
               <div 
                 onClick={() => setActiveTab("sales-channel")}
                 className={cn(
@@ -303,12 +303,12 @@ export default function RequestSupport() {
             
             {/* Connector Line */}
             <div className={cn(
-              "h-1 bg-slate-200",
+              "h-1 flex-1 bg-slate-200",
               activeTab === "growth-opportunity" ? "bg-primary" : ""
-            )} style={{ width: "1px" }}></div>
+            )}></div>
             
             {/* Step 2 */}
-            <div className="flex flex-col items-center" style={{ width: "calc(50% - 0.5px)" }}>
+            <div className="flex flex-col items-center w-[120px]">
               <div 
                 onClick={() => setActiveTab("growth-opportunity")}
                 className={cn(
