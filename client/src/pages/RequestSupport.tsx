@@ -277,52 +277,60 @@ export default function RequestSupport() {
       
       {/* Form Progress - Updated for consistency with Deal Submission page */}
       <div className="mb-8">
-        <div className="flex flex-col items-center">
-          <div className="flex items-center w-3/4 mb-4">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-3/4 flex items-center">
             {/* Step 1 */}
-            <div className="flex flex-col items-center w-[120px]">
+            <div className="flex flex-col items-center">
               <div 
                 onClick={() => setActiveTab("sales-channel")}
                 className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity mb-2",
+                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                   activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
                 )}
               >
                 1
               </div>
-              <div 
-                onClick={() => setActiveTab("sales-channel")} 
-                className={cn(
-                  "text-center cursor-pointer hover:text-primary transition-colors text-sm", 
-                  activeTab === "sales-channel" ? "font-medium text-primary" : "text-slate-600"
-                )}
-              >
-                Client Information
-              </div>
             </div>
-            
             {/* Connector Line */}
             <div className={cn(
-              "h-1 flex-1 bg-slate-200",
+              "w-full h-1 bg-slate-200 mx-1",
               activeTab === "growth-opportunity" ? "bg-primary" : ""
             )}></div>
-            
             {/* Step 2 */}
-            <div className="flex flex-col items-center w-[120px]">
+            <div className="flex flex-col items-center">
               <div 
                 onClick={() => setActiveTab("growth-opportunity")}
                 className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity mb-2",
+                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
                   activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
                 )}
               >
                 2
               </div>
+            </div>
+          </div>
+        </div>
+        {/* Step Labels - Properly centered */}
+        <div className="flex justify-center text-sm text-slate-600">
+          <div className="w-3/4 flex justify-between">
+            <div className="text-center" style={{ width: "calc(50% - 60px)" }}>
+              <div 
+                onClick={() => setActiveTab("sales-channel")} 
+                className={cn(
+                  "cursor-pointer hover:text-primary transition-colors", 
+                  activeTab === "sales-channel" ? "font-medium text-primary" : ""
+                )}
+              >
+                Client Information
+              </div>
+            </div>
+            <div className="flex-1"></div>
+            <div className="text-center" style={{ width: "calc(50% - 60px)" }}>
               <div 
                 onClick={() => setActiveTab("growth-opportunity")} 
                 className={cn(
-                  "text-center cursor-pointer hover:text-primary transition-colors text-sm", 
-                  activeTab === "growth-opportunity" ? "font-medium text-primary" : "text-slate-600"
+                  "cursor-pointer hover:text-primary transition-colors", 
+                  activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
                 )}
               >
                 Opportunity Assessment
