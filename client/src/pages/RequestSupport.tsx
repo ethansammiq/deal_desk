@@ -223,305 +223,302 @@ export default function RequestSupport() {
   }, [toast]);
   
   return (
-    <div className="p-0">
-      {/* Single container for Deal Requests Section */}
-      <div className="p-6 rounded-lg bg-white shadow-md">
-        {/* Header with info button */}
-        <div className="flex items-center mb-2">
-          <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
-          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
+    <div className="p-6 rounded-lg bg-white shadow-md">
+      {/* Header with info button */}
+      <div className="flex items-center mb-2">
+        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
+        <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 ml-2">
-                <InfoIcon className="h-4 w-4 text-primary" />
-                <span className="sr-only">Deal Scoping Information</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-0">
-              <div className="p-4 bg-[#f6f0ff] border-b border-slate-200">
-                <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
-                <p className="text-sm text-slate-600 mt-1">
-                  Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities.
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0 ml-2">
+              <InfoIcon className="h-4 w-4 text-primary" />
+              <span className="sr-only">Deal Scoping Information</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0">
+            <div className="p-4 bg-[#f6f0ff] border-b border-slate-200">
+              <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
+              <p className="text-sm text-slate-600 mt-1">
+                Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities.
+              </p>
+            </div>
+            
+            <div className="p-4">
+              <h5 className="font-medium text-slate-800 mb-2">What Happens Next?</h5>
+              <ol className="text-sm text-slate-600 list-decimal list-inside space-y-1">
+                <li>Our partnership team reviews your request</li>
+                <li>A team member contacts you to schedule a discovery call</li>
+                <li>Together, we'll craft a tailored proposal</li>
+                <li>Once aligned, you can proceed to deal submission</li>
+              </ol>
+              
+              <div className="mt-3 pt-3 border-t border-slate-200">
+                <h5 className="font-medium text-blue-700 mb-1">Need Help?</h5>
+                <p className="text-sm text-blue-600">
+                  For assistance, contact the partnership team at partnerships@example.com
                 </p>
               </div>
-              
-              <div className="p-4">
-                <h5 className="font-medium text-slate-800 mb-2">What Happens Next?</h5>
-                <ol className="text-sm text-slate-600 list-decimal list-inside space-y-1">
-                  <li>Our partnership team reviews your request</li>
-                  <li>A team member contacts you to schedule a discovery call</li>
-                  <li>Together, we'll craft a tailored proposal</li>
-                  <li>Once aligned, you can proceed to deal submission</li>
-                </ol>
-                
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <h5 className="font-medium text-blue-700 mb-1">Need Help?</h5>
-                  <p className="text-sm text-blue-600">
-                    For assistance, contact the partnership team at partnerships@example.com
-                  </p>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      
+      {/* Subheader with description */}
+      <h2 className="text-xl font-medium text-slate-800 mb-1">Deal Scoping Request</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
+        <span className="block mt-1 text-primary">
+          Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
+        </span>
+      </p>
+      
+      {/* Form Card */}
+      <Card className="mt-6 border border-slate-200">
+        <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-slate-900">Deal Scoping Request Form</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            This is the first step in the deal process. After submission, you'll be contacted to arrange a discovery call.
+          </p>
         </div>
-        
-        {/* Subheader with description */}
-        <h2 className="text-xl font-medium text-slate-800 mb-1">Deal Scoping Request</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
-          <span className="block mt-1 text-primary">
-            Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
-          </span>
-        </p>
-        
-        {/* Form Card */}
-        <Card className="mt-6 border border-slate-200">
-          <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
-            <h3 className="text-lg font-medium leading-6 text-slate-900">Deal Scoping Request Form</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              This is the first step in the deal process. After submission, you'll be contacted to arrange a discovery call.
-            </p>
-          </div>
-          <CardContent className="p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="sales-channel">Sales Channel Info</TabsTrigger>
-                    <TabsTrigger value="growth-opportunity">Growth Opportunity</TabsTrigger>
-                  </TabsList>
-                  
-                  {/* Sales Channel Info Tab */}
-                  <TabsContent value="sales-channel" className="space-y-6 pt-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="Your email address" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+        <CardContent className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="sales-channel">Sales Channel Info</TabsTrigger>
+                  <TabsTrigger value="growth-opportunity">Growth Opportunity</TabsTrigger>
+                </TabsList>
+                
+                {/* Sales Channel Info Tab */}
+                <TabsContent value="sales-channel" className="space-y-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Your email address" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
+                  <FormField
+                    control={form.control}
+                    name="salesChannel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Reset related fields when changing sales channel
+                            if (value === "client_direct") {
+                              form.setValue("agencyName", "");
+                            } else {
+                              form.setValue("advertiserName", "");
+                            }
+                          }}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select sales channel" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="holding_company">Holding Company</SelectItem>
+                            <SelectItem value="independent_agency">Independent Agency</SelectItem>
+                            <SelectItem value="client_direct">Client Direct</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Show Advertiser Name only if Client Direct is selected */}
+                  {form.watch("salesChannel") === "client_direct" && (
                     <FormField
                       control={form.control}
-                      name="salesChannel"
+                      name="advertiserName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>Advertiser Name <span className="text-red-500">*</span></FormLabel>
                           <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              // Reset related fields when changing sales channel
-                              if (value === "client_direct") {
-                                form.setValue("agencyName", "");
-                              } else {
-                                form.setValue("advertiserName", "");
-                              }
-                            }}
-                            value={field.value}
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select sales channel" />
+                                <SelectValue placeholder="Select advertiser" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="holding_company">Holding Company</SelectItem>
-                              <SelectItem value="independent_agency">Independent Agency</SelectItem>
-                              <SelectItem value="client_direct">Client Direct</SelectItem>
+                              {advertisers.map(advertiser => (
+                                <SelectItem key={advertiser.id} value={advertiser.name}>
+                                  {advertiser.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
-                    {/* Show Advertiser Name only if Client Direct is selected */}
-                    {form.watch("salesChannel") === "client_direct" && (
-                      <FormField
-                        control={form.control}
-                        name="advertiserName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Advertiser Name <span className="text-red-500">*</span></FormLabel>
-                            <Select 
-                              onValueChange={field.onChange}
-                              value={field.value || ""}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select advertiser" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {advertisers.map(advertiser => (
-                                  <SelectItem key={advertiser.id} value={advertiser.name}>
-                                    {advertiser.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                    
-                    {/* Show Agency Name only if Holding Company or Independent Agency is selected */}
-                    {(form.watch("salesChannel") === "holding_company" || 
-                      form.watch("salesChannel") === "independent_agency") && (
-                      <FormField
-                        control={form.control}
-                        name="agencyName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Agency Name <span className="text-red-500">*</span></FormLabel>
-                            <Select 
-                              onValueChange={field.onChange}
-                              value={field.value || ""}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select agency" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {agencies.map(agency => (
-                                  <SelectItem key={agency.id} value={agency.name}>
-                                    {agency.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                    
-                    <div className="pt-4 flex justify-end">
-                      <Button type="button" onClick={goToNextTab}>
-                        Next: Growth Opportunity
-                      </Button>
-                    </div>
-                  </TabsContent>
+                  )}
                   
-                  {/* Growth Opportunity Tab */}
-                  <TabsContent value="growth-opportunity" className="space-y-6 pt-4">
+                  {/* Show Agency Name only if Holding Company or Independent Agency is selected */}
+                  {(form.watch("salesChannel") === "holding_company" || 
+                    form.watch("salesChannel") === "independent_agency") && (
                     <FormField
                       control={form.control}
-                      name="growthOpportunityMIQ"
+                      name="agencyName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Growth Opportunity (MIQ) <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe the pathway to growth from our perspective"
-                              className="resize-none"
-                              rows={4}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            What's the pathway to growth from our perspective?
-                          </FormDescription>
+                          <FormLabel>Agency Name <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select agency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {agencies.map(agency => (
+                                <SelectItem key={agency.id} value={agency.name}>
+                                  {agency.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="growthAmbition"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>2025 Growth Ambition ($) <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              min="1000000"
-                              placeholder="Enter amount (minimum $1M)" 
-                              {...field}
-                              onChange={e => field.onChange(parseFloat(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Growth ambition must be at least $1M
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="growthOpportunityClient"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Growth Opportunity (Client) <span className="text-red-500">*</span></FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe how the client is looking to grow their business AND with MIQ"
-                              className="resize-none"
-                              rows={4}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            How is the client looking to grow their business AND with MIQ?
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="clientAsks"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Client Asks</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe what the client has asked from us (if applicable)"
-                              className="resize-none"
-                              rows={4}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            What has the client asked from us (if applicable)?
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="pt-4 flex justify-between">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={goToPrevTab}
-                      >
-                        Back: Sales Channel Info
-                      </Button>
-                      <Button type="submit" disabled={createDealScopingRequest.isPending}>
-                        {createDealScopingRequest.isPending ? "Submitting..." : "Submit Deal Scoping Request"}
-                      </Button>
-                    </div>
+                  )}
+                  
+                  <div className="pt-4 flex justify-end">
+                    <Button type="button" onClick={goToNextTab}>
+                      Next: Growth Opportunity
+                    </Button>
+                  </div>
+                </TabsContent>
+                
+                {/* Growth Opportunity Tab */}
+                <TabsContent value="growth-opportunity" className="space-y-6 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="growthOpportunityMIQ"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Growth Opportunity (MIQ) <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe the pathway to growth from our perspective"
+                            className="resize-none"
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          What's the pathway to growth from our perspective?
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="growthAmbition"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>2025 Growth Ambition ($) <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1000000"
+                            placeholder="Enter amount (minimum $1M)" 
+                            {...field}
+                            onChange={e => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Growth ambition must be at least $1M
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="growthOpportunityClient"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Growth Opportunity (Client) <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe how the client is looking to grow their business AND with MIQ"
+                            className="resize-none"
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          How is the client looking to grow their business AND with MIQ?
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="clientAsks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client Asks</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe what the client has asked from us (if applicable)"
+                            className="resize-none"
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          What has the client asked from us (if applicable)?
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="pt-4 flex justify-between">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={goToPrevTab}
+                    >
+                      Back: Sales Channel Info
+                    </Button>
+                    <Button type="submit" disabled={createDealScopingRequest.isPending}>
+                      {createDealScopingRequest.isPending ? "Submitting..." : "Submit Deal Scoping Request"}
+                    </Button>
+                  </div>
                   </TabsContent>
                 </Tabs>
               </form>
             </Form>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
