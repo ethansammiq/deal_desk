@@ -17,6 +17,7 @@ interface BreadcrumbPath {
   title: string;
   path: string;
   isActive?: boolean;
+  id?: string; // Unique identifier for React key
 }
 
 export function Breadcrumbs() {
@@ -26,19 +27,20 @@ export function Breadcrumbs() {
   const getBreadcrumbs = (): BreadcrumbPath[] => {
     // Start with Home
     const breadcrumbs: BreadcrumbPath[] = [
-      { title: "Home", path: "/" }
+      { title: "Home", path: "/", id: "home" }
     ];
     
     // Deal Scoping has a parent of Deal Requests
     if (location === "/request-support") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal" });
-      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true });
+      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", id: "deal-requests" });
+      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
-    // Deal Submission has a parent of Deal Requests (which is itself)
+    // Deal Submission has a parent of Deal Requests but shows "Deal Submission" text
     if (location === "/submit-deal") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", isActive: true });
+      breadcrumbs.push({ title: "Deal Requests", path: "/submit-deal", id: "deal-requests" });
+      breadcrumbs.push({ title: "Deal Submission", path: "/submit-deal", isActive: true, id: "deal-submission" });
       return breadcrumbs;
     }
     
@@ -46,7 +48,8 @@ export function Breadcrumbs() {
     breadcrumbs.push({ 
       title: pathToTitle[location] || "Page Not Found",
       path: location,
-      isActive: true
+      isActive: true,
+      id: location.replace(/\//g, "-") || "unknown-page"
     });
     
     return breadcrumbs;
@@ -57,7 +60,7 @@ export function Breadcrumbs() {
   return (
     <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2.5 rounded-md shadow-sm border border-[#f0e6ff]">
       {breadcrumbs.map((breadcrumb, index) => (
-        <div key={breadcrumb.path} className="flex items-center">
+        <div key={breadcrumb.id} className="flex items-center">
           {index > 0 && <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />}
           
           {breadcrumb.isActive ? (
