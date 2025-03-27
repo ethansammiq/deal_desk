@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import { 
   Card,
   CardContent
@@ -278,10 +279,57 @@ export default function RequestSupport() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="sales-channel">Sales Channel Info</TabsTrigger>
-                  <TabsTrigger value="growth-opportunity">Growth Opportunity</TabsTrigger>
-                </TabsList>
+                {/* Custom Step Navigation */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-full flex items-center">
+                      <div 
+                        onClick={() => setActiveTab("sales-channel")}
+                        className={cn(
+                          "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                          activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                        )}
+                      >
+                        1
+                      </div>
+                      <div className={cn(
+                        "w-full h-1 bg-slate-200",
+                        activeTab === "growth-opportunity" ? "bg-primary" : ""
+                      )}></div>
+                      <div 
+                        onClick={() => setActiveTab("growth-opportunity")}
+                        className={cn(
+                          "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                          activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                        )}
+                      >
+                        2
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Step Labels */}
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <div 
+                      onClick={() => setActiveTab("sales-channel")} 
+                      className={cn(
+                        "cursor-pointer", 
+                        activeTab === "sales-channel" ? "font-medium text-primary" : ""
+                      )}
+                    >
+                      Sales Channel Info
+                    </div>
+                    <div 
+                      onClick={() => setActiveTab("growth-opportunity")} 
+                      className={cn(
+                        "cursor-pointer", 
+                        activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
+                      )}
+                    >
+                      Growth Opportunity
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Sales Channel Info Tab */}
                 <TabsContent value="sales-channel" className="space-y-6 pt-4">
