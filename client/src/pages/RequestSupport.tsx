@@ -305,23 +305,27 @@ export default function RequestSupport() {
         </div>
         <div className="flex justify-center text-sm text-slate-600">
           <div className="w-3/4 flex justify-between">
-            <div 
-              onClick={() => setActiveTab("sales-channel")} 
-              className={cn(
-                "w-1/2 text-center cursor-pointer hover:text-primary transition-colors", 
-                activeTab === "sales-channel" ? "font-medium text-primary" : ""
-              )}
-            >
-              Client Information
+            <div className="flex justify-center w-1/2">
+              <div 
+                onClick={() => setActiveTab("sales-channel")} 
+                className={cn(
+                  "text-center cursor-pointer hover:text-primary transition-colors", 
+                  activeTab === "sales-channel" ? "font-medium text-primary" : ""
+                )}
+              >
+                Client Information
+              </div>
             </div>
-            <div 
-              onClick={() => setActiveTab("growth-opportunity")} 
-              className={cn(
-                "w-1/2 text-center cursor-pointer hover:text-primary transition-colors", 
-                activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
-              )}
-            >
-              Opportunity Assessment
+            <div className="flex justify-center w-1/2">
+              <div 
+                onClick={() => setActiveTab("growth-opportunity")} 
+                className={cn(
+                  "text-center cursor-pointer hover:text-primary transition-colors", 
+                  activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
+                )}
+              >
+                Opportunity Assessment
+              </div>
             </div>
           </div>
         </div>
