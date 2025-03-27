@@ -31,8 +31,8 @@ export function TopNavbar() {
         <div className="flex justify-between h-16 px-4">
           {/* Logo and Nav Links Section */}
           <div className="flex items-center w-full">
-            {/* Logo - Fixed Width */}
-            <div className="flex-shrink-0 flex items-center w-64">
+            {/* Logo - Fixed width with enough space for the full title */}
+            <div className="flex-shrink-0 flex items-center w-80">
               <div className="h-12 w-12 mr-3 flex-shrink-0 flex items-center justify-center">
                 <img 
                   src={companyLogo} 
@@ -40,7 +40,7 @@ export function TopNavbar() {
                   className="h-full w-full object-contain" 
                 />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap truncate">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
                 Commercial Deal Desk
               </h1>
             </div>
@@ -130,7 +130,7 @@ export function TopNavbar() {
                 className="h-full w-full object-contain" 
               />
             </div>
-            <h2 className="text-lg font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent truncate">
+            <h2 className="text-lg font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
               Commercial Deal Desk
             </h2>
           </div>

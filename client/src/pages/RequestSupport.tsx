@@ -226,7 +226,7 @@ export default function RequestSupport() {
   return (
     <div className="p-6 rounded-lg bg-white shadow-md">
       {/* Header with info button */}
-      <div className="flex items-center mb-2">
+      
         <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Scoping</h1>
         <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
@@ -263,7 +263,7 @@ export default function RequestSupport() {
             </div>
           </PopoverContent>
         </Popover>
-      </div>
+      
       
       {/* Description */}
       <p className="mt-1 text-sm text-slate-500">
