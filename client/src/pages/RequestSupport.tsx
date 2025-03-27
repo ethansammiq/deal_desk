@@ -226,7 +226,7 @@ export default function RequestSupport() {
     <div className="p-6 rounded-lg bg-white shadow-md">
       {/* Header with info button */}
       <div className="flex items-center mb-2">
-        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit Deal Requests</h1>
+        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Scoping</h1>
         <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
         <Popover>
@@ -264,8 +264,7 @@ export default function RequestSupport() {
         </Popover>
       </div>
       
-      {/* Subheader with description */}
-      <h2 className="text-xl font-medium text-slate-800 mb-1">Deal Scoping Request</h2>
+      {/* Description */}
       <p className="mt-1 text-sm text-slate-500">
         New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
         <span className="block mt-1 text-primary">
@@ -275,12 +274,6 @@ export default function RequestSupport() {
       
       {/* Form Card */}
       <Card className="mt-6 border border-slate-200">
-        <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-slate-900">Deal Scoping Request Form</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            This is the first step in the deal process. After submission, you'll be contacted to arrange a discovery call.
-          </p>
-        </div>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -510,7 +503,7 @@ export default function RequestSupport() {
                       Back: Sales Channel Info
                     </Button>
                     <Button type="submit" disabled={createDealScopingRequest.isPending}>
-                      {createDealScopingRequest.isPending ? "Submitting..." : "Submit Deal Scoping Request"}
+                      {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
                     </Button>
                   </div>
                   </TabsContent>
