@@ -2,83 +2,129 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { 
-  Card,
-  CardContent
-} from "@/components/ui/card";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useLocation } from "wouter";
-import { ApprovalAlert, ApprovalHelpText, StandardDealCriteriaHelp } from "@/components/ApprovalAlert";
-import { getApproverDetails, ApprovalRule } from "@/lib/approval-matrix";
-import { format } from "date-fns";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
+import { queryClient } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import { SelectedIncentive } from "@/lib/incentive-data";
-import { calculateGrossMarginValue } from "@/lib/utils";
+import { AlertCircle, AlertTriangle, CheckCircle, ChevronRight } from "lucide-react";
 
-// Form schema for deal
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  Table, 
+  TableBody, 
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { ApprovalRule } from "@/lib/approval-matrix";
+
+// Form validation schema
 const dealFormSchema = z.object({
+  // Basic Deal Info
   dealType: z.string().min(1, "Please select a deal type"),
-  businessSummary: z.string().min(1, "Please enter a business summary"),
+  businessSummary: z.string().min(10, "Please provide a business summary"),
   salesChannel: z.string().min(1, "Please select a sales channel"),
   region: z.string().min(1, "Please select a region"),
-  email: z.string().email("Please enter a valid email").optional(),
-  advertiserName: z.string().optional(),
-  agencyName: z.string().optional(),
-  contractTerm: z.number().min(1, "Contract term is required"),
-  dealStructure: z.enum(["flat_commit", "tiered"]),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
-  annualRevenue: z.number().min(1, "Annual revenue is required"),
-  annualMargin: z.number().min(1, "Annual margin is required"),
-  nonStandardTerms: z.boolean().default(false),
-  nonStandardTermsDescription: z.string().optional(),
-  tierCount: z.number().min(1).optional(),
-  tierData: z.record(z.string(), z.any()).optional(),
-  approvals: z.array(z.string()).optional(),
-  comments: z.string().optional(),
-  incentives: z.array(z.any()).optional()
+  email: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  advertiserName: z.string().min(1, "Please select an advertiser").optional(),
+  agencyName: z.string().min(1, "Please select an agency").optional(),
+  // Deal Structure & Pricing
+  dealStructureType: z.string({ required_error: "Please select a deal structure type" }),
+  contractStartDate: z.string().min(1, "Please select a contract start date"),
+  contractEndDate: z.string().min(1, "Please select a contract end date"),
+  contractTerm: z.number().min(1, "Contract term must be at least 1 month"),
+  notes: z.string().optional(),
+  hasNonStandardTerms: z.boolean().default(false),
+  nonStandardTermsDetails: z.string().optional(),
+}).refine((data) => {
+  // Ensure at least one of advertiserName or agencyName is filled
+  if (data.salesChannel === "client_direct" && !data.advertiserName) {
+    return false;
+  }
+  if ((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && !data.agencyName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please select a company name",
+  path: ["advertiserName"],
+}).refine((data) => {
+  // If nonStandardTerms is checked, details are required
+  if (data.hasNonStandardTerms && (!data.nonStandardTermsDetails || data.nonStandardTermsDetails.length < 10)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please provide details about non-standard terms",
+  path: ["nonStandardTermsDetails"],
 });
 
 export default function SubmitDeal() {
   const { toast } = useToast();
-  const [, navigate] = useLocation();
   const [formStep, setFormStep] = useState(0);
-  const [dealStructure, setDealStructure] = useState<"tiered" | "flat_commit">("flat_commit");
-  const [tierCount, setTierCount] = useState(3);
-  const [hasNonStandardTerms, setHasNonStandardTerms] = useState(false);
-  const [revenueTiers, setRevenueTiers] = useState<Array<{ tierNumber: number, annualRevenue: number, annualMargin: number }>>([]);
-  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
-  const [agencies, setAgencies] = useState<AgencyData[]>([]);
+  const [dealTiers, setDealTiers] = useState<Array<{tierNumber: number, annualRevenue: number, annualMargin: number}>>([
+    { tierNumber: 1, annualRevenue: 0, annualMargin: 0 }
+  ]);
   const [selectedIncentives, setSelectedIncentives] = useState<SelectedIncentive[]>([]);
-  const [revenueExpanded, setRevenueExpanded] = useState(true);
-  const [incentivesExpanded, setIncentivesExpanded] = useState(true);
+  const [revenue, setRevenue] = useState<number | undefined>();
+  const [margin, setMargin] = useState<number | undefined>();
+  const [requiredApprover, setRequiredApprover] = useState<string>("");
+  const [approvalInfo, setApprovalInfo] = useState<ApprovalRule | null>(null);
   
-  // Initialize the form
+  const [advertisers, setAdvertisers] = useState<any[]>([]);
+  const [agencies, setAgencies] = useState<any[]>([]);
+  
+  // Initialize form with default values
   const form = useForm<z.infer<typeof dealFormSchema>>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
@@ -89,138 +135,61 @@ export default function SubmitDeal() {
       email: "",
       advertiserName: "",
       agencyName: "",
+      dealStructureType: "tiered",
+      contractStartDate: "",
+      contractEndDate: "",
       contractTerm: 12,
-      dealStructure: "flat_commit",
-      annualRevenue: undefined,
-      annualMargin: undefined,
-      nonStandardTerms: false,
-      nonStandardTermsDescription: "",
-      tierCount: 3,
-      tierData: {},
-      approvals: [],
-      comments: "",
-      incentives: []
+      notes: "",
+      hasNonStandardTerms: false,
+      nonStandardTermsDetails: "",
     },
   });
   
-  const salesChannel = form.watch("salesChannel");
-  
-  // Get typed value from form
   function getTypedValue<T extends string>(
     field: T
-  ): z.infer<typeof dealFormSchema>[keyof z.infer<typeof dealFormSchema>] {
-    return form.getValues(field as any);
+  ): z.infer<typeof dealFormSchema>[T] {
+    return form.getValues(field)
   }
-  
+
   function watchTypedValue<T extends string>(
     field: T
-  ): z.infer<typeof dealFormSchema>[keyof z.infer<typeof dealFormSchema>] {
-    return form.watch(field as any);
+  ): z.infer<typeof dealFormSchema>[T] {
+    return form.watch(field)
   }
+  
+  const dealType = watchTypedValue("dealType");
+  const salesChannel = watchTypedValue("salesChannel");
+  const contractTerm = watchTypedValue("contractTerm");
+  const hasNonStandardTerms = watchTypedValue("hasNonStandardTerms");
+  const dealStructureType = watchTypedValue("dealStructureType");
   
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
-    console.log(`Approval level changed to: ${level}`, approvalInfo);
-    // Update the form with the selected approval level
-    const currentApprovals = form.getValues("approvals") || [];
-    if (!currentApprovals.includes(level)) {
-      form.setValue("approvals", [...currentApprovals, level]);
-    }
+    setRequiredApprover(level);
+    setApprovalInfo(approvalInfo);
   };
   
-  // Define data types
-  interface DealTierData {
-    tierNumber: number;
-    annualRevenue?: number;
-    annualGrossMargin?: number;
-    annualGrossMarginPercent?: number;
-    incentivePercentage?: number;
-    incentiveNotes?: string;
-    incentiveType?: "rebate" | "discount" | "bonus" | "other";
-    incentiveThreshold?: number; // Revenue threshold to achieve this incentive
-    incentiveAmount?: number; // Monetary value of the incentive
-  }
-  
-  interface AdvertiserData {
-    id: number;
-    name: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
-  
-  interface AgencyData {
-    id: number;
-    name: string;
-    type: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
-  
-  // Create deal mutation
-  const createDeal = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest('/api/deals', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Deal Submitted",
-        description: "Your deal has been submitted successfully and is pending approval.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-      navigate("/");
-    },
-    onError: (error) => {
-      toast({
-        title: "Submission Failed",
-        description: `There was an error submitting your deal: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  });
-  
-  // Handle tier count changes
-  useEffect(() => {
-    if (dealStructure === "tiered") {
-      const newTiers = [];
-      for (let i = 1; i <= tierCount; i++) {
-        const existingTier = revenueTiers.find(tier => tier.tierNumber === i);
-        if (existingTier) {
-          newTiers.push(existingTier);
-        } else {
-          newTiers.push({
-            tierNumber: i,
-            annualRevenue: 0,
-            annualMargin: 0
-          });
-        }
-      }
-      setRevenueTiers(newTiers);
-    }
-  }, [tierCount, dealStructure]);
-  
-  // Load agencies and advertisers
+  // Query advertisers and agencies
   useEffect(() => {
     async function fetchData() {
       try {
-        const [advertisersData, agenciesData] = await Promise.all([
-          apiRequest('/api/advertisers'),
-          apiRequest('/api/agencies')
+        const [advertisersResponse, agenciesResponse] = await Promise.all([
+          fetch('/api/advertisers', { credentials: 'include' }),
+          fetch('/api/agencies', { credentials: 'include' })
         ]);
         
-        if (advertisersData) setAdvertisers(advertisersData);
-        if (agenciesData) setAgencies(agenciesData);
+        if (advertisersResponse.ok) {
+          const data = await advertisersResponse.json();
+          setAdvertisers(data);
+        }
+        
+        if (agenciesResponse.ok) {
+          const data = await agenciesResponse.json();
+          setAgencies(data);
+        }
       } catch (error) {
         toast({
           title: "Error loading data",
-          description: "Failed to load advertisers or agencies data.",
+          description: "Failed to load advertisers and agencies. Please refresh the page.",
           variant: "destructive",
         });
       }
@@ -232,52 +201,56 @@ export default function SubmitDeal() {
   function validateAndGoToStep(targetStep: number): boolean {
     let isValid = true;
     
-    // Define validation fields for each step
-    const step0Fields = ["dealType", "businessSummary", "salesChannel", "region"];
-    if (salesChannel === "client_direct") {
-      step0Fields.push("advertiserName");
-    } else if (salesChannel === "holding_company" || salesChannel === "independent_agency") {
-      step0Fields.push("agencyName");
-    }
-    
-    const step1Fields = ["dealStructure", "contractTerm", "annualRevenue", "annualMargin"];
-    
-    // Check validation based on target step
-    if (targetStep >= 1 && formStep === 0) {
-      // Validate step 0 fields
-      form.trigger(step0Fields as any);
+    if (targetStep === 1) {
+      // Validate fields required for step 1
+      const step1Fields = [
+        "dealType", "businessSummary", "salesChannel", "region"
+      ];
       
-      // Check if any of the fields has errors
-      for (const field of step0Fields) {
-        if (form.formState.errors[field as keyof typeof form.formState.errors]) {
-          isValid = false;
-          break;
-        }
+      // If salesChannel is client_direct, validate advertiserName
+      if (salesChannel === "client_direct") {
+        step1Fields.push("advertiserName");
       }
-    } else if (targetStep >= 2 && formStep === 1) {
-      // Validate step 1 fields
-      form.trigger(step1Fields as any);
       
-      // Check if any of the fields has errors
-      for (const field of step1Fields) {
-        if (form.formState.errors[field as keyof typeof form.formState.errors]) {
-          isValid = false;
-          break;
+      // If salesChannel is holding_company or independent_agency, validate agencyName
+      if (salesChannel === "holding_company" || salesChannel === "independent_agency") {
+        step1Fields.push("agencyName");
+      }
+      
+      isValid = form.trigger(step1Fields as any);
+      if (isValid) setFormStep(targetStep);
+    } else if (targetStep === 2) {
+      // Validate fields required for step 2
+      const step2Fields = [
+        "dealStructureType", "contractStartDate", "contractEndDate", "contractTerm"
+      ];
+      
+      // If hasNonStandardTerms is true, validate nonStandardTermsDetails
+      if (hasNonStandardTerms) {
+        step2Fields.push("nonStandardTermsDetails");
+      }
+      
+      isValid = form.trigger(step2Fields as any);
+      if (isValid) {
+        // Ensure deal tiers are valid
+        if (dealStructureType === "tiered") {
+          // Check if there's at least one tier with revenue > 0
+          const validTiers = dealTiers.filter(tier => tier.annualRevenue > 0);
+          if (validTiers.length === 0) {
+            toast({
+              title: "Invalid Deal Structure",
+              description: "Please add at least one tier with revenue greater than 0.",
+              variant: "destructive",
+            });
+            return false;
+          }
         }
+        
+        setFormStep(targetStep);
       }
     }
     
-    if (isValid) {
-      setFormStep(targetStep);
-      return true;
-    } else {
-      toast({
-        title: "Validation Error",
-        description: "Please fill out all required fields before proceeding.",
-        variant: "destructive",
-      });
-      return false;
-    }
+    return isValid;
   }
   
   function nextStep() {
@@ -288,64 +261,132 @@ export default function SubmitDeal() {
     setFormStep(Math.max(0, formStep - 1));
   }
   
+  // Set up mutation for form submission
+  const createDeal = useMutation({
+    mutationFn: async (data: z.infer<typeof dealFormSchema>) => {
+      // Create the deal payload
+      const totalRevenue = dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0);
+      const totalMargin = dealTiers.reduce((sum, tier) => sum + (tier.annualMargin || 0), 0);
+      
+      // Calculate the average margin percentage across all tiers
+      const avgMarginPercent = totalRevenue > 0 
+        ? (totalMargin / totalRevenue) * 100 
+        : 0;
+      
+      const dealData = {
+        ...data,
+        status: "pending_approval",
+        dealTiers: dealTiers,
+        incentives: selectedIncentives,
+        totalAnnualRevenue: totalRevenue,
+        totalAnnualMargin: totalMargin,
+        averageMarginPercent: avgMarginPercent,
+        approvedBy: "",
+        requiredApprover: requiredApprover,
+      };
+      
+      const response = await fetch('/api/deals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dealData),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`${response.status}: ${text || response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Deal Submitted",
+        description: `Deal #${data.id} has been submitted successfully and is pending approval.`,
+      });
+      
+      // Reset form and state
+      form.reset();
+      setDealTiers([{ tierNumber: 1, annualRevenue: 0, annualMargin: 0 }]);
+      setSelectedIncentives([]);
+      setFormStep(0);
+      
+      // Invalidate queries to refresh deal listings
+      queryClient.invalidateQueries({queryKey: ['/api/deals']});
+    },
+    onError: (error) => {
+      toast({
+        title: "Submission Failed",
+        description: `There was an error submitting your deal: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+  
   function onSubmit(data: z.infer<typeof dealFormSchema>) {
-    // Process the form data
-    const dealData = {
-      ...data,
-      incentives: selectedIncentives,
-      startDate: data.startDate ? format(data.startDate, 'yyyy-MM-dd') : undefined,
-      endDate: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
-      tiers: revenueTiers,
-    };
+    // Final validation before submission
+    if (dealStructureType === "tiered" && dealTiers.length === 0) {
+      toast({
+        title: "Invalid Deal Structure",
+        description: "Please add at least one tier with revenue greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    createDeal.mutate(dealData);
+    createDeal.mutate(data);
   }
   
   return (
-    <div className="container mx-auto">
+    <div>
       {/* About Deal Submission Section */}
-      <div className="p-6">
-        <div className="mb-8 bg-gradient-to-b from-purple-50 to-transparent rounded-lg p-8">
-          <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg shadow-md p-5 border-0">
-              <h4 className="font-medium text-slate-900 mb-2">What is Deal Submission?</h4>
-              <p className="text-sm text-slate-500">
-                Deal submission is where you formally propose a commercial deal for approval. This form collects all required information about deal structure, revenue, and incentives.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-md p-5 border-0">
-              <h4 className="font-medium text-slate-900 mb-2">Deal Approval Process</h4>
-              <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
-                <li>Complete and submit this form</li>
-                <li>Appropriate approvers review the deal terms</li>
-                <li>You'll receive updates on approval status</li>
-                <li>Once approved, the deal will be finalized for execution</li>
-              </ol>
-            </div>
-            
-            <div className="bg-blue-50 rounded-lg shadow-md p-5 border-0">
-              <h4 className="font-medium text-blue-800 mb-2">Tips for Faster Approval</h4>
-              <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
-                <li>Include all required documentation</li>
-                <li>Clearly explain any non-standard terms</li>
-                <li>For urgent deals, add a note in the comments</li>
-                <li>Use the chatbot for help with any questions</li>
-              </ul>
+      <div className="bg-gradient-to-b from-purple-50 to-transparent">
+        <div className="container mx-auto p-6">
+          <div className="mb-8 rounded-lg p-8">
+            <h3 className="text-xl font-bold text-slate-800 mb-3 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">About Deal Submission</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-md p-5 border-0">
+                <h4 className="font-medium text-slate-900 mb-2">What is Deal Submission?</h4>
+                <p className="text-sm text-slate-500">
+                  Deal submission is where you formally propose a commercial deal for approval. This form collects all required information about deal structure, revenue, and incentives.
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-md p-5 border-0">
+                <h4 className="font-medium text-slate-900 mb-2">Deal Approval Process</h4>
+                <ol className="text-sm text-slate-500 list-decimal list-inside space-y-1">
+                  <li>Complete and submit this form</li>
+                  <li>Appropriate approvers review the deal terms</li>
+                  <li>You'll receive updates on approval status</li>
+                  <li>Once approved, the deal will be finalized for execution</li>
+                </ol>
+              </div>
+              
+              <div className="bg-blue-50 rounded-lg shadow-md p-5 border-0">
+                <h4 className="font-medium text-blue-800 mb-2">Tips for Faster Approval</h4>
+                <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+                  <li>Include all required documentation</li>
+                  <li>Clearly explain any non-standard terms</li>
+                  <li>For urgent deals, add a note in the comments</li>
+                  <li>Use the chatbot for help with any questions</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
       
       {/* Submit Deal Form Section */}
-      <div className="p-6">
-        <div className="mb-8 bg-white rounded-lg shadow-md p-8">
-          <div className="flex items-center mb-2">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h1>
-            <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
-          </div>
-          <p className="mt-1 mb-6 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
+      <div className="bg-white">
+        <div className="container mx-auto p-6">
+          <div className="mb-8 bg-white rounded-lg shadow-md p-8">
+            <div className="flex items-center mb-2">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Submit New Deal</h1>
+              <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
+            </div>
+            <p className="mt-1 mb-6 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
       
           {/* Form Progress - Modified to be clickable for back and forth navigation */}
           <div className="mb-8">
@@ -614,18 +655,11 @@ export default function SubmitDeal() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {agencies
-                                    .filter(agency => 
-                                      salesChannel === "holding_company" 
-                                        ? agency.type === "holding_company" 
-                                        : agency.type === "independent"
-                                    )
-                                    .map(agency => (
-                                      <SelectItem key={agency.id} value={agency.name}>
-                                        {agency.name}
-                                      </SelectItem>
-                                    ))
-                                  }
+                                  {agencies.map(agency => (
+                                    <SelectItem key={agency.id} value={agency.name}>
+                                      {agency.name}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormDescription>
@@ -637,12 +671,10 @@ export default function SubmitDeal() {
                         />
                       )}
                     </div>
-                  </div>
-                  
-                  <div className="mt-8 flex justify-end">
-                    <Button type="button" onClick={nextStep}>
-                      Next: Deal Structure & Pricing
-                    </Button>
+                    
+                    <div className="flex justify-end mt-6">
+                      <Button type="button" onClick={nextStep}>Next: Deal Structure & Pricing</Button>
+                    </div>
                   </div>
                 </CardContent>
               )}
@@ -652,391 +684,371 @@ export default function SubmitDeal() {
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
-                    <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
+                    <p className="mt-1 text-sm text-slate-500">Define your deal's structure, revenue tiers, and incentives</p>
                   </div>
                   
-                  <div className="space-y-6">
-                    {/* Simplified approval alert based on basic deal parameters */}
-                    {(watchTypedValue("annualRevenue") !== undefined && watchTypedValue("contractTerm") !== undefined) && (
-                      <ApprovalAlert 
-                        totalValue={Number(watchTypedValue("annualRevenue")) || 0}
-                        contractTerm={Number(watchTypedValue("contractTerm")) || 12}
-                        hasNonStandardTerms={hasNonStandardTerms}
-                        dealType={String(watchTypedValue("dealType")) || "grow"}
-                        salesChannel={String(watchTypedValue("salesChannel")) || "independent_agency"}
-                        onChange={handleApprovalChange}
+                  <div className="space-y-8">
+                    {/* Deal Structure Type */}
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="dealStructureType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Deal Structure Type <span className="text-red-500">*</span></FormLabel>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div 
+                                className={cn(
+                                  "flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-all hover:border-primary",
+                                  field.value === "tiered" ? "border-primary bg-primary/5" : "border-slate-200"
+                                )}
+                                onClick={() => field.onChange("tiered")}
+                              >
+                                <div className={cn(
+                                  "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                                  field.value === "tiered" ? "border-primary" : "border-slate-300"
+                                )}>
+                                  {field.value === "tiered" && (
+                                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-slate-900">Tiered Structure</h4>
+                                  <p className="text-sm text-slate-500">Increasing incentives at different revenue tiers</p>
+                                </div>
+                              </div>
+                              
+                              <div 
+                                className={cn(
+                                  "flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-all hover:border-primary",
+                                  field.value === "flat_commit" ? "border-primary bg-primary/5" : "border-slate-200"
+                                )}
+                                onClick={() => field.onChange("flat_commit")}
+                              >
+                                <div className={cn(
+                                  "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                                  field.value === "flat_commit" ? "border-primary" : "border-slate-300"
+                                )}>
+                                  {field.value === "flat_commit" && (
+                                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-slate-900">Flat Commitment</h4>
+                                  <p className="text-sm text-slate-500">Single revenue target with fixed incentives</p>
+                                </div>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    )}
+                    </div>
                     
-                    {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
-                    
-                    {/* Deal Structure & Pricing Card */}
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
-                      <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Deal Structure & Pricing</h3>
-                      
-                      {/* 2-column layout for structure selection and dates */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    {/* Contract Period */}
+                    <div className="space-y-4">
+                      <h3 className="text-md font-medium text-slate-900">Contract Period</h3>
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         <FormField
                           control={form.control}
-                          name="dealStructure"
+                          name="contractStartDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
-                              <Select 
-                                onValueChange={(value) => {
-                                  field.onChange(value);
-                                  setDealStructure(value as "tiered" | "flat_commit");
-                                }}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="bg-slate-50">
-                                    <SelectValue placeholder="Select deal structure" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="flat_commit">Flat Commit</SelectItem>
-                                  <SelectItem value="tiered">Tiered Revenue</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                The revenue structure for this deal
-                              </FormDescription>
+                              <FormLabel>Start Date <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         
-                        {/* Contract Term Field */}
+                        <FormField
+                          control={form.control}
+                          name="contractEndDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Date <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
                         <FormField
                           control={form.control}
                           name="contractTerm"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Contract Term (Months) <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Term (Months) <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
-                                <Input
-                                  type="number"
+                                <Input 
+                                  type="number" 
                                   min="1"
-                                  max="60"
-                                  className="bg-slate-50"
+                                  placeholder="Enter contract length in months" 
                                   {...field}
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    field.onChange(isNaN(value) ? 12 : value);
-                                  }}
+                                  onChange={e => field.onChange(parseInt(e.target.value))}
                                 />
                               </FormControl>
-                              <FormDescription>
-                                Length of the contract in months
-                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-
-                      {/* Collapsible Revenue Structure Section - Default for all deal structures */}
-                      <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 mb-6">
-                        {/* Header with toggle */}
-                        <Collapsible
-                          open={revenueExpanded}
-                          onOpenChange={setRevenueExpanded}
-                          className="w-full"
-                        >
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-lg font-medium text-slate-900">Revenue Structure</h4>
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                {revenueExpanded ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </CollapsibleTrigger>
-                          </div>
-                          
-                          <CollapsibleContent className="mt-4">
-                            {dealStructure === "flat_commit" ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Annual Revenue Field */}
-                                <FormField
-                                  control={form.control}
-                                  name="annualRevenue"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Annual Revenue ($) <span className="text-red-500">*</span></FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          className="bg-white"
-                                          {...field}
-                                          onChange={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            field.onChange(isNaN(value) ? 0 : value);
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormDescription>
-                                        Total annual revenue for this deal
-                                      </FormDescription>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                {/* Annual Margin Field */}
-                                <FormField
-                                  control={form.control}
-                                  name="annualMargin"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Annual Gross Margin (%) <span className="text-red-500">*</span></FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          max="100"
-                                          className="bg-white"
-                                          {...field}
-                                          onChange={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            field.onChange(isNaN(value) ? 0 : value);
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormDescription>
-                                        Expected gross margin percentage
-                                      </FormDescription>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            ) : (
-                              <div>
-                                {/* Tiered Structure Fields */}
-                                <div className="mb-4">
-                                  <FormLabel>Number of Tiers</FormLabel>
-                                  <Select
-                                    value={String(tierCount)}
-                                    onValueChange={(value) => setTierCount(parseInt(value))}
+                    </div>
+                    
+                    {/* Revenue Structure - Improved with table layout and tier management */}
+                    <Accordion type="single" collapsible defaultValue="revenue-structure" className="w-full">
+                      <AccordionItem value="revenue-structure" className="border rounded-lg">
+                        <AccordionTrigger className="px-6 hover:no-underline font-medium">
+                          Revenue Structure
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                          <div className="mb-2">
+                            <p className="text-sm text-slate-500 mb-2">Define annual revenue targets for each tier{dealStructureType === "flat_commit" ? "" : "s"}</p>
+                            
+                            <div className="flex justify-between mb-4">
+                              <div className="flex space-x-2">
+                                {dealStructureType === "tiered" && (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      if (dealTiers.length < 6) {
+                                        setDealTiers([
+                                          ...dealTiers,
+                                          {
+                                            tierNumber: dealTiers.length + 1,
+                                            annualRevenue: 0,
+                                            annualMargin: 0
+                                          }
+                                        ]);
+                                      } else {
+                                        toast({
+                                          title: "Maximum tiers reached",
+                                          description: "You can add a maximum of 6 tiers.",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }}
+                                    disabled={dealTiers.length >= 6}
                                   >
-                                    <SelectTrigger className="w-32 bg-white">
-                                      <SelectValue placeholder="Select tier count" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {[1, 2, 3, 4, 5, 6].map(num => (
-                                        <SelectItem key={num} value={String(num)}>
-                                          {num} {num === 1 ? 'tier' : 'tiers'}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                
-                                {/* Tier Table */}
-                                <div className="overflow-x-auto mt-4">
-                                  <table className="w-full border-collapse">
-                                    <thead>
-                                      <tr className="bg-slate-100">
-                                        <th className="p-3 border text-left font-medium text-slate-700 w-1/3">Tier</th>
-                                        <th className="p-3 border text-right font-medium text-slate-700">Last Year</th>
-                                        {revenueTiers.map(tier => (
-                                          <th key={tier.tierNumber} className="p-3 border text-right font-medium text-slate-700 w-1/5">
-                                            Tier {tier.tierNumber}
-                                          </th>
-                                        ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td className="p-3 border font-medium text-slate-700">
-                                          Annual Revenue ($)
-                                        </td>
-                                        <td className="p-3 border text-right text-slate-700">
-                                          $850,000
-                                        </td>
-                                        {revenueTiers.map(tier => (
-                                          <td key={`revenue-${tier.tierNumber}`} className="p-3 border">
-                                            <Input
-                                              type="number"
-                                              min="0"
-                                              className="text-right"
-                                              value={tier.annualRevenue || ""}
-                                              onChange={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                const newTiers = [...revenueTiers];
-                                                const tierIndex = newTiers.findIndex(t => t.tierNumber === tier.tierNumber);
-                                                if (tierIndex !== -1) {
-                                                  newTiers[tierIndex] = {
-                                                    ...newTiers[tierIndex],
-                                                    annualRevenue: isNaN(value) ? 0 : value
-                                                  };
-                                                  setRevenueTiers(newTiers);
-                                                }
-                                              }}
-                                            />
-                                          </td>
-                                        ))}
-                                      </tr>
-                                      <tr>
-                                        <td className="p-3 border font-medium text-slate-700">
-                                          Gross Margin (%)
-                                        </td>
-                                        <td className="p-3 border text-right text-slate-700">
-                                          35%
-                                        </td>
-                                        {revenueTiers.map(tier => (
-                                          <td key={`margin-${tier.tierNumber}`} className="p-3 border">
-                                            <Input
-                                              type="number"
-                                              min="0"
-                                              max="100"
-                                              className="text-right"
-                                              value={tier.annualMargin || ""}
-                                              onChange={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                const newTiers = [...revenueTiers];
-                                                const tierIndex = newTiers.findIndex(t => t.tierNumber === tier.tierNumber);
-                                                if (tierIndex !== -1) {
-                                                  newTiers[tierIndex] = {
-                                                    ...newTiers[tierIndex],
-                                                    annualMargin: isNaN(value) ? 0 : value
-                                                  };
-                                                  setRevenueTiers(newTiers);
-                                                }
-                                              }}
-                                            />
-                                          </td>
-                                        ))}
-                                      </tr>
-                                      <tr>
-                                        <td className="p-3 border font-medium text-slate-700">
-                                          Gross Margin Value ($)
-                                        </td>
-                                        <td className="p-3 border text-right text-slate-700">
-                                          $297,500
-                                        </td>
-                                        {revenueTiers.map(tier => (
-                                          <td key={`margin-value-${tier.tierNumber}`} className="p-3 border text-right text-slate-700">
-                                            {tier.annualRevenue && tier.annualMargin
-                                              ? `$${calculateGrossMarginValue(tier.annualRevenue, tier.annualMargin).toLocaleString()}`
-                                              : "-"}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
+                                    Add Tier
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                              <Table className="border border-slate-200">
+                                <TableHeader>
+                                  <TableRow className="bg-slate-50">
+                                    <TableHead className="w-1/3 font-medium text-slate-800">Tier</TableHead>
+                                    <TableHead className="font-medium text-slate-800">Last Year</TableHead>
+                                    <TableHead className="font-medium text-slate-800">{new Date().getFullYear()} Target</TableHead>
+                                    <TableHead className="font-medium text-slate-800">Margin %</TableHead>
+                                    <TableHead className="font-medium text-slate-800">Margin Value</TableHead>
+                                    {dealStructureType === "tiered" && (
+                                      <TableHead className="w-10 font-medium text-slate-800">Actions</TableHead>
+                                    )}
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {dealTiers.map((tier, index) => (
+                                    <TableRow key={index} className="hover:bg-slate-50">
+                                      <TableCell className="font-medium text-slate-900">
+                                        {dealStructureType === "tiered" 
+                                          ? `Tier ${tier.tierNumber}` 
+                                          : "Annual Commitment"}
+                                      </TableCell>
+                                      <TableCell className="text-slate-800">
+                                        {formatCurrency(850000)} <br />
+                                        <span className="text-xs text-slate-500">35% margin</span>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input
+                                          type="number"
+                                          placeholder="Enter annual revenue"
+                                          value={tier.annualRevenue || ""}
+                                          onChange={(e) => {
+                                            const newTiers = [...dealTiers];
+                                            newTiers[index].annualRevenue = parseFloat(e.target.value) || 0;
+                                            setDealTiers(newTiers);
+                                          }}
+                                          className="max-w-[150px]"
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input
+                                          type="number"
+                                          placeholder="%"
+                                          value={tier.annualMargin ? (tier.annualMargin / tier.annualRevenue * 100).toFixed(1) : ""}
+                                          onChange={(e) => {
+                                            const newTiers = [...dealTiers];
+                                            const marginPercent = parseFloat(e.target.value) || 0;
+                                            newTiers[index].annualMargin = (marginPercent / 100) * tier.annualRevenue;
+                                            setDealTiers(newTiers);
+                                          }}
+                                          className="max-w-[80px]"
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        {tier.annualMargin ? formatCurrency(tier.annualMargin) : "-"}
+                                      </TableCell>
+                                      {dealStructureType === "tiered" && (
+                                        <TableCell>
+                                          <Button
+                                            type="button"
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-8 w-8"
+                                            onClick={() => {
+                                              if (dealTiers.length > 1) {
+                                                const newTiers = dealTiers.filter((_, i) => i !== index);
+                                                // Renumber tiers
+                                                const renumberedTiers = newTiers.map((t, i) => ({
+                                                  ...t,
+                                                  tierNumber: i + 1
+                                                }));
+                                                setDealTiers(renumberedTiers);
+                                              } else {
+                                                toast({
+                                                  title: "Cannot remove",
+                                                  description: "You must have at least one tier.",
+                                                  variant: "destructive",
+                                                });
+                                              }
+                                            }}
+                                            disabled={dealTiers.length <= 1}
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
+                                              <path d="M3 6h18"></path>
+                                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                            </svg>
+                                          </Button>
+                                        </TableCell>
+                                      )}
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                            
+                            {dealStructureType === "tiered" && (
+                              <div className="mt-2 text-sm text-slate-500">
+                                <p>Tiers represent increasing revenue targets with corresponding incentive levels.</p>
                               </div>
                             )}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </div>
-                      
-                      {/* Incentives Section */}
-                      <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 mb-6">
-                        <Collapsible
-                          open={incentivesExpanded}
-                          onOpenChange={setIncentivesExpanded}
-                          className="w-full"
-                        >
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-lg font-medium text-slate-900">Incentive Structure</h4>
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                {incentivesExpanded ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </CollapsibleTrigger>
                           </div>
-                          
-                          <CollapsibleContent className="mt-4">
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    
+                    {/* Incentive Structure - Using dedicated component */}
+                    <Accordion type="single" collapsible defaultValue="incentive-structure" className="w-full">
+                      <AccordionItem value="incentive-structure" className="border rounded-lg">
+                        <AccordionTrigger className="px-6 hover:no-underline font-medium">
+                          Incentive Structure
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                          <div className="space-y-4">
+                            <p className="text-sm text-slate-500">Configure incentives for this deal</p>
+                            
                             {/* Incentive Selector Component */}
-                            <IncentiveSelector 
-                              dealTiers={dealStructure === "tiered" ? revenueTiers : [{ tierNumber: 1, annualRevenue: form.getValues("annualRevenue") || 0 }]}
-                              onIncentiveAdded={(incentive) => {
-                                setSelectedIncentives([...selectedIncentives, incentive]);
-                              }}
-                              selectedIncentives={selectedIncentives}
-                              onIncentiveRemoved={(index) => {
-                                const newIncentives = [...selectedIncentives];
-                                newIncentives.splice(index, 1);
-                                setSelectedIncentives(newIncentives);
-                              }}
-                            />
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </div>
+                            <div className="pt-2">
+                              <IncentiveSelector 
+                                dealTiers={dealTiers.map(tier => ({ 
+                                  tierNumber: tier.tierNumber, 
+                                  annualRevenue: tier.annualRevenue 
+                                }))}
+                                onChange={(incentives) => setSelectedIncentives(incentives)}
+                                selectedIncentives={selectedIncentives}
+                              />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    
+                    {/* Additional Terms */}
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Additional Notes</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Add any additional information about this deal"
+                                className="resize-none"
+                                rows={4}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Include any other relevant information that would help with deal approval.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       
-                      {/* Non-Standard Terms Checkbox */}
-                      <div className="py-4">
-                        <FormField
-                          control={form.control}
-                          name="nonStandardTerms"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={(checked) => {
-                                    field.onChange(checked);
-                                    setHasNonStandardTerms(!!checked);
-                                  }}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel>This deal includes non-standard terms</FormLabel>
-                                <FormDescription>
-                                  Check this if your deal requires special terms, payment schedules, or other exceptions
-                                </FormDescription>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="hasNonStandardTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>This deal has non-standard terms</FormLabel>
+                              <FormDescription>
+                                Check this box if this deal includes terms that deviate from standard agreements
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
                       
-                      {/* Conditional Non-Standard Terms Description Field */}
                       {hasNonStandardTerms && (
                         <FormField
                           control={form.control}
-                          name="nonStandardTermsDescription"
+                          name="nonStandardTermsDetails"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Describe Non-Standard Terms <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Non-Standard Terms Details <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
-                                <Textarea
-                                  placeholder="Please describe the non-standard terms in detail..."
+                                <Textarea 
+                                  placeholder="Describe the non-standard terms in detail"
                                   className="resize-none"
                                   rows={4}
-                                  {...field}
+                                  {...field} 
                                 />
                               </FormControl>
-                              <FormDescription>
-                                Provide details on any special terms, approval requirements, or other exceptions
-                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       )}
+
+                      <div className="flex justify-between mt-6">
+                        <Button type="button" variant="outline" onClick={prevStep}>
+                          Back: Deal Details
+                        </Button>
+                        <Button type="button" onClick={nextStep}>
+                          Next: Review & Submit
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Navigation Buttons */}
-                  <div className="mt-8 flex justify-between">
-                    <Button type="button" variant="outline" onClick={prevStep}>
-                      Back: Deal Details
-                    </Button>
-                    <Button type="button" onClick={nextStep}>
-                      Next: Review & Submit
-                    </Button>
                   </div>
                 </CardContent>
               )}
@@ -1046,269 +1058,189 @@ export default function SubmitDeal() {
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <h2 className="text-lg font-medium text-slate-900">Review & Submit</h2>
-                    <p className="mt-1 text-sm text-slate-500">Please review all deal information before submitting</p>
+                    <p className="mt-1 text-sm text-slate-500">Please review all information before submitting your deal</p>
                   </div>
                   
-                  <div className="space-y-6">
-                    {/* Basic Information Summary */}
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                      <h3 className="text-base font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-200">Basic Deal Information</h3>
+                  <div className="space-y-8">
+                    {/* Deal Summary */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
+                      <h3 className="text-md font-medium text-slate-900 mb-4">Deal Summary</h3>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <span className="text-sm font-medium text-slate-700 block">Deal Type:</span>
-                          <span className="text-sm text-slate-600">
-                            {form.getValues("dealType") === "grow"
-                              ? "Grow (>20% YOY Growth)"
-                              : form.getValues("dealType") === "protect"
-                              ? "Protect (Large Account Retention)"
-                              : "Custom (Special Builds/Requirements)"}
-                          </span>
+                          <h4 className="text-sm font-medium text-slate-800 mb-2">Basic Information</h4>
+                          <dl className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Deal Type:</dt>
+                              <dd className="text-slate-900 font-medium capitalize">{dealType || "-"}</dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Sales Channel:</dt>
+                              <dd className="text-slate-900 font-medium capitalize">
+                                {salesChannel?.replace(/_/g, " ") || "-"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Region:</dt>
+                              <dd className="text-slate-900 font-medium capitalize">{form.getValues("region") || "-"}</dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Company:</dt>
+                              <dd className="text-slate-900 font-medium">
+                                {form.getValues("advertiserName") || form.getValues("agencyName") || "-"}
+                              </dd>
+                            </div>
+                          </dl>
                         </div>
                         
                         <div>
-                          <span className="text-sm font-medium text-slate-700 block">Sales Channel:</span>
-                          <span className="text-sm text-slate-600">
-                            {form.getValues("salesChannel") === "client_direct"
-                              ? "Client Direct"
-                              : form.getValues("salesChannel") === "holding_company"
-                              ? "Holding Company"
-                              : "Independent Agency"}
-                          </span>
-                        </div>
-                        
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">Region:</span>
-                          <span className="text-sm text-slate-600 capitalize">
-                            {form.getValues("region")}
-                          </span>
-                        </div>
-                        
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">
-                            {form.getValues("salesChannel") === "client_direct" ? "Advertiser:" : "Agency:"}
-                          </span>
-                          <span className="text-sm text-slate-600">
-                            {form.getValues("salesChannel") === "client_direct"
-                              ? form.getValues("advertiserName")
-                              : form.getValues("agencyName")}
-                          </span>
+                          <h4 className="text-sm font-medium text-slate-800 mb-2">Deal Structure</h4>
+                          <dl className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Structure Type:</dt>
+                              <dd className="text-slate-900 font-medium capitalize">
+                                {dealStructureType?.replace(/_/g, " ") || "-"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Contract Term:</dt>
+                              <dd className="text-slate-900 font-medium">{contractTerm || 0} months</dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Total Annual Revenue:</dt>
+                              <dd className="text-slate-900 font-medium">
+                                {formatCurrency(dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0))}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <dt className="text-slate-500">Number of Tiers:</dt>
+                              <dd className="text-slate-900 font-medium">{dealTiers.length}</dd>
+                            </div>
+                          </dl>
                         </div>
                       </div>
                       
-                      <div className="mb-4">
-                        <span className="text-sm font-medium text-slate-700 block">Business Summary:</span>
-                        <p className="text-sm text-slate-600 mt-1">
-                          {form.getValues("businessSummary")}
-                        </p>
-                      </div>
-                      
-                      {form.getValues("email") && (
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">Contact Email:</span>
-                          <span className="text-sm text-slate-600">{form.getValues("email")}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Deal Structure & Financial Information */}
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                      <h3 className="text-base font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-200">Deal Structure & Financial Information</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">Deal Structure:</span>
-                          <span className="text-sm text-slate-600 capitalize">
-                            {form.getValues("dealStructure").replace('_', ' ')}
-                          </span>
-                        </div>
-                        
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">Contract Term:</span>
-                          <span className="text-sm text-slate-600">
-                            {form.getValues("contractTerm")} months
-                          </span>
+                      {/* Business Summary */}
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium text-slate-800 mb-2">Business Summary</h4>
+                        <div className="bg-white border border-slate-200 rounded-md p-3 text-sm text-slate-700">
+                          {form.getValues("businessSummary") || "No business summary provided."}
                         </div>
                       </div>
                       
-                      {form.getValues("dealStructure") === "flat_commit" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <span className="text-sm font-medium text-slate-700 block">Annual Revenue:</span>
-                            <span className="text-sm text-slate-600">
-                              ${form.getValues("annualRevenue")?.toLocaleString()}
-                            </span>
-                          </div>
-                          
-                          <div>
-                            <span className="text-sm font-medium text-slate-700 block">Annual Gross Margin:</span>
-                            <span className="text-sm text-slate-600">
-                              {form.getValues("annualMargin")}%
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mb-4">
-                          <span className="text-sm font-medium text-slate-700 block mb-2">Tiered Revenue Structure:</span>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm border-collapse">
-                              <thead>
-                                <tr className="bg-slate-100">
-                                  <th className="p-2 border text-left font-medium text-slate-700">Tier</th>
-                                  <th className="p-2 border text-right font-medium text-slate-700">Annual Revenue</th>
-                                  <th className="p-2 border text-right font-medium text-slate-700">Gross Margin %</th>
-                                  <th className="p-2 border text-right font-medium text-slate-700">Gross Margin Value</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {revenueTiers.map(tier => (
-                                  <tr key={tier.tierNumber}>
-                                    <td className="p-2 border text-slate-600">Tier {tier.tierNumber}</td>
-                                    <td className="p-2 border text-right text-slate-600">
-                                      ${tier.annualRevenue?.toLocaleString() || 0}
-                                    </td>
-                                    <td className="p-2 border text-right text-slate-600">
-                                      {tier.annualMargin}%
-                                    </td>
-                                    <td className="p-2 border text-right text-slate-600">
-                                      ${calculateGrossMarginValue(tier.annualRevenue || 0, tier.annualMargin || 0).toLocaleString()}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Selected Incentives Display */}
+                      {/* Selected Incentives */}
                       {selectedIncentives.length > 0 && (
-                        <div className="mb-4">
-                          <span className="text-sm font-medium text-slate-700 block mb-2">Selected Incentives:</span>
+                        <div className="mt-6">
+                          <h4 className="text-sm font-medium text-slate-800 mb-2">Selected Incentives</h4>
                           <div className="overflow-x-auto">
-                            <table className="w-full text-sm border-collapse">
-                              <thead>
-                                <tr className="bg-slate-100">
-                                  <th className="p-2 border text-left font-medium text-slate-700">Category</th>
-                                  <th className="p-2 border text-left font-medium text-slate-700">Subcategory</th>
-                                  <th className="p-2 border text-left font-medium text-slate-700">Option</th>
-                                  <th className="p-2 border text-left font-medium text-slate-700">Tiers</th>
-                                  <th className="p-2 border text-left font-medium text-slate-700">Notes</th>
-                                </tr>
-                              </thead>
-                              <tbody>
+                            <Table className="w-full border border-slate-200">
+                              <TableHeader>
+                                <TableRow className="bg-slate-50">
+                                  <TableHead className="font-medium text-slate-800">Type</TableHead>
+                                  <TableHead className="font-medium text-slate-800">Tiers</TableHead>
+                                  <TableHead className="font-medium text-slate-800">Value</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
                                 {selectedIncentives.map((incentive, index) => (
-                                  <tr key={index}>
-                                    <td className="p-2 border text-slate-600">{incentive.categoryId}</td>
-                                    <td className="p-2 border text-slate-600">{incentive.subCategoryId}</td>
-                                    <td className="p-2 border text-slate-600">{incentive.option}</td>
-                                    <td className="p-2 border text-slate-600">
-                                      {incentive.tierIds.map(id => `Tier ${id}`).join(", ")}
-                                    </td>
-                                    <td className="p-2 border text-slate-600">{incentive.notes || "-"}</td>
-                                  </tr>
+                                  <TableRow key={index} className="hover:bg-slate-50">
+                                    <TableCell className="font-medium">
+                                      <div className="space-y-1">
+                                        <div className="text-slate-900">{incentive.option}</div>
+                                        <div className="text-xs text-slate-500">{incentive.categoryId}/{incentive.subCategoryId}</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex gap-1 flex-wrap">
+                                        {incentive.tierIds.map(tierId => (
+                                          <Badge key={tierId} variant="outline">
+                                            Tier {tierId}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="space-y-1">
+                                        {Object.entries(incentive.tierValues).map(([tierId, value]) => (
+                                          <div key={tierId} className="text-slate-900">
+                                            T{tierId}: {formatCurrency(value)}
+                                          </div>
+                                        ))}
+                                        {incentive.notes && (
+                                          <div className="text-xs text-slate-500 mt-1 italic">
+                                            {incentive.notes}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
                                 ))}
-                              </tbody>
-                            </table>
+                              </TableBody>
+                            </Table>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Non-Standard Terms */}
-                      {hasNonStandardTerms && (
-                        <div>
-                          <span className="text-sm font-medium text-slate-700 block">Non-Standard Terms:</span>
-                          <p className="text-sm text-slate-600 mt-1 mb-4">
-                            {form.getValues("nonStandardTermsDescription")}
-                          </p>
                         </div>
                       )}
                     </div>
                     
                     {/* Approval Requirements */}
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-                      <h3 className="text-base font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-200">Approval Requirements</h3>
+                    <div>
+                      <h3 className="text-md font-medium text-slate-900 mb-2">Approval Requirements</h3>
                       
-                      <div className="mb-4">
-                        <span className="text-sm font-medium text-slate-700 block mb-2">Required Approvers:</span>
-                        <div className="space-y-2">
-                          {(form.getValues("approvals") || []).map((level: string) => {
-                            const approver = getApproverDetails(level as any);
-                            return (
-                              <div key={level} className="bg-slate-50 rounded p-3 border border-slate-200">
-                                <span className="font-medium text-slate-800">{approver.title}</span>
-                                <p className="text-xs text-slate-600 mt-1">{approver.description}</p>
-                                <div className="flex items-center mt-2">
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    Est. Time: {approver.estimatedTime}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                          
-                          {!(form.getValues("approvals") || []).length && (
-                            <div className="bg-yellow-50 rounded p-3 border border-yellow-200">
-                              <span className="text-sm text-yellow-800">
-                                Warning: No required approvers have been identified. This could be due to:
-                              </span>
-                              <ul className="text-sm text-yellow-700 mt-2 list-disc list-inside">
-                                <li>Missing financial information</li>
-                                <li>Incomplete deal structure details</li>
-                              </ul>
-                              <p className="text-sm text-yellow-800 mt-2">
-                                Please go back and complete all required fields.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <ApprovalAlert
+                        totalValue={dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)}
+                        hasNonStandardTerms={hasNonStandardTerms}
+                        contractTerm={contractTerm || 12}
+                        dealType={dealType}
+                        salesChannel={salesChannel}
+                        onChange={handleApprovalChange}
+                      />
                       
-                      <StandardDealCriteriaHelp />
+                      {hasNonStandardTerms && (
+                        <Alert className="mt-4 bg-amber-50 border-amber-200 text-amber-800">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle>Non-Standard Terms</AlertTitle>
+                          <AlertDescription>
+                            This deal includes non-standard terms which may require additional approval steps.
+                          </AlertDescription>
+                        </Alert>
+                      )}
                     </div>
                     
-                    {/* Additional Comments */}
-                    <FormField
-                      control={form.control}
-                      name="comments"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Comments</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Add any additional comments or context for reviewers..."
-                              className="resize-none"
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Optional comments for the deal review team
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {/* Navigation Buttons */}
-                  <div className="mt-8 flex justify-between">
-                    <Button type="button" variant="outline" onClick={prevStep}>
-                      Back: Deal Structure & Pricing
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={createDeal.isPending}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                    >
-                      {createDeal.isPending ? "Submitting..." : "Submit Deal for Approval"}
-                    </Button>
+                    <div className="flex justify-between mt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>
+                        Back: Deal Structure & Pricing
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button type="button">Submit Deal for Approval</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirm Deal Submission</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to submit this deal for approval? Once submitted, you can't edit the details until it's reviewed.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => form.handleSubmit(onSubmit)()}
+                              disabled={createDeal.isPending}
+                            >
+                              {createDeal.isPending ? "Submitting..." : "Submit Deal"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardContent>
               )}
               </form>
             </Form>
           </Card>
+          </div>
         </div>
       </div>
     </div>
