@@ -2123,23 +2123,6 @@ export default function SubmitDeal() {
                               "Not provided"}
                           </dd>
                         </div>
-                        <div className="sm:col-span-2">
-                          <dt className="text-sm font-medium text-slate-500">Business Summary</dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("businessSummary") ? String(getTypedValue("businessSummary")) : "Not provided"}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  </div>
-                  
-                  {/* Deal Structure & Pricing Summary */}
-                  <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">Pricing Information</h3>
-                    </div>
-                    <div className="p-4">
-                      <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Deal Structure</dt>
                           <dd className="mt-1 text-sm text-slate-900">
@@ -2158,8 +2141,22 @@ export default function SubmitDeal() {
                               "Not provided"}
                           </dd>
                         </div>
-
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">Business Summary</dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("businessSummary") ? String(getTypedValue("businessSummary")) : "Not provided"}
+                          </dd>
+                        </div>
                       </dl>
+                    </div>
+                  </div>
+                  
+                  {/* Deal Structure & Pricing Summary */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">Pricing Information</h3>
+                    </div>
+                    <div className="p-4">
                       
                       {/* Revenue Structure Summary */}
                       {dealStructureType === "tiered" && dealTiers.length > 0 && (
