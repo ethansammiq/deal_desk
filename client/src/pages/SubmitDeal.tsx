@@ -2106,21 +2106,37 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Deal Type</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("dealType") ? 
-                              String(getTypedValue("dealType"))
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
-                              "Not provided"}
+                            {(() => {
+                              const dealTypeValue = getTypedValue("dealType");
+                              if (!dealTypeValue) return "Not provided";
+                              
+                              // Use a mapping for deal types
+                              const dealTypeMap: Record<string, string> = {
+                                "standard_deal": "Standard Deal",
+                                "seasonal_promotion": "Seasonal Promotion",
+                                "annual_commitment": "Annual Commitment",
+                                "new_business": "New Business"
+                              };
+                              
+                              return dealTypeMap[String(dealTypeValue)] || String(dealTypeValue);
+                            })()}
                           </dd>
                         </div>
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Sales Channel</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("salesChannel") ? 
-                              String(getTypedValue("salesChannel"))
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
-                              "Not provided"}
+                            {(() => {
+                              const salesChannelValue = getTypedValue("salesChannel");
+                              if (!salesChannelValue) return "Not provided";
+                              
+                              // Use a mapping for sales channel
+                              const salesChannelMap: Record<string, string> = {
+                                "client_direct": "Client Direct",
+                                "agency": "Agency"
+                              };
+                              
+                              return salesChannelMap[String(salesChannelValue)] || String(salesChannelValue);
+                            })()}
                           </dd>
                         </div>
                         <div>
@@ -2136,11 +2152,18 @@ export default function SubmitDeal() {
                         <div>
                           <dt className="text-sm font-medium text-slate-500">Deal Structure</dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("dealStructure") ? 
-                              String(getTypedValue("dealStructure"))
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
-                              "Not provided"}
+                            {(() => {
+                              const dealStructureValue = getTypedValue("dealStructure");
+                              if (!dealStructureValue) return "Not provided";
+                              
+                              // Use a mapping for deal structure
+                              const dealStructureMap: Record<string, string> = {
+                                "tiered": "Tiered",
+                                "flat_commit": "Flat Commitment"
+                              };
+                              
+                              return dealStructureMap[String(dealStructureValue)] || String(dealStructureValue);
+                            })()}
                           </dd>
                         </div>
                         <div>
@@ -2161,10 +2184,10 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                   
-                  {/* Deal Structure & Pricing Summary */}
+                  {/* Deal Structure Summary */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">Pricing Information</h3>
+                      <h3 className="text-sm font-medium text-slate-700">Deal Structure Summary</h3>
                     </div>
                     <div className="p-4">
                       
@@ -2336,7 +2359,7 @@ export default function SubmitDeal() {
                     variant="outline"
                     onClick={prevStep}
                   >
-                    Previous: Deal Structure & Pricing
+                    Previous: Deal Structure
                   </Button>
                   <Button type="submit" disabled={createDeal.isPending}>
                     {createDeal.isPending ? "Submitting..." : "Submit Deal for Approval"}
