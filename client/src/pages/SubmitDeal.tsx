@@ -211,13 +211,6 @@ export default function SubmitDeal() {
     return 850000; // Default value as fallback
   };
   
-  // Get previous year gross profit
-  const getPreviousYearGrossProfit = (): number => {
-    const previousValue = getPreviousYearValue();
-    const previousMarginPercent = 0.35; // Default 35% margin for last year
-    return previousValue * previousMarginPercent;
-  };
-  
   // Get previous year margin percentage
   const getPreviousYearMargin = (): number => {
     const advertiserName = getTypedValue("advertiserName") as string;
@@ -232,6 +225,39 @@ export default function SubmitDeal() {
     }
     
     return 35; // Default value as fallback (35%)
+  };
+  
+  // Get previous year gross profit
+  const getPreviousYearGrossProfit = (): number => {
+    const previousValue = getPreviousYearValue();
+    const previousMarginPercent = getPreviousYearMargin();
+    return previousValue * (previousMarginPercent / 100);
+  };
+  
+  // Get previous year's incentive cost
+  const getPreviousYearIncentiveCost = (): number => {
+    // For this prototype, we'll use a mock value of 0
+    return 0;
+  };
+  
+  // Calculate previous year's adjusted gross profit
+  const getPreviousYearAdjustedGrossProfit = (): number => {
+    const previousGrossProfit = getPreviousYearGrossProfit();
+    const previousIncentiveCost = getPreviousYearIncentiveCost();
+    return previousGrossProfit - previousIncentiveCost;
+  };
+  
+  // Calculate previous year's adjusted gross margin
+  const getPreviousYearAdjustedGrossMargin = (): number => {
+    const previousRevenue = getPreviousYearValue();
+    const previousAdjustedGrossProfit = getPreviousYearAdjustedGrossProfit();
+    return previousRevenue > 0 ? previousAdjustedGrossProfit / previousRevenue : 0;
+  };
+  
+  // Get previous year client value
+  const getPreviousYearClientValue = (): number => {
+    const previousRevenue = getPreviousYearValue();
+    return previousRevenue * 0.4; // 40% of revenue as specified
   };
   
   // Calculate total incentive cost for a tier
@@ -265,36 +291,80 @@ export default function SubmitDeal() {
     return grossMargin - incentiveCost;
   };
   
-  // Calculate cost growth rate compared to previous year
-  const calculateCostGrowthRate = (tier: DealTierData): number => {
-    const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0.35; // Default to 35% if not specified
-    const currentCost = revenue - (revenue * (marginPercent / 100));
-    
+  // Calculate revenue growth rate (Tier specific revenue / last year revenue - 1)
+  const calculateRevenueGrowthRate = (tier: DealTierData): number => {
+    const currentRevenue = tier.annualRevenue || 0;
     const previousRevenue = getPreviousYearValue();
-    const previousMarginPercent = 0.35; // Default 35% margin
-    const previousCost = previousRevenue - (previousRevenue * previousMarginPercent);
     
-    if (previousCost === 0) return 0;
-    return (currentCost - previousCost) / previousCost;
+    if (previousRevenue === 0) return 0;
+    return (currentRevenue / previousRevenue) - 1;
   };
   
-  // Calculate profit growth rate compared to previous year
-  const calculateProfitGrowthRate = (tier: DealTierData): number => {
-    const currentProfit = calculateTierGrossProfit(tier);
+  // Calculate gross margin growth rate (Tier specific gross margin - last year gross margin)
+  const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
+    const currentMargin = (tier.annualGrossMarginPercent || 0) / 100; // Convert to decimal
+    const previousMargin = getPreviousYearMargin() / 100; // Convert to decimal
+    
+    return currentMargin - previousMargin;
+  };
+  
+  // Calculate gross profit growth rate (Tier specific gross profit / last year gross profit - 1)
+  const calculateGrossProfitGrowthRate = (tier: DealTierData): number => {
+    const currentProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
     const previousProfit = getPreviousYearGrossProfit();
     
     if (previousProfit === 0) return 0;
-    return (currentProfit - previousProfit) / previousProfit;
+    return (currentProfit / previousProfit) - 1;
   };
   
-  // Calculate value growth rate compared to previous year
-  const calculateValueGrowthRate = (tier: DealTierData): number => {
-    const currentValue = tier.annualRevenue || 0;
-    const previousValue = getPreviousYearValue();
+  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year adjusted gross profit - 1)
+  const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
+    const currentAdjustedProfit = calculateTierGrossProfit(tier);
+    const previousAdjustedProfit = getPreviousYearAdjustedGrossProfit();
     
-    if (previousValue === 0) return 0;
-    return (currentValue - previousValue) / previousValue;
+    if (previousAdjustedProfit === 0) return 0;
+    return (currentAdjustedProfit / previousAdjustedProfit) - 1;
+  };
+  
+  // Calculate adjusted gross margin
+  const calculateAdjustedGrossMargin = (tier: DealTierData): number => {
+    const revenue = tier.annualRevenue || 0;
+    const adjustedGrossProfit = calculateTierGrossProfit(tier);
+    
+    if (revenue === 0) return 0;
+    return adjustedGrossProfit / revenue;
+  };
+  
+  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
+  const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
+    const currentAdjustedGrossMargin = calculateAdjustedGrossMargin(tier);
+    const previousAdjustedGrossMargin = getPreviousYearAdjustedGrossMargin();
+    
+    return currentAdjustedGrossMargin - previousAdjustedGrossMargin;
+  };
+  
+  // Calculate client value
+  const calculateClientValue = (tier: DealTierData): number => {
+    const revenue = tier.annualRevenue || 0;
+    return revenue * 0.4; // 40% of revenue as specified
+  };
+  
+  // Calculate client value growth rate (Tier specific client value / last year client value - 1)
+  const calculateClientValueGrowthRate = (tier: DealTierData): number => {
+    const currentClientValue = calculateClientValue(tier);
+    const previousClientValue = getPreviousYearClientValue();
+    
+    if (previousClientValue === 0) return 0;
+    return (currentClientValue / previousClientValue) - 1;
+  };
+  
+  // Calculate cost growth rate (Tier specific incentive cost / last year incentive cost - 1)
+  const calculateCostGrowthRate = (tier: DealTierData): number => {
+    const currentIncentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+    const previousIncentiveCost = getPreviousYearIncentiveCost();
+    
+    if (previousIncentiveCost === 0) return 0;
+    return (currentIncentiveCost / previousIncentiveCost) - 1;
   };
   
   // State to track selected agencies and advertisers for dropdowns
@@ -1453,30 +1523,8 @@ export default function SubmitDeal() {
                                   <div className="text-slate-700">-</div>
                                 </td>
                                 {dealTiers.map((tier) => {
-                                  // Find previous year revenue
-                                  let previousYearRevenue = 850000; // Default to mock value
-                                  const salesChannel = form.watch("salesChannel");
-                                  const advertiserName = form.watch("advertiserName");
-                                  const agencyName = form.watch("agencyName");
-                                  
-                                  if (salesChannel === "client_direct" && advertiserName) {
-                                    const advertiser = advertisers.find(a => a.name === advertiserName);
-                                    if (advertiser && advertiser.previousYearRevenue) {
-                                      previousYearRevenue = advertiser.previousYearRevenue;
-                                    }
-                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
-                                    const agency = agencies.find(a => a.name === agencyName);
-                                    if (agency && agency.previousYearRevenue) {
-                                      previousYearRevenue = agency.previousYearRevenue;
-                                    }
-                                  }
-                                  
-                                  // Calculate growth rate
-                                  let growthRate = 0;
-                                  if (previousYearRevenue > 0 && tier.annualRevenue) {
-                                    // Calculate as percentage (135% instead of 1.35)
-                                    growthRate = ((tier.annualRevenue / previousYearRevenue) - 1);
-                                  }
+                                  // Use our new calculation function
+                                  const growthRate = calculateRevenueGrowthRate(tier);
                                   
                                   return (
                                     <td key={`revenue-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
@@ -1499,12 +1547,8 @@ export default function SubmitDeal() {
                                   <div className="text-slate-700">-</div>
                                 </td>
                                 {dealTiers.map((tier) => {
-                                  // Get previous year margin
-                                  const previousYearMargin = getPreviousYearMargin() / 100;
-                                  // Calculate current tier margin
-                                  const currentMargin = (tier.annualGrossMarginPercent || 0) / 100;
-                                  // Calculate growth rate
-                                  const growthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
+                                  // Use our new calculation function for margin growth
+                                  const growthRate = calculateGrossMarginGrowthRate(tier);
                                   
                                   return (
                                     <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
@@ -1712,7 +1756,7 @@ export default function SubmitDeal() {
                                   </td>
                                   {dealTiers.map(tier => {
                                     // Calculate client value growth rate for this tier
-                                    const valueGrowthRate = calculateValueGrowthRate(tier);
+                                    const valueGrowthRate = calculateClientValueGrowthRate(tier);
                                     return (
                                       <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
                                         <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
@@ -2078,7 +2122,7 @@ export default function SubmitDeal() {
                           </td>
                           {dealTiers.map(tier => {
                             // Calculate profit growth rate for this tier
-                            const profitGrowthRate = calculateProfitGrowthRate(tier);
+                            const profitGrowthRate = calculateGrossProfitGrowthRate(tier);
                             return (
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
                                 <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
@@ -2502,7 +2546,7 @@ export default function SubmitDeal() {
                               {(() => {
                                 // Use the first tier's profit growth rate calculation
                                 if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
-                                  const profitGrowthRate = calculateProfitGrowthRate(dealTiers[0]);
+                                  const profitGrowthRate = calculateGrossProfitGrowthRate(dealTiers[0]);
                                   const formattedRate = (profitGrowthRate * 100).toFixed(1);
                                   const isPositive = profitGrowthRate > 0;
                                   return (
@@ -2562,7 +2606,7 @@ export default function SubmitDeal() {
                         <p className="text-sm text-slate-700">
                           {(() => {
                             if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
-                              const profitGrowthRate = calculateProfitGrowthRate(dealTiers[0]);
+                              const profitGrowthRate = calculateGrossProfitGrowthRate(dealTiers[0]);
                               
                               // Get previous year revenue for actual revenue growth calculation
                               let previousYearRevenue = 850000; // Default to mock value
