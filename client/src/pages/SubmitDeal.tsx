@@ -164,10 +164,19 @@ export default function SubmitDeal() {
   // Create deal mutation
   const createDeal = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/deals', {
+      const response = await fetch('/api/deals', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`${response.status}: ${text || response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -210,13 +219,22 @@ export default function SubmitDeal() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [advertisersData, agenciesData] = await Promise.all([
-          apiRequest('/api/advertisers'),
-          apiRequest('/api/agencies')
-        ]);
+        const advertisersResponse = await fetch('/api/advertisers', {
+          credentials: "include"
+        });
+        const agenciesResponse = await fetch('/api/agencies', {
+          credentials: "include"
+        });
         
-        if (advertisersData) setAdvertisers(advertisersData);
-        if (agenciesData) setAgencies(agenciesData);
+        if (advertisersResponse.ok) {
+          const advertisersData = await advertisersResponse.json();
+          setAdvertisers(advertisersData);
+        }
+        
+        if (agenciesResponse.ok) {
+          const agenciesData = await agenciesResponse.json();
+          setAgencies(agenciesData);
+        }
       } catch (error) {
         toast({
           title: "Error loading data",

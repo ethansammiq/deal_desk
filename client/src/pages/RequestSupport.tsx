@@ -84,10 +84,19 @@ export default function RequestSupport() {
   // Set up mutation for form submission
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
-      return apiRequest('/api/deal-scoping-requests', {
+      const response = await fetch('/api/deal-scoping-requests', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`${response.status}: ${text || response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -130,9 +139,12 @@ export default function RequestSupport() {
   useEffect(() => {
     async function fetchAgencies() {
       try {
-        const response = await apiRequest('/api/agencies');
-        if (response) {
-          setAgencies(response);
+        const response = await fetch('/api/agencies', {
+          credentials: "include"
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAgencies(data);
         }
       } catch (error) {
         toast({
@@ -145,9 +157,12 @@ export default function RequestSupport() {
     
     async function fetchAdvertisers() {
       try {
-        const response = await apiRequest('/api/advertisers');
-        if (response) {
-          setAdvertisers(response);
+        const response = await fetch('/api/advertisers', {
+          credentials: "include"
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAdvertisers(data);
         }
       } catch (error) {
         toast({
