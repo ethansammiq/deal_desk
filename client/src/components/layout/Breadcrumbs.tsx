@@ -17,6 +17,7 @@ interface BreadcrumbPath {
   title: string;
   path: string;
   isActive?: boolean;
+  isGroup?: boolean; // For non-clickable group labels
   id?: string; // Unique identifier for React key
 }
 
@@ -32,14 +33,14 @@ export function Breadcrumbs() {
     
     // Deal Scoping has a parent of Deal Requests (non-clickable grouping)
     if (location === "/request-support") {
-      breadcrumbs.push({ title: "Deal Requests", path: "#", id: "deal-requests-group" });
+      breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
       breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
     // Deal Submission has a parent of Deal Requests (non-clickable grouping)
     if (location === "/submit-deal") {
-      breadcrumbs.push({ title: "Deal Requests", path: "#", id: "deal-requests-group" });
+      breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
       breadcrumbs.push({ title: "Deal Submission", path: "/submit-deal", isActive: true, id: "deal-submission" });
       return breadcrumbs;
     }
@@ -65,6 +66,10 @@ export function Breadcrumbs() {
           
           {breadcrumb.isActive ? (
             <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">
+              {breadcrumb.title}
+            </span>
+          ) : breadcrumb.isGroup ? (
+            <span className="text-slate-700">
               {breadcrumb.title}
             </span>
           ) : (
