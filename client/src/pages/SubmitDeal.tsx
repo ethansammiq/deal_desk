@@ -1446,30 +1446,6 @@ export default function SubmitDeal() {
                                 ))}
                               </tr>
                               
-                              {/* Gross Margin Growth Rate Row */}
-                              <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
-                                <td className="p-3 border border-slate-200 text-center">
-                                  <div className="text-slate-700">-</div>
-                                </td>
-                                {dealTiers.map((tier) => {
-                                  // Get previous year margin
-                                  const previousYearMargin = getPreviousYearMargin() / 100;
-                                  // Calculate current tier margin
-                                  const currentMargin = (tier.annualGrossMarginPercent || 0) / 100;
-                                  // Calculate growth rate
-                                  const growthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
-                                  
-                                  return (
-                                    <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
-                                      <div className={`${growthRate > 0 ? "text-green-600" : "text-red-600"}`}>
-                                        {formatPercentage(growthRate)}
-                                      </div>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                              
                               {/* Revenue Growth Rate Row */}
                               <tr>
                                 <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
@@ -1509,6 +1485,30 @@ export default function SubmitDeal() {
                                         "text-slate-700",
                                         growthRate > 0 ? "text-green-600" : growthRate < 0 ? "text-red-600" : ""
                                       )}>
+                                        {formatPercentage(growthRate)}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              
+                              {/* Gross Margin Growth Rate Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
+                                <td className="p-3 border border-slate-200 text-center">
+                                  <div className="text-slate-700">-</div>
+                                </td>
+                                {dealTiers.map((tier) => {
+                                  // Get previous year margin
+                                  const previousYearMargin = getPreviousYearMargin() / 100;
+                                  // Calculate current tier margin
+                                  const currentMargin = (tier.annualGrossMarginPercent || 0) / 100;
+                                  // Calculate growth rate
+                                  const growthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
+                                  
+                                  return (
+                                    <td key={`margin-growth-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center">
+                                      <div className={`${growthRate > 0 ? "text-green-600" : "text-red-600"}`}>
                                         {formatPercentage(growthRate)}
                                       </div>
                                     </td>
@@ -2355,11 +2355,33 @@ export default function SubmitDeal() {
                                   <td className="p-2 border border-slate-200 font-medium">Revenue Growth Rate</td>
                                   <td className="p-2 border border-slate-200">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
-                                    const growthRate = calculateValueGrowthRate(tier);
+                                    // Find previous year revenue for actual revenue growth calculation
+                                    let previousYearRevenue = 850000; // Default to mock value
+                                    const salesChannel = form.watch("salesChannel");
+                                    const advertiserName = form.watch("advertiserName");
+                                    const agencyName = form.watch("agencyName");
+                                    
+                                    if (salesChannel === "client_direct" && advertiserName) {
+                                      const advertiser = advertisers.find(a => a.name === advertiserName);
+                                      if (advertiser && advertiser.previousYearRevenue) {
+                                        previousYearRevenue = advertiser.previousYearRevenue;
+                                      }
+                                    } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                      const agency = agencies.find(a => a.name === agencyName);
+                                      if (agency && agency.previousYearRevenue) {
+                                        previousYearRevenue = agency.previousYearRevenue;
+                                      }
+                                    }
+                                    
+                                    // Calculate actual revenue growth rate
+                                    const revenueGrowthRate = previousYearRevenue > 0 && tier.annualRevenue
+                                      ? (tier.annualRevenue / previousYearRevenue) - 1
+                                      : 0;
+                                    
                                     return (
                                       <td key={tier.tierNumber} className="p-2 border border-slate-200">
-                                        <span className={growthRate > 0 ? "text-green-600" : "text-red-600"}>
-                                          {(growthRate * 100).toFixed(1)}%
+                                        <span className={revenueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {(revenueGrowthRate * 100).toFixed(1)}%
                                         </span>
                                       </td>
                                     );
@@ -2368,14 +2390,20 @@ export default function SubmitDeal() {
                                 
                                 {/* Gross Margin Growth Rate */}
                                 <tr>
-                                  <td className="p-2 border border-slate-200 font-medium">Gross Margin (Adjusted) Growth Rate</td>
+                                  <td className="p-2 border border-slate-200 font-medium">Gross Margin Growth Rate</td>
                                   <td className="p-2 border border-slate-200">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
-                                    const profitGrowthRate = calculateProfitGrowthRate(tier);
+                                    // Get previous year margin
+                                    const previousYearMargin = getPreviousYearMargin() / 100;
+                                    // Calculate current tier margin
+                                    const currentMargin = (tier.annualGrossMarginPercent || 0) / 100;
+                                    // Calculate growth rate
+                                    const marginGrowthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
+                                    
                                     return (
                                       <td key={tier.tierNumber} className="p-2 border border-slate-200">
-                                        <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
-                                          {(profitGrowthRate * 100).toFixed(1)}%
+                                        <span className={marginGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                          {(marginGrowthRate * 100).toFixed(1)}%
                                         </span>
                                       </td>
                                     );
