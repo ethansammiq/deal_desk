@@ -1923,6 +1923,70 @@ export default function SubmitDeal() {
                           })}
                         </tr>
                         
+                        {/* Total Client Value */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Total Client Value</div>
+                            <div className="text-xs text-slate-500">Projected value over contract term</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(getPreviousYearValue() * 0.4)} {/* Last year value * 40% */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate total value as 40% of the tier's revenue
+                            const clientValue = (tier.annualRevenue || 0) * 0.4;
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(clientValue)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Cost Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Cost Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in costs vs last year</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate cost growth rate for this tier
+                            const costGrowthRate = calculateCostGrowthRate(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={costGrowthRate > 0 ? "text-red-600" : "text-green-600"}>
+                                  {formatPercentage(costGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Client Value Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">Client Value Growth Rate</div>
+                            <div className="text-xs text-slate-500">Percentage increase in client value</div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map(tier => {
+                            // Calculate client value growth rate for this tier
+                            const valueGrowthRate = calculateValueGrowthRate(tier);
+                            return (
+                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
+                                <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
+                                  {formatPercentage(valueGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
                         {/* Adjusted Gross Margin */}
                         <tr>
                           <td className="p-3 border border-slate-200 bg-slate-50">
@@ -1962,28 +2026,6 @@ export default function SubmitDeal() {
                             return (
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
                                 {formatCurrency(grossProfit)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Cost Growth Rate */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Cost Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in costs vs last year</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            — {/* Baseline */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate cost growth rate for this tier
-                            const costGrowthRate = calculateCostGrowthRate(tier);
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                <span className={costGrowthRate > 0 ? "text-red-600" : "text-green-600"}>
-                                  {formatPercentage(costGrowthRate)}
-                                </span>
                               </td>
                             );
                           })}
@@ -2037,48 +2079,6 @@ export default function SubmitDeal() {
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
                                 <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
                                   {formatPercentage(profitGrowthRate)}
-                                </span>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Total Client Value */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Total Client Value</div>
-                            <div className="text-xs text-slate-500">Projected value over contract term</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(getPreviousYearValue() * 0.4)} {/* Last year value * 40% */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate total value as 40% of the tier's revenue
-                            const clientValue = (tier.annualRevenue || 0) * 0.4;
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                {formatCurrency(clientValue)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Client Value Growth Rate */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Client Value Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in client value</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            — {/* Baseline */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate client value growth rate for this tier
-                            const valueGrowthRate = calculateValueGrowthRate(tier);
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
-                                  {formatPercentage(valueGrowthRate)}
                                 </span>
                               </td>
                             );
