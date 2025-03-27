@@ -277,63 +277,67 @@ export default function RequestSupport() {
       
       {/* Form Progress - Updated for consistency with Deal Submission page */}
       <div className="mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-3/4 flex items-center">
-            {/* Step 1 */}
+        <div className="w-3/4 mx-auto">
+          <div className="grid grid-cols-2 gap-0">
+            {/* Step 1 with Label */}
             <div className="flex flex-col items-center">
-              <div 
-                onClick={() => setActiveTab("sales-channel")}
-                className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                  activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-                )}
-              >
-                1
+              <div className="flex items-center w-full">
+                <div 
+                  onClick={() => setActiveTab("sales-channel")}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                    activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  1
+                </div>
+                <div className={cn(
+                  "h-1 flex-1 bg-slate-200 ml-1",
+                  activeTab === "growth-opportunity" ? "bg-primary" : ""
+                )}></div>
+              </div>
+              <div className="flex items-center justify-center w-full">
+                <div 
+                  onClick={() => setActiveTab("sales-channel")} 
+                  className={cn(
+                    "inline-block text-center cursor-pointer hover:text-primary transition-colors text-sm mt-2", 
+                    activeTab === "sales-channel" ? "font-medium text-primary" : "text-slate-600"
+                  )}
+                  style={{ marginLeft: "-65px", width: "140px" }}
+                >
+                  Client Information
+                </div>
               </div>
             </div>
-            {/* Connector Line */}
-            <div className={cn(
-              "w-full h-1 bg-slate-200 mx-1",
-              activeTab === "growth-opportunity" ? "bg-primary" : ""
-            )}></div>
-            {/* Step 2 */}
+            
+            {/* Step 2 with Label */}
             <div className="flex flex-col items-center">
-              <div 
-                onClick={() => setActiveTab("growth-opportunity")}
-                className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
-                  activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
-                )}
-              >
-                2
+              <div className="flex items-center w-full justify-end">
+                <div className={cn(
+                  "h-1 flex-1 bg-slate-200 mr-1",
+                  activeTab === "growth-opportunity" ? "bg-primary" : ""
+                )}></div>
+                <div 
+                  onClick={() => setActiveTab("growth-opportunity")}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity",
+                    activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  2
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        {/* Step Labels - Properly centered */}
-        <div className="flex justify-center text-sm text-slate-600">
-          <div className="w-3/4 flex justify-between">
-            <div className="text-center" style={{ width: "calc(50% - 60px)" }}>
-              <div 
-                onClick={() => setActiveTab("sales-channel")} 
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors", 
-                  activeTab === "sales-channel" ? "font-medium text-primary" : ""
-                )}
-              >
-                Client Information
-              </div>
-            </div>
-            <div className="flex-1"></div>
-            <div className="text-center" style={{ width: "calc(50% - 60px)" }}>
-              <div 
-                onClick={() => setActiveTab("growth-opportunity")} 
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors", 
-                  activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
-                )}
-              >
-                Opportunity Assessment
+              <div className="flex items-center justify-center w-full">
+                <div 
+                  onClick={() => setActiveTab("growth-opportunity")} 
+                  className={cn(
+                    "inline-block text-center cursor-pointer hover:text-primary transition-colors text-sm mt-2", 
+                    activeTab === "growth-opportunity" ? "font-medium text-primary" : "text-slate-600"
+                  )}
+                  style={{ marginRight: "-70px", width: "140px" }}
+                >
+                  Opportunity Assessment
+                </div>
               </div>
             </div>
           </div>
