@@ -1990,89 +1990,6 @@ export default function SubmitDeal() {
                         </tr>
                       </thead>
                       <tbody>
-                        {/* Adjusted Gross Margin */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Total Incentive Cost</div>
-                            <div className="text-xs text-slate-500">All incentives applied to this tier</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(0)} {/* Last year value */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate total incentive cost for this tier
-                            const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                {formatCurrency(incentiveCost)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Total Client Value */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Total Client Value</div>
-                            <div className="text-xs text-slate-500">Projected value over contract term</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(getPreviousYearValue() * 0.4)} {/* Last year value * 40% */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate total value as 40% of the tier's revenue
-                            const clientValue = (tier.annualRevenue || 0) * 0.4;
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                {formatCurrency(clientValue)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Cost Growth Rate */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Cost Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in costs vs last year</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            — {/* Baseline */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate cost growth rate for this tier
-                            const costGrowthRate = calculateCostGrowthRate(tier);
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                <span className={costGrowthRate > 0 ? "text-red-600" : "text-green-600"}>
-                                  {formatPercentage(costGrowthRate)}
-                                </span>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        
-                        {/* Client Value Growth Rate */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">Client Value Growth Rate</div>
-                            <div className="text-xs text-slate-500">Percentage increase in client value</div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            — {/* Baseline */}
-                          </td>
-                          {dealTiers.map(tier => {
-                            // Calculate client value growth rate for this tier
-                            const valueGrowthRate = calculateValueGrowthRate(tier);
-                            return (
-                              <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
-                                <span className={valueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
-                                  {formatPercentage(valueGrowthRate)}
-                                </span>
-                              </td>
-                            );
-                          })}
-                        </tr>
                         
                         {/* Adjusted Gross Margin */}
                         <tr>
@@ -2575,11 +2492,33 @@ export default function SubmitDeal() {
                             <div className="text-sm font-medium text-slate-700 mb-1">Revenue Growth</div>
                             <div className="text-xl font-semibold">
                               {(() => {
-                                // Use the first tier's revenue growth rate calculation
+                                // Use the first tier's revenue growth rate calculation - using the correct growth function
                                 if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
-                                  const growthRate = calculateValueGrowthRate(dealTiers[0]);
-                                  const formattedRate = (growthRate * 100).toFixed(1);
-                                  const isPositive = growthRate > 0;
+                                  // Get previous year revenue
+                                  let previousYearRevenue = 850000; // Default to mock value
+                                  const salesChannel = form.watch("salesChannel");
+                                  const advertiserName = form.watch("advertiserName");
+                                  const agencyName = form.watch("agencyName");
+                                  
+                                  if (salesChannel === "client_direct" && advertiserName) {
+                                    const advertiser = advertisers.find(a => a.name === advertiserName);
+                                    if (advertiser && advertiser.previousYearRevenue) {
+                                      previousYearRevenue = advertiser.previousYearRevenue;
+                                    }
+                                  } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                    const agency = agencies.find(a => a.name === agencyName);
+                                    if (agency && agency.previousYearRevenue) {
+                                      previousYearRevenue = agency.previousYearRevenue;
+                                    }
+                                  }
+                                  
+                                  // Calculate growth rate
+                                  const revenueGrowthRate = previousYearRevenue > 0 && dealTiers[0].annualRevenue
+                                    ? (dealTiers[0].annualRevenue / previousYearRevenue) - 1
+                                    : 0;
+                                  
+                                  const formattedRate = (revenueGrowthRate * 100).toFixed(1);
+                                  const isPositive = revenueGrowthRate > 0;
                                   return (
                                     <span className={isPositive ? "text-green-600" : "text-red-600"}>
                                       {isPositive ? "+" : ""}{formattedRate}%
@@ -2596,7 +2535,29 @@ export default function SubmitDeal() {
                           {(() => {
                             if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
                               const profitGrowthRate = calculateProfitGrowthRate(dealTiers[0]);
-                              const revenueGrowthRate = calculateValueGrowthRate(dealTiers[0]);
+                              
+                              // Get previous year revenue for actual revenue growth calculation
+                              let previousYearRevenue = 850000; // Default to mock value
+                              const salesChannel = form.watch("salesChannel");
+                              const advertiserName = form.watch("advertiserName");
+                              const agencyName = form.watch("agencyName");
+                              
+                              if (salesChannel === "client_direct" && advertiserName) {
+                                const advertiser = advertisers.find(a => a.name === advertiserName);
+                                if (advertiser && advertiser.previousYearRevenue) {
+                                  previousYearRevenue = advertiser.previousYearRevenue;
+                                }
+                              } else if ((salesChannel === "holding_company" || salesChannel === "independent_agency") && agencyName) {
+                                const agency = agencies.find(a => a.name === agencyName);
+                                if (agency && agency.previousYearRevenue) {
+                                  previousYearRevenue = agency.previousYearRevenue;
+                                }
+                              }
+                              
+                              // Calculate actual revenue growth rate
+                              const revenueGrowthRate = previousYearRevenue > 0 && dealTiers[0].annualRevenue
+                                ? (dealTiers[0].annualRevenue / previousYearRevenue) - 1
+                                : 0;
                               
                               if (revenueGrowthRate > 0 && profitGrowthRate < 0) {
                                 return "The proposed structure offers higher revenue growth but with reduced profitability compared to standard deals. Consider adjusting tier thresholds or incentive amounts.";
