@@ -2087,7 +2087,9 @@ export default function SubmitDeal() {
                           <dt className="text-sm font-medium text-slate-500">Region</dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {getTypedValue("region") ? 
-                              String(getTypedValue("region")) : 
+                              String(getTypedValue("region"))
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
                               "Not provided"}
                           </dd>
                         </div>
