@@ -93,7 +93,7 @@ export function TopNavbar() {
             <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all cursor-pointer">
               <div className="flex items-center text-sm">
                 <UserCircle className="flex-shrink-0 w-5 h-5 text-[#5a0099] mr-1.5" />
-                <span className="font-medium text-[#3e0075] whitespace-nowrap">Sarah Johnson</span>
+                <span className="font-medium text-[#3e0075] whitespace-nowrap">Charlie Far</span>
                 <ChevronDown className="flex-shrink-0 w-4 h-4 ml-1 text-[#5a0099]" />
               </div>
             </div>
@@ -196,7 +196,7 @@ export function TopNavbar() {
             <div className="flex items-center px-3 py-2 bg-[#f8f5ff] m-2 rounded-lg border border-[#e9ddff]">
               <UserCircle className="w-8 h-8 text-[#5a0099] flex-shrink-0" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-[#3e0075]">Sarah Johnson</p>
+                <p className="text-sm font-medium text-[#3e0075]">Charlie Far</p>
                 <p className="text-xs text-[#5a0099]">Commercial Manager</p>
               </div>
             </div>

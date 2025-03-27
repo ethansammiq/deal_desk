@@ -108,7 +108,7 @@ export function Sidebar() {
                   <div className="w-8 h-8 rounded-full bg-slate-600" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-white">Sarah Johnson</p>
+                  <p className="text-sm font-medium text-white">Charlie Far</p>
                   <p className="text-xs text-slate-400">Commercial Manager</p>
                 </div>
               </div>
