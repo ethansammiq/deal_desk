@@ -537,15 +537,15 @@ export default function RequestSupport() {
       </Card>
       
       {/* Navigation Buttons - Completely moved outside card and form */}
-      <div className="mt-16 pt-4">
+      <div className="border-t border-slate-200 mt-10 pt-10">
         {activeTab === "sales-channel" && (
           <div className="flex justify-end">
             <Button 
               type="button" 
               onClick={goToNextTab} 
-              style={{ width: '180px' }}
+              className="w-32 h-10"
             >
-              Next: Growth Opportunity
+              Next
             </Button>
           </div>
         )}
@@ -556,17 +556,17 @@ export default function RequestSupport() {
               type="button"
               variant="outline"
               onClick={goToPrevTab}
-              style={{ width: '180px' }}
+              className="w-32 h-10"
             >
-              Back: Sales Channel Info
+              Back
             </Button>
             <Button 
               type="button" 
               onClick={form.handleSubmit(onSubmit)}
               disabled={createDealScopingRequest.isPending}
-              style={{ width: '180px' }}
+              className="w-32 h-10"
             >
-              {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
+              {createDealScopingRequest.isPending ? "Submitting..." : "Submit"}
             </Button>
           </div>
         )}
