@@ -287,8 +287,8 @@ export default function SubmitDeal() {
       businessSummary: "",
       
       // Client/Agency information
-      salesChannel: "client_direct",
-      region: "northeast",
+      salesChannel: "independent_agency",
+      region: "west",
       advertiserName: "",
       agencyName: "",
       
