@@ -317,13 +317,14 @@ export default function SubmitDeal() {
     return (currentProfit / previousProfit) - 1;
   };
   
-  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year gross profit - 1)
+  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year adjusted gross profit - 1)
   const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
     const currentAdjustedProfit = calculateTierGrossProfit(tier);
-    const previousGrossProfit = getPreviousYearGrossProfit();
+    // Get previous year's adjusted gross profit
+    const previousAdjustedGrossProfit = getPreviousYearAdjustedGrossProfit();
     
-    if (previousGrossProfit === 0) return 0;
-    return (currentAdjustedProfit / previousGrossProfit) - 1;
+    if (previousAdjustedGrossProfit === 0) return 0;
+    return (currentAdjustedProfit / previousAdjustedGrossProfit) - 1;
   };
   
   // Calculate adjusted gross margin
@@ -335,12 +336,14 @@ export default function SubmitDeal() {
     return adjustedGrossProfit / revenue;
   };
   
-  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year gross margin)
+  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
   const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
     const currentAdjustedGrossMargin = calculateAdjustedGrossMargin(tier);
-    const previousGrossMargin = getPreviousYearMargin() / 100; // Convert percentage to decimal
+    // Get previous year's adjusted gross margin
+    const previousAdjustedGrossMargin = getPreviousYearAdjustedGrossMargin();
     
-    return currentAdjustedGrossMargin - previousGrossMargin;
+    // Return the difference as percentage points (not a percentage of the previous margin)
+    return currentAdjustedGrossMargin - previousAdjustedGrossMargin;
   };
   
   // Calculate client value
