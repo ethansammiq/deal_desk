@@ -540,7 +540,7 @@ export default function RequestSupport() {
       <div className="mt-10">
         {activeTab === "sales-channel" && (
           <div className="flex justify-end">
-            <Button type="button" onClick={goToNextTab} className="px-6">
+            <Button type="button" onClick={goToNextTab}>
               Next: Growth Opportunity
             </Button>
           </div>
@@ -552,7 +552,6 @@ export default function RequestSupport() {
               type="button"
               variant="outline"
               onClick={goToPrevTab}
-              className="px-6"
             >
               Back: Sales Channel Info
             </Button>
@@ -560,7 +559,6 @@ export default function RequestSupport() {
               type="button" 
               onClick={form.handleSubmit(onSubmit)}
               disabled={createDealScopingRequest.isPending}
-              className="px-6"
             >
               {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
             </Button>
