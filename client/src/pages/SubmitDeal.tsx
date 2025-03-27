@@ -2023,7 +2023,7 @@ export default function SubmitDeal() {
                     </div>
                     <div className="p-4">
                       <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                        <div>
+                        <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">Deal Name</dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
@@ -2087,7 +2087,15 @@ export default function SubmitDeal() {
                           <dt className="text-sm font-medium text-slate-500">Region</dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {getTypedValue("region") ? 
-                              String(getTypedValue("region"))
+                              String(getTypedValue("region")) : 
+                              "Not provided"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">Deal Type</dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("dealType") ? 
+                              String(getTypedValue("dealType"))
                                 .replace(/_/g, " ")
                                 .replace(/\b\w/g, (char) => char.toUpperCase()) : 
                               "Not provided"}
@@ -2111,16 +2119,6 @@ export default function SubmitDeal() {
                             {salesChannel === "client_direct" 
                               ? (String(getTypedValue("advertiserName") || "Not provided"))
                               : (String(getTypedValue("agencyName") || "Not provided"))}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">Deal Type</dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("dealType") ? 
-                              String(getTypedValue("dealType"))
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (char) => char.toUpperCase()) : 
-                              "Not provided"}
                           </dd>
                         </div>
                         <div>
