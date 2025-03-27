@@ -317,13 +317,13 @@ export default function SubmitDeal() {
     return (currentProfit / previousProfit) - 1;
   };
   
-  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year adjusted gross profit - 1)
+  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year gross profit - 1)
   const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
     const currentAdjustedProfit = calculateTierGrossProfit(tier);
-    const previousAdjustedProfit = getPreviousYearAdjustedGrossProfit();
+    const previousGrossProfit = getPreviousYearGrossProfit();
     
-    if (previousAdjustedProfit === 0) return 0;
-    return (currentAdjustedProfit / previousAdjustedProfit) - 1;
+    if (previousGrossProfit === 0) return 0;
+    return (currentAdjustedProfit / previousGrossProfit) - 1;
   };
   
   // Calculate adjusted gross margin
@@ -335,12 +335,12 @@ export default function SubmitDeal() {
     return adjustedGrossProfit / revenue;
   };
   
-  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
+  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year gross margin)
   const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
     const currentAdjustedGrossMargin = calculateAdjustedGrossMargin(tier);
-    const previousAdjustedGrossMargin = getPreviousYearAdjustedGrossMargin();
+    const previousGrossMargin = getPreviousYearMargin() / 100; // Convert percentage to decimal
     
-    return currentAdjustedGrossMargin - previousAdjustedGrossMargin;
+    return currentAdjustedGrossMargin - previousGrossMargin;
   };
   
   // Calculate client value
