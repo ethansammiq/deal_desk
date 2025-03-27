@@ -2212,10 +2212,9 @@ export default function SubmitDeal() {
                           : "This deal uses a flat commitment structure."}
                       </div>
                       
-                      {/* Financial Summary */}
+                      {/* Financial Summary Table */}
                       {dealTiers.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium text-slate-700 mb-3">Financial Summary</h4>
                           <div className="overflow-x-auto">
                             <table className="w-full border-collapse text-sm">
                               <thead>
