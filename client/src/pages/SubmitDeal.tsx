@@ -323,30 +323,51 @@ export default function SubmitDeal() {
   
   // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year adjusted gross profit - 1)
   const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
-    // According to your example, if tier 1 adjusted gross profit is 240k and last year's is 297.5k,
-    // the calculation should be: (240k / 297.5k) - 1 = 0.8067 - 1 = -0.1933 (or -19.33%)
+    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0; 
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+    const currentAdjustedProfit = grossProfit - incentiveCost;
     
-    // For the actual calculation, use the gross profit after incentives
-    const currentAdjustedProfit = calculateTierGrossProfit(tier);
-    
-    // Use the hardcoded previous year gross profit (35% of 850k) to match example
-    const previousGrossProfit = getPreviousYearGrossProfit();
+    // For last year's adjusted gross profit, we need to do the same calculation with last year's values
+    const lastYearRevenue = getPreviousYearValue(); // 850,000
+    const lastYearMarginPercent = getPreviousYearMargin(); // 35%
+    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearIncentiveCost = getPreviousYearIncentiveCost(); // Should be 0 for now
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 297,500
     
     // Debug logging
     console.log('DEBUG - Adjusted Gross Profit Rate Calculation:', {
-      currentAdjustedProfit,
-      previousGrossProfit,
-      result: previousGrossProfit > 0 ? (currentAdjustedProfit / previousGrossProfit) - 1 : 0
+      currentValues: {
+        revenue,
+        marginPercent,
+        grossProfit,
+        incentiveCost,
+        adjustedProfit: currentAdjustedProfit
+      },
+      lastYearValues: {
+        revenue: lastYearRevenue,
+        marginPercent: lastYearMarginPercent,
+        grossProfit: lastYearGrossProfit,
+        incentiveCost: lastYearIncentiveCost,
+        adjustedProfit: lastYearAdjustedProfit
+      },
+      result: lastYearAdjustedProfit > 0 ? (currentAdjustedProfit / lastYearAdjustedProfit) - 1 : 0
     });
     
-    if (previousGrossProfit === 0) return 0;
-    return (currentAdjustedProfit / previousGrossProfit) - 1;
+    if (lastYearAdjustedProfit === 0) return 0;
+    return (currentAdjustedProfit / lastYearAdjustedProfit) - 1;
   };
   
   // Calculate adjusted gross margin
   const calculateAdjustedGrossMargin = (tier: DealTierData): number => {
+    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
-    const adjustedGrossProfit = calculateTierGrossProfit(tier);
+    const marginPercent = tier.annualGrossMarginPercent || 0; 
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+    const adjustedGrossProfit = grossProfit - incentiveCost;
     
     if (revenue === 0) return 0;
     return adjustedGrossProfit / revenue;
@@ -354,19 +375,45 @@ export default function SubmitDeal() {
   
   // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
   const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
-    const currentAdjustedGrossMargin = calculateAdjustedGrossMargin(tier);
-    // Get previous year's adjusted gross margin
-    const previousAdjustedGrossMargin = getPreviousYearAdjustedGrossMargin();
+    // Calculate current tier's adjusted gross margin
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0; 
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+    const adjustedGrossProfit = grossProfit - incentiveCost;
+    const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
+    
+    // Calculate last year's adjusted gross margin
+    const lastYearRevenue = getPreviousYearValue(); // 850,000
+    const lastYearMarginPercent = getPreviousYearMargin(); // 35%
+    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearIncentiveCost = getPreviousYearIncentiveCost(); // Should be 0 for now
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 297,500
+    const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
     
     // Debug logging
     console.log('DEBUG - Adjusted Gross Margin Rate Calculation:', {
-      currentAdjustedGrossMargin,
-      previousAdjustedGrossMargin,
-      result: currentAdjustedGrossMargin - previousAdjustedGrossMargin
+      currentValues: {
+        revenue,
+        marginPercent,
+        grossProfit,
+        incentiveCost,
+        adjustedProfit: adjustedGrossProfit,
+        adjustedMargin: currentAdjustedGrossMargin
+      },
+      lastYearValues: {
+        revenue: lastYearRevenue,
+        marginPercent: lastYearMarginPercent,
+        grossProfit: lastYearGrossProfit,
+        incentiveCost: lastYearIncentiveCost,
+        adjustedProfit: lastYearAdjustedProfit,
+        adjustedMargin: lastYearAdjustedGrossMargin
+      },
+      result: currentAdjustedGrossMargin - lastYearAdjustedGrossMargin
     });
     
     // Return the difference as percentage points (not a percentage of the previous margin)
-    return currentAdjustedGrossMargin - previousAdjustedGrossMargin;
+    return currentAdjustedGrossMargin - lastYearAdjustedGrossMargin;
   };
   
   // Calculate client value
