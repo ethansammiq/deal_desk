@@ -4,18 +4,11 @@ import { useLocation } from "wouter";
 
 const pathToTitle: Record<string, string> = {
   "/": "Support Desk",
-  "/help": "Support Desk",
-  "/support": "Deal Submission",
+  "/help": "Help Resources",
+  "/support": "Deal Scoping",
+  "/request-support": "Deal Scoping",
   "/submit-deal": "Deal Submission",
   "/dashboard": "Deal Dashboard"
-};
-
-const pathToParent: Record<string, string | null> = {
-  "/": null,
-  "/help": "/",
-  "/support": "/",
-  "/submit-deal": "/support",
-  "/dashboard": "/"
 };
 
 export function Breadcrumbs() {
@@ -23,10 +16,6 @@ export function Breadcrumbs() {
   
   // Get current path title
   const currentTitle = pathToTitle[location] || "Page Not Found";
-  
-  // Get parent path
-  const parentPath = pathToParent[location];
-  const parentTitle = parentPath ? pathToTitle[parentPath] : null;
   
   return (
     <div className="flex items-center text-sm text-slate-500 mb-4 bg-white px-4 py-2.5 rounded-md shadow-sm border border-[#f0e6ff]">
@@ -36,17 +25,6 @@ export function Breadcrumbs() {
           <span className="group-hover:font-medium">Home</span>
         </div>
       </Link>
-      
-      {parentTitle && (
-        <>
-          <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
-          <Link href={parentPath || "/"}>
-            <span className="hover:text-[#3e0075] hover:font-medium transition-all duration-200 cursor-pointer">
-              {parentTitle}
-            </span>
-          </Link>
-        </>
-      )}
       
       <ChevronRight className="h-3 w-3 mx-2 text-slate-400" />
       <span className="font-medium text-[#3e0075] bg-[#f8f5ff] px-2 py-0.5 rounded-sm">{currentTitle}</span>
