@@ -786,28 +786,6 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="businessSummary"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Summary <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Briefly describe the deal, its objectives, and any special considerations"
-                            className="resize-none"
-                            rows={4}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Briefly describe the business opportunity, growth potential, and any special considerations.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -864,23 +842,7 @@ export default function SubmitDeal() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Contact Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter contact email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-
-                  </div>
+                  {/* Email field removed as requested */}
                   
                   {/* Conditional fields based on sales channel */}
                   <div className="grid grid-cols-1 gap-6">
@@ -957,6 +919,29 @@ export default function SubmitDeal() {
                       />
                     )}
                   </div>
+                  
+                  {/* Business Summary moved to bottom as requested */}
+                  <FormField
+                    control={form.control}
+                    name="businessSummary"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Summary <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Briefly describe the deal, its objectives, and any special considerations"
+                            className="resize-none"
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Briefly describe the business opportunity, growth potential, and any special considerations.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
                 <div className="mt-8 flex justify-end">
