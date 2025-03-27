@@ -608,17 +608,17 @@ export default function SubmitDeal() {
     <div className="p-6">
       <div className="mb-6">
         <div className="flex items-center mb-2">
-          <h1 className="text-2xl font-bold text-slate-900">Deal Process</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Deal Submission</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
         </div>
-        <h2 className="text-xl font-medium text-slate-800 mb-1">Submit New Deal</h2>
+
         <p className="mt-1 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
       </div>
       
-      {/* Form Progress - Modified to be clickable for back and forth navigation */}
+      {/* Form Progress - Modified to be clickable with closer spacing and centered labels */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-full flex items-center">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-3/4 flex items-center">
             <div 
               onClick={() => prevStep()}
               className={cn(
@@ -629,7 +629,7 @@ export default function SubmitDeal() {
               1
             </div>
             <div className={cn(
-              "w-full h-1 bg-slate-200",
+              "w-full h-1 bg-slate-200 mx-1", // Added mx-1 to bring steps closer
               formStep >= 1 ? "bg-primary" : ""
             )}></div>
             <div 
@@ -642,7 +642,7 @@ export default function SubmitDeal() {
               2
             </div>
             <div className={cn(
-              "w-full h-1 bg-slate-200",
+              "w-full h-1 bg-slate-200 mx-1", // Added mx-1 to bring steps closer
               formStep >= 2 ? "bg-primary" : ""
             )}></div>
             <div 
@@ -656,33 +656,35 @@ export default function SubmitDeal() {
             </div>
           </div>
         </div>
-        <div className="flex justify-between text-sm text-slate-600">
-          <div 
-            onClick={() => prevStep()}
-            className={cn(
-              "cursor-pointer hover:text-primary transition-colors", 
-              formStep === 0 ? "font-medium text-primary" : ""
-            )}
-          >
-            Deal Details
-          </div>
-          <div 
-            onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)} 
-            className={cn(
-              "cursor-pointer hover:text-primary transition-colors", 
-              formStep === 1 ? "font-medium text-primary" : ""
-            )}
-          >
-            Deal Structure & Pricing
-          </div>
-          <div 
-            onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
-            className={cn(
-              "cursor-pointer hover:text-primary transition-colors", 
-              formStep === 2 ? "font-medium text-primary" : ""
-            )}
-          >
-            Review & Submit
+        <div className="flex justify-center text-sm text-slate-600">
+          <div className="w-3/4 flex justify-between">
+            <div 
+              onClick={() => prevStep()}
+              className={cn(
+                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
+                formStep === 0 ? "font-medium text-primary" : ""
+              )}
+            >
+              Deal Details
+            </div>
+            <div 
+              onClick={() => formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)} 
+              className={cn(
+                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
+                formStep === 1 ? "font-medium text-primary" : ""
+              )}
+            >
+              Deal Structure & Pricing
+            </div>
+            <div 
+              onClick={() => formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)}
+              className={cn(
+                "w-1/3 text-center cursor-pointer hover:text-primary transition-colors", 
+                formStep === 2 ? "font-medium text-primary" : ""
+              )}
+            >
+              Review & Submit
+            </div>
           </div>
         </div>
       </div>
