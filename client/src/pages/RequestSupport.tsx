@@ -226,57 +226,59 @@ export default function RequestSupport() {
   return (
     <div className="p-6 rounded-lg bg-white shadow-md">
       {/* Header with info button */}
-      
-        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Deal Scoping</h1>
-        <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
+      <div className="mb-6">
+        <div className="flex items-center mb-2">
+          <h1 className="text-2xl font-bold text-slate-900">Deal Scoping</h1>
+          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 ml-2">
-              <InfoIcon className="h-4 w-4 text-primary" />
-              <span className="sr-only">Deal Scoping Information</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-0">
-            <div className="p-4 bg-[#f6f0ff] border-b border-slate-200">
-              <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
-              <p className="text-sm text-slate-600 mt-1">
-                Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities.
-              </p>
-            </div>
-            
-            <div className="p-4">
-              <h5 className="font-medium text-slate-800 mb-2">What Happens Next?</h5>
-              <ol className="text-sm text-slate-600 list-decimal list-inside space-y-1">
-                <li>Our partnership team reviews your request</li>
-                <li>A team member contacts you to schedule a discovery call</li>
-                <li>Together, we'll craft a tailored proposal</li>
-                <li>Once aligned, you can proceed to deal submission</li>
-              </ol>
-              
-              <div className="mt-3 pt-3 border-t border-slate-200">
-                <h5 className="font-medium text-blue-700 mb-1">Need Help?</h5>
-                <p className="text-sm text-blue-600">
-                  For assistance, contact the partnership team at partnerships@example.com
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 ml-2">
+                <InfoIcon className="h-4 w-4 text-primary" />
+                <span className="sr-only">Deal Scoping Information</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0">
+              <div className="p-4 bg-[#f6f0ff] border-b border-slate-200">
+                <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
+                <p className="text-sm text-slate-600 mt-1">
+                  Deal scoping is the first step in our deal process. It helps us understand your client's needs and growth opportunities.
                 </p>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            
+              <div className="p-4">
+                <h5 className="font-medium text-slate-800 mb-2">What Happens Next?</h5>
+                <ol className="text-sm text-slate-600 list-decimal list-inside space-y-1">
+                  <li>Our partnership team reviews your request</li>
+                  <li>A team member contacts you to schedule a discovery call</li>
+                  <li>Together, we'll craft a tailored proposal</li>
+                  <li>Once aligned, you can proceed to deal submission</li>
+                </ol>
+                
+                <div className="mt-3 pt-3 border-t border-slate-200">
+                  <h5 className="font-medium text-blue-700 mb-1">Need Help?</h5>
+                  <p className="text-sm text-blue-600">
+                    For assistance, contact the partnership team at partnerships@example.com
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        {/* Description */}
+        <p className="mt-1 text-sm text-slate-500">
+          New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
+          <span className="block mt-1 text-primary">
+            Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
+          </span>
+        </p>
+      </div>
       
-      
-      {/* Description */}
-      <p className="mt-1 text-sm text-slate-500">
-        New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
-        <span className="block mt-1 text-primary">
-          Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
-        </span>
-      </p>
-      
-      {/* Form Progress - Moved completely outside the form container */}
+      {/* Form Progress - Updated for consistency with Deal Submission page */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-full flex items-center">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-3/4 flex items-center">
             <div 
               onClick={() => setActiveTab("sales-channel")}
               className={cn(
@@ -287,7 +289,7 @@ export default function RequestSupport() {
               1
             </div>
             <div className={cn(
-              "w-full h-1 bg-slate-200",
+              "w-full h-1 bg-slate-200 mx-1", // Added mx-1 to bring steps closer
               activeTab === "growth-opportunity" ? "bg-primary" : ""
             )}></div>
             <div 
@@ -301,24 +303,26 @@ export default function RequestSupport() {
             </div>
           </div>
         </div>
-        <div className="flex justify-between text-sm text-slate-600">
-          <div 
-            onClick={() => setActiveTab("sales-channel")} 
-            className={cn(
-              "cursor-pointer hover:text-primary transition-colors", 
-              activeTab === "sales-channel" ? "font-medium text-primary" : ""
-            )}
-          >
-            Sales Channel Info
-          </div>
-          <div 
-            onClick={() => setActiveTab("growth-opportunity")} 
-            className={cn(
-              "cursor-pointer hover:text-primary transition-colors", 
-              activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
-            )}
-          >
-            Growth Opportunity
+        <div className="flex justify-center text-sm text-slate-600">
+          <div className="w-3/4 flex justify-between">
+            <div 
+              onClick={() => setActiveTab("sales-channel")} 
+              className={cn(
+                "w-1/2 text-center cursor-pointer hover:text-primary transition-colors", 
+                activeTab === "sales-channel" ? "font-medium text-primary" : ""
+              )}
+            >
+              Sales Channel Info
+            </div>
+            <div 
+              onClick={() => setActiveTab("growth-opportunity")} 
+              className={cn(
+                "w-1/2 text-center cursor-pointer hover:text-primary transition-colors", 
+                activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
+              )}
+            >
+              Growth Opportunity
+            </div>
           </div>
         </div>
       </div>
