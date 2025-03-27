@@ -620,17 +620,19 @@ export default function SubmitDeal() {
         <div className="w-3/4 mx-auto relative">
           {/* Progress Bar */}
           <div className="flex items-center justify-between">
-            {/* First connecting line - Between step 1 and 2 */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 left-10 right-[calc(100%/3+5px)] top-5",
-              formStep >= 1 ? "bg-primary" : ""
-            )}></div>
+            {/* Create each connecting line as a separate element */}
             
-            {/* Second connecting line - Between step 2 and 3 */}
+            {/* First connecting line - Between step 1 and 2 (stops at step 2) */}
             <div className={cn(
-              "absolute h-1 bg-slate-200 left-[calc(100%/3*2-5px)] right-10 top-5",
+              "absolute h-1 bg-slate-200 top-5",
+              formStep >= 1 ? "bg-primary" : ""
+            )} style={{ left: "10px", width: "calc(33.3% - 15px)" }}></div>
+            
+            {/* Second connecting line - Between step 2 and 3 (starts after step 2) */}
+            <div className={cn(
+              "absolute h-1 bg-slate-200 top-5",
               formStep >= 2 ? "bg-primary" : ""
-            )}></div>
+            )} style={{ left: "calc(66.6% - 5px)", width: "calc(33.3% - 5px)" }}></div>
             
             {/* Step 1 */}
             <div 
