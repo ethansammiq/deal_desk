@@ -2088,6 +2088,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const regionValue = getTypedValue("region");
+                              console.log("Region value:", regionValue);
                               if (!regionValue) return "Not provided";
                               
                               // Use the same mapping as in the dropdown
@@ -2096,10 +2097,14 @@ export default function SubmitDeal() {
                                 "midwest": "Midwest",
                                 "midatlantic": "Mid-Atlantic",
                                 "south": "South",
-                                "west": "West"
+                                "west": "West",
+                                "southeast": "Southeast",
+                                "southwest": "Southwest"
                               };
                               
-                              return regionMap[String(regionValue)] || String(regionValue);
+                              const result = regionMap[String(regionValue)] || String(regionValue).replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+                              console.log("Region mapped:", result);
+                              return result;
                             })()}
                           </dd>
                         </div>
@@ -2108,6 +2113,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const dealTypeValue = getTypedValue("dealType");
+                              console.log("Deal Type value:", dealTypeValue);
                               if (!dealTypeValue) return "Not provided";
                               
                               // Use a mapping for deal types
@@ -2115,10 +2121,13 @@ export default function SubmitDeal() {
                                 "standard_deal": "Standard Deal",
                                 "seasonal_promotion": "Seasonal Promotion",
                                 "annual_commitment": "Annual Commitment",
-                                "new_business": "New Business"
+                                "new_business": "New Business",
+                                "grow": "Grow" // Add missing value from the form
                               };
                               
-                              return dealTypeMap[String(dealTypeValue)] || String(dealTypeValue);
+                              const result = dealTypeMap[String(dealTypeValue)] || String(dealTypeValue);
+                              console.log("Deal Type mapped:", result);
+                              return result;
                             })()}
                           </dd>
                         </div>
@@ -2127,15 +2136,19 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const salesChannelValue = getTypedValue("salesChannel");
+                              console.log("Sales Channel value:", salesChannelValue);
                               if (!salesChannelValue) return "Not provided";
                               
                               // Use a mapping for sales channel
                               const salesChannelMap: Record<string, string> = {
                                 "client_direct": "Client Direct",
-                                "agency": "Agency"
+                                "agency": "Agency",
+                                "independent_agency": "Independent Agency"
                               };
                               
-                              return salesChannelMap[String(salesChannelValue)] || String(salesChannelValue);
+                              const result = salesChannelMap[String(salesChannelValue)] || String(salesChannelValue);
+                              console.log("Sales Channel mapped:", result);
+                              return result;
                             })()}
                           </dd>
                         </div>
@@ -2154,6 +2167,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const dealStructureValue = getTypedValue("dealStructure");
+                              console.log("Deal Structure value:", dealStructureValue);
                               if (!dealStructureValue) return "Not provided";
                               
                               // Use a mapping for deal structure
@@ -2162,7 +2176,9 @@ export default function SubmitDeal() {
                                 "flat_commit": "Flat Commitment"
                               };
                               
-                              return dealStructureMap[String(dealStructureValue)] || String(dealStructureValue);
+                              const result = dealStructureMap[String(dealStructureValue)] || String(dealStructureValue);
+                              console.log("Deal Structure mapped:", result);
+                              return result;
                             })()}
                           </dd>
                         </div>
