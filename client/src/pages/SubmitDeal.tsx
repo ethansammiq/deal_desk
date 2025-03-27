@@ -752,40 +752,7 @@ export default function SubmitDeal() {
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    
-                    <FormField
-                      control={form.control}
-                      name="dealType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deal Type <span className="text-red-500">*</span></FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a deal type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="grow">Grow ({'>'}20% YOY Growth)</SelectItem>
-                              <SelectItem value="protect">Protect (Large Account Retention)</SelectItem>
-                              <SelectItem value="custom">Custom (Special Builds/Requirements)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Grow: {'>'}20% YOY growth for existing clients<br />
-                            Protect: Retention focus for large accounts<br />
-                            Custom: Special build requirements
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
+                  {/* Region and Sales Channel at the top */}
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
@@ -918,6 +885,40 @@ export default function SubmitDeal() {
                         )}
                       />
                     )}
+                  </div>
+                  
+                  {/* Deal Type moved below Advertiser/Agency Name */}
+                  <div className="grid grid-cols-1 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="dealType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Deal Type <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a deal type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="grow">Grow ({'>'}20% YOY Growth)</SelectItem>
+                              <SelectItem value="protect">Protect (Large Account Retention)</SelectItem>
+                              <SelectItem value="custom">Custom (Special Builds/Requirements)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Grow: {'>'}20% YOY growth for existing clients<br />
+                            Protect: Retention focus for large accounts<br />
+                            Custom: Special build requirements
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                   
                   {/* Business Summary moved to bottom as requested */}
