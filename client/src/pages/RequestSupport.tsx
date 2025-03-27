@@ -104,8 +104,8 @@ export default function RequestSupport() {
     resolver: zodResolver(dealScopingSchema),
     defaultValues: {
       email: "",
-      salesChannel: "independent_agency",
-      region: "west",
+      salesChannel: "",
+      region: undefined,
       advertiserName: "",
       agencyName: "",
       growthOpportunityMIQ: "",
