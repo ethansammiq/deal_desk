@@ -312,7 +312,7 @@ export default function RequestSupport() {
                 activeTab === "sales-channel" ? "font-medium text-primary" : ""
               )}
             >
-              Sales Channel Info
+              Client Information
             </div>
             <div 
               onClick={() => setActiveTab("growth-opportunity")} 
@@ -321,7 +321,7 @@ export default function RequestSupport() {
                 activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
               )}
             >
-              Growth Opportunity
+              Opportunity Identification
             </div>
           </div>
         </div>

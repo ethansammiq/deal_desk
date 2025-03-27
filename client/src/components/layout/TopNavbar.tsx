@@ -67,7 +67,7 @@ export function TopNavbar() {
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
                   <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Deal Submission</span>
+                  <span className="whitespace-nowrap">Deal Requests</span>
                 </div>
               </Link>
               <Link href="/dashboard">
@@ -156,7 +156,7 @@ export function TopNavbar() {
             )}>
               <div className="flex items-center">
                 <ClipboardPenIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Deal Submission</span>
+                <span>Deal Requests</span>
               </div>
             </div>
           </Link>
