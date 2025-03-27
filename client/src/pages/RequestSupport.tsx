@@ -294,7 +294,7 @@ export default function RequestSupport() {
                       </div>
                       <div className={cn(
                         "w-full h-1 bg-slate-200",
-                        activeTab === "growth-opportunity" ? "bg-primary" : ""
+                        activeTab === "growth-opportunity" || activeTab === "sales-channel" ? "bg-primary" : ""
                       )}></div>
                       <div 
                         onClick={() => setActiveTab("growth-opportunity")}
@@ -313,7 +313,7 @@ export default function RequestSupport() {
                     <div 
                       onClick={() => setActiveTab("sales-channel")} 
                       className={cn(
-                        "cursor-pointer", 
+                        "cursor-pointer hover:text-primary transition-colors", 
                         activeTab === "sales-channel" ? "font-medium text-primary" : ""
                       )}
                     >
@@ -322,7 +322,7 @@ export default function RequestSupport() {
                     <div 
                       onClick={() => setActiveTab("growth-opportunity")} 
                       className={cn(
-                        "cursor-pointer", 
+                        "cursor-pointer hover:text-primary transition-colors", 
                         activeTab === "growth-opportunity" ? "font-medium text-primary" : ""
                       )}
                     >
