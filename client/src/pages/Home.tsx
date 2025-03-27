@@ -40,13 +40,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("pending");
   const userName = "Charlie";
 
-  // Fetch deal statistics
+  // Fetch deal statistics with fallback mock data
   const { data: dealStats = { 
-    totalDeals: 0, 
-    pendingDeals: 0, 
-    approvedDeals: 0, 
-    rejectedDeals: 0, 
-    totalValue: 0 
+    totalDeals: 24, 
+    pendingDeals: 9, 
+    approvedDeals: 12, 
+    rejectedDeals: 3, 
+    totalValue: 8750000 
   } } = useQuery<DealStats>({
     queryKey: ['/api/stats'],
     retry: false,
