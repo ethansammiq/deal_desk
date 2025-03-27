@@ -29,9 +29,11 @@ function EmbeddedChat() {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Scroll to bottom of chat when messages change
+  // Scroll to bottom of chat only when messages change and not on initial load
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
   
   // Function to copy message to clipboard
