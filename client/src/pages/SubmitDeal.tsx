@@ -631,12 +631,18 @@ export default function SubmitDeal() {
               1
             </div>
             
-            {/* Connecting Line */}
+            {/* Two separate connecting lines */}
+            {/* Line between step 1 and 2 */}
             <div className={cn(
-              "absolute h-1 bg-slate-200 left-10 right-10 top-5",
-              formStep >= 1 && formStep < 2 ? "bg-gradient-to-r from-primary via-primary to-slate-200" : 
+              "absolute h-1 bg-slate-200 top-5",
+              formStep >= 1 ? "bg-primary" : ""
+            )} style={{ left: "10px", right: "50%", marginRight: "20px" }}></div>
+            
+            {/* Line between step 2 and 3 */}
+            <div className={cn(
+              "absolute h-1 bg-slate-200 top-5",
               formStep >= 2 ? "bg-primary" : ""
-            )}></div>
+            )} style={{ left: "50%", right: "10px", marginLeft: "20px" }}></div>
             
             {/* Step 2 Circle */}
             <div 
