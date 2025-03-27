@@ -619,7 +619,19 @@ export default function SubmitDeal() {
       <div className="mb-8">
         <div className="w-3/4 mx-auto relative">
           {/* Progress Bar */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative">
+            {/* Background connecting lines - these are positioned first */}
+            <div className="absolute h-1 bg-slate-200 top-5 left-[5%] w-[90%] z-0"></div>
+            
+            {/* Filled segments for completed steps */}
+            {formStep >= 1 && (
+              <div className="absolute h-1 bg-primary top-5 left-[5%] w-[40%] z-0"></div>
+            )}
+            
+            {formStep >= 2 && (
+              <div className="absolute h-1 bg-primary top-5 right-[5%] w-[40%] z-0"></div>
+            )}
+            
             {/* Step 1 */}
             <div 
               onClick={() => prevStep()}
@@ -630,18 +642,6 @@ export default function SubmitDeal() {
             >
               1
             </div>
-            
-            {/* First connecting line (between step 1 and 2) */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 left-10 w-[calc(50%-20px)] top-5",
-              formStep >= 1 ? "bg-primary" : ""
-            )}></div>
-            
-            {/* Second connecting line (between step 2 and 3) */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 right-10 w-[calc(50%-20px)] top-5 left-[50%]",
-              formStep >= 2 ? "bg-primary" : ""
-            )}></div>
             
             {/* Step 2 */}
             <div 
