@@ -293,7 +293,7 @@ export default function RequestSupport() {
             
             {/* Connecting Line */}
             <div className={cn(
-              "absolute h-1 bg-slate-200 left-5 right-5 top-5",
+              "absolute h-1 bg-slate-200 left-10 right-10 top-5",
               activeTab === "growth-opportunity" ? "bg-primary" : ""
             )}></div>
             
