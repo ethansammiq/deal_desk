@@ -156,7 +156,7 @@ export default function SubmitDeal() {
   const dealType = watchTypedValue("dealType");
   const salesChannel = watchTypedValue("salesChannel");
   const contractTerm = watchTypedValue("contractTerm");
-  const hasNonStandardTerms = watchTypedValue("hasNonStandardTerms");
+  const hasNonStandardTerms = !!watchTypedValue("hasNonStandardTerms");
   const dealStructureType = watchTypedValue("dealStructureType");
   
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
@@ -222,7 +222,7 @@ export default function SubmitDeal() {
       ];
       
       // If hasNonStandardTerms is true, validate nonStandardTermsDetails
-      if (hasNonStandardTerms) {
+      if (!!hasNonStandardTerms) {
         step2Fields.push("nonStandardTermsDetails");
       }
       
@@ -1015,7 +1015,7 @@ export default function SubmitDeal() {
                         )}
                       />
                       
-                      {hasNonStandardTerms && (
+                      {!!hasNonStandardTerms && (
                         <FormField
                           control={form.control}
                           name="nonStandardTermsDetails"
@@ -1073,7 +1073,7 @@ export default function SubmitDeal() {
                             <div className="flex justify-between text-sm">
                               <dt className="text-slate-500">Sales Channel:</dt>
                               <dd className="text-slate-900 font-medium capitalize">
-                                {salesChannel?.replace(/_/g, " ") || "-"}
+                                {typeof salesChannel === 'string' ? salesChannel.replace(/_/g, " ") : "-"}
                               </dd>
                             </div>
                             <div className="flex justify-between text-sm">
@@ -1095,7 +1095,7 @@ export default function SubmitDeal() {
                             <div className="flex justify-between text-sm">
                               <dt className="text-slate-500">Structure Type:</dt>
                               <dd className="text-slate-900 font-medium capitalize">
-                                {dealStructureType?.replace(/_/g, " ") || "-"}
+                                {typeof dealStructureType === 'string' ? dealStructureType.replace(/_/g, " ") : "-"}
                               </dd>
                             </div>
                             <div className="flex justify-between text-sm">
@@ -1184,14 +1184,14 @@ export default function SubmitDeal() {
                       
                       <ApprovalAlert
                         totalValue={dealTiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)}
-                        hasNonStandardTerms={hasNonStandardTerms}
-                        contractTerm={contractTerm || 12}
-                        dealType={dealType}
-                        salesChannel={salesChannel}
+                        hasNonStandardTerms={!!hasNonStandardTerms}
+                        contractTerm={Number(contractTerm) || 12}
+                        dealType={typeof dealType === 'string' ? dealType : undefined}
+                        salesChannel={typeof salesChannel === 'string' ? salesChannel : undefined}
                         onChange={handleApprovalChange}
                       />
                       
-                      {hasNonStandardTerms && (
+                      {!!hasNonStandardTerms && (
                         <Alert className="mt-4 bg-amber-50 border-amber-200 text-amber-800">
                           <AlertTriangle className="h-4 w-4" />
                           <AlertTitle>Non-Standard Terms</AlertTitle>
