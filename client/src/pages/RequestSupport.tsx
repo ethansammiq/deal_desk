@@ -232,28 +232,26 @@ export default function RequestSupport() {
           <h1 className="text-2xl font-bold text-slate-900">Deal Scoping</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
           
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="ml-2 cursor-help">
-                  <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="w-80 p-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
-                  <p className="text-sm text-slate-700">Deal scoping is the first step in our deal process:</p>
-                  <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
-                    <li>Our partnership team reviews your request</li>
-                    <li>A team member contacts you to schedule a discovery call</li>
-                    <li>Together, we craft a tailored proposal</li>
-                    <li>Once aligned, you can proceed to deal submission</li>
-                  </ol>
-                  <p className="text-sm text-slate-700 mt-2">For assistance, contact the partnership team at partnerships@example.com</p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Popover>
+            <PopoverTrigger asChild>
+              <div className="ml-2 cursor-help">
+                <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="start">
+              <div className="space-y-2">
+                <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
+                <p className="text-sm text-slate-700">Deal scoping is the first step in our deal process:</p>
+                <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
+                  <li>Our partnership team reviews your request</li>
+                  <li>A team member contacts you to schedule a discovery call</li>
+                  <li>Together, we craft a tailored proposal</li>
+                  <li>Once aligned, you can proceed to deal submission</li>
+                </ol>
+                <p className="text-sm text-slate-700 mt-2">For assistance, contact the partnership team at partnerships@example.com</p>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         
         {/* Description */}

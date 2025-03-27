@@ -15,6 +15,11 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
 import { 
   Card,
   CardContent,
@@ -617,27 +622,25 @@ export default function SubmitDeal() {
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900">Deal Submission</h1>
           <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 2 of 2</span>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="ml-2 cursor-help">
-                  <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="w-80 p-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium text-slate-900">About Deal Submission</h4>
-                  <p className="text-sm text-slate-700">The deal submission process involves 3 steps:</p>
-                  <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
-                    <li>Complete deal details and basic client information</li>
-                    <li>Configure deal structure, pricing tiers, and incentives</li>
-                    <li>Review and submit for approval based on approval matrix</li>
-                  </ol>
-                  <p className="text-sm text-slate-700 mt-2">Required approvals will be automatically determined based on deal size, structure, and non-standard terms.</p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Popover>
+            <PopoverTrigger asChild>
+              <div className="ml-2 cursor-help">
+                <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="start">
+              <div className="space-y-2">
+                <h4 className="font-medium text-slate-900">About Deal Submission</h4>
+                <p className="text-sm text-slate-700">The deal submission process involves 3 steps:</p>
+                <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
+                  <li>Complete deal details and basic client information</li>
+                  <li>Configure deal structure, pricing tiers, and incentives</li>
+                  <li>Review and submit for approval based on approval matrix</li>
+                </ol>
+                <p className="text-sm text-slate-700 mt-2">Required approvals will be automatically determined based on deal size, structure, and non-standard terms.</p>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <p className="mt-1 text-sm text-slate-500">Complete the form below to submit a new commercial deal for approval</p>
