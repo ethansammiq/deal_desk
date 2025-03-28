@@ -1406,6 +1406,11 @@ export default function SubmitDeal() {
                     
                     {/* Collapsible content section */}
                     <div id="revenue-section" className="transition-all h-auto">
+                        <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+                          <Info className="h-4 w-4 inline mr-2" />
+                          The tier structure represents revenue commitments and associated margin impact.
+                          Each tier should have a progressive revenue target and corresponding margin impact.
+                        </div>
                         
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
@@ -1713,11 +1718,7 @@ export default function SubmitDeal() {
                           </table>
                         </div>
                       
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
-                          <Info className="h-4 w-4 inline mr-2" />
-                          The tier structure represents revenue commitments and associated margin impact.
-                          Each tier should have a progressive revenue target and corresponding margin impact.
-                        </div>
+
                       </div>
                     </div> {/* Close revenue-section div */}
                     
