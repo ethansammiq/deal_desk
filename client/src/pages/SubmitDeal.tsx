@@ -1421,7 +1421,7 @@ export default function SubmitDeal() {
                                 {dealTiers.map((tier) => (
                                   <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                                     <div className="flex justify-between items-center">
-                                      <span className="flex-1">Tier {tier.tierNumber} (Projected)</span>
+                                      <span className="flex-1">Tier {tier.tierNumber}</span>
                                       {tier.tierNumber > 1 && (
                                         <Button
                                           variant="ghost"
