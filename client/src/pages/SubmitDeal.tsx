@@ -1408,8 +1408,8 @@ export default function SubmitDeal() {
                     <div id="revenue-section" className="transition-all h-auto">
                         <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
                           <Info className="h-4 w-4 inline mr-2" />
-                          The tier structure represents revenue commitments and associated margin impact.
-                          Each tier should have a progressive revenue target and corresponding margin impact.
+                          This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier.
+                          Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance.
                         </div>
                         
                         <div className="overflow-x-auto">
