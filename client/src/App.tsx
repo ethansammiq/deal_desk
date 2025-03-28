@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import SubmitDeal from "@/pages/SubmitDeal";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
+import DealRequests from "@/pages/DealRequests";
 import Home from "@/pages/Home";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -56,6 +57,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/help" component={HelpResources} />
         <Route path="/deals" component={Dashboard} />
+        <Route path="/deal-requests" component={DealRequests} />
         {/* Fallback to 404 */}
         <Route component={NotFound} />
       </Switch>

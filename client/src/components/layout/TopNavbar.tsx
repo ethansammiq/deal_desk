@@ -70,10 +70,10 @@ export function TopNavbar() {
                   <span className="whitespace-nowrap">Support Desk</span>
                 </div>
               </Link>
-              <Link href="/support">
+              <Link href="/deal-requests">
                 <div className={cn(
                   "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/support" || location === "/submit-deal" 
+                  location === "/deal-requests" || location === "/support" || location === "/submit-deal" 
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
@@ -160,10 +160,10 @@ export function TopNavbar() {
               </div>
             </div>
           </Link>
-          <Link href="/support">
+          <Link href="/deal-requests">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              location === "/support" || location === "/submit-deal" 
+              location === "/deal-requests" || location === "/support" || location === "/submit-deal" 
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
