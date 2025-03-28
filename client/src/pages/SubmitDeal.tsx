@@ -1816,7 +1816,7 @@ export default function SubmitDeal() {
                               </colgroup>
                               <thead>
                                 <tr>
-                                  <th className="text-left p-3 bg-slate-100 border border-slate-200">Metric</th>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
                                   <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
                                   {dealTiers.map(tier => (
                                     <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
