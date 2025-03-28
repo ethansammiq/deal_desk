@@ -1865,9 +1865,6 @@ export default function SubmitDeal() {
                         
                         {/* Hierarchical Incentive Selector */}
                         <div>
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-500">Incentive Structure</h4>
-                          </div>
                           <IncentiveSelector 
                             selectedIncentives={selectedIncentives}
                             dealTiers={dealTiers}
