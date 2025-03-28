@@ -150,7 +150,7 @@ export default function SubmitDeal() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(null);
-  const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit">("tiered");
+  const [dealStructureType, setDealStructure] = useState<"tiered" | "flat_commit" | "">("");
   const [financialSummary, setFinancialSummary] = useState<DealFinancialSummary>({
     totalAnnualRevenue: 0,
     totalGrossMargin: 0,
@@ -547,7 +547,7 @@ export default function SubmitDeal() {
       agencyName: "",
       
       // Deal structure
-      dealStructure: "tiered",
+      dealStructure: undefined,
       
       // Timeframe
       termStartDate: new Date(),
@@ -558,7 +558,7 @@ export default function SubmitDeal() {
       annualGrossMargin: 0,
       
       // Contract term (in months)
-      contractTerm: 12,
+      contractTerm: undefined,
       
       // Contact information
       email: "",
@@ -1259,8 +1259,8 @@ export default function SubmitDeal() {
                               placeholder="Enter contract duration in months (e.g., 12, 24, 36)"
                               {...field}
                               onChange={(e) => {
-                                const value = parseInt(e.target.value);
-                                field.onChange(isNaN(value) ? 12 : value);
+                                const value = e.target.value === '' ? undefined : parseInt(e.target.value);
+                                field.onChange(value);
                               }}
                             />
                           </FormControl>
