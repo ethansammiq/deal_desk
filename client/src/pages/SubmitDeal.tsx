@@ -2840,35 +2840,6 @@ export default function SubmitDeal() {
                           })}
                         </tr>
 
-                        {/* Adjusted Gross Profit */}
-                        <tr>
-                          <td className="p-3 border border-slate-200 bg-slate-50">
-                            <div className="font-medium">
-                              Adjusted Gross Profit
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              Revenue minus cost and incentives
-                            </div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(
-                              getPreviousYearAdjustedGrossProfit(),
-                            )}{" "}
-                            {/* Last year value - 247,500 */}
-                          </td>
-                          {dealTiers.map((tier) => {
-                            // Calculate gross profit for this tier
-                            const grossProfit = calculateTierGrossProfit(tier);
-                            return (
-                              <td
-                                key={tier.tierNumber}
-                                className="p-3 border border-slate-200 text-center"
-                              >
-                                {formatCurrency(grossProfit)}
-                              </td>
-                            );
-                          })}
-                        </tr>
 
                         {/* Adjusted Gross Margin Growth Rate */}
                         <tr>
@@ -3479,40 +3450,7 @@ export default function SubmitDeal() {
                                     })}
                                 </tr>
 
-                                {/* Adjusted Gross Profit */}
-                                <tr>
-                                  <td className="p-2 border border-slate-200 font-medium">
-                                    Adjusted Gross Profit
-                                  </td>
-                                  <td className="p-2 border border-slate-200 text-center">
-                                    {formatCurrency(
-                                      getPreviousYearAdjustedGrossProfit(),
-                                    )}
-                                  </td>
-                                  {dealTiers
-                                    .filter((tier) => tier.annualRevenue)
-                                    .map((tier) => {
-                                      const grossProfit =
-                                        (tier.annualRevenue || 0) *
-                                        ((tier.annualGrossMarginPercent || 0) /
-                                          100);
-                                      const incentiveCost =
-                                        calculateTierIncentiveCost(
-                                          tier.tierNumber,
-                                        );
-                                      const adjustedProfit =
-                                        grossProfit - incentiveCost;
 
-                                      return (
-                                        <td
-                                          key={tier.tierNumber}
-                                          className="p-2 border border-slate-200 text-center"
-                                        >
-                                          {formatCurrency(adjustedProfit)}
-                                        </td>
-                                      );
-                                    })}
-                                </tr>
 
                                 {/* Client Value Growth Rate */}
                                 <tr>
