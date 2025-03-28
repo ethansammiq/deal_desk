@@ -2791,7 +2791,7 @@ export default function SubmitDeal() {
                       <thead>
                         <tr>
                           <th className="text-left p-3 bg-slate-100 border border-slate-200">
-                            Financial Metric
+                            
                           </th>
                           <th className="text-center p-3 bg-slate-100 border border-slate-200">
                             Last Year
