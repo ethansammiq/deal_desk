@@ -30,13 +30,8 @@ export const incentiveCategories: IncentiveCategory[] = [
     id: "financial",
     name: "Financial",
     icon: <DollarSign className="h-5 w-5" />,
-    description: "Monetary incentives including rebates, discounts, and bonuses",
+    description: "Monetary incentives including discounts and bonuses",
     subCategories: [
-      {
-        id: "fin-rebates",
-        name: "Rebates",
-        options: ["Annual Rebate", "Quarterly Rebate", "Performance-based Rebate", "Tiered Rebate"]
-      },
       {
         id: "fin-discounts",
         name: "Discounts",
