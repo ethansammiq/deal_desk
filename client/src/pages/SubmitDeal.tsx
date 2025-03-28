@@ -1331,7 +1331,7 @@ export default function SubmitDeal() {
 
                   {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
-                    
+                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
                       <div 
@@ -1402,7 +1402,7 @@ export default function SubmitDeal() {
                         <Plus className="h-4 w-4 mr-1" />
                         Add Tier
                       </Button>
-                    
+                    </div>
                     
                     {/* Collapsible content section */}
                     <div id="revenue-section" className="transition-all h-auto">
