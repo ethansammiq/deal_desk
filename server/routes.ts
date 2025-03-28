@@ -5,6 +5,12 @@ import { insertDealSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
+import { 
+  analyzeDeal, 
+  getDealRecommendations, 
+  getMarketAnalysis,
+  generateStructuredResponse 
+} from "./claude-analyzer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -337,6 +343,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting incentive:", error);
       res.status(500).json({ message: "Failed to delete incentive" });
+    }
+  });
+
+  // Claude AI endpoints
+  router.post("/ai/analyze-deal", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const analysis = await analyzeDeal(dealData);
+      res.status(200).json(analysis);
+    } catch (error) {
+      console.error("Error analyzing deal with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze deal", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/deal-recommendations", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const recommendations = await getDealRecommendations(dealData);
+      res.status(200).json(recommendations);
+    } catch (error) {
+      console.error("Error getting deal recommendations with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to get deal recommendations", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/market-analysis", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const marketAnalysis = await getMarketAnalysis(dealData);
+      res.status(200).json(marketAnalysis);
+    } catch (error) {
+      console.error("Error getting market analysis with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to get market analysis", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/query", async (req: Request, res: Response) => {
+    try {
+      const { query, systemPrompt } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Query is required" });
+      }
+      
+      const response = await generateStructuredResponse(query, systemPrompt);
+      res.status(200).json(response);
+    } catch (error) {
+      console.error("Error querying Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to query Claude", 
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

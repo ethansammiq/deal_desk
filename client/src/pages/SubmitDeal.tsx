@@ -573,8 +573,11 @@ export default function SubmitDeal() {
   // Create deal mutation
   const createDeal = useMutation({
     mutationFn: async (data: DealFormValues) => {
-      const response = await apiRequest("POST", "/api/deals", data);
-      return response.json();
+      return apiRequest("/api/deals", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
@@ -598,8 +601,7 @@ export default function SubmitDeal() {
   useEffect(() => {
     const fetchAgencies = async () => {
       try {
-        const response = await apiRequest("GET", "/api/agencies");
-        const data = await response.json();
+        const data = await apiRequest("/api/agencies");
         setAgencies(data);
       } catch (error) {
         console.error("Failed to fetch agencies:", error);
@@ -613,8 +615,7 @@ export default function SubmitDeal() {
 
     const fetchAdvertisers = async () => {
       try {
-        const response = await apiRequest("GET", "/api/advertisers");
-        const data = await response.json();
+        const data = await apiRequest("/api/advertisers");
         setAdvertisers(data);
       } catch (error) {
         console.error("Failed to fetch advertisers:", error);

@@ -131,7 +131,7 @@ export function IncentiveSelector({
                   {availableTiers.map(tierId => (
                     <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                       <div className="flex justify-between items-center">
-                        <span className="flex-1">Tier {tierId}</span>
+                        <span className="flex-1 text-center">Tier {tierId}</span>
                       </div>
                     </th>
                   ))}
@@ -191,7 +191,7 @@ export function IncentiveSelector({
       {showAddForm && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Add New Incentive</CardTitle>
+            <CardTitle className="text-base">Add Incentive</CardTitle>
             <CardDescription>
               Select a category, sub-category, and specific incentive option
             </CardDescription>
@@ -288,7 +288,7 @@ export function IncentiveSelector({
                           {availableTiers.map(tierId => (
                             <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                               <div className="flex justify-between items-center">
-                                <span className="flex-1">Tier {tierId}</span>
+                                <span className="flex-1 text-center">Tier {tierId}</span>
                               </div>
                             </th>
                           ))}
@@ -297,11 +297,11 @@ export function IncentiveSelector({
                       <tbody>
                         {/* Incentive Value Row */}
                         <tr>
-                          <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                          <td className="font-medium p-3 border border-slate-200 bg-slate-50 text-center">
                             Incentive Value (USD)
                           </td>
                           {availableTiers.map(tierId => (
-                            <td key={tierId} className="p-3 border border-slate-200">
+                            <td key={tierId} className="p-3 border border-slate-200 text-center">
                               <div className="relative">
                                 <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                                 <Input
