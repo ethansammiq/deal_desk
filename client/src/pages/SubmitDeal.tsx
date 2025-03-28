@@ -2144,7 +2144,7 @@ export default function SubmitDeal() {
                             <div className="text-xs text-slate-500">Revenue minus cost and incentives</div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
-                            {formatCurrency(getPreviousYearGrossProfit())} {/* Last year value */}
+                            {formatCurrency(getPreviousYearAdjustedGrossProfit())} {/* Last year value - 247,500 */}
                           </td>
                           {dealTiers.map(tier => {
                             // Calculate gross profit for this tier
@@ -2543,6 +2543,25 @@ export default function SubmitDeal() {
                                     return (
                                       <td key={tier.tierNumber} className="p-2 border border-slate-200">
                                         {formatCurrency(incentiveCost)}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                                
+                                {/* Adjusted Gross Profit */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">Adjusted Gross Profit</td>
+                                  <td className="p-2 border border-slate-200">
+                                    {formatCurrency(getPreviousYearAdjustedGrossProfit())}
+                                  </td>
+                                  {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
+                                    const grossProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
+                                    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                                    const adjustedProfit = grossProfit - incentiveCost;
+                                    
+                                    return (
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                        {formatCurrency(adjustedProfit)}
                                       </td>
                                     );
                                   })}
