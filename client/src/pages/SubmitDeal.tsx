@@ -375,7 +375,11 @@ export default function SubmitDeal() {
   
   // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
   const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
-    // Calculate current tier's adjusted gross margin
+    // For your example: if tier 1 adjusted gross margin is 24% and last year's is 35%
+    // The formula should be: (0.24 - 0.35) = -0.11 or -11 percentage points
+    // Not: ((0.24 - 0.35) / 0.35) = -0.3143 or -31.43%
+    
+    // Calculate current tier's adjusted gross margin as a decimal (0.24 in your example)
     const revenue = tier.annualRevenue || 0;
     const marginPercent = tier.annualGrossMarginPercent || 0; 
     const grossProfit = revenue * (marginPercent / 100);
@@ -383,7 +387,7 @@ export default function SubmitDeal() {
     const adjustedGrossProfit = grossProfit - incentiveCost;
     const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
     
-    // Calculate last year's adjusted gross margin
+    // Calculate last year's adjusted gross margin as a decimal (0.35 in your example)
     const lastYearRevenue = getPreviousYearValue(); // 850,000
     const lastYearMarginPercent = getPreviousYearMargin(); // 35%
     const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
@@ -409,10 +413,12 @@ export default function SubmitDeal() {
         adjustedProfit: lastYearAdjustedProfit,
         adjustedMargin: lastYearAdjustedGrossMargin
       },
-      result: currentAdjustedGrossMargin - lastYearAdjustedGrossMargin
+      result: currentAdjustedGrossMargin - lastYearAdjustedGrossMargin,
+      resultPercentagePoints: `${((currentAdjustedGrossMargin - lastYearAdjustedGrossMargin) * 100).toFixed(2)}%`
     });
     
-    // Return the difference as percentage points (not a percentage of the previous margin)
+    // Return the simple difference as percentage points (not a percentage of the previous margin)
+    // For example: 0.24 - 0.35 = -0.11 or -11 percentage points 
     return currentAdjustedGrossMargin - lastYearAdjustedGrossMargin;
   };
   
