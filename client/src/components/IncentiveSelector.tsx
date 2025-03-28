@@ -123,15 +123,22 @@ export function IncentiveSelector({
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-500">Selected Incentives</h4>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse table-fixed">
+              <colgroup>
+                <col style={{ width: "40%" }} />
+                <col style={{ width: "10%" }} />
+                {availableTiers.map((_, index) => (
+                  <col key={index} style={{ width: `${50 / availableTiers.length}%` }} />
+                ))}
+              </colgroup>
               <thead>
                 <tr>
-                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
-                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-10">Actions</th>
+                  <th className="text-left p-3 bg-slate-100 border border-slate-200">Incentive Details</th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200">Actions</th>
                   {availableTiers.map(tierId => (
-                    <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
-                      <div className="flex justify-between items-center">
-                        <span className="flex-1 text-center">Tier {tierId}</span>
+                    <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200">
+                      <div className="flex justify-center items-center">
+                        <span>Tier {tierId}</span>
                       </div>
                     </th>
                   ))}
@@ -281,14 +288,20 @@ export function IncentiveSelector({
                 <div className="space-y-2">
                   <Label>4. Configure Incentive by Tier</Label>
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse table-fixed">
+                      <colgroup>
+                        <col style={{ width: "40%" }} />
+                        {availableTiers.map((_, index) => (
+                          <col key={index} style={{ width: `${60 / availableTiers.length}%` }} />
+                        ))}
+                      </colgroup>
                       <thead>
                         <tr>
-                          <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200">Value Details</th>
                           {availableTiers.map(tierId => (
-                            <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
-                              <div className="flex justify-between items-center">
-                                <span className="flex-1 text-center">Tier {tierId}</span>
+                            <th key={tierId} className="text-center p-3 bg-slate-100 border border-slate-200">
+                              <div className="flex justify-center items-center">
+                                <span>Tier {tierId}</span>
                               </div>
                             </th>
                           ))}
