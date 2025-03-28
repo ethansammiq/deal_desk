@@ -2200,8 +2200,8 @@ export default function SubmitDeal() {
                             — {/* Baseline */}
                           </td>
                           {dealTiers.map(tier => {
-                            // Calculate profit growth rate for this tier
-                            const profitGrowthRate = calculateGrossProfitGrowthRate(tier);
+                            // Calculate adjusted profit growth rate for this tier
+                            const profitGrowthRate = calculateAdjustedGrossProfitGrowthRate(tier);
                             return (
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
                                 <span className={profitGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
@@ -2625,7 +2625,7 @@ export default function SubmitDeal() {
                               {(() => {
                                 // Use the first tier's profit growth rate calculation
                                 if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
-                                  const profitGrowthRate = calculateGrossProfitGrowthRate(dealTiers[0]);
+                                  const profitGrowthRate = calculateAdjustedGrossProfitGrowthRate(dealTiers[0]);
                                   const formattedRate = (profitGrowthRate * 100).toFixed(1);
                                   const isPositive = profitGrowthRate > 0;
                                   return (
@@ -2685,7 +2685,7 @@ export default function SubmitDeal() {
                         <p className="text-sm text-slate-700">
                           {(() => {
                             if (dealTiers.length > 0 && dealTiers[0].annualRevenue) {
-                              const profitGrowthRate = calculateGrossProfitGrowthRate(dealTiers[0]);
+                              const profitGrowthRate = calculateAdjustedGrossProfitGrowthRate(dealTiers[0]);
                               
                               // Get previous year revenue for actual revenue growth calculation
                               let previousYearRevenue = 850000; // Default to mock value
