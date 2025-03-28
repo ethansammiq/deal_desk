@@ -8,6 +8,7 @@ const pathToTitle: Record<string, string> = {
   "/help": "Support Desk",
   "/support": "Deal Scoping",
   "/request-support": "Deal Scoping",
+  "/deal-requests": "Deal Requests",
   "/submit-deal": "Deal Submission",
   "/dashboard": "Deal Dashboard",
   "/deals": "Deals"
@@ -32,16 +33,16 @@ export function Breadcrumbs() {
       { title: "Home", path: "/", id: "home" }
     ];
     
-    // Deal Scoping has a parent of Deal Requests (non-clickable grouping)
+    // Deal Scoping has a parent of Deal Requests (clickable)
     if (location === "/support" || location === "/request-support") {
-      breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
+      breadcrumbs.push({ title: "Deal Requests", path: "/deal-requests", id: "deal-requests" });
       breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
       return breadcrumbs;
     }
     
-    // Deal Submission has a parent of Deal Requests (non-clickable grouping)
+    // Deal Submission has a parent of Deal Requests (clickable)
     if (location === "/submit-deal") {
-      breadcrumbs.push({ title: "Deal Requests", path: "#", isGroup: true, id: "deal-requests-group" });
+      breadcrumbs.push({ title: "Deal Requests", path: "/deal-requests", id: "deal-requests" });
       breadcrumbs.push({ title: "Deal Submission", path: "/submit-deal", isActive: true, id: "deal-submission" });
       return breadcrumbs;
     }
