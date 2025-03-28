@@ -1210,6 +1210,67 @@ export default function SubmitDeal() {
                       )}
                     />
                   </div>
+
+                  {/* Deal Structure moved from Deal Structure & Pricing as requested */}
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+                    <FormField
+                      control={form.control}
+                      name="dealStructure"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setDealStructure(value as "tiered" | "flat_commit");
+                            }}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select deal structure" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="flat_commit">Flat Commit</SelectItem>
+                              <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            The revenue structure for this deal
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Contract Term Field moved from Deal Structure & Pricing */}
+                    <FormField
+                      control={form.control}
+                      name="contractTerm"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contract Term (Months) <span className="text-red-500">*</span></FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="60"
+                              {...field}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                field.onChange(isNaN(value) ? 12 : value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Length of the contract in months
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   {/* Business Summary moved to bottom as requested */}
                   <FormField
@@ -1269,67 +1330,7 @@ export default function SubmitDeal() {
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Deal Structure & Pricing</h3>
                     
-                    {/* 2-column layout for structure selection and dates */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                      <FormField
-                        control={form.control}
-                        name="dealStructure"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Deal Structure <span className="text-red-500">*</span></FormLabel>
-                            <Select 
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                setDealStructure(value as "tiered" | "flat_commit");
-                              }}
-                              value={field.value || ""}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="bg-slate-50">
-                                  <SelectValue placeholder="Select deal structure" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="flat_commit">Flat Commit</SelectItem>
-                                <SelectItem value="tiered">Tiered Revenue</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              The revenue structure for this deal
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {/* Contract Term Field */}
-                      <FormField
-                        control={form.control}
-                        name="contractTerm"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Contract Term (Months) <span className="text-red-500">*</span></FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                max="60"
-                                className="bg-slate-50"
-                                {...field}
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value);
-                                  field.onChange(isNaN(value) ? 12 : value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Length of the contract in months
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    {/* Deal Structure and Contract Term fields have been moved to Deal Details section */}
 
                     {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                     <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
