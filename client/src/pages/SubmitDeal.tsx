@@ -1310,7 +1310,7 @@ export default function SubmitDeal() {
               <CardContent className="p-6">
                 <div className="mb-6">
                   <h2 className="text-lg font-medium text-slate-900">Value Structure</h2>
-                  <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
+                  <p className="mt-1 text-sm text-slate-500">Define the financial structure and value proposition for this deal</p>
                 </div>
                 
                 <div className="space-y-6">
@@ -1329,7 +1329,7 @@ export default function SubmitDeal() {
                   
                   {/* Value Structure Card */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Value Structure</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Structure</h3>
                     
                     {/* Deal Structure and Contract Term fields have been moved to Deal Overview section */}
 
