@@ -645,6 +645,7 @@ export default function SubmitDeal() {
   // Create deal mutation
   const createDeal = useMutation({
     mutationFn: async (data: DealFormValues) => {
+      console.log("Sending data to API:", data);
       return apiRequest("/api/deals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -652,6 +653,7 @@ export default function SubmitDeal() {
       });
     },
     onSuccess: () => {
+      console.log("Deal submission successful!");
       queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
       toast({
         title: "Success",
@@ -661,6 +663,7 @@ export default function SubmitDeal() {
       navigate("/");
     },
     onError: (error: any) => {
+      console.error("Deal submission error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to submit deal",
@@ -911,6 +914,9 @@ export default function SubmitDeal() {
   }
 
   function onSubmit(data: DealFormValues) {
+    console.log("Form submission triggered with data:", data);
+    console.log("Form validation state:", form.formState);
+    
     // Format dates for deal name
     const startDateFormatted = format(data.termStartDate, "yyyyMMdd");
     const endDateFormatted = format(data.termEndDate, "yyyyMMdd");
@@ -1130,7 +1136,11 @@ export default function SubmitDeal() {
       {/* Form Container */}
       <Card>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form submit event triggered");
+            form.handleSubmit(onSubmit)(e);
+          }}>
             {/* Step 1: Deal Overview */}
             {formStep === 0 && (
               <CardContent className="p-6">
@@ -4036,7 +4046,15 @@ export default function SubmitDeal() {
                   <Button type="button" variant="outline" onClick={prevStep}>
                     Previous: Deal Structure
                   </Button>
-                  <Button type="submit" disabled={createDeal.isPending}>
+                  <Button 
+                    type="button" 
+                    disabled={createDeal.isPending}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log("Manual submit button clicked");
+                      form.handleSubmit(onSubmit)();
+                    }}
+                  >
                     {createDeal.isPending
                       ? "Submitting..."
                       : "Submit Deal for Approval"}
