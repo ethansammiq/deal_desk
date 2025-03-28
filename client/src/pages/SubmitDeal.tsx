@@ -1336,6 +1336,7 @@ export default function SubmitDeal() {
 
                   {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
                       <div 
@@ -1732,10 +1733,12 @@ export default function SubmitDeal() {
 
                       </div>
                     </div> {/* Close revenue-section div */}
+                    </div>
                   </div> {/* Close Revenue & Profitability Section */}
-                  
+                    
                   {/* Incentives Section - Now outside Structure container */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                       {/* Incentives section header with collapsible control */}
                       <div className="flex items-center justify-between mb-4">
                           <div 
@@ -1961,7 +1964,7 @@ export default function SubmitDeal() {
                           </div>
                         </div>
                       </div>
-                  </div> {/* Close the main incentives section container div */}
+                    </div> {/* Close the main incentives section container div */}
                   
                   {/* This section is hidden - we use tiered view for all deal types */}
                   {false && dealStructureType === "flat_commit" && (

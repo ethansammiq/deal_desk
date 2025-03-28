@@ -4,8 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
-// Import our new fixed component instead of the regular SubmitDeal
-import SubmitDealFixed from "@/pages/SubmitDeal.fixed2";
+import SubmitDeal from "@/pages/SubmitDeal";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
 import Home from "@/pages/Home";
@@ -53,7 +52,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/support" component={RequestSupport} />
         <Route path="/request-support" component={RequestSupport} />
-        <Route path="/submit-deal" component={SubmitDealFixed} />
+        <Route path="/submit-deal" component={SubmitDeal} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/help" component={HelpResources} />
         <Route path="/deals" component={Dashboard} />
