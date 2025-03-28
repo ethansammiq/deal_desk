@@ -2389,7 +2389,7 @@ export default function SubmitDeal() {
                                   Total Client Value
                                 </div>
                                 <div className="text-xs text-slate-500">
-                                  40% of client revenue
+                                  Expected business value from incentive
                                 </div>
                               </td>
                               <td className="p-3 border border-slate-200 text-center">

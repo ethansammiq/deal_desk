@@ -6,71 +6,100 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
-import { 
-  Card,
-  CardContent
-} from "@/components/ui/card";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
 // Schema for deal scoping requests
-const dealScopingSchema = z.object({
-  // Email address
-  email: z.string().email("Please enter a valid email address").optional(),
-  
-  // Sales channel and client information
-  salesChannel: z.string().min(1, "Sales channel is required"),
-  region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
-    required_error: "Region is required",
-  }),
-  advertiserName: z.string().optional(),
-  agencyName: z.string().optional(),
-  
-  // Growth opportunity fields
-  growthOpportunityMIQ: z.string().min(10, "Please provide more details about the growth opportunity"),
-  growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
-  growthOpportunityClient: z.string().min(10, "Please provide more details about the client's growth opportunity"),
-  clientAsks: z.string().optional(),
-  
-  // Legacy fields maintained for compatibility
-  requestTitle: z.string().min(1, "Request title is required").default("Deal Scoping Request"),
-  description: z.string().optional(),
-})
-.superRefine((data, ctx) => {
-  // If sales channel is client_direct, advertiserName is required
-  if (data.salesChannel === "client_direct" && !data.advertiserName) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Advertiser name is required for client direct sales",
-      path: ["advertiserName"],
-    });
-  }
-  
-  // If sales channel is holding_company or independent_agency, agencyName is required
-  if ((data.salesChannel === "holding_company" || data.salesChannel === "independent_agency") && !data.agencyName) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Agency name is required for agency sales",
-      path: ["agencyName"],
-    });
-  }
-});
+const dealScopingSchema = z
+  .object({
+    // Email address
+    email: z.string().email("Please enter a valid email address").optional(),
+
+    // Sales channel and client information
+    salesChannel: z.string().min(1, "Sales channel is required"),
+    region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
+      required_error: "Region is required",
+    }),
+    advertiserName: z.string().optional(),
+    agencyName: z.string().optional(),
+
+    // Growth opportunity fields
+    growthOpportunityMIQ: z
+      .string()
+      .min(10, "Please provide more details about the growth opportunity"),
+    growthAmbition: z
+      .number()
+      .min(1000000, "Growth ambition must be at least $1M"),
+    growthOpportunityClient: z
+      .string()
+      .min(
+        10,
+        "Please provide more details about the client's growth opportunity",
+      ),
+    clientAsks: z.string().optional(),
+
+    // Legacy fields maintained for compatibility
+    requestTitle: z
+      .string()
+      .min(1, "Request title is required")
+      .default("Deal Scoping Request"),
+    description: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // If sales channel is client_direct, advertiserName is required
+    if (data.salesChannel === "client_direct" && !data.advertiserName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Advertiser name is required for client direct sales",
+        path: ["advertiserName"],
+      });
+    }
+
+    // If sales channel is holding_company or independent_agency, agencyName is required
+    if (
+      (data.salesChannel === "holding_company" ||
+        data.salesChannel === "independent_agency") &&
+      !data.agencyName
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Agency name is required for agency sales",
+        path: ["agencyName"],
+      });
+    }
+  });
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
 
@@ -95,11 +124,11 @@ export default function RequestSupport() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("sales-channel");
-  
+
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
-  
+
   const form = useForm<DealScopingFormValues>({
     resolver: zodResolver(dealScopingSchema),
     defaultValues: {
@@ -113,82 +142,87 @@ export default function RequestSupport() {
       growthOpportunityClient: "",
       clientAsks: "",
       requestTitle: "Deal Scoping Request",
-      description: ""
+      description: "",
     },
-    mode: "onChange"
+    mode: "onChange",
   });
-  
+
   // Create deal scoping request mutation
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
-      
+
       // Add requestTitle if not present
       const formData = {
         ...data,
         requestTitle: data.requestTitle || "Deal Scoping Request",
-        description: data.description || `Request from ${data.email || 'unknown'}`
+        description:
+          data.description || `Request from ${data.email || "unknown"}`,
       };
-      
+
       const res = await fetch("/api/deal-scoping-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-        credentials: "include"
+        credentials: "include",
       });
-      
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`${res.status}: ${errorText || res.statusText}`);
       }
-      
+
       return await res.json();
     },
     onSuccess: () => {
       toast({
         title: "Request Submitted",
-        description: "Your deal scoping request has been submitted successfully. The partnership team will contact you shortly.",
+        description:
+          "Your deal scoping request has been submitted successfully. The partnership team will contact you shortly.",
       });
-      
+
       // Reset form and return to dashboard
       form.reset();
       navigate("/dashboard");
-      
+
       // Clear cached data
-      queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/deal-scoping-requests"],
+      });
     },
     onError: (error) => {
       toast({
         title: "Error Submitting Request",
-        description: "There was an error submitting your request. Please try again.",
+        description:
+          "There was an error submitting your request. Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   async function onSubmit(data: DealScopingFormValues) {
     createDealScopingRequest.mutate(data);
   }
-  
+
   function goToNextTab() {
     setActiveTab("growth-opportunity");
   }
-  
+
   function goToPrevTab() {
     setActiveTab("sales-channel");
   }
-  
+
   function goToDealSubmission() {
     navigate("/submit-deal");
   }
-  
+
   // Fetch agencies and advertisers on component mount
   useEffect(() => {
     async function fetchAgencies() {
       try {
         const response = await fetch("/api/agencies", {
           method: "GET",
-          credentials: "include"
+          credentials: "include",
         });
         if (!response.ok) {
           throw new Error("Failed to fetch agencies");
@@ -203,12 +237,12 @@ export default function RequestSupport() {
         });
       }
     }
-    
+
     async function fetchAdvertisers() {
       try {
         const response = await fetch("/api/advertisers", {
           method: "GET",
-          credentials: "include"
+          credentials: "include",
         });
         if (!response.ok) {
           throw new Error("Failed to fetch advertisers");
@@ -218,7 +252,8 @@ export default function RequestSupport() {
       } catch (error) {
         toast({
           title: "Error Fetching Advertisers",
-          description: "Could not load advertiser data. Please refresh the page.",
+          description:
+            "Could not load advertiser data. Please refresh the page.",
           variant: "destructive",
         });
       }
@@ -227,15 +262,17 @@ export default function RequestSupport() {
     fetchAgencies();
     fetchAdvertisers();
   }, [toast]);
-  
+
   return (
     <div className="p-6 rounded-lg bg-white shadow-md">
       {/* Header with info button */}
       <div className="mb-6">
         <div className="flex items-center mb-2">
           <h1 className="text-2xl font-bold text-slate-900">Deal Scoping</h1>
-          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Step 1 of 2</span>
-          
+          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+            Step 1 of 2
+          </span>
+
           <Popover>
             <PopoverTrigger asChild>
               <div className="ml-2 cursor-help">
@@ -244,83 +281,109 @@ export default function RequestSupport() {
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4" align="start">
               <div className="space-y-2">
-                <h4 className="font-medium text-slate-900">About Deal Scoping</h4>
-                <p className="text-sm text-slate-700">Deal scoping is the first step in our deal process:</p>
+                <h4 className="font-medium text-slate-900">
+                  About Deal Scoping
+                </h4>
+                <p className="text-sm text-slate-700">
+                  Deal scoping is the first step in our deal process:
+                </p>
                 <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
                   <li>Our partnership team reviews your request</li>
-                  <li>A team member contacts you to schedule a discovery call</li>
+                  <li>
+                    A team member contacts you to schedule a discovery call
+                  </li>
                   <li>Together, we craft a tailored proposal</li>
                   <li>Once aligned, you can proceed to deal submission</li>
                 </ol>
-                <p className="text-sm text-slate-700 mt-2">For assistance, contact the partnership team at partnerships@example.com</p>
+                <p className="text-sm text-slate-700 mt-2">
+                  For assistance, contact the partnership team at
+                  partnerships@example.com
+                </p>
               </div>
             </PopoverContent>
           </Popover>
         </div>
-        
+
         {/* Description */}
         <p className="mt-1 text-sm text-slate-500">
-          New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals.
+          New to the deal process? Start here to get help with scoping, pricing,
+          or technical aspects of your deals.
           <span className="block mt-1 text-primary">
-            Already familiar with the process? <button onClick={goToDealSubmission} className="underline font-medium">Skip straight to Deal Submission</button>
+            Already familiar with the process?{" "}
+            <button
+              onClick={goToDealSubmission}
+              className="underline font-medium"
+            >
+              Skip straight to Deal Submission
+            </button>
           </span>
         </p>
       </div>
-      
+
       {/* Form Progress - Simplified to ensure perfect centering */}
       <div className="mb-8">
         <div className="w-3/4 mx-auto relative">
           {/* Progress Bar */}
           <div className="flex items-center justify-between">
             {/* Step 1 */}
-            <div 
+            <div
               onClick={() => setActiveTab("sales-channel")}
               className={cn(
                 "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                activeTab === "sales-channel" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                activeTab === "sales-channel"
+                  ? "border-primary bg-primary text-white"
+                  : "border-slate-300 text-slate-500",
               )}
             >
               1
             </div>
-            
+
             {/* Connecting Line */}
-            <div className={cn(
-              "absolute h-1 bg-slate-200 left-10 right-10 top-5",
-              activeTab === "growth-opportunity" ? "bg-primary" : ""
-            )}></div>
-            
+            <div
+              className={cn(
+                "absolute h-1 bg-slate-200 left-10 right-10 top-5",
+                activeTab === "growth-opportunity" ? "bg-primary" : "",
+              )}
+            ></div>
+
             {/* Step 2 */}
-            <div 
+            <div
               onClick={() => setActiveTab("growth-opportunity")}
               className={cn(
                 "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                activeTab === "growth-opportunity" ? "border-primary bg-primary text-white" : "border-slate-300 text-slate-500"
+                activeTab === "growth-opportunity"
+                  ? "border-primary bg-primary text-white"
+                  : "border-slate-300 text-slate-500",
               )}
             >
               2
             </div>
           </div>
-          
+
           {/* Labels */}
           <div className="flex justify-between mt-2 text-sm">
             <div className="w-44 text-center" style={{ marginLeft: "-68px" }}>
-              <span 
-                onClick={() => setActiveTab("sales-channel")} 
+              <span
+                onClick={() => setActiveTab("sales-channel")}
                 className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap", 
-                  activeTab === "sales-channel" ? "font-medium text-primary" : "text-slate-600"
+                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
+                  activeTab === "sales-channel"
+                    ? "font-medium text-primary"
+                    : "text-slate-600",
                 )}
               >
                 Client Information
               </span>
             </div>
-            
+
             <div className="w-44 text-center" style={{ marginRight: "-68px" }}>
-              <span 
-                onClick={() => setActiveTab("growth-opportunity")} 
+              <span
+                onClick={() => setActiveTab("growth-opportunity")}
                 className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap", 
-                  activeTab === "growth-opportunity" ? "font-medium text-primary" : "text-slate-600"
+                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
+                  activeTab === "growth-opportunity"
+                    ? "font-medium text-primary"
+                    : "text-slate-600",
                 )}
               >
                 Opportunity Assessment
@@ -329,12 +392,16 @@ export default function RequestSupport() {
           </div>
         </div>
       </div>
-              
+
       {/* Form Card */}
       <Card className="border border-slate-200">
         <CardContent className="p-6">
           <Form {...form}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsContent value="sales-channel" className="space-y-6 pt-4">
                 <FormField
                   control={form.control}
@@ -343,20 +410,26 @@ export default function RequestSupport() {
                     <FormItem>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Your email address" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="Your email address"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="region"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
-                      <Select 
+                      <FormLabel>
+                        Region <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
@@ -368,7 +441,9 @@ export default function RequestSupport() {
                         <SelectContent>
                           <SelectItem value="northeast">Northeast</SelectItem>
                           <SelectItem value="midwest">Midwest</SelectItem>
-                          <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
+                          <SelectItem value="midatlantic">
+                            Mid-Atlantic
+                          </SelectItem>
                           <SelectItem value="south">South</SelectItem>
                           <SelectItem value="west">West</SelectItem>
                         </SelectContent>
@@ -383,8 +458,10 @@ export default function RequestSupport() {
                   name="salesChannel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sales Channel <span className="text-red-500">*</span></FormLabel>
-                      <Select 
+                      <FormLabel>
+                        Sales Channel <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
                         onValueChange={(value) => {
                           field.onChange(value);
                           // Reset related fields when changing sales channel
@@ -402,16 +479,22 @@ export default function RequestSupport() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="holding_company">Holding Company</SelectItem>
-                          <SelectItem value="independent_agency">Independent Agency</SelectItem>
-                          <SelectItem value="client_direct">Client Direct</SelectItem>
+                          <SelectItem value="holding_company">
+                            Holding Company
+                          </SelectItem>
+                          <SelectItem value="independent_agency">
+                            Independent Agency
+                          </SelectItem>
+                          <SelectItem value="client_direct">
+                            Client Direct
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 {/* Show Advertiser Name only if Client Direct is selected */}
                 {form.watch("salesChannel") === "client_direct" && (
                   <FormField
@@ -419,8 +502,11 @@ export default function RequestSupport() {
                     name="advertiserName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Advertiser Name <span className="text-red-500">*</span></FormLabel>
-                        <Select 
+                        <FormLabel>
+                          Advertiser Name{" "}
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
                           onValueChange={field.onChange}
                           value={field.value || ""}
                         >
@@ -430,8 +516,11 @@ export default function RequestSupport() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {advertisers.map(advertiser => (
-                              <SelectItem key={advertiser.id} value={advertiser.name}>
+                            {advertisers.map((advertiser) => (
+                              <SelectItem
+                                key={advertiser.id}
+                                value={advertiser.name}
+                              >
                                 {advertiser.name}
                               </SelectItem>
                             ))}
@@ -442,17 +531,19 @@ export default function RequestSupport() {
                     )}
                   />
                 )}
-                
+
                 {/* Show Agency Name only if Holding Company or Independent Agency is selected */}
-                {(form.watch("salesChannel") === "holding_company" || 
+                {(form.watch("salesChannel") === "holding_company" ||
                   form.watch("salesChannel") === "independent_agency") && (
                   <FormField
                     control={form.control}
                     name="agencyName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Agency Name <span className="text-red-500">*</span></FormLabel>
-                        <Select 
+                        <FormLabel>
+                          Agency Name <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
                           onValueChange={field.onChange}
                           value={field.value || ""}
                         >
@@ -462,7 +553,7 @@ export default function RequestSupport() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {agencies.map(agency => (
+                            {agencies.map((agency) => (
                               <SelectItem key={agency.id} value={agency.name}>
                                 {agency.name}
                               </SelectItem>
@@ -475,20 +566,26 @@ export default function RequestSupport() {
                   />
                 )}
               </TabsContent>
-              
-              <TabsContent value="growth-opportunity" className="space-y-6 pt-4">
+
+              <TabsContent
+                value="growth-opportunity"
+                className="space-y-6 pt-4"
+              >
                 <FormField
                   control={form.control}
                   name="growthOpportunityMIQ"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Growth Opportunity (MIQ) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>
+                        Growth Opportunity (MIQ){" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe the pathway to growth from our perspective"
                           className="resize-none"
                           rows={4}
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -498,20 +595,25 @@ export default function RequestSupport() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="growthAmbition"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>2025 Growth Ambition ($) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>
+                        2025 Growth Ambition ($){" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
+                        <Input
+                          type="number"
                           min="1000000"
-                          placeholder="Enter amount (minimum $1M)" 
+                          placeholder="Enter amount (minimum $1M)"
                           {...field}
-                          onChange={e => field.onChange(parseFloat(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -521,29 +623,33 @@ export default function RequestSupport() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="growthOpportunityClient"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Growth Opportunity (Client) <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>
+                        Growth Opportunity (Client){" "}
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe how the client is looking to grow their business AND with MIQ"
                           className="resize-none"
                           rows={4}
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        How is the client looking to grow their business AND with MIQ?
+                        How is the client looking to grow their business AND
+                        with MIQ?
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="clientAsks"
@@ -551,11 +657,11 @@ export default function RequestSupport() {
                     <FormItem>
                       <FormLabel>Client Asks</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Describe what the client has asked from us (if applicable)"
                           className="resize-none"
                           rows={4}
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -570,35 +676,30 @@ export default function RequestSupport() {
           </Form>
         </CardContent>
       </Card>
-      
+
       {/* Navigation Buttons - Completely moved outside card and form */}
       <div className="mt-5">
         {activeTab === "sales-channel" && (
           <div className="flex justify-end">
-            <Button 
-              type="button" 
-              onClick={goToNextTab}
-            >
+            <Button type="button" onClick={goToNextTab}>
               Next: Growth Opportunity
             </Button>
           </div>
         )}
-        
+
         {activeTab === "growth-opportunity" && (
           <div className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={goToPrevTab}
-            >
+            <Button type="button" variant="outline" onClick={goToPrevTab}>
               Previous: Client Information
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={form.handleSubmit(onSubmit)}
               disabled={createDealScopingRequest.isPending}
             >
-              {createDealScopingRequest.isPending ? "Submitting..." : "Submit Request"}
+              {createDealScopingRequest.isPending
+                ? "Submitting..."
+                : "Submit Request"}
             </Button>
           </div>
         )}
