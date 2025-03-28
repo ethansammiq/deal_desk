@@ -748,7 +748,7 @@ export default function SubmitDeal() {
       if (dealTypeError || businessSummaryError || salesChannelError || regionError || conditionalError) {
         toast({
           title: "Validation Error",
-          description: "Please fix the errors in the Deal Details section before continuing.",
+          description: "Please fix the errors in the Deal Overview section before continuing.",
           variant: "destructive",
         });
         return false;
@@ -775,7 +775,7 @@ export default function SubmitDeal() {
       if (dealStructureError || termStartDateError || termEndDateError) {
         toast({
           title: "Validation Error",
-          description: "Please fix the errors in the Deal Structure & Pricing section before continuing.",
+          description: "Please fix the errors in the Value Structure section before continuing.",
           variant: "destructive",
         });
         return false;
@@ -943,7 +943,7 @@ export default function SubmitDeal() {
                   formStep === 0 ? "font-medium text-primary" : "text-slate-600"
                 )}
               >
-                Deal Details
+                Deal Overview
               </span>
             </div>
             
@@ -955,7 +955,7 @@ export default function SubmitDeal() {
                   formStep === 1 ? "font-medium text-primary" : "text-slate-600"
                 )}
               >
-                Deal Structure & Pricing
+                Value Structure
               </span>
             </div>
             
@@ -978,7 +978,7 @@ export default function SubmitDeal() {
       <Card>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {/* Step 1: Deal Details */}
+            {/* Step 1: Deal Overview */}
             {formStep === 0 && (
               <CardContent className="p-6">
                 <div className="mb-6">
@@ -1211,7 +1211,7 @@ export default function SubmitDeal() {
                     />
                   </div>
 
-                  {/* Deal Structure moved from Deal Structure & Pricing as requested */}
+                  {/* Deal Structure moved from Value Structure as requested */}
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
                     <FormField
                       control={form.control}
@@ -1244,7 +1244,7 @@ export default function SubmitDeal() {
                       )}
                     />
                     
-                    {/* Contract Term Field moved from Deal Structure & Pricing */}
+                    {/* Contract Term Field moved from Value Structure */}
                     <FormField
                       control={form.control}
                       name="contractTerm"
@@ -1299,17 +1299,17 @@ export default function SubmitDeal() {
                 
                 <div className="mt-8 flex justify-end">
                   <Button type="button" onClick={nextStep}>
-                    Next: Deal Structure & Pricing
+                    Next: Value Structure
                   </Button>
                 </div>
               </CardContent>
             )}
             
-            {/* Step 2: Deal Structure & Pricing */}
+            {/* Step 2: Value Structure */}
             {formStep === 1 && (
               <CardContent className="p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">Deal Structure & Pricing</h2>
+                  <h2 className="text-lg font-medium text-slate-900">Value Structure</h2>
                   <p className="mt-1 text-sm text-slate-500">Define the structure and financial terms for this deal</p>
                 </div>
                 
@@ -1327,11 +1327,11 @@ export default function SubmitDeal() {
                   
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
-                  {/* Deal Structure & Pricing Card */}
+                  {/* Value Structure Card */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Deal Structure & Pricing</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Value Structure</h3>
                     
-                    {/* Deal Structure and Contract Term fields have been moved to Deal Details section */}
+                    {/* Deal Structure and Contract Term fields have been moved to Deal Overview section */}
 
                     {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                     <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
@@ -2329,7 +2329,7 @@ export default function SubmitDeal() {
                     variant="outline"
                     onClick={prevStep}
                   >
-                    Previous: Deal Details
+                    Previous: Deal Overview
                   </Button>
                   <Button 
                     type="button"
