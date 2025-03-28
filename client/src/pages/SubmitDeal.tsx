@@ -1327,12 +1327,7 @@ export default function SubmitDeal() {
                   
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   
-                  {/* Value Structure Card */}
-                  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Structure</h3>
-                    
-                    {/* Deal Structure and Contract Term fields have been moved to Deal Overview section */}
-                  </div>
+                  {/* Structure card removed as it's now empty since fields were moved to Deal Overview */}
 
                   {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                   <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
