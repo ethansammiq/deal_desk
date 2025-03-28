@@ -1697,8 +1697,15 @@ export default function SubmitDeal() {
                       
                         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
                           <Info className="h-4 w-4 inline mr-2" />
-                          The tier structure represents revenue commitments and associated margin impact.
-                          Each tier should have a progressive revenue target and corresponding margin impact.
+                          <div className="font-medium mb-1">Revenue & Profitability Metrics</div>
+                          <ul className="list-disc ml-6 space-y-1">
+                            <li><span className="font-medium">Annual Revenue:</span> Projected annual revenue for each tier commitment level</li>
+                            <li><span className="font-medium">Gross Margin:</span> Percentage of revenue that represents gross margin</li>
+                            <li><span className="font-medium">Gross Profit:</span> Calculated dollar amount of gross profit (Revenue × Margin %)</li>
+                            <li><span className="font-medium">Revenue Growth Rate:</span> Percentage change in revenue compared to last year</li>
+                            <li><span className="font-medium">Gross Margin Growth Rate:</span> Percentage point change in margin compared to last year</li>
+                            <li><span className="font-medium">Gross Profit Growth Rate:</span> Percentage change in gross profit compared to last year</li>
+                          </ul>
                         </div>
                       </div>
                     </div> {/* Close revenue-section div */}
@@ -1860,6 +1867,17 @@ export default function SubmitDeal() {
                                 </tr>
                               </tbody>
                             </table>
+                          </div>
+                          
+                          <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+                            <Info className="h-4 w-4 inline mr-2" />
+                            <div className="font-medium mb-1">Cost & Value Analysis Metrics</div>
+                            <ul className="list-disc ml-6 space-y-1">
+                              <li><span className="font-medium">Total Incentive Cost:</span> Combined cost of all incentives applied to this tier</li>
+                              <li><span className="font-medium">Total Client Value:</span> Projected value calculation (40% of tier revenue)</li>
+                              <li><span className="font-medium">Cost Growth Rate:</span> Percentage change in incentive costs compared to last year</li>
+                              <li><span className="font-medium">Client Value Growth Rate:</span> Percentage change in client value compared to last year</li>
+                            </ul>
                           </div>
                         </div>
                         
