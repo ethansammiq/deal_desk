@@ -1332,8 +1332,10 @@ export default function SubmitDeal() {
                     <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Structure</h3>
                     
                     {/* Deal Structure and Contract Term fields have been moved to Deal Overview section */}
+                  </div>
 
-                    {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
+                  {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
+                  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
@@ -1731,9 +1733,12 @@ export default function SubmitDeal() {
 
                       </div>
                     </div> {/* Close revenue-section div */}
+                    </div>
+                  </div> {/* Close Revenue & Profitability Section */}
                     
-                    {/* Incentives Section - Separate Box - Now at the same level as Revenue Structure */}
-                    <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
+                  {/* Incentives Section - Now outside Structure container */}
+                  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                       {/* Incentives section header with collapsible control */}
                       <div className="flex items-center justify-between mb-4">
                           <div 
@@ -2191,7 +2196,6 @@ export default function SubmitDeal() {
                     </div>
                   )}
                 </div>
-                </div> {/* This is the closing tag for the div that opened on line 869 */}
                 
                 {/* Financial Summary Table - Calculated values for each tier */}
                 <div className="mt-8 mb-6 bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
