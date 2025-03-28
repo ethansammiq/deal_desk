@@ -1493,9 +1493,9 @@ export default function SubmitDeal() {
                                 ))}
                               </tr>
                               
-                              {/* Gross Margin (Base) Row */}
+                              {/* Gross Margin Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin (Base)</td>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin</td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year margin
@@ -1550,9 +1550,9 @@ export default function SubmitDeal() {
                                 ))}
                               </tr>
                               
-                              {/* Gross Profit (Base) Row */}
+                              {/* Gross Profit Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit (Base)</td>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit</td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year revenue and margin
