@@ -167,17 +167,15 @@ export function StandardDealCriteriaHelp() {
       
       <h4 className="text-sm font-medium mt-4 mb-2 flex items-center">
         <Info className="h-4 w-4 mr-2 text-blue-500" />
-        Complete Approval Workflow
+        Approval Workflow
       </h4>
       <p className="text-xs text-slate-600 mb-2">
-        All deals go through the following approval sequence:
+        Deals are approved by one of the following:
       </p>
-      <ol className="text-xs text-slate-700 pl-5 space-y-1 list-decimal">
-        <li><span className="font-medium">Regional Director</span>: Initial review for regional fit and strategy alignment (1-2 days)</li>
-        <li><span className="font-medium">Finance Department</span>: Reviews financial terms and profitability (1-3 days)</li>
-        <li><span className="font-medium">Legal Department</span>: Reviews contract terms and compliance for high-value deals (2-3 days)</li>
-        <li><span className="font-medium">Final Approval</span>: Either Managing Director (standard deals) or Executive Committee (non-standard deals)</li>
-      </ol>
+      <ul className="text-xs text-slate-700 pl-5 space-y-1 list-disc">
+        <li><span className="font-medium">Managing Director</span>: Approves standard deals (1-2 business days)</li>
+        <li><span className="font-medium">Executive Committee</span>: Approves non-standard deals (3-5 business days)</li>
+      </ul>
     </div>
   );
 }
