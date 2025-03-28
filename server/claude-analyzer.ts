@@ -56,8 +56,16 @@ export async function generateStructuredResponse(
 export async function analyzeDeal(dealData: any): Promise<any> {
   const systemPrompt = `You are an AI-powered Deal Analyzer for a commercial deals platform. 
   Evaluate the deal data provided and give concise, precise insights on revenue growth, 
-  margin improvement, profitability, and overall value. Format your response as JSON 
-  with the following structure:
+  margin improvement, profitability, and overall value. 
+  
+  When evaluating deals, consider the following approval criteria:
+  - Standard deals (recommend "approve"): "Grow" deal type, Independent Agency or Client Direct sales channel, projected annual spend under $500,000
+  - Non-standard deals (recommend "review"): Any deal that doesn't meet all standard criteria
+  - Problematic deals (recommend "reject"): Deals with negative profit forecasts or other critical issues
+  
+  Standard deals can be approved by Managing Directors (1-2 business days), while non-standard deals require Executive Committee approval (3-5 business days).
+  
+  Format your response as JSON with the following structure:
   {
     "revenueGrowth": {
       "score": number (1-10),
@@ -114,6 +122,15 @@ export async function analyzeDeal(dealData: any): Promise<any> {
 export async function getDealRecommendations(dealData: any): Promise<any> {
   const systemPrompt = `You are an AI-powered Deal Recommendation Engine. Based on the 
   deal data provided, suggest optimizations and incentives that might improve the deal. 
+  
+  Consider the approval workflow for deals:
+  - Standard deals: "Grow" deal type, Independent Agency or Client Direct sales channel, projected annual spend under $500,000
+    - These deals can be approved by Managing Directors (1-2 business days)
+  - Non-standard deals: Any deal that doesn't meet all standard criteria
+    - These deals require Executive Committee approval (3-5 business days)
+  
+  When possible, suggest optimizations that would help move a deal into the standard approval category.
+  
   Include hypothetical similar past deals that were successful. Format your response as JSON 
   with the following structure:
   {
@@ -125,7 +142,12 @@ export async function getDealRecommendations(dealData: any): Promise<any> {
     ],
     "similarDeals": [
       {"name": "string", "outcome": "string", "keyLearning": "string"}
-    ]
+    ],
+    "approvalPath": {
+      "currentCategory": "standard" | "non-standard",
+      "approver": "Managing Director" | "Executive Committee",
+      "estimatedTime": "string"
+    }
   }
   
   Your response should be valid JSON without any additional text. Do not include markdown formatting or explanations outside the JSON structure.`;
@@ -146,7 +168,12 @@ export async function getDealRecommendations(dealData: any): Promise<any> {
         { area: "General", suggestion: "Recommendations unavailable", impact: "N/A" }
       ],
       recommendedIncentives: [],
-      similarDeals: []
+      similarDeals: [],
+      approvalPath: {
+        currentCategory: "non-standard",
+        approver: "Executive Committee",
+        estimatedTime: "3-5 business days"
+      }
     };
   }
 }
@@ -158,8 +185,15 @@ export async function getDealRecommendations(dealData: any): Promise<any> {
  */
 export async function getMarketAnalysis(dealData: any): Promise<any> {
   const systemPrompt = `You are an AI-powered Market Analyst. Based on the deal data provided, 
-  provide current market analysis that might impact this deal. Format your response as JSON 
-  with the following structure:
+  provide current market analysis that might impact this deal.
+  
+  Consider how market conditions affect the approval prospects:
+  - Standard deals: "Grow" deal type, Independent Agency or Client Direct sales channel, projected annual spend under $500,000
+    - These deals can be approved by Managing Directors (1-2 business days)
+  - Non-standard deals: Any deal that doesn't meet all standard criteria
+    - These deals require Executive Committee approval (3-5 business days)
+    
+  Format your response as JSON with the following structure:
   {
     "marketTrends": [
       {"trend": "string", "impact": "string", "recommendation": "string"}
@@ -172,7 +206,12 @@ export async function getMarketAnalysis(dealData: any): Promise<any> {
     },
     "risks": [
       {"type": "string", "description": "string", "mitigationStrategy": "string"}
-    ]
+    ],
+    "approvalConsiderations": {
+      "marketFactors": "string explaining how current market conditions might affect approval",
+      "suggestedApprovalPath": "Managing Director" | "Executive Committee",
+      "reasoning": "string explaining the recommendation"
+    }
   }
   
   Your response should be valid JSON without any additional text. Do not include markdown formatting or explanations outside the JSON structure.`;
@@ -196,7 +235,12 @@ export async function getMarketAnalysis(dealData: any): Promise<any> {
         summary: "Competitive analysis unavailable",
         keyCompetitors: []
       },
-      risks: []
+      risks: [],
+      approvalConsiderations: {
+        marketFactors: "Market analysis unavailable to evaluate approval considerations",
+        suggestedApprovalPath: "Executive Committee",
+        reasoning: "Default to Executive Committee when market analysis is unavailable, as comprehensive review is recommended without complete information"
+      }
     };
   }
 }

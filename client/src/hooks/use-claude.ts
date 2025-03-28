@@ -24,6 +24,53 @@ interface DealAnalysis {
   summary: string;
 }
 
+interface DealRecommendation {
+  optimizations: Array<{
+    area: string;
+    suggestion: string;
+    impact: string;
+  }>;
+  recommendedIncentives: Array<{
+    name: string;
+    reason: string;
+  }>;
+  similarDeals: Array<{
+    name: string;
+    outcome: string;
+    keyLearning: string;
+  }>;
+  approvalPath: {
+    currentCategory: "standard" | "non-standard";
+    approver: "Managing Director" | "Executive Committee";
+    estimatedTime: string;
+  };
+}
+
+interface MarketAnalysis {
+  marketTrends: Array<{
+    trend: string;
+    impact: string;
+    recommendation: string;
+  }>;
+  competitiveAnalysis: {
+    summary: string;
+    keyCompetitors: Array<{
+      name: string;
+      strategy: string;
+    }>;
+  };
+  risks: Array<{
+    type: string;
+    description: string;
+    mitigationStrategy: string;
+  }>;
+  approvalConsiderations: {
+    marketFactors: string;
+    suggestedApprovalPath: "Managing Director" | "Executive Committee";
+    reasoning: string;
+  };
+}
+
 export function useClaude(options: UseClaudeOptions = {}) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,12 +125,12 @@ export function useClaude(options: UseClaudeOptions = {}) {
     }
   }, []);
 
-  const getDealRecommendations = useCallback(async (dealData: any) => {
+  const getDealRecommendations = useCallback(async (dealData: any): Promise<DealRecommendation> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await apiRequest('/api/ai/deal-recommendations', {
+      const result = await apiRequest<DealRecommendation>('/api/ai/deal-recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dealData),
@@ -99,12 +146,12 @@ export function useClaude(options: UseClaudeOptions = {}) {
     }
   }, []);
 
-  const getMarketAnalysis = useCallback(async (dealData: any) => {
+  const getMarketAnalysis = useCallback(async (dealData: any): Promise<MarketAnalysis> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await apiRequest('/api/ai/market-analysis', {
+      const result = await apiRequest<MarketAnalysis>('/api/ai/market-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dealData),
