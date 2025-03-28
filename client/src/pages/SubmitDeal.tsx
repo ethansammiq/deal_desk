@@ -1413,13 +1413,20 @@ export default function SubmitDeal() {
                         </div>
                         
                         <div className="overflow-x-auto">
-                          <table className="w-full border-collapse">
+                          <table className="w-full border-collapse table-fixed">
+                            <colgroup>
+                              <col className="w-[30%]" />
+                              <col className="w-[14%]" />
+                              {dealTiers.map((tier) => (
+                                <col key={`col-${tier.tierNumber}`} className="w-[14%]" />
+                              ))}
+                            </colgroup>
                             <thead>
                               <tr>
-                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3"></th>
-                                <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                                <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
                                 {dealTiers.map((tier) => (
-                                  <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
+                                  <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200">
                                     <div className="flex justify-between items-center">
                                       <span className="flex-1">Tier {tier.tierNumber}</span>
                                       {tier.tierNumber > 1 && (
@@ -1786,13 +1793,20 @@ export default function SubmitDeal() {
                         <div className="mt-4 mb-6">
                           <h4 className="text-sm font-medium text-gray-500 mb-3">Cost & Value Analysis</h4>
                           <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
+                            <table className="w-full border-collapse table-fixed">
+                              <colgroup>
+                                <col className="w-[30%]" />
+                                <col className="w-[14%]" />
+                                {dealTiers.map((tier) => (
+                                  <col key={`col-cost-${tier.tierNumber}`} className="w-[14%]" />
+                                ))}
+                              </colgroup>
                               <thead>
                                 <tr>
-                                  <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Metric</th>
-                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                  <th className="text-left p-3 bg-slate-100 border border-slate-200">Metric</th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
                                   {dealTiers.map(tier => (
-                                    <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
+                                    <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
                                       Tier {tier.tierNumber}
                                     </th>
                                   ))}
@@ -2138,13 +2152,20 @@ export default function SubmitDeal() {
                   </h3>
                   
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse table-fixed">
+                      <colgroup>
+                        <col className="w-[30%]" />
+                        <col className="w-[14%]" />
+                        {dealTiers.map((tier) => (
+                          <col key={`col-summary-${tier.tierNumber}`} className="w-[14%]" />
+                        ))}
+                      </colgroup>
                       <thead>
                         <tr>
-                          <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Financial Metric</th>
-                          <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                          <th className="text-left p-3 bg-slate-100 border border-slate-200">Financial Metric</th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
                           {dealTiers.map(tier => (
-                            <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
+                            <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
                               Tier {tier.tierNumber}
                             </th>
                           ))}
@@ -2485,13 +2506,20 @@ export default function SubmitDeal() {
                       {dealTiers.length > 0 && (
                         <div>
                           <div className="overflow-x-auto">
-                            <table className="w-full border-collapse text-sm">
+                            <table className="w-full border-collapse table-fixed text-sm">
+                              <colgroup>
+                                <col className="w-[30%]" />
+                                <col className="w-[14%]" />
+                                {dealTiers.map((tier) => (
+                                  <col key={`col-review-${tier.tierNumber}`} className="w-[14%]" />
+                                ))}
+                              </colgroup>
                               <thead>
                                 <tr>
                                   <th className="text-left p-2 bg-slate-100 border border-slate-200"></th>
-                                  <th className="text-left p-2 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
+                                  <th className="text-center p-2 bg-slate-100 border border-slate-200">Last Year</th>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
-                                    <th key={tier.tierNumber} className="text-left p-2 bg-slate-100 border border-slate-200 w-1/5">
+                                    <th key={tier.tierNumber} className="text-center p-2 bg-slate-100 border border-slate-200">
                                       Tier {tier.tierNumber}
                                     </th>
                                   ))}
@@ -2501,11 +2529,11 @@ export default function SubmitDeal() {
                                 {/* Annual Revenue */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Annual Revenue</td>
-                                  <td className="p-2 border border-slate-200">
+                                  <td className="p-2 border border-slate-200 text-center">
                                     {formatCurrency(850000)}
                                   </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
-                                    <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                    <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                       {formatCurrency(tier.annualRevenue || 0)}
                                     </td>
                                   ))}
@@ -2514,7 +2542,7 @@ export default function SubmitDeal() {
                                 {/* Revenue Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Revenue Growth Rate</td>
-                                  <td className="p-2 border border-slate-200">--</td>
+                                  <td className="p-2 border border-slate-200 text-center">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     // Find previous year revenue for actual revenue growth calculation
                                     let previousYearRevenue = 850000; // Default to mock value
@@ -2540,7 +2568,7 @@ export default function SubmitDeal() {
                                       : 0;
                                     
                                     return (
-                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                         <span className={revenueGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
                                           {(revenueGrowthRate * 100).toFixed(1)}%
                                         </span>
@@ -2552,7 +2580,7 @@ export default function SubmitDeal() {
                                 {/* Gross Margin Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Gross Margin Growth Rate</td>
-                                  <td className="p-2 border border-slate-200">--</td>
+                                  <td className="p-2 border border-slate-200 text-center">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     // Get previous year margin
                                     const previousYearMargin = getPreviousYearMargin() / 100;
@@ -2562,7 +2590,7 @@ export default function SubmitDeal() {
                                     const marginGrowthRate = previousYearMargin > 0 ? (currentMargin / previousYearMargin) - 1 : 0;
                                     
                                     return (
-                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                         <span className={marginGrowthRate > 0 ? "text-green-600" : "text-red-600"}>
                                           {(marginGrowthRate * 100).toFixed(1)}%
                                         </span>
@@ -2574,13 +2602,13 @@ export default function SubmitDeal() {
                                 {/* Total Incentive Cost */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Total Incentive Cost</td>
-                                  <td className="p-2 border border-slate-200">
+                                  <td className="p-2 border border-slate-200 text-center">
                                     {formatCurrency(getPreviousYearIncentiveCost())}
                                   </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
                                     return (
-                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                         {formatCurrency(incentiveCost)}
                                       </td>
                                     );
@@ -2590,7 +2618,7 @@ export default function SubmitDeal() {
                                 {/* Adjusted Gross Profit */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Adjusted Gross Profit</td>
-                                  <td className="p-2 border border-slate-200">
+                                  <td className="p-2 border border-slate-200 text-center">
                                     {formatCurrency(getPreviousYearAdjustedGrossProfit())}
                                   </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
@@ -2599,7 +2627,7 @@ export default function SubmitDeal() {
                                     const adjustedProfit = grossProfit - incentiveCost;
                                     
                                     return (
-                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                         {formatCurrency(adjustedProfit)}
                                       </td>
                                     );
@@ -2609,7 +2637,7 @@ export default function SubmitDeal() {
                                 {/* Client Value Growth Rate */}
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Client Value Growth Rate</td>
-                                  <td className="p-2 border border-slate-200">--</td>
+                                  <td className="p-2 border border-slate-200 text-center">--</td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     // Using a fixed calculation for client value as 40% of revenue
                                     const clientValue = (tier.annualRevenue || 0) * 0.4;
@@ -2617,7 +2645,7 @@ export default function SubmitDeal() {
                                     const growthRate = (clientValue / lastYearValue) - 1;
                                     
                                     return (
-                                      <td key={tier.tierNumber} className="p-2 border border-slate-200">
+                                      <td key={tier.tierNumber} className="p-2 border border-slate-200 text-center">
                                         <span className={growthRate > 0 ? "text-green-600" : "text-red-600"}>
                                           {(growthRate * 100).toFixed(1)}%
                                         </span>
