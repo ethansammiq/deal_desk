@@ -1790,9 +1790,9 @@ export default function SubmitDeal() {
                               <thead>
                                 <tr>
                                   <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Metric</th>
-                                  <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                                  <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                                   {dealTiers.map(tier => (
-                                    <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
+                                    <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                                       Tier {tier.tierNumber}
                                     </th>
                                   ))}
@@ -2006,7 +2006,7 @@ export default function SubmitDeal() {
                             <thead>
                               <tr>
                                 <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Field</th>
-                                <th className="text-left p-3 bg-slate-100 border border-slate-200">Current</th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-2/3">Current</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2142,9 +2142,9 @@ export default function SubmitDeal() {
                       <thead>
                         <tr>
                           <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">Financial Metric</th>
-                          <th className="text-center p-3 bg-slate-100 border border-slate-200">Last Year</th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                           {dealTiers.map(tier => (
-                            <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200">
+                            <th key={tier.tierNumber} className="text-center p-3 bg-slate-100 border border-slate-200 w-1/5">
                               Tier {tier.tierNumber}
                             </th>
                           ))}
@@ -2489,9 +2489,9 @@ export default function SubmitDeal() {
                               <thead>
                                 <tr>
                                   <th className="text-left p-2 bg-slate-100 border border-slate-200"></th>
-                                  <th className="text-left p-2 bg-slate-100 border border-slate-200">Last Year</th>
+                                  <th className="text-left p-2 bg-slate-100 border border-slate-200 w-1/5">Last Year</th>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => (
-                                    <th key={tier.tierNumber} className="text-left p-2 bg-slate-100 border border-slate-200">
+                                    <th key={tier.tierNumber} className="text-left p-2 bg-slate-100 border border-slate-200 w-1/5">
                                       Tier {tier.tierNumber}
                                     </th>
                                   ))}
