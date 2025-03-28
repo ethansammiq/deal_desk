@@ -1768,7 +1768,7 @@ export default function SubmitDeal() {
                                     <div className="text-xs text-slate-500">All incentives applied to this tier</div>
                                   </td>
                                   <td className="p-3 border border-slate-200 text-center">
-                                    {formatCurrency(0)} {/* Last year value */}
+                                    {formatCurrency(getPreviousYearIncentiveCost())} {/* Last year value - 50,000 */}
                                   </td>
                                   {dealTiers.map(tier => {
                                     // Calculate total incentive cost for this tier
@@ -2536,7 +2536,7 @@ export default function SubmitDeal() {
                                 <tr>
                                   <td className="p-2 border border-slate-200 font-medium">Total Incentive Cost</td>
                                   <td className="p-2 border border-slate-200">
-                                    {formatCurrency(0)}
+                                    {formatCurrency(getPreviousYearIncentiveCost())}
                                   </td>
                                   {dealTiers.filter(tier => tier.annualRevenue).map(tier => {
                                     const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
