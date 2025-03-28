@@ -529,6 +529,7 @@ export default function SubmitDeal() {
   
   // State for tier-specific incentives (volume discount, rebates, etc.)
   const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>([]);
+  const [showAddIncentiveForm, setShowAddIncentiveForm] = useState<boolean>(false);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -1851,10 +1852,23 @@ export default function SubmitDeal() {
                         
                         {/* Hierarchical Incentive Selector */}
                         <div>
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-sm font-medium text-gray-500">Incentive Structure</h4>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex items-center gap-1"
+                              onClick={() => setShowAddIncentiveForm(!showAddIncentiveForm)}
+                            >
+                              <Plus className="h-4 w-4" /> 
+                              Add New Incentive
+                            </Button>
+                          </div>
                           <IncentiveSelector 
                             selectedIncentives={selectedIncentives}
                             dealTiers={dealTiers}
                             onChange={handleIncentiveChange}
+                            showAddForm={showAddIncentiveForm}
                           />
                         </div>
                       </div>
