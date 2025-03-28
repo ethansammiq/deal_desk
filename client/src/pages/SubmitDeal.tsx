@@ -1330,7 +1330,7 @@ export default function SubmitDeal() {
                       />
                     </div>
 
-                    {/* Collapsible Revenue Structure Section - Default for all deal structures */}
+                    {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
                     <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 transition-all">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
@@ -1351,7 +1351,7 @@ export default function SubmitDeal() {
                           }
                         }}
                       >
-                        <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Revenue Structure</h3>
+                        <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">Revenue & Profitability</h3>
                         <svg 
                           id="revenue-chevron"
                           xmlns="http://www.w3.org/2000/svg" 
