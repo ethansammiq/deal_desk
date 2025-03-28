@@ -2177,8 +2177,8 @@ export default function SubmitDeal() {
                             // Get previous year margin for comparison
                             const previousYearMargin = getPreviousYearMargin() / 100;
                             
-                            // Calculate growth rate
-                            const marginGrowthRate = previousYearMargin > 0 ? (adjustedMargin / previousYearMargin) - 1 : 0;
+                            // Calculate growth rate (difference in percentage points)
+                            const marginGrowthRate = adjustedMargin - previousYearMargin;
                             
                             return (
                               <td key={tier.tierNumber} className="p-3 border border-slate-200 text-center">
