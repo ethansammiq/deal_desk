@@ -1228,7 +1228,7 @@ export default function SubmitDeal() {
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select deal structure" />
+                                <SelectValue placeholder="Choose tiered or flat commit structure" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -1256,6 +1256,7 @@ export default function SubmitDeal() {
                               type="number"
                               min="1"
                               max="60"
+                              placeholder="Enter contract duration in months (e.g., 12, 24, 36)"
                               {...field}
                               onChange={(e) => {
                                 const value = parseInt(e.target.value);
