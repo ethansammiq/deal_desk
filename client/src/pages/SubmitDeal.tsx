@@ -1443,7 +1443,10 @@ export default function SubmitDeal() {
                             <tbody>
                               {/* Annual Revenue Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Annual Revenue</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Annual Revenue</div>
+                                  <div className="text-xs text-slate-500">Total revenue expected for the fiscal year</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year revenue
@@ -1495,7 +1498,10 @@ export default function SubmitDeal() {
                               
                               {/* Gross Margin Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Gross Margin</div>
+                                  <div className="text-xs text-slate-500">Percentage of revenue retained after direct costs</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year margin
@@ -1552,7 +1558,10 @@ export default function SubmitDeal() {
                               
                               {/* Gross Profit Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Gross Profit</div>
+                                  <div className="text-xs text-slate-500">Actual dollar amount retained after direct costs</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   {(() => {
                                     // Find previous year revenue and margin
@@ -1597,7 +1606,10 @@ export default function SubmitDeal() {
                               
                               {/* Revenue Growth Rate Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Revenue Growth Rate</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Revenue Growth Rate</div>
+                                  <div className="text-xs text-slate-500">Percentage increase compared to last year</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   <div className="text-slate-700">-</div>
                                 </td>
@@ -1621,7 +1633,10 @@ export default function SubmitDeal() {
                               
                               {/* Gross Margin Growth Rate Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Margin Growth Rate</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Gross Margin Growth Rate</div>
+                                  <div className="text-xs text-slate-500">Change in margin percentage vs last year</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   <div className="text-slate-700">-</div>
                                 </td>
@@ -1641,7 +1656,10 @@ export default function SubmitDeal() {
                               
                               {/* Gross Profit Growth Rate Row */}
                               <tr>
-                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">Gross Profit Growth Rate</td>
+                                <td className="p-3 border border-slate-200 bg-slate-50">
+                                  <div className="font-medium">Gross Profit Growth Rate</div>
+                                  <div className="text-xs text-slate-500">Change in dollar profit amount vs last year</div>
+                                </td>
                                 <td className="p-3 border border-slate-200 text-center">
                                   <div className="text-slate-700">-</div>
                                 </td>
