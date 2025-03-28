@@ -1775,7 +1775,12 @@ export default function SubmitDeal() {
                       
                       {/* Incentive Values section - with table and IncentiveSelector component */}
                       <div id="incentives-section" className="transition-all h-auto space-y-6">
-                        {/* Add Incentive button moved to top with header */}
+                        {/* Incentive Structure help text */}
+                        <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+                          <Info className="h-4 w-4 inline mr-2" />
+                          Incentives are additional benefits provided to the client based on performance.
+                          Select appropriate incentive types and amounts for each tier of the deal.
+                        </div>
                         
                         {/* Financial metrics table */}
                         <div className="mt-4 mb-6">
