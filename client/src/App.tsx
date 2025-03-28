@@ -4,7 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
-import SubmitDeal from "@/pages/SubmitDeal";
+// Import our test component instead of the regular SubmitDeal
+import TestForm from "@/pages/SubmitDeal.test";
 import RequestSupport from "@/pages/RequestSupport";
 import HelpResources from "@/pages/HelpResources";
 import Home from "@/pages/Home";
@@ -52,7 +53,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/support" component={RequestSupport} />
         <Route path="/request-support" component={RequestSupport} />
-        <Route path="/submit-deal" component={SubmitDeal} />
+        <Route path="/submit-deal" component={TestForm} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/help" component={HelpResources} />
         <Route path="/deals" component={Dashboard} />
