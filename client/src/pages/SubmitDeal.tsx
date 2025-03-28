@@ -1760,7 +1760,7 @@ export default function SubmitDeal() {
                         
                         {/* Financial metrics table */}
                         <div className="mt-4 mb-6">
-                          <h4 className="text-sm font-medium text-gray-500 mb-3">Key Financial Metrics</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-3">Cost & Value Analysis</h4>
                           <div className="overflow-x-auto">
                             <table className="w-full border-collapse">
                               <thead>
