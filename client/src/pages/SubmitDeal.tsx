@@ -1745,6 +1745,20 @@ export default function SubmitDeal() {
                       
                       {/* Incentive Values section - with table and IncentiveSelector component */}
                       <div id="incentives-section" className="transition-all h-auto space-y-6">
+                        {/* Add New Incentive button above Financial metrics */}
+                        <div className="flex justify-end mt-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            type="button"
+                            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+                            onClick={() => setShowAddIncentiveForm(!showAddIncentiveForm)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add New Incentive
+                          </Button>
+                        </div>
+                        
                         {/* Financial metrics table */}
                         <div className="mt-4 mb-6">
                           <h4 className="text-sm font-medium text-gray-500 mb-3">Key Financial Metrics</h4>
@@ -1852,17 +1866,8 @@ export default function SubmitDeal() {
                         
                         {/* Hierarchical Incentive Selector */}
                         <div>
-                          <div className="flex justify-between items-center mb-4">
+                          <div className="mb-4">
                             <h4 className="text-sm font-medium text-gray-500">Incentive Structure</h4>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex items-center gap-1"
-                              onClick={() => setShowAddIncentiveForm(!showAddIncentiveForm)}
-                            >
-                              <Plus className="h-4 w-4" /> 
-                              Add New Incentive
-                            </Button>
                           </div>
                           <IncentiveSelector 
                             selectedIncentives={selectedIncentives}
