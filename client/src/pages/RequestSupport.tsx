@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
+import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
 
 // Schema for deal scoping requests
 const dealScopingSchema = z
@@ -265,133 +266,54 @@ export default function RequestSupport() {
 
   return (
     <div className="p-6 rounded-lg bg-white shadow-md">
-      {/* Header with info button */}
-      <div className="mb-6">
-        <div className="flex items-center mb-2">
-          <h1 className="text-2xl font-bold text-slate-900">Deal Scoping</h1>
-          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-            Step 1 of 2
-          </span>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="ml-2 cursor-help">
-                <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-4" align="start">
-              <div className="space-y-2">
-                <h4 className="font-medium text-slate-900">
-                  About Deal Scoping
-                </h4>
-                <p className="text-sm text-slate-700">
-                  Deal scoping is the first step in our deal process:
-                </p>
-                <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
-                  <li>Our partnership team reviews your request</li>
-                  <li>
-                    A team member contacts you to schedule a discovery call
-                  </li>
-                  <li>Together, we craft a tailored proposal</li>
-                  <li>Once aligned, you can proceed to deal submission</li>
-                </ol>
-                <p className="text-sm text-slate-700 mt-2">
-                  For assistance, contact the partnership team at
-                  partnerships@example.com
-                </p>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {/* Description */}
-        <p className="mt-1 text-sm text-slate-500">
-          New to the deal process? Start here to get help with scoping, pricing,
-          or technical aspects of your deals.
-          <span className="block mt-1 text-primary">
-            Already familiar with the process?{" "}
-            <button
-              onClick={goToDealSubmission}
-              className="underline font-medium"
-            >
-              Skip straight to Deal Submission
-            </button>
-          </span>
-        </p>
-      </div>
-
-      {/* Form Progress - Simplified to ensure perfect centering */}
-      <div className="mb-8">
-        <div className="w-3/4 mx-auto relative">
-          {/* Progress Bar */}
-          <div className="flex items-center justify-between">
-            {/* Step 1 */}
-            <div
-              onClick={() => setActiveTab("sales-channel")}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                activeTab === "sales-channel"
-                  ? "border-primary bg-primary text-white"
-                  : "border-slate-300 text-slate-500",
-              )}
-            >
-              1
-            </div>
-
-            {/* Connecting Line */}
-            <div
-              className={cn(
-                "absolute h-1 bg-slate-200 left-10 right-10 top-5",
-                activeTab === "growth-opportunity" ? "bg-primary" : "",
-              )}
-            ></div>
-
-            {/* Step 2 */}
-            <div
-              onClick={() => setActiveTab("growth-opportunity")}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                activeTab === "growth-opportunity"
-                  ? "border-primary bg-primary text-white"
-                  : "border-slate-300 text-slate-500",
-              )}
-            >
-              2
-            </div>
-          </div>
-
-          {/* Labels */}
-          <div className="flex justify-between mt-2 text-sm">
-            <div className="w-44 text-center" style={{ marginLeft: "-68px" }}>
-              <span
-                onClick={() => setActiveTab("sales-channel")}
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
-                  activeTab === "sales-channel"
-                    ? "font-medium text-primary"
-                    : "text-slate-600",
-                )}
+      {/* Standardized Form Section Header */}
+      <FormSectionHeader
+        title="Deal Scoping"
+        badge="Step 1 of 2"
+        description={
+          <>
+            New to the deal process? Start here to get help with scoping, pricing,
+            or technical aspects of your deals.
+            <span className="block mt-1 text-primary">
+              Already familiar with the process?{" "}
+              <button
+                onClick={goToDealSubmission}
+                className="underline font-medium"
               >
-                Client Information
-              </span>
-            </div>
+                Skip straight to Deal Submission
+              </button>
+            </span>
+          </>
+        }
+        helpTitle="About Deal Scoping"
+        helpContent={
+          <>
+            <p className="text-sm text-slate-700">
+              Deal scoping is the first step in our deal process:
+            </p>
+            <ol className={FormStyles.help.list}>
+              <li>Our partnership team reviews your request</li>
+              <li>A team member contacts you to schedule a discovery call</li>
+              <li>Together, we craft a tailored proposal</li>
+              <li>Once aligned, you can proceed to deal submission</li>
+            </ol>
+            <p className="text-sm text-slate-700 mt-2">
+              For assistance, contact the partnership team at
+              partnerships@example.com
+            </p>
+          </>
+        }
+      />
 
-            <div className="w-44 text-center" style={{ marginRight: "-68px" }}>
-              <span
-                onClick={() => setActiveTab("growth-opportunity")}
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
-                  activeTab === "growth-opportunity"
-                    ? "font-medium text-primary"
-                    : "text-slate-600",
-                )}
-              >
-                Opportunity Assessment
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Standardized Form Progress Tracker */}
+      <FormProgressTracker
+        steps={[
+          { id: "sales-channel", label: "Client Information" },
+          { id: "growth-opportunity", label: "Opportunity Assessment" }
+        ]}
+        currentStep={activeTab}
+        onStepClick={(stepId) => setActiveTab(stepId.toString())}
+      />
 
       {/* Form Card */}
       <Card className="border border-slate-200">

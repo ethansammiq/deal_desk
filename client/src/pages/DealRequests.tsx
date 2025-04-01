@@ -3,18 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckSquare, FileText, ArrowRight, HelpCircle, Zap, Clock, Users, BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormSectionHeader } from "@/components/ui/form-style-guide";
 
 export default function DealRequests() {
   const [_, setLocation] = useLocation();
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Deal Requests</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Choose the right option for your commercial deal needs
-        </p>
-      </div>
+      <FormSectionHeader
+        title="Deal Requests"
+        description="Choose the right option for your commercial deal needs"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Deal Scoping Card */}
