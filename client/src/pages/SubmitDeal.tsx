@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { Info } from "lucide-react";
+import { FormSectionHeader, FormProgressTracker, FormHelpPopover, StyledFormField, FormStyles } from "@/components/ui/form-style-guide";
 import {
   Tooltip,
   TooltipContent,
@@ -999,167 +1000,48 @@ export default function SubmitDeal() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <div className="flex items-center mb-2">
-          <h1 className="text-2xl font-bold text-slate-900">Deal Submission</h1>
-          <span className="ml-3 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-            Step 2 of 2
-          </span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="ml-2 cursor-help">
-                <Info className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-4" align="start">
-              <div className="space-y-2">
-                <h4 className="font-medium text-slate-900">
-                  About Deal Submission
-                </h4>
-                <p className="text-sm text-slate-700">
-                  The deal submission process involves 3 steps:
-                </p>
-                <ol className="text-sm text-slate-700 list-decimal pl-4 space-y-1">
-                  <li>Complete deal details and basic client information</li>
-                  <li>
-                    Configure deal structure, pricing tiers, and incentives
-                  </li>
-                  <li>
-                    Review and submit for approval based on approval matrix
-                  </li>
-                </ol>
-                <p className="text-sm text-slate-700 mt-2">
-                  Required approvals will be automatically determined based on
-                  deal size, structure, and non-standard terms.
-                </p>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+      <FormSectionHeader
+        title="Deal Submission"
+        description="Complete the form below to submit a new commercial deal for approval"
+        badge="Step 2 of 2"
+        helpTitle="About Deal Submission"
+        helpContent={
+          <>
+            <p className="text-sm text-slate-700">
+              The deal submission process involves 3 steps:
+            </p>
+            <ol className={FormStyles.help.list}>
+              <li>Complete deal details and basic client information</li>
+              <li>Configure deal structure, pricing tiers, and incentives</li>
+              <li>Review and submit for approval based on approval matrix</li>
+            </ol>
+            <p className="text-sm text-slate-700 mt-2">
+              Required approvals will be automatically determined based on
+              deal size, structure, and non-standard terms.
+            </p>
+          </>
+        }
+      />
 
-        <p className="mt-1 text-sm text-slate-500">
-          Complete the form below to submit a new commercial deal for approval
-        </p>
-      </div>
-
-      {/* Form Progress - Matching the Deal Scoping page style */}
-      <div className="mb-8">
-        <div className="w-3/4 mx-auto relative">
-          {/* Progress Bar */}
-          <div className="flex items-center justify-between">
-            {/* Step 1 Circle */}
-            <div
-              onClick={() => prevStep()}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                formStep >= 0
-                  ? "border-primary bg-primary text-white"
-                  : "border-slate-300 text-slate-500",
-              )}
-            >
-              1
-            </div>
-
-            {/* Two separate connecting lines */}
-            {/* Line between step 1 and 2 */}
-            <div
-              className={cn(
-                "absolute h-1 bg-slate-200 top-5",
-                formStep >= 1 ? "bg-primary" : "",
-              )}
-              style={{ left: "10px", right: "50%", marginRight: "20px" }}
-            ></div>
-
-            {/* Line between step 2 and 3 */}
-            <div
-              className={cn(
-                "absolute h-1 bg-slate-200 top-5",
-                formStep >= 2 ? "bg-primary" : "",
-              )}
-              style={{ left: "calc(50% + 20px)", right: "40px" }}
-            ></div>
-
-            {/* Step 2 Circle */}
-            <div
-              onClick={() =>
-                formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)
-              }
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                formStep >= 1
-                  ? "border-primary bg-primary text-white"
-                  : "border-slate-300 text-slate-500",
-              )}
-            >
-              2
-            </div>
-
-            {/* Step 3 Circle */}
-            <div
-              onClick={() =>
-                formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)
-              }
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity z-10",
-                formStep >= 2
-                  ? "border-primary bg-primary text-white"
-                  : "border-slate-300 text-slate-500",
-              )}
-            >
-              3
-            </div>
-          </div>
-
-          {/* Labels */}
-          <div className="flex justify-between mt-2 text-sm">
-            <div className="w-28 text-center" style={{ marginLeft: "-30px" }}>
-              <span
-                onClick={() => prevStep()}
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
-                  formStep === 0
-                    ? "font-medium text-primary"
-                    : "text-slate-600",
-                )}
-              >
-                Deal Overview
-              </span>
-            </div>
-
-            <div className="w-40 text-center">
-              <span
-                onClick={() =>
-                  formStep >= 1 ? setFormStep(1) : validateAndGoToStep(1)
-                }
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
-                  formStep === 1
-                    ? "font-medium text-primary"
-                    : "text-slate-600",
-                )}
-              >
-                Value Structure
-              </span>
-            </div>
-
-            <div className="w-28 text-center" style={{ marginRight: "-30px" }}>
-              <span
-                onClick={() =>
-                  formStep >= 2 ? setFormStep(2) : validateAndGoToStep(2)
-                }
-                className={cn(
-                  "cursor-pointer hover:text-primary transition-colors whitespace-nowrap",
-                  formStep === 2
-                    ? "font-medium text-primary"
-                    : "text-slate-600",
-                )}
-              >
-                Review & Submit
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Form Progress - Using standardized component */}
+      <FormProgressTracker
+        steps={[
+          { id: 0, label: "Deal Overview" },
+          { id: 1, label: "Value Structure" },
+          { id: 2, label: "Review & Submit" },
+        ]}
+        currentStep={formStep}
+        onStepClick={(stepId) => {
+          const step = Number(stepId);
+          if (step === 0) {
+            prevStep();
+          } else if (step > formStep) {
+            validateAndGoToStep(step);
+          } else {
+            setFormStep(step);
+          }
+        }}
+      />
 
       {/* Form Container */}
       <Card>
@@ -1172,14 +1054,10 @@ export default function SubmitDeal() {
             {/* Step 1: Deal Overview */}
             {formStep === 0 && (
               <CardContent className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">
-                    Basic Deal Information
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Provide the basic details about this commercial deal
-                  </p>
-                </div>
+                <FormSectionHeader
+                  title="Basic Deal Information"
+                  description="Provide the basic details about this commercial deal"
+                />
 
                 <div className="space-y-6">
                   {/* Region and Sales Channel at the top */}
@@ -1598,15 +1476,10 @@ export default function SubmitDeal() {
             {/* Step 2: Value Structure */}
             {formStep === 1 && (
               <CardContent className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">
-                    Value Structure
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Define the financial structure and value proposition for
-                    this deal
-                  </p>
-                </div>
+                <FormSectionHeader
+                  title="Value Structure"
+                  description="Define the financial structure and value proposition for this deal"
+                />
                 <div className="space-y-6">
                   {/* Simplified approval alert based on basic deal parameters */}
                   {watchTypedValue("annualRevenue") !== undefined &&
@@ -3007,11 +2880,9 @@ export default function SubmitDeal() {
             {/* Step 3: Review & Submit */}
             {formStep === 2 && (
               <CardContent className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-slate-900">
-                    Review & Submit
-                  </h2>
-                </div>
+                <FormSectionHeader
+                  title="Review & Submit"
+                />
 
                 <div className="bg-slate-50 p-4 rounded-lg mb-6">
                   <div className="text-sm text-slate-500 italic">
