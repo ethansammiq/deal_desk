@@ -464,6 +464,9 @@ export default function SubmitDeal() {
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+  
+  // Debug log for agencies state
+  console.log("Current agencies state:", agencies, "Length:", agencies.length);
 
   // Initialize calculation service with current advertiser/agency data
   const dealCalculations = useDealCalculations(advertisers, agencies);
@@ -629,8 +632,12 @@ export default function SubmitDeal() {
   useEffect(() => {
     const fetchAgencies = async () => {
       try {
+        console.log("Starting to fetch agencies...");
         const data = await apiRequest("/api/agencies");
+        console.log("Raw agencies data from API:", data);
+        console.log("Setting agencies state with:", data);
         setAgencies(data);
+        console.log("Agencies state should now be updated");
       } catch (error) {
         console.error("Failed to fetch agencies:", error);
         toast({
@@ -1159,20 +1166,26 @@ export default function SubmitDeal() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {agencies
-                                  .filter((agency) =>
-                                    salesChannel === "holding_company"
-                                      ? agency.type === "holding_company"
-                                      : agency.type === "independent",
-                                  )
-                                  .map((agency) => (
-                                    <SelectItem
-                                      key={agency.id}
-                                      value={agency.name}
-                                    >
-                                      {agency.name}
-                                    </SelectItem>
-                                  ))}
+                                {agencies && agencies.length > 0 ? (
+                                  agencies
+                                    .filter((agency) =>
+                                      salesChannel === "holding_company"
+                                        ? agency.type === "holding_company"
+                                        : agency.type === "independent",
+                                    )
+                                    .map((agency) => (
+                                      <SelectItem
+                                        key={agency.id}
+                                        value={agency.name}
+                                      >
+                                        {agency.name}
+                                      </SelectItem>
+                                    ))
+                                ) : (
+                                  <SelectItem value="" disabled>
+                                    Loading agencies...
+                                  </SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                             <FormDescription>
