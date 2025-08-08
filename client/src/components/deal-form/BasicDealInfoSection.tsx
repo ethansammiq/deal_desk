@@ -1,6 +1,18 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { Card, CardContent } from "@/components/ui/card";
+import { FormSectionHeader } from "@/components/ui/form-style-guide";
+import {
+  FormFieldWithTooltip,
+  FormSelectField,
+  ConditionalFieldGroup,
+  FinancialInputGroup,
+  DateRangeInput,
+  REGION_OPTIONS,
+  SALES_CHANNEL_OPTIONS,
+  DEAL_TYPE_OPTIONS,
+  DEAL_STRUCTURE_OPTIONS,
+} from "@/components/ui/form-components";
 import {
   FormField,
   FormItem,
@@ -9,8 +21,6 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,8 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { FormSectionHeader } from "@/components/ui/form-style-guide";
 
 // Type this component to accept any valid form structure
 type BasicDealInfoFormValues = any;
@@ -67,146 +75,59 @@ export function BasicDealInfoSection({
         />
 
         <div className="space-y-6">
-          {/* Region and Sales Channel at the top */}
+          {/* Region and Sales Channel using shared components */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
+            <FormSelectField
+              form={form}
               name="region"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Region <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your region" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="northeast">Northeast</SelectItem>
-                      <SelectItem value="midwest">Midwest</SelectItem>
-                      <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
-                      <SelectItem value="west">West</SelectItem>
-                      <SelectItem value="south">South</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Your geographical sales region
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Region"
+              placeholder="Select your region"
+              description="Your geographical sales region"
+              tooltip="Choose the region where this deal will be executed"
+              options={REGION_OPTIONS}
+              required
             />
 
-            <FormField
-              control={form.control}
+            <FormSelectField
+              form={form}
               name="salesChannel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Sales Channel <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select sales channel" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="client_direct">Client Direct</SelectItem>
-                      <SelectItem value="holding_company">
-                        Holding Company
-                      </SelectItem>
-                      <SelectItem value="independent_agency">
-                        Independent Agency
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    How this deal will be structured from a sales perspective
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Sales Channel"
+              placeholder="Select sales channel"
+              description="How this deal will be structured from a sales perspective"
+              tooltip="Determines the approval workflow and client relationship structure"
+              options={SALES_CHANNEL_OPTIONS}
+              required
             />
           </div>
 
-          {/* Deal Type and Structure */}
+          {/* Deal Type and Structure using shared components */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
+            <FormSelectField
+              form={form}
               name="dealType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Deal Type <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select deal type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="grow">Grow</SelectItem>
-                      <SelectItem value="protect">Protect</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    The strategic intent of this deal
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Deal Type"
+              placeholder="Select deal type"
+              description="The strategic intent of this deal"
+              tooltip="Grow deals focus on expansion, Protect on retention, Custom on unique scenarios"
+              options={DEAL_TYPE_OPTIONS}
+              required
             />
 
-            <FormField
-              control={form.control}
+            <FormSelectField
+              form={form}
               name="dealStructure"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Deal Structure <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setDealStructure(value as "tiered" | "flat_commit");
-                    }}
-                    value={field.value || ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose tiered or flat commit structure" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="flat_commit">Flat Commit</SelectItem>
-                      <SelectItem value="tiered">Tiered Revenue</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    The revenue structure for this deal
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Deal Structure"
+              placeholder="Choose tiered or flat commit structure"
+              description="The revenue structure for this deal"
+              tooltip="Tiered structures have performance-based incentives, flat commits are fixed"
+              options={DEAL_STRUCTURE_OPTIONS}
+              onValueChange={(value) => setDealStructure(value as "tiered" | "flat_commit")}
+              required
             />
           </div>
 
-          {/* Conditional Client/Agency Selection */}
-          {salesChannel === "client_direct" && (
+          {/* Conditional Client/Agency Selection using shared components */}
+          <ConditionalFieldGroup condition={salesChannel === "client_direct"}>
             <FormField
               control={form.control}
               name="advertiserName"
@@ -239,10 +160,11 @@ export function BasicDealInfoSection({
                 </FormItem>
               )}
             />
-          )}
+          </ConditionalFieldGroup>
 
-          {(salesChannel === "holding_company" ||
-            salesChannel === "independent_agency") && (
+          <ConditionalFieldGroup 
+            condition={salesChannel === "holding_company" || salesChannel === "independent_agency"}
+          >
             <FormField
               control={form.control}
               name="agencyName"
@@ -283,177 +205,43 @@ export function BasicDealInfoSection({
                 </FormItem>
               )}
             />
-          )}
+          </ConditionalFieldGroup>
 
-          {/* Date Range */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="termStartDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Start Date <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      value={
-                        field.value instanceof Date
-                          ? field.value.toISOString().split("T")[0]
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const date = e.target.value ? new Date(e.target.value) : undefined;
-                        field.onChange(date);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    When the deal term begins
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="termEndDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    End Date <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      value={
-                        field.value instanceof Date
-                          ? field.value.toISOString().split("T")[0]
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const date = e.target.value ? new Date(e.target.value) : undefined;
-                        field.onChange(date);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    When the deal term ends
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Financial Information */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="annualRevenue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Annual Revenue <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter annual revenue"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                        field.onChange(value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Expected annual revenue for this deal
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="annualGrossMargin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Annual Gross Margin % <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      placeholder="Enter margin percentage"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                        field.onChange(value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Gross margin percentage for this deal
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Business Summary */}
-          <FormField
-            control={form.control}
-            name="businessSummary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Business Summary <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Provide a brief summary of the business case for this deal..."
-                    className="min-h-[100px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Describe the strategic rationale and business value of this deal
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+          {/* Date Range using shared component */}
+          <DateRangeInput
+            form={form}
+            startDateFieldName="termStartDate"
+            endDateFieldName="termEndDate"
           />
 
-          {/* Contact Email */}
-          <FormField
-            control={form.control}
+          {/* Financial Information using shared component */}
+          <FinancialInputGroup
+            form={form}
+            revenueFieldName="annualRevenue"
+            marginFieldName="annualGrossMargin"
+          />
+
+          {/* Business Summary using shared component */}
+          <FormFieldWithTooltip
+            form={form}
+            name="businessSummary"
+            label="Business Summary"
+            type="textarea"
+            placeholder="Provide a brief summary of the business case for this deal..."
+            description="Describe the strategic rationale and business value of this deal"
+            tooltip="Include competitive landscape, market opportunity, and expected business outcomes"
+            required
+          />
+
+          {/* Contact Email using shared component */}
+          <FormFieldWithTooltip
+            form={form}
             name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contact Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="your.email@company.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Contact email for questions about this deal
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Contact Email"
+            type="email"
+            placeholder="your.email@company.com"
+            description="Contact email for questions about this deal"
+            tooltip="This email will be used for approval notifications and follow-up questions"
           />
         </div>
       </CardContent>

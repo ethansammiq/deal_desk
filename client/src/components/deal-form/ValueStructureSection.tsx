@@ -1,6 +1,5 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
@@ -18,13 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from "@/components/ui/form";
+  FormFieldWithTooltip,
+  FinancialInputGroup,
+  INCENTIVE_TYPE_OPTIONS,
+} from "@/components/ui/form-components";
 
 // Type this component to accept any valid form structure
 type ValueStructureFormValues = any;
@@ -113,64 +109,15 @@ export function ValueStructureSection({
           {/* Flat Commit Structure */}
           {dealStructureType === "flat_commit" && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="annualRevenue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Annual Revenue <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter annual revenue"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Committed annual revenue for this deal
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="annualGrossMargin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Annual Gross Margin % <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          placeholder="Enter margin percentage"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Expected gross margin percentage
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FinancialInputGroup
+                form={form}
+                revenueFieldName="annualRevenue"
+                marginFieldName="annualGrossMargin"
+                revenueLabel="Annual Revenue"
+                marginLabel="Annual Gross Margin %"
+                revenueTooltip="Committed annual revenue for this deal"
+                marginTooltip="Expected gross margin percentage"
+              />
 
               {/* Incentives for Flat Commit */}
               <div className="space-y-4">
