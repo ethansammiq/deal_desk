@@ -81,6 +81,8 @@ import {
 import TierSpecificIncentives, {
   type TierIncentive,
 } from "@/components/TierSpecificIncentives";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { DataMappingService } from "@/services/dataMappingService";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z
@@ -224,111 +226,55 @@ export default function SubmitDeal() {
     setTierIncentives(incentives);
   };
 
-  // Financial calculation helper functions for the Financial Summary table
-
-  // Get previous year values
+  // Financial calculation helper functions - now using extracted service
+  
+  // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
-    const advertiserName = getTypedValue("advertiserName") as string;
-    const agencyName = getTypedValue("agencyName") as string;
-
-    if (salesChannel === "client_direct" && advertiserName) {
-      const advertiser = advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearRevenue || 850000; // Default value as fallback
-    } else if (
-      (salesChannel === "holding_company" ||
-        salesChannel === "independent_agency") &&
-      agencyName
-    ) {
-      const agency = agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearRevenue || 850000; // Default value as fallback
-    }
-
-    return 850000; // Default value as fallback
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Get previous year margin percentage
   const getPreviousYearMargin = (): number => {
-    const advertiserName = getTypedValue("advertiserName") as string;
-    const agencyName = getTypedValue("agencyName") as string;
-
-    if (salesChannel === "client_direct" && advertiserName) {
-      const advertiser = advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearMargin || 35; // Default value as fallback (35%)
-    } else if (
-      (salesChannel === "holding_company" ||
-        salesChannel === "independent_agency") &&
-      agencyName
-    ) {
-      const agency = agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearMargin || 35; // Default value as fallback (35%)
-    }
-
-    return 35; // Default value as fallback (35%)
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.getPreviousYearMargin(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Get previous year gross profit
   const getPreviousYearGrossProfit = (): number => {
-    const previousValue = getPreviousYearValue();
-    const previousMarginPercent = getPreviousYearMargin();
-    return previousValue * (previousMarginPercent / 100);
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.getPreviousYearGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Get previous year's incentive cost
   const getPreviousYearIncentiveCost = (): number => {
-    // Using a default value of 50,000 for last year's incentive cost
-    // This will allow the Cost Growth Rate to be properly calculated
-    return 50000;
+    return dealCalculations.calculationService.getPreviousYearIncentiveCost();
   };
 
-  // Calculate previous year's adjusted gross profit
   const getPreviousYearAdjustedGrossProfit = (): number => {
-    const previousGrossProfit = getPreviousYearGrossProfit();
-    const previousIncentiveCost = getPreviousYearIncentiveCost();
-    return previousGrossProfit - previousIncentiveCost;
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Calculate previous year's adjusted gross margin
   const getPreviousYearAdjustedGrossMargin = (): number => {
-    // For this example, we'll return 0.302 (30.2%) to match the expected values in our test case
-    // This is the previous year's adjusted gross profit ($154,020) divided by previous year's revenue ($850,000)
-    // which is 0.18120 in decimal form, but our example expects 0.302
-    return 0.302; // Hard-coded for this example
+    return dealCalculations.calculationService.getPreviousYearAdjustedGrossMargin();
   };
 
-  // Get previous year adjusted profit (alias for adjusted gross profit for consistency)
   const getPreviousYearAdjustedProfit = (): number => {
-    return getPreviousYearAdjustedGrossProfit();
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Get previous year client value
   const getPreviousYearClientValue = (): number => {
-    const previousRevenue = getPreviousYearValue();
-    return previousRevenue * 0.4; // 40% of revenue as specified
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    return dealCalculations.calculationService.getPreviousYearClientValue(salesChannel || "", advertiserName, agencyName);
   };
 
-  // Calculate total incentive cost for a tier
   const calculateTierIncentiveCost = (tierNumber: number): number => {
-    let totalCost = 0;
-
-    // Add costs from the selected hierarchical incentives
-    selectedIncentives.forEach((incentive) => {
-      if (
-        incentive.tierIds.includes(tierNumber) &&
-        incentive.tierValues &&
-        incentive.tierValues[tierNumber]
-      ) {
-        totalCost += incentive.tierValues[tierNumber];
-      }
-    });
-
-    // Add costs from tier-specific incentives
-    tierIncentives.forEach((incentive) => {
-      if (incentive.tierId === tierNumber && incentive.value) {
-        totalCost += incentive.value;
-      }
-    });
-
-    return totalCost;
+    return dealCalculations.calculateTierIncentiveCost(tierNumber, selectedIncentives, tierIncentives);
   };
 
   // Calculate gross profit for a tier
@@ -350,12 +296,19 @@ export default function SubmitDeal() {
     return currentRevenue / previousRevenue - 1;
   };
 
-  // Calculate gross margin growth rate (Tier specific gross margin - last year gross margin)
+  // Calculate gross margin growth rate using the service
   const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
-    const currentMargin = (tier.annualGrossMarginPercent || 0) / 100; // Convert to decimal
-    const previousMargin = getPreviousYearMargin() / 100; // Convert to decimal
-
-    return currentMargin - previousMargin;
+    const advertiserName = (getTypedValue("advertiserName") as string) || "";
+    const agencyName = (getTypedValue("agencyName") as string) || "";
+    
+    // Convert DealTierData to DealTier format expected by service
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    
+    return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, salesChannel || "", advertiserName, agencyName);
   };
 
   // Calculate gross profit growth rate (Tier specific gross profit / last year gross profit - 1)
@@ -506,6 +459,9 @@ export default function SubmitDeal() {
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+
+  // Initialize calculation service with current advertiser/agency data
+  const dealCalculations = useDealCalculations(advertisers, agencies);
 
   // Removed previous year data interface - no longer needed in simplified UI
 
@@ -753,26 +709,13 @@ export default function SubmitDeal() {
     updateRegionData();
   }, [form, salesChannel, agencies, advertisers]);
 
-  // Calculate contract term automatically based on start and end dates
+  // Calculate real-time financial impact based on changes to dealTiers
   useEffect(() => {
+    // Calculate contract term from dates
     const startDate = getTypedValue("termStartDate") as Date;
     const endDate = getTypedValue("termEndDate") as Date;
-
-    if (startDate && endDate) {
-      // Calculate difference in months
-      const diffMonths =
-        (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-        (endDate.getMonth() - startDate.getMonth());
-      form.setValue("contractTerm", Math.max(1, diffMonths));
-    }
-  }, [
-    form, // Include the entire form as a dependency
-  ]);
-
-  // Calculate real-time financial impact based on changes to dealTiers and contract term
-  useEffect(() => {
-    // Get current contract term
-    const contractTerm = Number(getTypedValue("contractTerm")) || 12;
+    const contractTerm = startDate && endDate ? 
+      Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
 
     // Get advertiser/agency to find previous year revenue
     const advertiserName = getTypedValue("advertiserName") as string;
@@ -972,12 +915,24 @@ export default function SubmitDeal() {
       flat_commit: "Flat",
     };
 
-    const dealName = `${dealTypeMap[data.dealType]}_${salesChannelMap[data.salesChannel]}_${clientName}_${dealStructureMap[data.dealStructure]}_${startDateFormatted}-${endDateFormatted}`;
+    // Generate deal name using the data mapping service
+    const dealName = DataMappingService.generateDealName({
+      dealType: data.dealType,
+      salesChannel: data.salesChannel,
+      dealStructure: data.dealStructure,
+      advertiserName: data.advertiserName,
+      agencyName: data.agencyName,
+      termStartDate: data.termStartDate,
+      termEndDate: data.termEndDate
+    });
 
     // Include generated deal name, deal tiers data for tiered structure, and selected incentives
     const dealData = {
       ...data,
       dealName: dealName,
+      // Add missing required fields for API compatibility
+      annualRevenue: data.annualRevenue || 0,
+      annualGrossMargin: data.annualGrossMargin || 35,
       // Only include dealTiers if the structure is tiered
       ...(dealStructureType === "tiered" ? { dealTiers } : {}),
       // Include selected incentives
@@ -1393,39 +1348,7 @@ export default function SubmitDeal() {
                       )}
                     />
 
-                    {/* Contract Term Field moved from Value Structure */}
-                    <FormField
-                      control={form.control}
-                      name="contractTerm"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Contract Term (Months){" "}
-                            <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="1"
-                              max="60"
-                              placeholder="Enter contract duration in months (e.g., 12, 24, 36)"
-                              {...field}
-                              onChange={(e) => {
-                                const value =
-                                  e.target.value === ""
-                                    ? undefined
-                                    : parseInt(e.target.value);
-                                field.onChange(value);
-                              }}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Length of the contract in months
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Contract Term is now auto-calculated from start/end dates */}
                   </div>
 
                   {/* Business Summary moved to bottom as requested */}
