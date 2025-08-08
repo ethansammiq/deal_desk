@@ -100,31 +100,139 @@ export function BasicDealInfoSection({
             />
           </div>
 
-          {/* Deal Type and Structure using shared components */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormSelectField
-              form={form}
+          {/* Deal Type with detailed cards */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
               name="dealType"
-              label="Deal Type"
-              placeholder="Select deal type"
-              description="The strategic intent of this deal"
-              tooltip="Grow deals focus on expansion, Protect on retention, Custom on unique scenarios"
-              options={DEAL_TYPE_OPTIONS}
-              required
-            />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Deal Type <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Grow Deal Type Card */}
+                      <Card
+                        className={`cursor-pointer transition-all hover:shadow-md ${field.value === "grow" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                        onClick={() => field.onChange("grow")}
+                      >
+                        <div className="p-4 pb-2">
+                          <div className="text-md flex items-center space-x-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-green-600"
+                            >
+                              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                              <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                            <span>Grow</span>
+                          </div>
+                          <p className="text-sm text-slate-500 mb-2">20%+ YOY Growth</p>
+                        </div>
+                        <div className="p-4 pt-0">
+                          <p className="text-sm text-slate-600">
+                            For existing clients with strong growth potential. Focuses on exceeding 20%
+                            year-over-year revenue growth through expanded product usage or new business units.
+                          </p>
+                        </div>
+                      </Card>
 
-            <FormSelectField
-              form={form}
-              name="dealStructure"
-              label="Deal Structure"
-              placeholder="Choose tiered or flat commit structure"
-              description="The revenue structure for this deal"
-              tooltip="Tiered structures have performance-based incentives, flat commits are fixed"
-              options={DEAL_STRUCTURE_OPTIONS}
-              onValueChange={(value) => setDealStructure(value as "tiered" | "flat_commit")}
-              required
+                      {/* Protect Deal Type Card */}
+                      <Card
+                        className={`cursor-pointer transition-all hover:shadow-md ${field.value === "protect" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                        onClick={() => field.onChange("protect")}
+                      >
+                        <div className="p-4 pb-2">
+                          <div className="text-md flex items-center space-x-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-blue-600"
+                            >
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>Protect</span>
+                          </div>
+                          <p className="text-sm text-slate-500 mb-2">Large Account Retention</p>
+                        </div>
+                        <div className="p-4 pt-0">
+                          <p className="text-sm text-slate-600">
+                            Designed for strategic account retention, especially for large enterprise clients.
+                            Focuses on maintaining current revenue levels while ensuring long-term partnership stability.
+                          </p>
+                        </div>
+                      </Card>
+
+                      {/* Custom Deal Type Card */}
+                      <Card
+                        className={`cursor-pointer transition-all hover:shadow-md ${field.value === "custom" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                        onClick={() => field.onChange("custom")}
+                      >
+                        <div className="p-4 pb-2">
+                          <div className="text-md flex items-center space-x-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-purple-600"
+                            >
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            <span>Custom</span>
+                          </div>
+                          <p className="text-sm text-slate-500 mb-2">Special Requirements</p>
+                        </div>
+                        <div className="p-4 pt-0">
+                          <p className="text-sm text-slate-600">
+                            For specialized deals requiring custom implementation, non-standard terms, or
+                            unique technical requirements. Typically used for strategic partnerships and innovative projects.
+                          </p>
+                        </div>
+                      </Card>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
+
+          {/* Deal Structure */}
+          <FormSelectField
+            form={form}
+            name="dealStructure"
+            label="Deal Structure"
+            placeholder="Choose tiered or flat commit structure"
+            description="The revenue structure for this deal"
+            tooltip="Tiered structures have performance-based incentives, flat commits are fixed"
+            options={DEAL_STRUCTURE_OPTIONS}
+            onValueChange={(value) => setDealStructure(value as "tiered" | "flat_commit")}
+            required
+          />
 
           {/* Conditional Client/Agency Selection using shared components */}
           <ConditionalFieldGroup condition={salesChannel === "client_direct"}>
