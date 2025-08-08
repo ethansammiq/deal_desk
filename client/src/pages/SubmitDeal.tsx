@@ -2043,7 +2043,7 @@ export default function SubmitDeal() {
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
                 {/* Incentives Section - Now outside Structure container */}
                 <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                   {/* Incentives section header with collapsible control */}
@@ -2299,7 +2299,7 @@ export default function SubmitDeal() {
                         </table>
                       </div>
                     </div>
-                  </div>{" "}
+                  </div>
                   {/* Close the main incentives section container div */}
                   {/* This section is hidden - we use tiered view for all deal types */}
                   {false && dealStructureType === "flat_commit" && (
@@ -2619,7 +2619,9 @@ export default function SubmitDeal() {
                       </div>
                     </div>
                   )}
+                
                 </div>
+                
                 {/* Financial Summary Table - Calculated values for each tier */}
                 <div className="mt-8 mb-6 bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
                   <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
@@ -2803,8 +2805,8 @@ export default function SubmitDeal() {
                       </tbody>
                     </table>
                   </div>
-                    </div>
-                  )}
+                </div>
+                
                 <div className="mt-8 flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep}>
                     Previous: Deal Overview
@@ -2812,6 +2814,7 @@ export default function SubmitDeal() {
                   <Button type="button" onClick={nextStep}>
                     Next: Review & Submit
                   </Button>
+                </div>
                 </div>
               </CardContent>
             )}
