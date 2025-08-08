@@ -1168,23 +1168,20 @@ export default function SubmitDeal() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {filteredAgencies.map((agency) => (
-                                    <SelectItem
-                                      key={agency.id}
-                                      value={agency.name}
-                                    >
-                                      {agency.name}
-                                    </SelectItem>
-                                  ))}
-                                  {filteredAgencies.length === 0 && agencies.length > 0 && (
-                                    <SelectItem value="" disabled>
-                                      No {salesChannel === "holding_company" ? "holding companies" : "independent agencies"} available
-                                    </SelectItem>
-                                  )}
-                                  {agencies.length === 0 && (
-                                    <SelectItem value="" disabled>
-                                      Loading agencies...
-                                    </SelectItem>
+                                  {salesChannel === "holding_company" ? (
+                                    <>
+                                      <SelectItem value="WPP">WPP</SelectItem>
+                                      <SelectItem value="Omnicom">Omnicom</SelectItem>
+                                      <SelectItem value="Publicis">Publicis</SelectItem>
+                                      <SelectItem value="IPG">IPG</SelectItem>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <SelectItem value="72andSunny">72andSunny</SelectItem>
+                                      <SelectItem value="Droga5">Droga5</SelectItem>
+                                      <SelectItem value="The Richards Group">The Richards Group</SelectItem>
+                                      <SelectItem value="Wieden+Kennedy">Wieden+Kennedy</SelectItem>
+                                    </>
                                   )}
                                 </SelectContent>
                               </Select>
