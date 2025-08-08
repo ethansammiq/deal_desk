@@ -1150,30 +1150,35 @@ export default function SubmitDeal() {
                       <FormField
                         control={form.control}
                         name="agencyName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Agency Name{" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value || ""}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select agency" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {agencies && agencies.length > 0 ? (
-                                  agencies
-                                    .filter((agency) =>
-                                      salesChannel === "holding_company"
-                                        ? agency.type === "holding_company"
-                                        : agency.type === "independent",
-                                    )
-                                    .map((agency) => (
+                        render={({ field }) => {
+                          const filteredAgencies = agencies.filter((agency) =>
+                            salesChannel === "holding_company"
+                              ? agency.type === "holding_company"
+                              : agency.type === "independent",
+                          );
+                          console.log("Agency dropdown render - salesChannel:", salesChannel);
+                          console.log("Agency dropdown render - total agencies:", agencies.length);
+                          console.log("Agency dropdown render - filtered agencies:", filteredAgencies.length, filteredAgencies);
+                          console.log("Agency types in all agencies:", agencies.map(a => `${a.name}: ${a.type}`));
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel>
+                                Agency Name{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || ""}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select agency" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {filteredAgencies.length > 0 ? (
+                                    filteredAgencies.map((agency) => (
                                       <SelectItem
                                         key={agency.id}
                                         value={agency.name}
@@ -1181,20 +1186,25 @@ export default function SubmitDeal() {
                                         {agency.name}
                                       </SelectItem>
                                     ))
-                                ) : (
-                                  <SelectItem value="" disabled>
-                                    Loading agencies...
-                                  </SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Historical data will be loaded automatically when
-                              selected
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                                  ) : agencies.length === 0 ? (
+                                    <SelectItem value="" disabled>
+                                      Loading agencies...
+                                    </SelectItem>
+                                  ) : (
+                                    <SelectItem value="" disabled>
+                                      No agencies found for {salesChannel}
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Historical data will be loaded automatically when
+                                selected
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                     )}
                   </div>
