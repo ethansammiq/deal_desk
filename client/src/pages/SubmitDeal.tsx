@@ -1167,37 +1167,36 @@ export default function SubmitDeal() {
                                 Agency Name{" "}
                                 <span className="text-red-500">*</span>
                               </FormLabel>
-                              <FormControl>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value || ""}
-                                >
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || ""}
+                              >
+                                <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select agency" />
                                   </SelectTrigger>
-                                  <SelectContent className="max-h-60 overflow-auto">
-                                    {filteredAgencies.map((agency) => (
-                                      <SelectItem
-                                        key={`agency-${agency.id}`}
-                                        value={agency.name}
-                                        className="cursor-pointer"
-                                      >
-                                        {agency.name}
-                                      </SelectItem>
-                                    ))}
-                                    {filteredAgencies.length === 0 && agencies.length > 0 && (
-                                      <SelectItem value="" disabled className="text-muted-foreground">
-                                        No {salesChannel === "holding_company" ? "holding companies" : "independent agencies"} available
-                                      </SelectItem>
-                                    )}
-                                    {agencies.length === 0 && (
-                                      <SelectItem value="" disabled className="text-muted-foreground">
-                                        Loading agencies...
-                                      </SelectItem>
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
+                                </FormControl>
+                                <SelectContent>
+                                  {filteredAgencies.map((agency) => (
+                                    <SelectItem
+                                      key={agency.id}
+                                      value={agency.name}
+                                    >
+                                      {agency.name}
+                                    </SelectItem>
+                                  ))}
+                                  {filteredAgencies.length === 0 && agencies.length > 0 && (
+                                    <SelectItem value="" disabled>
+                                      No {salesChannel === "holding_company" ? "holding companies" : "independent agencies"} available
+                                    </SelectItem>
+                                  )}
+                                  {agencies.length === 0 && (
+                                    <SelectItem value="" disabled>
+                                      Loading agencies...
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
                               <FormDescription>
                                 Historical data will be loaded automatically when
                                 selected
