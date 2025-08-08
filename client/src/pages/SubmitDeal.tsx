@@ -85,7 +85,7 @@ import { TierConfigurationPanel } from "@/components/deal-form/TierConfiguration
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
-import { BasicDealInfoSection } from "@/components/deal-form/BasicDealInfoSection";
+
 import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 
@@ -117,6 +117,7 @@ const dealFormSchema = z
     // Conditional fields based on salesChannel
     advertiserName: z.string().optional(),
     agencyName: z.string().optional(),
+    contactEmail: z.string().optional(),
 
     // Deal structure
     dealStructure: z.enum(["tiered", "flat_commit"], {
@@ -1004,17 +1005,6 @@ export default function SubmitDeal() {
           }}>
             {/* Step 1: Deal Overview */}
             {formStep === 0 && (
-              <BasicDealInfoSection
-                form={form}
-                salesChannel={String(salesChannel || "")}
-                dealStructureType={dealStructureType}
-                setDealStructure={setDealStructure}
-                agencies={agencies}
-                advertisers={advertisers}
-              />
-            )}
-
-            {formStep === 0 && (
               <CardContent className="p-6">
                 <FormSectionHeader
                   title="Basic Deal Information"
@@ -1094,7 +1084,27 @@ export default function SubmitDeal() {
                     />
                   </div>
 
-                  {/* Email field removed as requested */}
+                  {/* Contact Email field */}
+                  <FormField
+                    control={form.control}
+                    name="contactEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contact Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="your.email@company.com"
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Contact email for questions about this deal
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Conditional fields based on sales channel */}
                   <div className="grid grid-cols-1 gap-6">
