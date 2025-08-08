@@ -1140,7 +1140,7 @@ export default function SubmitDeal() {
                       />
                     )}
 
-                    {/* Agency dropdown - conditional but with debug info */}
+                    {/* Agency dropdown - fixed structure matching working advertiser dropdown */}
                     {(salesChannel === "holding_company" || salesChannel === "independent_agency") && (
                       <FormField
                         control={form.control}
@@ -1149,9 +1149,6 @@ export default function SubmitDeal() {
                           <FormItem>
                             <FormLabel>
                               Agency Name <span className="text-red-500">*</span>
-                              <span className="text-xs text-gray-500 ml-2">
-                                (Channel: {salesChannel || "none"})
-                              </span>
                             </FormLabel>
                             <Select
                               onValueChange={field.onChange}
@@ -1189,29 +1186,7 @@ export default function SubmitDeal() {
                       />
                     )}
 
-                    {/* Simple Test Dropdown - No conditions, no form integration */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Test Agency Dropdown (Always Visible)
-                      </label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select test agency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="test1">Test Agency 1</SelectItem>
-                          <SelectItem value="test2">Test Agency 2</SelectItem>
-                          <SelectItem value="test3">Test Agency 3</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    {/* Debug info to show sales channel value */}
-                    <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
-                      Debug: salesChannel = "{String(salesChannel) || "undefined"}"
-                      <br />
-                      Should show agency dropdown: {(salesChannel === "holding_company" || salesChannel === "independent_agency") ? "YES" : "NO"}
-                    </div>
                   </div>
 
                   {/* Deal Type as card-style selection */}
