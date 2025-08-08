@@ -24,19 +24,19 @@ import {
 
 interface DealTierData {
   tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
-  incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
+  annualRevenue?: number | undefined;
+  annualGrossMargin?: number | undefined;
+  annualGrossMarginPercent?: number | undefined;
+  incentivePercentage?: number | undefined;
+  incentiveNotes: string;
+  incentiveType: "rebate";
+  incentiveThreshold?: number | undefined;
+  incentiveAmount?: number | undefined;
 }
 
 interface TierConfigurationPanelProps {
   dealTiers: DealTierData[];
-  setDealTiers: (tiers: DealTierData[]) => void;
+  setDealTiers: React.Dispatch<React.SetStateAction<DealTierData[]>>;
   calculateTierIncentiveCost: (tierNumber: number) => number;
   calculateGrossMarginGrowthRate: (tier: DealTierData) => number;
   calculateTierGrossProfit: (tier: DealTierData) => number;

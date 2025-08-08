@@ -235,20 +235,20 @@ export default function SubmitDeal() {
   
   // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearMargin = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearMargin(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearGrossProfit = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -257,8 +257,8 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedGrossProfit = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -267,14 +267,14 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedProfit = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearClientValue = (): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearClientValue(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -303,8 +303,8 @@ export default function SubmitDeal() {
 
   // Calculate gross margin growth rate using the service
   const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
-    const advertiserName = String(getTypedValue("advertiserName") || "");
-    const agencyName = String(getTypedValue("agencyName") || "");
+    const advertiserName = String(watchTypedValue("advertiserName") || "");
+    const agencyName = String(watchTypedValue("agencyName") || "");
     
     // Convert DealTierData to DealTier format expected by service
     const serviceTier = {
@@ -1006,7 +1006,7 @@ export default function SubmitDeal() {
             {formStep === 0 && (
               <BasicDealInfoSection
                 form={form}
-                salesChannel={salesChannel}
+                salesChannel={String(salesChannel || "")}
                 dealStructureType={dealStructureType}
                 setDealStructure={setDealStructure}
                 agencies={agencies}
@@ -1439,7 +1439,7 @@ export default function SubmitDeal() {
                       calculateTierIncentiveCost={calculateTierIncentiveCost}
                       calculateGrossMarginGrowthRate={calculateGrossMarginGrowthRate}
                       calculateTierGrossProfit={calculateTierGrossProfit}
-                      calculateTierNetValue={calculateTierNetValue}
+                      calculateTierNetValue={calculateClientValue}
                     />
                   ) : (
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
@@ -3899,18 +3899,20 @@ export default function SubmitDeal() {
                       // Set a sample deal name for testing
                       const dealName = "Test Deal " + new Date().toISOString();
                       
-                      // Create a simplified object with just the essentials
+                      // Create a complete object with all required fields
                       const dealData = {
                         dealName,
                         dealType: formValues.dealType || "grow",
-                        region: formValues.region || "midwest",
+                        region: formValues.region || "midwest", 
                         salesChannel: formValues.salesChannel || "independent_agency",
                         businessSummary: formValues.businessSummary || "Test business summary",
-                        advertiserName: formValues.advertiserName,
+                        advertiserName: formValues.advertiserName || "Test Advertiser",
                         agencyName: formValues.agencyName || "Test Agency",
                         termStartDate: formValues.termStartDate || new Date(),
                         termEndDate: formValues.termEndDate || new Date(Date.now() + 31536000000), // One year later
-                        dealStructure: dealStructureType,
+                        annualRevenue: Number(formValues.annualRevenue) || 0,
+                        annualGrossMargin: Number(formValues.annualGrossMargin) || 0,
+                        dealStructure: dealStructureType || "tiered",
                         dealTiers: dealTiers,
                         selectedIncentives: selectedIncentives,
                         tierIncentives: tierIncentives,
