@@ -465,8 +465,7 @@ export default function SubmitDeal() {
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
   
-  // Debug log for agencies state
-  console.log("Current agencies state:", agencies, "Length:", agencies.length);
+
 
   // Initialize calculation service with current advertiser/agency data
   const dealCalculations = useDealCalculations(advertisers, agencies);
@@ -632,12 +631,8 @@ export default function SubmitDeal() {
   useEffect(() => {
     const fetchAgencies = async () => {
       try {
-        console.log("Starting to fetch agencies...");
         const data = await apiRequest("/api/agencies");
-        console.log("Raw agencies data from API:", data);
-        console.log("Setting agencies state with:", data);
         setAgencies(data);
-        console.log("Agencies state should now be updated");
       } catch (error) {
         console.error("Failed to fetch agencies:", error);
         toast({
@@ -1156,10 +1151,6 @@ export default function SubmitDeal() {
                               ? agency.type === "holding_company"
                               : agency.type === "independent",
                           );
-                          console.log("Agency dropdown render - salesChannel:", salesChannel);
-                          console.log("Agency dropdown render - total agencies:", agencies.length);
-                          console.log("Agency dropdown render - filtered agencies:", filteredAgencies.length, filteredAgencies);
-                          console.log("Agency types in all agencies:", agencies.map(a => `${a.name}: ${a.type}`));
                           
                           return (
                             <FormItem>
