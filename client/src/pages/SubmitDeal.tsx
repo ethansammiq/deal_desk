@@ -117,7 +117,6 @@ const dealFormSchema = z
     // Conditional fields based on salesChannel
     advertiserName: z.string().optional(),
     agencyName: z.string().optional(),
-    contactEmail: z.string().optional(),
     contractTermMonths: z.string().optional(),
 
     // Deal structure
@@ -3916,6 +3915,15 @@ export default function SubmitDeal() {
                       // Set a sample deal name for testing
                       const dealName = "Test Deal " + new Date().toISOString();
                       
+                      // Calculate end date from contract term if available
+                      const contractTermMonths = parseInt(formValues.contractTermMonths || "12");
+                      const startDate = formValues.termStartDate || new Date();
+                      const endDate = formValues.termEndDate || (() => {
+                        const calculatedEndDate = new Date(startDate);
+                        calculatedEndDate.setMonth(calculatedEndDate.getMonth() + contractTermMonths);
+                        return calculatedEndDate;
+                      })();
+
                       // Create a complete object with all required fields
                       const dealData = {
                         dealName,
@@ -3925,8 +3933,8 @@ export default function SubmitDeal() {
                         businessSummary: formValues.businessSummary || "Test business summary",
                         advertiserName: formValues.advertiserName || "Test Advertiser",
                         agencyName: formValues.agencyName || "Test Agency",
-                        termStartDate: formValues.termStartDate || new Date(),
-                        termEndDate: formValues.termEndDate || new Date(Date.now() + 31536000000), // One year later
+                        termStartDate: startDate,
+                        termEndDate: endDate,
                         annualRevenue: Number(formValues.annualRevenue) || 0,
                         annualGrossMargin: Number(formValues.annualGrossMargin) || 0,
                         dealStructure: dealStructureType || "tiered",

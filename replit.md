@@ -81,6 +81,11 @@ A comprehensive deal desk application that leverages AI and advanced analytics t
 - Phase 3: Performance optimization and lazy loading
 
 ## Recent Changes
+- **2025-01-08**: ✅ Form restoration and backend schema alignment completed
+- **2025-01-08**: ✅ Removed Contact Email field to match original design
+- **2025-01-08**: ✅ Added Contract Term (Months) input with auto-calculation logic
+- **2025-01-08**: ✅ Fixed backend data flow: contractTermMonths (frontend) → contractTerm (auto-calculated backend)
+- **2025-01-08**: ✅ All LSP diagnostics resolved - project error-free
 - **2025-01-08**: ✅ Completed Phase 1.4 refactoring - advanced component extraction
 - **2025-01-08**: ✅ Created TierConfigurationPanel component (295 lines)
 - **2025-01-08**: ✅ Created ApprovalMatrixDisplay component (230 lines)
