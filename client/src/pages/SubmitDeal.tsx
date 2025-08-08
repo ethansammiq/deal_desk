@@ -1177,22 +1177,26 @@ export default function SubmitDeal() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {filteredAgencies.length > 0 ? (
-                                    filteredAgencies.map((agency) => (
+                                  {console.log("Rendering SelectContent with filtered agencies:", filteredAgencies.map(a => a.name))}
+                                  {filteredAgencies.map((agency, index) => {
+                                    console.log(`Rendering SelectItem ${index}:`, agency.name);
+                                    return (
                                       <SelectItem
                                         key={agency.id}
                                         value={agency.name}
                                       >
                                         {agency.name}
                                       </SelectItem>
-                                    ))
-                                  ) : agencies.length === 0 ? (
+                                    );
+                                  })}
+                                  {filteredAgencies.length === 0 && agencies.length > 0 && (
+                                    <SelectItem value="" disabled>
+                                      No {salesChannel === "holding_company" ? "holding companies" : "independent agencies"} available
+                                    </SelectItem>
+                                  )}
+                                  {agencies.length === 0 && (
                                     <SelectItem value="" disabled>
                                       Loading agencies...
-                                    </SelectItem>
-                                  ) : (
-                                    <SelectItem value="" disabled>
-                                      No agencies found for {salesChannel}
                                     </SelectItem>
                                   )}
                                 </SelectContent>
