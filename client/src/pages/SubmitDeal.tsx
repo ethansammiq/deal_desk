@@ -1348,31 +1348,120 @@ export default function SubmitDeal() {
                     <FormField
                       control={form.control}
                       name="contractTermMonths"
+                      render={({ field }) => {
+                        // Auto-calculate contract term when dates change
+                        const startDate = form.watch("termStartDate");
+                        const endDate = form.watch("termEndDate");
+                        
+                        React.useEffect(() => {
+                          if (startDate && endDate && startDate < endDate) {
+                            const start = new Date(startDate);
+                            const end = new Date(endDate);
+                            const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                            if (monthsDiff !== parseInt(field.value || "0")) {
+                              field.onChange(monthsDiff.toString());
+                            }
+                          }
+                        }, [startDate, endDate, field]);
+
+                        return (
+                          <FormItem>
+                            <FormLabel>
+                              Contract Term (Months) <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="14"
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  const months = parseInt(e.target.value) || 0;
+                                  field.onChange(e.target.value);
+                                  // Auto-calculate end date based on start date + months
+                                  const startDate = form.getValues("termStartDate");
+                                  if (startDate && months > 0) {
+                                    const endDate = new Date(startDate);
+                                    endDate.setMonth(endDate.getMonth() + months);
+                                    form.setValue("termEndDate", endDate);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Length of the contract in months (auto-calculated from dates)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
+
+                  {/* Date Range Selection */}
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="termStartDate"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Contract Term (Months) <span className="text-red-500">*</span>
+                            Deal Start Date <span className="text-red-500">*</span>
                           </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              placeholder="14"
-                              value={field.value || ""}
+                              type="date"
+                              value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
                               onChange={(e) => {
-                                const months = parseInt(e.target.value) || 0;
-                                field.onChange(e.target.value);
-                                // Auto-calculate end date based on start date + months
-                                const startDate = form.getValues("termStartDate");
-                                if (startDate && months > 0) {
-                                  const endDate = new Date(startDate);
-                                  endDate.setMonth(endDate.getMonth() + months);
+                                const date = e.target.value ? new Date(e.target.value) : null;
+                                field.onChange(date);
+                                
+                                // Auto-update end date if contract term is set
+                                const contractTermMonths = parseInt(form.getValues("contractTermMonths") || "0");
+                                if (date && contractTermMonths > 0) {
+                                  const endDate = new Date(date);
+                                  endDate.setMonth(endDate.getMonth() + contractTermMonths);
                                   form.setValue("termEndDate", endDate);
                                 }
                               }}
                             />
                           </FormControl>
                           <FormDescription>
-                            Length of the contract in months
+                            When the deal term begins
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="termEndDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Deal End Date <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : null;
+                                field.onChange(date);
+                                
+                                // Auto-update contract term when end date changes
+                                const startDate = form.getValues("termStartDate");
+                                if (startDate && date && startDate < date) {
+                                  const start = new Date(startDate);
+                                  const end = new Date(date);
+                                  const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                                  form.setValue("contractTermMonths", monthsDiff.toString());
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            When the deal term ends
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -3915,14 +4004,9 @@ export default function SubmitDeal() {
                       // Set a sample deal name for testing
                       const dealName = "Test Deal " + new Date().toISOString();
                       
-                      // Calculate end date from contract term if available
-                      const contractTermMonths = parseInt(formValues.contractTermMonths || "12");
+                      // Use actual form dates (they should be properly set by now)
                       const startDate = formValues.termStartDate || new Date();
-                      const endDate = formValues.termEndDate || (() => {
-                        const calculatedEndDate = new Date(startDate);
-                        calculatedEndDate.setMonth(calculatedEndDate.getMonth() + contractTermMonths);
-                        return calculatedEndDate;
-                      })();
+                      const endDate = formValues.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
                       // Create a complete object with all required fields
                       const dealData = {
