@@ -294,9 +294,9 @@ export function BasicDealInfoSection({
                       {agencies
                         .filter((agency) => {
                           if (salesChannel === "holding_company") {
-                            return agency.type === "Holding Company";
+                            return agency.type === "holding_company";
                           } else {
-                            return agency.type === "Independent";
+                            return agency.type === "independent";
                           }
                         })
                         .map((agency) => (
@@ -322,13 +322,6 @@ export function BasicDealInfoSection({
             endDateFieldName="termEndDate"
           />
 
-          {/* Financial Information using shared component */}
-          <FinancialInputGroup
-            form={form}
-            revenueFieldName="annualRevenue"
-            marginFieldName="annualGrossMargin"
-          />
-
           {/* Business Summary using shared component */}
           <FormFieldWithTooltip
             form={form}
@@ -339,17 +332,6 @@ export function BasicDealInfoSection({
             description="Describe the strategic rationale and business value of this deal"
             tooltip="Include competitive landscape, market opportunity, and expected business outcomes"
             required
-          />
-
-          {/* Contact Email using shared component */}
-          <FormFieldWithTooltip
-            form={form}
-            name="email"
-            label="Contact Email"
-            type="email"
-            placeholder="your.email@company.com"
-            description="Contact email for questions about this deal"
-            tooltip="This email will be used for approval notifications and follow-up questions"
           />
         </div>
       </CardContent>
