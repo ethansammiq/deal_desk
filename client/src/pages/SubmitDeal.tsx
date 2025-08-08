@@ -81,6 +81,8 @@ import {
 import TierSpecificIncentives, {
   type TierIncentive,
 } from "@/components/TierSpecificIncentives";
+import { TierConfigurationPanel } from "@/components/deal-form/TierConfigurationPanel";
+import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 import { BasicDealInfoSection } from "@/components/deal-form/BasicDealInfoSection";
@@ -1430,7 +1432,17 @@ export default function SubmitDeal() {
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   {/* Structure card removed as it's now empty since fields were moved to Deal Overview */}
                   {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
-                  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                  {dealStructureType === "tiered" ? (
+                    <TierConfigurationPanel
+                      dealTiers={dealTiers}
+                      setDealTiers={setDealTiers}
+                      calculateTierIncentiveCost={calculateTierIncentiveCost}
+                      calculateGrossMarginGrowthRate={calculateGrossMarginGrowthRate}
+                      calculateTierGrossProfit={calculateTierGrossProfit}
+                      calculateTierNetValue={calculateTierNetValue}
+                    />
+                  ) : (
+                    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
                       <div
@@ -2030,10 +2042,8 @@ export default function SubmitDeal() {
                         </table>
                       </div>
                     </div>
-                  </div>{" "}
-                  {/* Close revenue-section div */}
-                </div>{" "}
-                {/* Close Revenue & Profitability Section */}
+                  </div>
+                </div>
                 {/* Incentives Section - Now outside Structure container */}
                 <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                   {/* Incentives section header with collapsible control */}
@@ -2793,7 +2803,8 @@ export default function SubmitDeal() {
                       </tbody>
                     </table>
                   </div>
-                </div>
+                    </div>
+                  )}
                 <div className="mt-8 flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep}>
                     Previous: Deal Overview
