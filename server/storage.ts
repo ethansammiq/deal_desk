@@ -237,7 +237,7 @@ export class MemStorage implements IStorage {
       this.createAgency(agency);
     });
     
-    // Sample deals
+    // Sample deals - removed referenceNumber as it's auto-generated
     const sampleDeals: InsertDeal[] = [
       {
         dealName: "Coca-Cola Q1 2025 Campaign",
@@ -251,8 +251,6 @@ export class MemStorage implements IStorage {
         termEndDate: new Date("2025-12-31"),
         annualRevenue: 3000000,
         annualGrossMargin: 20.5,
-        previousYearRevenue: 2500000, 
-        previousYearMargin: 18.5,
         hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 20,
         forecastedMargin: 20.5,
@@ -260,8 +258,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 150000,
         analyticsTier: "gold",
         requiresCustomMarketing: false,
-        status: "submitted",
-        referenceNumber: "DEAL-2025-001"
+        status: "submitted"
       },
       {
         dealName: "WPP Agency Partnership",
@@ -275,8 +272,6 @@ export class MemStorage implements IStorage {
         termEndDate: new Date("2026-12-31"),
         annualRevenue: 9500000,
         annualGrossMargin: 30.2,
-        previousYearRevenue: 8500000,
-        previousYearMargin: 28.5,
         hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 11.8,
         forecastedMargin: 30.2,
@@ -284,8 +279,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 320000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "in_review",
-        referenceNumber: "DEAL-2025-002"
+        status: "in_review"
       },
       {
         dealName: "GM Custom Data Solution",
@@ -299,8 +293,6 @@ export class MemStorage implements IStorage {
         termEndDate: new Date("2026-02-28"),
         annualRevenue: 5000000,
         annualGrossMargin: 15.8,
-        previousYearRevenue: 4200000,
-        previousYearMargin: 12.3,
         hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 19,
         forecastedMargin: 15.8,
@@ -308,8 +300,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 450000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "initial_approval",
-        referenceNumber: "DEAL-2025-003"
+        status: "initial_approval"
       },
       {
         dealName: "Droga5 Client Portfolio",
@@ -323,8 +314,6 @@ export class MemStorage implements IStorage {
         termEndDate: new Date("2025-12-31"),
         annualRevenue: 980000,
         annualGrossMargin: 32.8,
-        previousYearRevenue: 950000,
-        previousYearMargin: 32.8,
         hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 3.2,
         forecastedMargin: 32.8,
@@ -332,8 +321,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 50000,
         analyticsTier: "silver",
         requiresCustomMarketing: false,
-        status: "client_feedback",
-        referenceNumber: "DEAL-2025-004"
+        status: "client_feedback"
       },
       {
         dealName: "Nike Digital Transformation",
@@ -347,8 +335,6 @@ export class MemStorage implements IStorage {
         termEndDate: new Date("2027-03-31"),
         annualRevenue: 2500000,
         annualGrossMargin: 25.5,
-        previousYearRevenue: 1800000,
-        previousYearMargin: 22.4,
         hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 38.9,
         forecastedMargin: 25.5,
@@ -356,8 +342,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 275000,
         analyticsTier: "gold",
         requiresCustomMarketing: true,
-        status: "signed",
-        referenceNumber: "DEAL-2025-005"
+        status: "signed"
       }
     ];
     
@@ -522,6 +507,9 @@ export class MemStorage implements IStorage {
       id,
       createdAt: now,
       updatedAt: now,
+      region: insertAdvertiser.region || null,
+      previousYearRevenue: insertAdvertiser.previousYearRevenue || null,
+      previousYearMargin: insertAdvertiser.previousYearMargin || null,
     };
     
     this.advertisers.set(id, advertiser);
@@ -558,6 +546,10 @@ export class MemStorage implements IStorage {
       id,
       createdAt: now,
       updatedAt: now,
+      region: insertAgency.region || null,
+      previousYearRevenue: insertAgency.previousYearRevenue || null,
+      previousYearMargin: insertAgency.previousYearMargin || null,
+      type: insertAgency.type || "independent",
     };
     
     this.agencies.set(id, agency);
@@ -582,6 +574,8 @@ export class MemStorage implements IStorage {
       id,
       createdAt: now,
       updatedAt: now,
+      incentivePercentage: insertTier.incentivePercentage || null,
+      incentiveNotes: insertTier.incentiveNotes || null,
     };
     
     this.dealTiers.set(id, tier);
@@ -641,6 +635,11 @@ export class MemStorage implements IStorage {
     const dealReferenceNumber = referenceNumber || 
       `DEAL-${now.getFullYear()}-${String(id).padStart(3, '0')}`;
     
+    // Calculate contract term in months
+    const startDate = new Date(insertDeal.termStartDate);
+    const endDate = new Date(insertDeal.termEndDate);
+    const contractTerm = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)); // 30.44 avg days per month
+
     // Create a new deal with the provided data and default values
     const deal: Deal = {
       ...insertDeal,
@@ -648,7 +647,19 @@ export class MemStorage implements IStorage {
       status: "submitted",
       createdAt: now,
       updatedAt: now,
-      referenceNumber: dealReferenceNumber
+      referenceNumber: dealReferenceNumber,
+      contractTerm,
+      email: insertDeal.email || null,
+      previousYearRevenue: insertDeal.previousYearRevenue || null,
+      previousYearMargin: insertDeal.previousYearMargin || null,
+      region: insertDeal.region || null,
+      advertiserName: insertDeal.advertiserName || null,
+      agencyName: insertDeal.agencyName || null,
+      businessSummary: insertDeal.businessSummary || null,
+      termStartDate: insertDeal.termStartDate || null,
+      termEndDate: insertDeal.termEndDate || null,
+      annualRevenue: insertDeal.annualRevenue || null,
+      annualGrossMargin: insertDeal.annualGrossMargin || null,
     };
     
     this.deals.set(id, deal);
@@ -772,36 +783,24 @@ export class MemStorage implements IStorage {
     successRate: number;
   }> {
     const deals = Array.from(this.deals.values());
+    const activeDealStatuses = ["submitted", "in_review", "initial_approval", "client_feedback"];
+    const pendingStatuses = ["submitted", "in_review"];
+    const completedStatuses = ["signed", "approved"];
+    const allCompletedStatuses = [...completedStatuses, "rejected"];
     
-    const activeDeals = deals.filter(deal => 
-      deal.status === "approved" || deal.status === "in_progress"
-    ).length;
+    const activeDeals = deals.filter(deal => activeDealStatuses.includes(deal.status)).length;
+    const pendingApproval = deals.filter(deal => pendingStatuses.includes(deal.status)).length;
+    const completedDeals = deals.filter(deal => completedStatuses.includes(deal.status)).length;
+    const totalClosedDeals = deals.filter(deal => allCompletedStatuses.includes(deal.status)).length;
     
-    const pendingApproval = deals.filter(deal => 
-      deal.status === "pending"
-    ).length;
-    
-    const completedDeals = deals.filter(deal => 
-      deal.status === "completed"
-    ).length;
-    
-    const successfulDeals = deals.filter(deal => 
-      deal.status === "completed" || deal.status === "approved"
-    ).length;
-    
-    const totalCompletedOrRejected = deals.filter(deal => 
-      deal.status === "completed" || deal.status === "approved" || deal.status === "rejected"
-    ).length;
-    
-    const successRate = totalCompletedOrRejected > 0 
-      ? Math.round((successfulDeals / totalCompletedOrRejected) * 100) 
-      : 0;
+    // Calculate success rate (approved/signed vs all closed deals)
+    const successRate = totalClosedDeals > 0 ? (completedDeals / totalClosedDeals) * 100 : 0;
     
     return {
       activeDeals,
       pendingApproval,
       completedDeals,
-      successRate
+      successRate: Math.round(successRate * 10) / 10 // Round to 1 decimal place
     };
   }
 }

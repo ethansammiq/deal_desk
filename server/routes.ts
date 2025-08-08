@@ -20,15 +20,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stats endpoint
   router.get("/stats", async (req: Request, res: Response) => {
     try {
-      // Return mock stats data to match UI display
-      const mockStats = {
-        totalDeals: 24,
-        pendingDeals: 9,
-        approvedDeals: 12,
-        rejectedDeals: 3,
-        totalValue: 8750000
+      // Get real stats from storage
+      const realStats = await storage.getDealStats();
+      const stats = {
+        activeDeals: realStats.activeDeals,
+        pendingApproval: realStats.pendingApproval, 
+        completedDeals: realStats.completedDeals,
+        successRate: realStats.successRate
       };
-      res.status(200).json(mockStats);
+      res.status(200).json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
     }

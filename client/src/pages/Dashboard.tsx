@@ -19,12 +19,20 @@ const statusVariantMap: Record<string, any> = {
   completed: "completed",
 };
 
+// Type for stats API response
+interface DealStats {
+  activeDeals: number;
+  pendingApproval: number;
+  completedDeals: number;
+  successRate: number;
+}
+
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery<DealStats>({
     queryKey: ['/api/stats'],
   });
 
-  const { data: deals, isLoading: dealsLoading } = useQuery({
+  const { data: deals, isLoading: dealsLoading } = useQuery<Deal[]>({
     queryKey: ['/api/deals'],
   });
 
@@ -58,14 +66,18 @@ export default function Dashboard() {
       ),
     },
     {
-      accessorKey: "clientName",
+      id: "client",
       header: "Client",
-      cell: ({ row }) => <div>{row.original.clientName}</div>,
+      cell: ({ row }) => {
+        const deal = row.original;
+        const clientName = deal.advertiserName || deal.agencyName || "N/A";
+        return <div>{clientName}</div>;
+      },
     },
     {
-      accessorKey: "totalValue",
+      accessorKey: "annualRevenue",
       header: "Value",
-      cell: ({ row }) => <div className="font-medium">{formatCurrency(row.original.totalValue)}</div>,
+      cell: ({ row }) => <div className="font-medium">{formatCurrency(row.original.annualRevenue || 0)}</div>,
     },
     {
       accessorKey: "status",
@@ -85,7 +97,11 @@ export default function Dashboard() {
     {
       accessorKey: "updatedAt",
       header: "Updated",
-      cell: ({ row }) => <div className="text-sm text-slate-500">{formatRelativeDate(row.original.updatedAt.toString())}</div>,
+      cell: ({ row }) => {
+        const updatedAt = row.original.updatedAt;
+        const dateString = updatedAt ? updatedAt.toString() : "";
+        return <div className="text-sm text-slate-500">{formatRelativeDate(dateString)}</div>;
+      },
     },
     {
       id: "actions",

@@ -135,12 +135,6 @@ const dealFormSchema = z
       .min(0)
       .max(100, "Annual gross margin must be between 0 and 100%"),
 
-    // Contract term (in months)
-    contractTerm: z.coerce
-      .number()
-      .min(1, "Contract term must be at least 1 month")
-      .default(12),
-
     // Contact information
     email: z.string().email().optional(),
 
@@ -625,9 +619,6 @@ export default function SubmitDeal() {
       // Financial data (simplified)
       annualRevenue: 0,
       annualGrossMargin: 0,
-
-      // Contract term (in months)
-      contractTerm: undefined,
 
       // Contact information
       email: "",
