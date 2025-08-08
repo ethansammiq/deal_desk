@@ -1140,61 +1140,40 @@ export default function SubmitDeal() {
                       />
                     )}
 
-                    {(salesChannel === "holding_company" ||
-                      salesChannel === "independent_agency") && (
-                      <FormField
-                        control={form.control}
-                        name="agencyName"
-                        render={({ field }) => {
-                          const filteredAgencies = agencies.filter((agency) =>
-                            salesChannel === "holding_company"
-                              ? agency.type === "holding_company"
-                              : agency.type === "independent",
-                          );
-                          
-                          return (
-                            <FormItem>
-                              <FormLabel>
-                                Agency Name{" "}
-                                <span className="text-red-500">*</span>
-                              </FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value || ""}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select agency" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {salesChannel === "holding_company" ? (
-                                    <>
-                                      <SelectItem value="WPP">WPP</SelectItem>
-                                      <SelectItem value="Omnicom">Omnicom</SelectItem>
-                                      <SelectItem value="Publicis">Publicis</SelectItem>
-                                      <SelectItem value="IPG">IPG</SelectItem>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <SelectItem value="72andSunny">72andSunny</SelectItem>
-                                      <SelectItem value="Droga5">Droga5</SelectItem>
-                                      <SelectItem value="The Richards Group">The Richards Group</SelectItem>
-                                      <SelectItem value="Wieden+Kennedy">Wieden+Kennedy</SelectItem>
-                                    </>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                Historical data will be loaded automatically when
-                                selected
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    )}
+                    {/* Agency dropdown - Always visible for testing */}
+                    <FormField
+                      control={form.control}
+                      name="agencyName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Agency Name <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select agency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="WPP">WPP</SelectItem>
+                              <SelectItem value="Omnicom">Omnicom</SelectItem>
+                              <SelectItem value="Publicis">Publicis</SelectItem>
+                              <SelectItem value="IPG">IPG</SelectItem>
+                              <SelectItem value="72andSunny">72andSunny</SelectItem>
+                              <SelectItem value="Droga5">Droga5</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            The agency for this deal
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   {/* Deal Type as card-style selection */}
