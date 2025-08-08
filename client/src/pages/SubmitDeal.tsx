@@ -464,8 +464,6 @@ export default function SubmitDeal() {
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
-  
-
 
   // Initialize calculation service with current advertiser/agency data
   const dealCalculations = useDealCalculations(advertisers, agencies);
@@ -1016,7 +1014,394 @@ export default function SubmitDeal() {
               />
             )}
 
+            {formStep === 0 && (
+              <CardContent className="p-6">
+                <FormSectionHeader
+                  title="Basic Deal Information"
+                  description="Provide the basic details about this commercial deal"
+                />
 
+                <div className="space-y-6">
+                  {/* Region and Sales Channel at the top */}
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="region"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Region <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select region" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="northeast">
+                                Northeast
+                              </SelectItem>
+                              <SelectItem value="midwest">Midwest</SelectItem>
+                              <SelectItem value="midatlantic">
+                                Mid-Atlantic
+                              </SelectItem>
+                              <SelectItem value="south">South</SelectItem>
+                              <SelectItem value="west">West</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="salesChannel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Sales Channel{" "}
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select sales channel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="client_direct">
+                                Client Direct
+                              </SelectItem>
+                              <SelectItem value="holding_company">
+                                Holding Company
+                              </SelectItem>
+                              <SelectItem value="independent_agency">
+                                Independent Agency
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Email field removed as requested */}
+
+                  {/* Conditional fields based on sales channel */}
+                  <div className="grid grid-cols-1 gap-6">
+                    {salesChannel === "client_direct" && (
+                      <FormField
+                        control={form.control}
+                        name="advertiserName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Advertiser Name{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select advertiser" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {advertisers.map((advertiser) => (
+                                  <SelectItem
+                                    key={advertiser.id}
+                                    value={advertiser.name}
+                                  >
+                                    {advertiser.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Historical data will be loaded automatically when
+                              selected
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {(salesChannel === "holding_company" ||
+                      salesChannel === "independent_agency") && (
+                      <FormField
+                        control={form.control}
+                        name="agencyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Agency Name{" "}
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select agency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {agencies
+                                  .filter((agency) =>
+                                    salesChannel === "holding_company"
+                                      ? agency.type === "holding_company"
+                                      : agency.type === "independent",
+                                  )
+                                  .map((agency) => (
+                                    <SelectItem
+                                      key={agency.id}
+                                      value={agency.name}
+                                    >
+                                      {agency.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Historical data will be loaded automatically when
+                              selected
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+
+                  {/* Deal Type as card-style selection */}
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="dealType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Deal Type <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {/* Grow Deal Type Card */}
+                              <Card
+                                className={`cursor-pointer transition-all hover:shadow-md ${field.value === "grow" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                                onClick={() => field.onChange("grow")}
+                              >
+                                <CardHeader className="p-4 pb-2">
+                                  <CardTitle className="text-md flex items-center space-x-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className="text-green-600"
+                                    >
+                                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                      <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                    <span>Grow</span>
+                                  </CardTitle>
+                                  <CardDescription>
+                                    20%+ YOY Growth
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0">
+                                  <p className="text-sm text-slate-600">
+                                    For existing clients with strong growth
+                                    potential. Focuses on exceeding 20%
+                                    year-over-year revenue growth through
+                                    expanded product usage or new business
+                                    units.
+                                  </p>
+                                </CardContent>
+                              </Card>
+
+                              {/* Protect Deal Type Card */}
+                              <Card
+                                className={`cursor-pointer transition-all hover:shadow-md ${field.value === "protect" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                                onClick={() => field.onChange("protect")}
+                              >
+                                <CardHeader className="p-4 pb-2">
+                                  <CardTitle className="text-md flex items-center space-x-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className="text-blue-600"
+                                    >
+                                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                      <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <span>Protect</span>
+                                  </CardTitle>
+                                  <CardDescription>
+                                    Large Account Retention
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0">
+                                  <p className="text-sm text-slate-600">
+                                    Designed for strategic account retention,
+                                    especially for large enterprise clients.
+                                    Focuses on maintaining current revenue
+                                    levels while ensuring long-term partnership
+                                    stability.
+                                  </p>
+                                </CardContent>
+                              </Card>
+
+                              {/* Custom Deal Type Card */}
+                              <Card
+                                className={`cursor-pointer transition-all hover:shadow-md ${field.value === "custom" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                                onClick={() => field.onChange("custom")}
+                              >
+                                <CardHeader className="p-4 pb-2">
+                                  <CardTitle className="text-md flex items-center space-x-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      className="text-purple-600"
+                                    >
+                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Custom</span>
+                                  </CardTitle>
+                                  <CardDescription>
+                                    Special Requirements
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0">
+                                  <p className="text-sm text-slate-600">
+                                    For specialized deals requiring custom
+                                    implementation, non-standard terms, or
+                                    unique technical requirements. Typically
+                                    used for strategic partnerships and
+                                    innovative projects.
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Deal Structure moved from Value Structure as requested */}
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+                    <FormField
+                      control={form.control}
+                      name="dealStructure"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Deal Structure{" "}
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setDealStructure(
+                                value as "tiered" | "flat_commit",
+                              );
+                            }}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Choose tiered or flat commit structure" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="flat_commit">
+                                Flat Commit
+                              </SelectItem>
+                              <SelectItem value="tiered">
+                                Tiered Revenue
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            The revenue structure for this deal
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Contract Term is now auto-calculated from start/end dates */}
+                  </div>
+
+                  {/* Business Summary moved to bottom as requested */}
+                  <FormField
+                    control={form.control}
+                    name="businessSummary"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Business Summary{" "}
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Briefly describe the deal, its objectives, and any special considerations"
+                            className="resize-none"
+                            rows={4}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Briefly describe the business opportunity, growth
+                          potential, and any special considerations.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                  <Button type="button" onClick={nextStep}>
+                    Next: Value Structure
+                  </Button>
+                </div>
+              </CardContent>
+            )}
 
             {/* Step 2: Value Structure */}
             {formStep === 1 && (

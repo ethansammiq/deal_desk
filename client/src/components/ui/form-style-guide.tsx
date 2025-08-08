@@ -186,7 +186,7 @@ export function FormProgressTracker({
         {/* Progress Bar */}
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
+            <React.Fragment key={step.id}>
               {/* Step Circle */}
               <div
                 onClick={() => onStepClick(step.id)}
@@ -215,7 +215,7 @@ export function FormProgressTracker({
                   }}
                 ></div>
               )}
-            </div>
+            </React.Fragment>
           ))}
         </div>
         
