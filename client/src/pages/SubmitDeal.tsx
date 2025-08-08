@@ -1140,40 +1140,61 @@ export default function SubmitDeal() {
                       />
                     )}
 
-                    {/* Agency dropdown - Always visible for testing */}
-                    <FormField
-                      control={form.control}
-                      name="agencyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Agency Name <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select agency" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="WPP">WPP</SelectItem>
-                              <SelectItem value="Omnicom">Omnicom</SelectItem>
-                              <SelectItem value="Publicis">Publicis</SelectItem>
-                              <SelectItem value="IPG">IPG</SelectItem>
-                              <SelectItem value="72andSunny">72andSunny</SelectItem>
-                              <SelectItem value="Droga5">Droga5</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            The agency for this deal
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Agency dropdown - conditional but with debug info */}
+                    {(salesChannel === "holding_company" || salesChannel === "independent_agency") && (
+                      <FormField
+                        control={form.control}
+                        name="agencyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Agency Name <span className="text-red-500">*</span>
+                              <span className="text-xs text-gray-500 ml-2">
+                                (Channel: {salesChannel || "none"})
+                              </span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select agency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {salesChannel === "holding_company" ? (
+                                  <>
+                                    <SelectItem value="WPP">WPP</SelectItem>
+                                    <SelectItem value="Omnicom">Omnicom</SelectItem>
+                                    <SelectItem value="Publicis">Publicis</SelectItem>
+                                    <SelectItem value="IPG">IPG</SelectItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <SelectItem value="72andSunny">72andSunny</SelectItem>
+                                    <SelectItem value="Droga5">Droga5</SelectItem>
+                                    <SelectItem value="The Richards Group">The Richards Group</SelectItem>
+                                    <SelectItem value="Wieden+Kennedy">Wieden+Kennedy</SelectItem>
+                                  </>
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              The agency for this deal
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Debug info to show sales channel value */}
+                    <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
+                      Debug: salesChannel = "{salesChannel || "undefined"}"
+                      <br />
+                      Should show agency dropdown: {(salesChannel === "holding_company" || salesChannel === "independent_agency") ? "YES" : "NO"}
+                    </div>
                   </div>
 
                   {/* Deal Type as card-style selection */}
