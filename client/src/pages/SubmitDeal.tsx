@@ -83,6 +83,9 @@ import TierSpecificIncentives, {
 } from "@/components/TierSpecificIncentives";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
+import { BasicDealInfoSection } from "@/components/deal-form/BasicDealInfoSection";
+import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
+import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z
@@ -230,20 +233,20 @@ export default function SubmitDeal() {
   
   // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearMargin = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearMargin(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearGrossProfit = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -252,8 +255,8 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedGrossProfit = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -262,14 +265,14 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedProfit = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearClientValue = (): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearClientValue(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -298,8 +301,8 @@ export default function SubmitDeal() {
 
   // Calculate gross margin growth rate using the service
   const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
-    const advertiserName = (getTypedValue("advertiserName") as string) || "";
-    const agencyName = (getTypedValue("agencyName") as string) || "";
+    const advertiserName = String(getTypedValue("advertiserName") || "");
+    const agencyName = String(getTypedValue("agencyName") || "");
     
     // Convert DealTierData to DealTier format expected by service
     const serviceTier = {
@@ -998,6 +1001,17 @@ export default function SubmitDeal() {
             form.handleSubmit(onSubmit)(e);
           }}>
             {/* Step 1: Deal Overview */}
+            {formStep === 0 && (
+              <BasicDealInfoSection
+                form={form}
+                salesChannel={salesChannel}
+                dealStructureType={dealStructureType}
+                setDealStructure={setDealStructure}
+                agencies={agencies}
+                advertisers={advertisers}
+              />
+            )}
+
             {formStep === 0 && (
               <CardContent className="p-6">
                 <FormSectionHeader
