@@ -118,6 +118,7 @@ const dealFormSchema = z
     advertiserName: z.string().optional(),
     agencyName: z.string().optional(),
     contactEmail: z.string().optional(),
+    contractTermMonths: z.string().optional(),
 
     // Deal structure
     dealStructure: z.enum(["tiered", "flat_commit"], {
@@ -1084,28 +1085,6 @@ export default function SubmitDeal() {
                     />
                   </div>
 
-                  {/* Contact Email field */}
-                  <FormField
-                    control={form.control}
-                    name="contactEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Contact Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="your.email@company.com"
-                            value={field.value || ""}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Contact email for questions about this deal
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   {/* Conditional fields based on sales channel */}
                   <div className="grid grid-cols-1 gap-6">
                     {salesChannel === "client_direct" && (
@@ -1332,23 +1311,20 @@ export default function SubmitDeal() {
                     />
                   </div>
 
-                  {/* Deal Structure moved from Value Structure as requested */}
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+                  {/* Deal Structure */}
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="dealStructure"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Deal Structure{" "}
-                            <span className="text-red-500">*</span>
+                            Deal Structure <span className="text-red-500">*</span>
                           </FormLabel>
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
-                              setDealStructure(
-                                value as "tiered" | "flat_commit",
-                              );
+                              setDealStructure(value as "tiered" | "flat_commit");
                             }}
                             value={field.value || ""}
                           >
@@ -1358,12 +1334,8 @@ export default function SubmitDeal() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="flat_commit">
-                                Flat Commit
-                              </SelectItem>
-                              <SelectItem value="tiered">
-                                Tiered Revenue
-                              </SelectItem>
+                              <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                              <SelectItem value="flat_commit">Flat Commit</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormDescription>
@@ -1374,41 +1346,76 @@ export default function SubmitDeal() {
                       )}
                     />
 
-                    {/* Contract Term is now auto-calculated from start/end dates */}
+                    <FormField
+                      control={form.control}
+                      name="contractTermMonths"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Contract Term (Months) <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="14"
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const months = parseInt(e.target.value) || 0;
+                                field.onChange(e.target.value);
+                                // Auto-calculate end date based on start date + months
+                                const startDate = form.getValues("termStartDate");
+                                if (startDate && months > 0) {
+                                  const endDate = new Date(startDate);
+                                  endDate.setMonth(endDate.getMonth() + months);
+                                  form.setValue("termEndDate", endDate);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Length of the contract in months
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  {/* Business Summary moved to bottom as requested */}
+                  {/* Business Summary */}
                   <FormField
                     control={form.control}
                     name="businessSummary"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Business Summary{" "}
-                          <span className="text-red-500">*</span>
+                          Business Summary <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Briefly describe the deal, its objectives, and any special considerations"
-                            className="resize-none"
-                            rows={4}
-                            {...field}
+                            className="min-h-[100px]"
+                            value={field.value || ""}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormDescription>
-                          Briefly describe the business opportunity, growth
-                          potential, and any special considerations.
+                          Briefly describe the business opportunity, growth potential, and any special considerations.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="mt-8 flex justify-end">
-                  <Button type="button" onClick={nextStep}>
-                    Next: Value Structure
-                  </Button>
+                  {/* Navigation Button */}
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      Next: Value Structure
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             )}
