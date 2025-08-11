@@ -70,20 +70,13 @@ const dealScopingSchema = z
       required_error: "End date is required",
     }),
 
-    // Growth opportunity fields
-    growthOpportunityMIQ: z
+    // Simplified business context (minimal for scoping requests)
+    requestType: z.enum(["scoping", "pricing", "technical"], {
+      required_error: "Request type is required",
+    }),
+    businessContext: z
       .string()
-      .min(10, "Please provide more details about the growth opportunity"),
-    growthAmbition: z
-      .number()
-      .min(1000000, "Growth ambition must be at least $1M"),
-    growthOpportunityClient: z
-      .string()
-      .min(
-        10,
-        "Please provide more details about the client's growth opportunity",
-      ),
-    clientAsks: z.string().optional(),
+      .min(20, "Please provide more details about your request"),
   })
   .superRefine((data, ctx) => {
     // If sales channel is client_direct, advertiserName is required
@@ -147,10 +140,13 @@ export default function RequestSupport() {
       region: undefined,
       advertiserName: "",
       agencyName: "",
-      growthOpportunityMIQ: "",
-      growthAmbition: 1000000,
-      growthOpportunityClient: "",
-      clientAsks: "",
+      dealType: undefined,
+      dealStructure: undefined,
+      contractTermMonths: "",
+      termStartDate: undefined,
+      termEndDate: undefined,
+      requestType: undefined,
+      businessContext: "",
     },
     mode: "onChange",
   });
@@ -310,7 +306,7 @@ export default function RequestSupport() {
         steps={[
           { id: "sales-channel", label: "Client Information" },
           { id: "deal-details", label: "Deal Timeline" },
-          { id: "growth-opportunity", label: "Opportunity Assessment" }
+          { id: "growth-opportunity", label: "Request Details" }
         ]}
         currentStep={activeTab}
         onStepClick={(stepId) => setActiveTab(stepId.toString())}
@@ -359,23 +355,29 @@ export default function RequestSupport() {
               >
                 <FormField
                   control={form.control}
-                  name="growthOpportunityMIQ"
+                  name="requestType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Growth Opportunity (MIQ){" "}
-                        <span className="text-red-500">*</span>
+                        Request Type <span className="text-red-500">*</span>
                       </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe the pathway to growth from our perspective"
-                          className="resize-none"
-                          rows={4}
-                          {...field}
-                        />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select the type of assistance needed" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="scoping">Deal Scoping & Strategy</SelectItem>
+                          <SelectItem value="pricing">Pricing & Structure</SelectItem>
+                          <SelectItem value="technical">Technical Requirements</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        What's the pathway to growth from our perspective?
+                        What type of assistance do you need with this deal?
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -384,74 +386,22 @@ export default function RequestSupport() {
 
                 <FormField
                   control={form.control}
-                  name="growthAmbition"
+                  name="businessContext"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        2025 Growth Ambition ($){" "}
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1000000"
-                          placeholder="Enter amount (minimum $1M)"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Growth ambition must be at least $1M
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="growthOpportunityClient"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Growth Opportunity (Client){" "}
-                        <span className="text-red-500">*</span>
+                        Business Context <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Describe how the client is looking to grow their business AND with MIQ"
+                          placeholder="Provide context about the opportunity, client needs, and what assistance you're seeking..."
                           className="resize-none"
-                          rows={4}
+                          rows={6}
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        How is the client looking to grow their business AND
-                        with MIQ?
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="clientAsks"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Client Asks</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe what the client has asked from us (if applicable)"
-                          className="resize-none"
-                          rows={4}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        What has the client asked from us (if applicable)?
+                        Describe the business opportunity, client requirements, and the specific help you need from our partnership team.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -479,7 +429,7 @@ export default function RequestSupport() {
               Previous: Client Information
             </Button>
             <Button type="button" onClick={goToNextTab}>
-              Next: Opportunity Assessment
+              Next: Request Details
             </Button>
           </div>
         )}

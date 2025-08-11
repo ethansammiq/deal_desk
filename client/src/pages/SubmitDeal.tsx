@@ -104,6 +104,21 @@ const dealFormSchema = z
       .string()
       .min(10, "Business summary should be at least 10 characters"),
 
+    // Growth opportunity fields (moved from RequestSupport)
+    growthOpportunityMIQ: z
+      .string()
+      .min(10, "Please provide more details about the growth opportunity"),
+    growthAmbition: z
+      .number()
+      .min(1000000, "Growth ambition must be at least $1M"),
+    growthOpportunityClient: z
+      .string()
+      .min(
+        10,
+        "Please provide more details about the client's growth opportunity",
+      ),
+    clientAsks: z.string().optional(),
+
     // Client/Agency information
     salesChannel: z.enum(
       ["holding_company", "independent_agency", "client_direct"],
@@ -563,6 +578,12 @@ export default function SubmitDeal() {
 
       // Business information
       businessSummary: "",
+
+      // Growth opportunity fields (moved from RequestSupport)
+      growthOpportunityMIQ: "",
+      growthAmbition: 1000000,
+      growthOpportunityClient: "",
+      clientAsks: "",
 
       // Client/Agency information
       salesChannel: undefined,
