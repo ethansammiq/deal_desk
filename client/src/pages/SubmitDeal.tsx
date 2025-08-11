@@ -132,21 +132,7 @@ export default function SubmitDeal() {
       projectedNetValue: 0,
     });
 
-  // Type-safe helper functions for getting form values
-  function getTypedValue<T extends string>(
-    field: T,
-  ): string | number | boolean | Date | undefined {
-    // Using type assertion to ensure correct typing
-    return form.getValues(field as any);
-  }
-
-  // Type-safe helper function for watching form values
-  function watchTypedValue<T extends string>(
-    field: T,
-  ): string | number | boolean | Date | undefined {
-    // Using type assertion to ensure correct typing
-    return form.watch(field as any);
-  }
+  // Legacy helper functions removed - using form.watch() and form.getValues() directly
 
   // Handle approval level changes
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
@@ -619,8 +605,8 @@ export default function SubmitDeal() {
   }, [toast]);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
-  const salesChannel = watchTypedValue("salesChannel");
-  const dealStructureValue = watchTypedValue("dealStructure");
+  const salesChannel = form.watch("salesChannel");
+  const dealStructureValue = form.watch("dealStructure");
 
   // Update dealStructureType when form value changes
   useEffect(() => {
@@ -632,8 +618,8 @@ export default function SubmitDeal() {
   // Auto-populate region when selecting advertiser or agency
   useEffect(() => {
     const updateRegionData = async () => {
-      const advertiserName = getTypedValue("advertiserName");
-      const agencyName = getTypedValue("agencyName");
+      const advertiserName = form.watch("advertiserName");
+      const agencyName = form.watch("agencyName");
 
       if (salesChannel === "client_direct" && advertiserName) {
         const advertiser = advertisers.find(
@@ -1536,18 +1522,18 @@ export default function SubmitDeal() {
                 />
                 <div className="space-y-6">
                   {/* Simplified approval alert based on basic deal parameters */}
-                  {watchTypedValue("annualRevenue") !== undefined &&
-                    watchTypedValue("contractTerm") !== undefined && (
+                  {form.watch("annualRevenue") !== undefined &&
+                    form.watch("contractTerm") !== undefined && (
                       <ApprovalAlert
                         totalValue={
-                          Number(watchTypedValue("annualRevenue")) || 0
+                          Number(form.watch("annualRevenue")) || 0
                         }
                         contractTerm={
-                          Number(watchTypedValue("contractTerm")) || 12
+                          Number(form.watch("contractTerm")) || 12
                         }
-                        dealType={String(watchTypedValue("dealType")) || "grow"}
+                        dealType={String(form.watch("dealType")) || "grow"}
                         salesChannel={
-                          String(watchTypedValue("salesChannel")) ||
+                          String(form.watch("salesChannel")) ||
                           "independent_agency"
                         }
                         onChange={handleApprovalChange}
