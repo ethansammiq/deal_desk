@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FinancialInputGroup } from "@/components/ui/form-components";
+import { FinancialTierTable } from "./FinancialTierTable";
 
 // Type this component to accept any valid form structure
 type ValueStructureFormValues = any;
@@ -130,137 +131,83 @@ export function ValueStructureSection({
           {/* Tiered Structure */}
           {dealStructureType === "tiered" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  📈 Deal Tier Configuration
-                </h3>
-                <Button
-                  type="button"
-                  onClick={addTier}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Tier
-                </Button>
-              </div>
+              {/* Enhanced Financial Table */}
+              <FinancialTierTable
+                dealTiers={dealTiers}
+                setDealTiers={setDealTiers}
+                lastYearRevenue={850000}
+                lastYearGrossMargin={35.0}
+              />
 
-              {/* Render each tier */}
-              {dealTiers.map((tier) => (
-                <div
-                  key={tier.tierNumber}
-                  className="border-l-4 border-blue-500 bg-gray-50 rounded-lg p-6 space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-lg">
-                      Tier {tier.tierNumber} <span className="text-sm text-gray-500 font-normal">0</span>
-                    </h4>
-                    {dealTiers.length > 1 && (
-                      <Button
-                        type="button"
-                        onClick={() => removeTier(tier.tierNumber)}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+              {/* Tier Configuration Details */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Tier Configuration Details</h3>
+                <div className="grid gap-4">
+                  {dealTiers.map((tier) => (
+                    <div
+                      key={tier.tierNumber}
+                      className="border border-slate-200 rounded-lg p-4 bg-slate-50"
+                    >
+                      <h4 className="font-medium mb-3">Tier {tier.tierNumber} - Additional Settings</h4>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">
+                            Incentive Type
+                          </label>
+                          <Select
+                            value={tier.incentiveType || "rebate"}
+                            onValueChange={(value: "rebate" | "discount" | "bonus" | "other") => {
+                              updateTier(tier.tierNumber, { incentiveType: value });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="rebate">Rebate</SelectItem>
+                              <SelectItem value="discount">Discount</SelectItem>
+                              <SelectItem value="bonus">Bonus</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">
-                        Annual Revenue <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="Enter tier revenue"
-                        value={tier.annualRevenue || ""}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                          updateTier(tier.tierNumber, { annualRevenue: value });
-                        }}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Expected revenue for this tier</p>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">
+                            Incentive Percentage
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            placeholder="Enter incentive %"
+                            value={tier.incentivePercentage || ""}
+                            onChange={(e) => {
+                              const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                              updateTier(tier.tierNumber, { incentivePercentage: value });
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="text-sm font-medium text-gray-700">
+                          Tier Notes
+                        </label>
+                        <Textarea
+                          placeholder="Notes about this tier's structure, targets, or special conditions..."
+                          value={tier.incentiveNotes || ""}
+                          onChange={(e) => {
+                            updateTier(tier.tierNumber, { incentiveNotes: e.target.value });
+                          }}
+                          className="min-h-[60px] mt-1"
+                        />
+                      </div>
                     </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">
-                        Gross Margin % <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        placeholder="Enter margin %"
-                        value={tier.annualGrossMarginPercent || ""}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                          updateTier(tier.tierNumber, { annualGrossMarginPercent: value });
-                        }}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Gross margin percentage</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">
-                        Incentive Type
-                      </label>
-                      <Select
-                        value={tier.incentiveType || "rebate"}
-                        onValueChange={(value: "rebate" | "discount" | "bonus" | "other") => {
-                          updateTier(tier.tierNumber, { incentiveType: value });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="rebate">Rebate</SelectItem>
-                          <SelectItem value="discount">Discount</SelectItem>
-                          <SelectItem value="bonus">Bonus</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">
-                        Incentive Percentage
-                      </label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        placeholder="Enter incentive %"
-                        value={tier.incentivePercentage || ""}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                          updateTier(tier.tierNumber, { incentivePercentage: value });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Tier Notes
-                    </label>
-                    <Textarea
-                      placeholder="Notes about this tier's structure, targets, or special conditions..."
-                      value={tier.incentiveNotes || ""}
-                      onChange={(e) => {
-                        updateTier(tier.tierNumber, { incentiveNotes: e.target.value });
-                      }}
-                      className="min-h-[80px]"
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
 
               {/* Hierarchical Incentives for Tiered Structure */}
               <div className="space-y-4">

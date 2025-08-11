@@ -1411,8 +1411,8 @@ export default function SubmitDeal() {
                     showAddIncentiveForm={showAddIncentiveForm}
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
-                  {/* All structure handling now done in ValueStructureSection */}
-                  {false && dealStructureType === "flat_commit" && (
+                  {/* Legacy flat_commit handling - now handled in ValueStructureSection */}
+                  {false && (
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">
