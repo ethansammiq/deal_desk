@@ -46,9 +46,6 @@ import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 // Schema for deal scoping requests
 const dealScopingSchema = z
   .object({
-    // Email address
-    email: z.string().email("Please enter a valid email address").optional(),
-
     // Sales channel and client information
     salesChannel: z.string().min(1, "Sales channel is required"),
     region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
@@ -71,13 +68,6 @@ const dealScopingSchema = z
         "Please provide more details about the client's growth opportunity",
       ),
     clientAsks: z.string().optional(),
-
-    // Legacy fields maintained for compatibility
-    requestTitle: z
-      .string()
-      .min(1, "Request title is required")
-      .default("Deal Scoping Request"),
-    description: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     // If sales channel is client_direct, advertiserName is required
@@ -332,9 +322,7 @@ export default function RequestSupport() {
                   agencies={agencies}
                   advertisers={advertisers}
                   salesChannel={form.watch("salesChannel")}
-                  includeEmail={true}
-                  emailLabel="Email Address"
-                  emailPlaceholder="Your email address"
+                  includeEmail={false}
                   layout="stacked"
                 />
               </TabsContent>
