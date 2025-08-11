@@ -22,23 +22,14 @@ import { FinancialTierTable } from "./FinancialTierTable";
 // Type this component to accept any valid form structure
 type ValueStructureFormValues = any;
 
-interface DealTierData {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
-  incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
-}
+// Import unified interface from hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 interface ValueStructureSectionProps {
   form: UseFormReturn<ValueStructureFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
-  dealTiers: DealTierData[];
-  setDealTiers: (tiers: DealTierData[]) => void;
+  dealTiers: DealTier[];
+  setDealTiers: (tiers: DealTier[]) => void;
   selectedIncentives: SelectedIncentive[];
   setSelectedIncentives: (incentives: SelectedIncentive[]) => void;
   tierIncentives: TierIncentive[];
@@ -62,16 +53,15 @@ export function ValueStructureSection({
   // Helper function to add a new tier
   const addTier = () => {
     const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTierData = {
+    const newTier: DealTier = {
       tierNumber: newTierNumber,
-      annualRevenue: undefined,
-      annualGrossMargin: undefined,
-      annualGrossMarginPercent: undefined,
-      incentivePercentage: undefined,
+      annualRevenue: 0,
+      annualGrossMargin: 0.35, // 35% as decimal
+      incentiveCategory: "financial",
+      incentiveSubCategory: "discounts",
+      specificIncentive: "Volume Discount",
+      incentiveValue: 0,
       incentiveNotes: "",
-      incentiveType: "rebate",
-      incentiveThreshold: undefined,
-      incentiveAmount: undefined,
     };
     setDealTiers([...dealTiers, newTier]);
   };

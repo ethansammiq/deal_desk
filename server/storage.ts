@@ -574,7 +574,6 @@ export class MemStorage implements IStorage {
       id,
       createdAt: now,
       updatedAt: now,
-      incentivePercentage: insertTier.incentivePercentage || null,
       incentiveNotes: insertTier.incentiveNotes || null,
     };
     

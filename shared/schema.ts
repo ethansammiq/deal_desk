@@ -69,21 +69,36 @@ export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequ
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
   }).passthrough(); // Allow additional fields from shared components
 
-// Tier configuration for tiered deals
+// Tier configuration for tiered deals - Updated unified schema
 export const dealTiers = pgTable("deal_tiers", {
   id: serial("id").primaryKey(),
   dealId: integer("deal_id").notNull(),
   tierNumber: integer("tier_number").notNull(), // 1, 2, 3, 4 for tier ordering
   annualRevenue: doublePrecision("annual_revenue").notNull(),
-  annualGrossMargin: doublePrecision("annual_gross_margin").notNull(), // as a percentage
-  incentivePercentage: doublePrecision("incentive_percentage").default(0),
-  incentiveNotes: text("incentive_notes"),
+  annualGrossMargin: doublePrecision("annual_gross_margin").notNull(), // stored as decimal (0.355 for 35.5%)
+  incentiveCategory: text("incentive_category", { 
+    enum: ["financial", "resources", "product-innovation", "technology", "analytics", "marketing"] 
+  }).notNull(),
+  incentiveSubCategory: text("incentive_sub_category").notNull(),
+  specificIncentive: text("specific_incentive").notNull(),
+  incentiveValue: doublePrecision("incentive_value").notNull(), // USD amount
+  incentiveNotes: text("incentive_notes"), // Optional field
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertDealTierSchema = createInsertSchema(dealTiers)
-  .omit({ id: true, createdAt: true, updatedAt: true });
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .extend({
+    tierNumber: z.number().min(1, "Tier number must be positive"),
+    annualRevenue: z.number().min(0, "Annual revenue must be positive"),
+    annualGrossMargin: z.number().min(0).max(1, "Gross margin must be between 0 and 1 (decimal)"),
+    incentiveValue: z.number().min(0, "Incentive value must be positive"),
+    incentiveCategory: z.enum(["financial", "resources", "product-innovation", "technology", "analytics", "marketing"]),
+    incentiveSubCategory: z.string().min(1, "Incentive subcategory is required"),
+    specificIncentive: z.string().min(1, "Specific incentive is required"),
+    incentiveNotes: z.string().optional(),
+  });
 
 // Deals table - updated with new fields
 export const deals = pgTable("deals", {

@@ -4,18 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 
-interface DealTierData {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
-  incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-}
+// Import unified interface from hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 interface FinancialTierTableProps {
-  dealTiers: DealTierData[];
-  setDealTiers: (tiers: DealTierData[]) => void;
+  dealTiers: DealTier[];
+  setDealTiers: (tiers: DealTier[]) => void;
   lastYearRevenue?: number;
   lastYearGrossMargin?: number;
   isFlat?: boolean;
@@ -38,13 +32,15 @@ export function FinancialTierTable({
     if (isFlat) return; // Don't add tiers for flat commit
     
     const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTierData = {
+    const newTier: DealTier = {
       tierNumber: newTierNumber,
       annualRevenue: 0,
-      annualGrossMarginPercent: 35,
-      incentivePercentage: 0,
+      annualGrossMargin: 0.35, // 35% as decimal
+      incentiveCategory: "financial",
+      incentiveSubCategory: "discounts",
+      specificIncentive: "Volume Discount",
+      incentiveValue: 0,
       incentiveNotes: "",
-      incentiveType: "rebate",
     };
     const updatedTiers = [...dealTiers, newTier];
     console.log('Setting new tiers:', updatedTiers); // Debug log

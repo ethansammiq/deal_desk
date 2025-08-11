@@ -1,16 +1,26 @@
 import { useState, useCallback, useMemo } from 'react';
 
-// Unified tier interface - matches existing DealTierData throughout the app
+// Unified tier interface - matches database schema exactly
 export interface DealTier {
+  // Database fields (optional for new tiers)
+  id?: number;
+  dealId?: number;
+  
+  // Required user inputs
   tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
+  annualRevenue: number;                    // USD
+  annualGrossMargin: number;                // Decimal (0.355 for 35.5%)
+  incentiveCategory: "financial" | "resources" | "product-innovation" | "technology" | "analytics" | "marketing";
+  incentiveSubCategory: string;
+  specificIncentive: string;
+  incentiveValue: number;                   // USD amount
+  
+  // Optional field
   incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
+  
+  // System fields
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface TierValidationError {
@@ -32,17 +42,16 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     if (initialTiers.length > 0) {
       return initialTiers;
     }
-    // Create default first tier matching app structure
+    // Create default first tier with required fields
     return [{
       tierNumber: 1,
       annualRevenue: 0,
-      annualGrossMargin: 0,
-      annualGrossMarginPercent: 35,
-      incentivePercentage: 0,
+      annualGrossMargin: 0.35, // 35% as decimal
+      incentiveCategory: "financial",
+      incentiveSubCategory: "discounts",
+      specificIncentive: "Volume Discount",
+      incentiveValue: 0,
       incentiveNotes: "",
-      incentiveType: "rebate",
-      incentiveThreshold: 0,
-      incentiveAmount: 0,
     }];
   });
 
@@ -57,13 +66,12 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       const newTier: DealTier = {
         tierNumber: newTierNumber,
         annualRevenue: 0,
-        annualGrossMargin: 0,
-        annualGrossMarginPercent: 35,
-        incentivePercentage: 0,
+        annualGrossMargin: 0.35, // 35% as decimal
+        incentiveCategory: "financial",
+        incentiveSubCategory: "discounts",
+        specificIncentive: "Volume Discount",
+        incentiveValue: 0,
         incentiveNotes: "",
-        incentiveType: "rebate",
-        incentiveThreshold: 0,
-        incentiveAmount: 0,
       };
 
       return [...prev, newTier];
@@ -102,14 +110,10 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
       const updatedTier = { ...tier, ...updates };
 
-      // Auto-calculate incentive amount from percentage
-      if (updates.incentivePercentage !== undefined && annualRevenue) {
-        updatedTier.incentiveAmount = (annualRevenue * updates.incentivePercentage) / 100;
-      }
-      
-      // Auto-calculate percentage from amount
-      if (updates.incentiveAmount !== undefined && annualRevenue && annualRevenue > 0) {
-        updatedTier.incentivePercentage = (updates.incentiveAmount / annualRevenue) * 100;
+      // Auto-calculate incentive value from percentage (if legacy fields provided)
+      if (annualRevenue && updatedTier.annualRevenue) {
+        // Ensure consistency between value and any legacy calculations
+        updatedTier.incentiveValue = updatedTier.incentiveValue || 0;
       }
 
       return updatedTier;
@@ -129,13 +133,12 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       setTiers([{
         tierNumber: 1,
         annualRevenue: 0,
-        annualGrossMargin: 0,
-        annualGrossMarginPercent: 35,
-        incentivePercentage: 0,
+        annualGrossMargin: 0.35, // 35% as decimal
+        incentiveCategory: "financial",
+        incentiveSubCategory: "discounts",
+        specificIncentive: "Volume Discount",
+        incentiveValue: 0,
         incentiveNotes: "",
-        incentiveType: "rebate",
-        incentiveThreshold: 0,
-        incentiveAmount: 0,
       }]);
     }
   }, [initialTiers]);
@@ -154,30 +157,46 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         });
       }
 
-      // Validate incentive percentage
-      if (tier.incentivePercentage !== undefined && (tier.incentivePercentage < 0 || tier.incentivePercentage > 100)) {
+      // Validate gross margin (decimal)
+      if (tier.annualGrossMargin < 0 || tier.annualGrossMargin > 1) {
         errors.push({
           tierNumber: tier.tierNumber,
-          field: 'incentivePercentage',
-          message: 'Incentive percentage must be between 0 and 100'
+          field: 'annualGrossMargin',
+          message: 'Gross margin must be between 0 and 1 (decimal)'
         });
       }
 
-      // Validate incentive amount
-      if (tier.incentiveAmount !== undefined && tier.incentiveAmount < 0) {
+      // Validate incentive value
+      if (tier.incentiveValue < 0) {
         errors.push({
           tierNumber: tier.tierNumber,
-          field: 'incentiveAmount',
-          message: 'Incentive amount cannot be negative'
+          field: 'incentiveValue',
+          message: 'Incentive value cannot be negative'
         });
       }
 
-      // Validate gross margin percent
-      if (tier.annualGrossMarginPercent !== undefined && (tier.annualGrossMarginPercent < 0 || tier.annualGrossMarginPercent > 100)) {
+      // Validate required incentive fields
+      if (!tier.incentiveCategory) {
         errors.push({
           tierNumber: tier.tierNumber,
-          field: 'annualGrossMarginPercent',
-          message: 'Gross margin percentage must be between 0 and 100'
+          field: 'incentiveCategory',
+          message: 'Incentive category is required'
+        });
+      }
+
+      if (!tier.incentiveSubCategory) {
+        errors.push({
+          tierNumber: tier.tierNumber,
+          field: 'incentiveSubCategory',
+          message: 'Incentive subcategory is required'
+        });
+      }
+
+      if (!tier.specificIncentive) {
+        errors.push({
+          tierNumber: tier.tierNumber,
+          field: 'specificIncentive',
+          message: 'Specific incentive is required'
         });
       }
     });
@@ -186,26 +205,21 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
   }, [tiers]);
 
   // Computed values
-  const totalIncentiveAmount = useMemo(() => {
-    return tiers.reduce((sum, tier) => sum + (tier.incentiveAmount || 0), 0);
+  const totalIncentiveValue = useMemo(() => {
+    return tiers.reduce((sum, tier) => sum + tier.incentiveValue, 0);
   }, [tiers]);
 
   const totalAnnualRevenue = useMemo(() => {
-    return tiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0);
+    return tiers.reduce((sum, tier) => sum + tier.annualRevenue, 0);
   }, [tiers]);
 
-  const averageIncentivePercentage = useMemo(() => {
-    const validPercentages = tiers.filter(t => (t.incentivePercentage || 0) > 0);
-    if (validPercentages.length === 0) return 0;
-    
-    return validPercentages.reduce((sum, tier) => sum + (tier.incentivePercentage || 0), 0) / validPercentages.length;
+  const averageGrossMargin = useMemo(() => {
+    if (tiers.length === 0) return 0;
+    return tiers.reduce((sum, tier) => sum + tier.annualGrossMargin, 0) / tiers.length;
   }, [tiers]);
 
-  const averageGrossMarginPercent = useMemo(() => {
-    const validMargins = tiers.filter(t => (t.annualGrossMarginPercent || 0) > 0);
-    if (validMargins.length === 0) return 0;
-    
-    return validMargins.reduce((sum, tier) => sum + (tier.annualGrossMarginPercent || 0), 0) / validMargins.length;
+  const totalGrossProfit = useMemo(() => {
+    return tiers.reduce((sum, tier) => sum + (tier.annualRevenue * tier.annualGrossMargin), 0);
   }, [tiers]);
 
   const isValid = validationErrors.length === 0;
@@ -226,10 +240,10 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     resetTiers,
     
     // Computed
-    totalIncentiveAmount,
+    totalIncentiveValue,
     totalAnnualRevenue,
-    averageIncentivePercentage,
-    averageGrossMarginPercent,
+    averageGrossMargin,
+    totalGrossProfit,
     isValid,
     canAddTier,
     canRemoveTier,

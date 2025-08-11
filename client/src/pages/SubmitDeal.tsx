@@ -95,6 +95,7 @@ import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
+import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -191,11 +192,13 @@ export default function SubmitDeal() {
     previousYearMargin?: number;
   }
 
+  // Legacy interface - replaced by DealTier from useDealTiers hook
+  // Keeping for migration purposes only
   interface DealTierData {
     tierNumber: number;
     annualRevenue?: number;
     annualGrossMargin?: number;
-    annualGrossMarginPercent?: number;
+    annualGrossMargin?: number;
     incentivePercentage?: number;
     incentiveNotes?: string;
     incentiveType?: "rebate" | "discount" | "bonus" | "other";
@@ -272,7 +275,7 @@ export default function SubmitDeal() {
   
   // Use tierManager.tiers as dealTiers for backward compatibility
   const dealTiers = tierManager.tiers;
-  const setDealTiers = tierManager.updateAllTiers;
+  const setDealTiers = (tiers: DealTier[]) => tierManager.updateAllTiers(tiers);
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -330,29 +333,29 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 2: Replace duplicate logic with service calls
-  const calculateTierGrossProfit = (tier: DealTierData): number => {
-    // Convert DealTierData to DealTier format and use service
+  const calculateTierGrossProfit = (tier: DealTier): number => {
+    // Use DealTier directly with service
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateTierGrossProfit(serviceTier, selectedIncentives, tierIncentives);
   };
 
   // ✅ PHASE 2: Replace with service call  
-  const calculateRevenueGrowthRate = (tier: DealTierData): number => {
+  const calculateRevenueGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateRevenueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
   // Calculate gross margin growth rate using the service
-  const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
+  const calculateGrossMarginGrowthRate = (tier: DealTier): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
     
@@ -360,19 +363,19 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     
     return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, String(salesChannel || ""), advertiserName, agencyName);
   };
 
   // ✅ PHASE 3: Migrated to service - calculateGrossProfitGrowthRate
-  const calculateGrossProfitGrowthRate = (tier: DealTierData): number => {
+  const calculateGrossProfitGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateGrossProfitGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
@@ -383,7 +386,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
   };
@@ -393,7 +396,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateAdjustedGrossMargin(serviceTier, selectedIncentives, tierIncentives);
   };
@@ -404,7 +407,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
   };
@@ -414,7 +417,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateClientValue(serviceTier);
   };
@@ -425,7 +428,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateClientValueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
@@ -435,7 +438,7 @@ export default function SubmitDeal() {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent
+      annualGrossMargin: tier.annualGrossMargin
     };
     return dealCalculations.calculateCostGrowthRate(serviceTier, selectedIncentives, tierIncentives);
   };
@@ -1698,23 +1701,15 @@ export default function SubmitDeal() {
                                       min="0"
                                       max="100"
                                       value={
-                                        tier.annualGrossMarginPercent || ""
+                                        (tier.annualGrossMargin || 0) * 100
                                       }
                                       onChange={(e) => {
                                         const newTiers = [...dealTiers];
-                                        newTiers[
-                                          index
-                                        ].annualGrossMarginPercent = e.target
-                                          .value
-                                          ? parseFloat(e.target.value)
-                                          : 0;
-                                        // Also update the gross margin value based on percentage and revenue
+                                        // Store as decimal (percentage / 100)
                                         const percent = e.target.value
                                           ? parseFloat(e.target.value) / 100
                                           : 0;
-                                        newTiers[index].annualGrossMargin =
-                                          (newTiers[index].annualRevenue || 0) *
-                                          percent;
+                                        newTiers[index].annualGrossMargin = percent;
                                         setDealTiers(newTiers);
                                       }}
                                     />
@@ -1801,7 +1796,7 @@ export default function SubmitDeal() {
                                   <div className="text-slate-700">
                                     {formatCurrency(
                                       (tier.annualRevenue || 0) *
-                                        ((tier.annualGrossMarginPercent || 0) /
+                                        ((tier.annualGrossMargin || 0) /
                                           100),
                                     )}
                                   </div>
@@ -1944,7 +1939,7 @@ export default function SubmitDeal() {
                                   (previousYearMargin / 100);
                                 const currentProfit =
                                   (tier.annualRevenue || 0) *
-                                  ((tier.annualGrossMarginPercent || 0) / 100);
+                                  ((tier.annualGrossMargin || 0) / 100);
 
                                 // Calculate growth rate
                                 let profitGrowthRate = 0;
@@ -2401,7 +2396,7 @@ export default function SubmitDeal() {
                                     defaultValue="rebate"
                                     onValueChange={(value) => {
                                       const newTier = { ...dealTiers[0] };
-                                      newTier.incentiveType = value as any;
+                                      newTier.incentiveCategory = value as any;
                                       const newTiers = [
                                         newTier,
                                         ...dealTiers.slice(1),
@@ -2444,21 +2439,18 @@ export default function SubmitDeal() {
                                       min="0"
                                       max="100"
                                       value={
-                                        dealTiers[0].incentivePercentage || 0
+                                        dealTiers[0] ? (dealTiers[0].incentiveValue / (dealTiers[0].annualRevenue || 1)) * 100 : 0
                                       }
                                       onChange={(e) => {
                                         const newTier = { ...dealTiers[0] };
-                                        newTier.incentivePercentage =
-                                          parseFloat(e.target.value);
-
-                                        // Calculate incentive amount based on percentage and total revenue
+                                        // Calculate incentive value based on percentage and total revenue
                                         const annualRevenue =
                                           Number(
                                             form.watch("annualRevenue"),
                                           ) || 0;
                                         const percent =
                                           parseFloat(e.target.value) / 100;
-                                        newTier.incentiveAmount =
+                                        newTier.incentiveValue =
                                           annualRevenue * percent;
 
                                         const newTiers = [
@@ -2493,24 +2485,12 @@ export default function SubmitDeal() {
                                       type="number"
                                       className="pl-7 w-full"
                                       placeholder="0.00"
-                                      value={dealTiers[0].incentiveAmount || 0}
+                                      value={dealTiers[0].incentiveValue || 0}
                                       onChange={(e) => {
                                         const newTier = { ...dealTiers[0] };
-                                        newTier.incentiveAmount = parseFloat(
+                                        newTier.incentiveValue = parseFloat(
                                           e.target.value,
                                         );
-
-                                        // Calculate percentage if revenue is not zero
-                                        const annualRevenue =
-                                          Number(
-                                            form.watch("annualRevenue"),
-                                          ) || 0;
-                                        if (annualRevenue > 0) {
-                                          newTier.incentivePercentage =
-                                            (parseFloat(e.target.value) /
-                                              annualRevenue) *
-                                            100;
-                                        }
 
                                         const newTiers = [
                                           newTier,
@@ -3251,7 +3231,7 @@ export default function SubmitDeal() {
                                       const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
                                       // Calculate current tier margin
                                       const currentMargin =
-                                        (tier.annualGrossMarginPercent || 0) /
+                                        (tier.annualGrossMargin || 0) /
                                         100;
                                       // Calculate growth rate
                                       const marginGrowthRate =

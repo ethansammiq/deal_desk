@@ -22,25 +22,16 @@ import {
   formatPercentage,
 } from "@/lib/utils";
 
-interface DealTierData {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
-  incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
-}
+// Import unified interface from hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 interface TierConfigurationPanelProps {
-  dealTiers: DealTierData[];
-  setDealTiers: React.Dispatch<React.SetStateAction<DealTierData[]>>;
+  dealTiers: DealTier[];
+  setDealTiers: React.Dispatch<React.SetStateAction<DealTier[]>>;
   calculateTierIncentiveCost: (tierNumber: number) => number;
-  calculateGrossMarginGrowthRate: (tier: DealTierData) => number;
-  calculateTierGrossProfit: (tier: DealTierData) => number;
-  calculateTierNetValue: (tier: DealTierData) => number;
+  calculateGrossMarginGrowthRate: (tier: DealTier) => number;
+  calculateTierGrossProfit: (tier: DealTier) => number;
+  calculateTierNetValue: (tier: DealTier) => number;
 }
 
 export function TierConfigurationPanel({
@@ -54,16 +45,15 @@ export function TierConfigurationPanel({
   // Helper function to add a new tier
   const addTier = () => {
     const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTierData = {
+    const newTier: DealTier = {
       tierNumber: newTierNumber,
-      annualRevenue: undefined,
-      annualGrossMargin: undefined,
-      annualGrossMarginPercent: undefined,
-      incentivePercentage: undefined,
+      annualRevenue: 0,
+      annualGrossMargin: 0.35, // 35% as decimal
+      incentiveCategory: "financial",
+      incentiveSubCategory: "discounts",
+      specificIncentive: "Volume Discount",
+      incentiveValue: 0,
       incentiveNotes: "",
-      incentiveType: "rebate",
-      incentiveThreshold: undefined,
-      incentiveAmount: undefined,
     };
     setDealTiers([...dealTiers, newTier]);
   };

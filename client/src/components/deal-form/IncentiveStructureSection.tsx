@@ -11,17 +11,14 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 // Type this component to accept any valid form structure
 type IncentiveStructureFormValues = any;
 
-interface DealTierData {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMarginPercent?: number;
-}
+// Import unified interface from hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 interface IncentiveStructureSectionProps {
   form: UseFormReturn<IncentiveStructureFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
-  dealTiers: DealTierData[];
-  setDealTiers: (tiers: DealTierData[]) => void;
+  dealTiers: DealTier[];
+  setDealTiers: (tiers: DealTier[]) => void;
   selectedIncentives: SelectedIncentive[];
   setSelectedIncentives: (incentives: SelectedIncentive[]) => void;
   tierIncentives: TierIncentive[];
