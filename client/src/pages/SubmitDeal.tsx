@@ -83,7 +83,8 @@ import TierSpecificIncentives, {
 } from "@/components/TierSpecificIncentives";
 import { TierConfigurationPanel } from "@/components/deal-form/TierConfigurationPanel";
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
-import { BasicDealInfoSection } from "@/components/deal-form/BasicDealInfoSection";
+import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
+import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
@@ -1003,17 +1004,34 @@ export default function SubmitDeal() {
             console.log("Form submit event triggered");
             form.handleSubmit(onSubmit)(e);
           }}>
-            {/* Step 1: Deal Overview - Using optimized component with original structure */}
+            {/* Step 1: Deal Overview - Using clean direct component structure */}
             {formStep === 0 && (
-              <BasicDealInfoSection
-                form={form}
-                salesChannel={salesChannel}
-                dealStructureType={dealStructureType}
-                setDealStructure={setDealStructure}
-                agencies={agencies}
-                advertisers={advertisers}
-                nextStep={nextStep}
-              />
+              <>
+                {/* Client Information Section */}
+                <CardContent className="p-6 border-b">
+                  <FormSectionHeader
+                    title="Client Information"
+                    description="Select the client and sales channel for this deal"
+                  />
+                  <div className="mt-6">
+                    <ClientInfoSection
+                      form={form}
+                      agencies={agencies}
+                      advertisers={advertisers}
+                      salesChannel={salesChannel}
+                      layout="grid"
+                    />
+                  </div>
+                </CardContent>
+
+                {/* Deal Details Section */}
+                <DealDetailsSection
+                  form={form}
+                  dealStructureType={dealStructureType}
+                  setDealStructure={setDealStructure}
+                  nextStep={nextStep}
+                />
+              </>
             )}
 
             {/* ORIGINAL FORM STRUCTURE FOR REFERENCE - Using extracted component above */}
