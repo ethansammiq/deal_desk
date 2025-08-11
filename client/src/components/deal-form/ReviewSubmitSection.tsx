@@ -28,22 +28,13 @@ import {
 // Type this component to accept any valid form structure
 type ReviewSubmitFormValues = any;
 
-interface DealTierData {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
-  incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
-}
+// Import unified interface from hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
-  dealTiers: DealTierData[];
+  dealTiers: DealTier[];
   selectedIncentives: SelectedIncentive[];
   tierIncentives: TierIncentive[];
   financialSummary: DealFinancialSummary;
@@ -263,13 +254,13 @@ export function ReviewSubmitSection({
                         {formatCurrency(tier.annualRevenue || 0)}
                       </span>
                       <span className="text-gray-600 ml-2">
-                        ({tier.annualGrossMarginPercent || 0}% margin)
+                        ({((tier.annualGrossMargin || 0) * 100) || 0}% margin)
                       </span>
                     </div>
                   </div>
-                  {tier.incentivePercentage && (
+                  {tier.incentiveValue && (
                     <Badge variant="secondary">
-                      {tier.incentivePercentage}% {tier.incentiveType}
+                      {tier.incentiveValue}% {tier.incentiveCategory}
                     </Badge>
                   )}
                 </div>
@@ -310,8 +301,11 @@ export function ReviewSubmitSection({
       {/* Approval Requirements */}
       {currentApprover && (
         <ApprovalAlert
-          currentApprover={currentApprover}
-          onApprovalChange={() => {}}
+          totalValue={0}
+          contractTerm={12}
+          dealType="grow"
+          salesChannel="independent_agency"
+          onChange={() => {}}
         />
       )}
 
