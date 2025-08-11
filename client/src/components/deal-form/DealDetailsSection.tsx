@@ -25,13 +25,14 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 
 // Interface for deal details form values
 interface DealDetailsFormValues {
-  dealType: string;
-  dealStructure: string;
+  dealType?: "custom" | "grow" | "protect";
+  dealStructure?: "tiered" | "flat_commit";
   contractTermMonths?: string;
   termStartDate?: Date | null;
   termEndDate?: Date | null;
   businessSummary?: string; // Make optional for RequestSupport
-  [key: string]: any; // Allow additional fields for different form types
+  // Allow additional fields for different form types
+  [key: string]: any;
 }
 
 interface DealDetailsSectionProps {

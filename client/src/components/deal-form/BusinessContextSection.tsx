@@ -22,19 +22,19 @@ import {
 
 // Interface for business context form values - compatible with both forms
 interface BusinessContextFormValues {
-  // SubmitDeal fields
+  // Shared growth opportunity fields (required in RequestSupport schema but optional here for type compatibility)
   growthOpportunityMIQ?: string;
   growthOpportunityClient?: string;
   clientAsks?: string;
-  // RequestSupport fields
+  // RequestSupport-specific fields
   growthAmbition?: number;
   businessContext?: string;
   requestType?: "scoping" | "pricing" | "technical";
   // Common fields that both forms may have
   salesChannel?: string;
-  region?: string;
-  dealType?: string;
-  dealStructure?: string;
+  region?: "northeast" | "midwest" | "midatlantic" | "west" | "south";
+  dealType?: "custom" | "grow" | "protect";
+  dealStructure?: "tiered" | "flat_commit";
   termStartDate?: Date;
   termEndDate?: Date;
   contractTermMonths?: string;
@@ -57,42 +57,11 @@ export function BusinessContextSection({ form, variant = "submitDeal" }: Busines
     return (
       <div className="space-y-6 p-6">
         <FormSectionHeader
-          title="Request Details"
-          description="Specify the type of assistance needed and provide business context"
+          title="Growth Opportunity"
+          description="Provide detailed information about the growth opportunity and client requirements"
         />
         <div className="space-y-6">
-          {/* Request Support fields */}
-          <FormField
-            control={form.control}
-            name="requestType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Request Type <span className="text-red-500">*</span>
-                </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || ""}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select the type of assistance needed" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="scoping">Deal Scoping & Strategy</SelectItem>
-                    <SelectItem value="pricing">Pricing & Structure</SelectItem>
-                    <SelectItem value="technical">Technical Requirements</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  What type of assistance do you need with this deal?
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+          {/* Growth Ambition */}
           <FormField
             control={form.control}
             name="growthAmbition"
@@ -120,24 +89,75 @@ export function BusinessContextSection({ form, variant = "submitDeal" }: Busines
             )}
           />
 
+          {/* Growth Opportunity MIQ */}
           <FormField
             control={form.control}
-            name="businessContext"
+            name="growthOpportunityMIQ"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Business Context <span className="text-red-500">*</span>
+                  Growth Opportunity (MIQ) <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Provide context about the opportunity, client needs, and what assistance you're seeking..."
+                    placeholder="Describe the pathway to growth from our perspective..."
                     className="resize-none"
-                    rows={6}
+                    rows={4}
                     {...field}
                   />
                 </FormControl>
                 <FormDescription>
-                  Describe the business opportunity, client requirements, and the specific help you need from our partnership team.
+                  Explain how this opportunity represents growth potential for our business and what we can offer to drive success.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Growth Opportunity Client */}
+          <FormField
+            control={form.control}
+            name="growthOpportunityClient"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Growth Opportunity (Client) <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe the pathway to growth from the client's perspective..."
+                    className="resize-none"
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Explain how this partnership will drive growth for the client's business and help them achieve their goals.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Client Asks */}
+          <FormField
+            control={form.control}
+            name="clientAsks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Client Asks <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="What specific requirements or needs does the client have..."
+                    className="resize-none"
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Detail the client's specific requirements, expectations, and any unique needs for this partnership.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -71,16 +71,19 @@ const dealScopingSchema = z
       required_error: "End date is required",
     }),
 
-    // Simplified business context (minimal for scoping requests)
-    requestType: z.enum(["scoping", "pricing", "technical"], {
-      required_error: "Request type is required",
-    }),
+    // Growth opportunity fields (from BusinessContextSection)
     growthAmbition: z
       .number()
       .min(1000000, "Growth ambition must be at least $1M"),
-    businessContext: z
+    growthOpportunityMIQ: z
       .string()
-      .min(20, "Please provide more details about your request"),
+      .min(20, "Growth opportunity (MIQ) is required"),
+    growthOpportunityClient: z
+      .string()
+      .min(20, "Growth opportunity (Client) is required"),
+    clientAsks: z
+      .string()
+      .min(20, "Client asks information is required"),
   })
   .superRefine((data, ctx) => {
     // If sales channel is client_direct, advertiserName is required
@@ -149,9 +152,10 @@ export default function RequestSupport() {
       contractTermMonths: "",
       termStartDate: undefined,
       termEndDate: undefined,
-      requestType: undefined,
-      businessContext: "",
       growthAmbition: 1000000,
+      growthOpportunityMIQ: "",
+      growthOpportunityClient: "",
+      clientAsks: "",
     },
     mode: "onChange",
   });
@@ -311,7 +315,7 @@ export default function RequestSupport() {
         steps={[
           { id: "sales-channel", label: "Client Information" },
           { id: "deal-details", label: "Deal Timeline" },
-          { id: "growth-opportunity", label: "Request Details" }
+          { id: "growth-opportunity", label: "Growth Opportunity" }
         ]}
         currentStep={activeTab}
         onStepClick={(stepId) => setActiveTab(stepId.toString())}
@@ -341,7 +345,7 @@ export default function RequestSupport() {
               <TabsContent value="deal-details" className="space-y-6 pt-4">
                 {/* Deal Details Section - Shared Component */}
                 <DealDetailsSection
-                  form={form}
+                  form={form as any}
                   dealStructureType={dealStructureType}
                   setDealStructure={(value) => {
                     setDealStructureType(value);
@@ -358,7 +362,7 @@ export default function RequestSupport() {
                 value="growth-opportunity"
                 className="space-y-0"
               >
-                <BusinessContextSection form={form} variant="requestSupport" />
+                <BusinessContextSection form={form as any} variant="requestSupport" />
               </TabsContent>
             </Tabs>
           </Form>
@@ -381,7 +385,7 @@ export default function RequestSupport() {
               Previous: Client Information
             </Button>
             <Button type="button" onClick={goToNextTab}>
-              Next: Request Details
+              Next: Growth Opportunity
             </Button>
           </div>
         )}
