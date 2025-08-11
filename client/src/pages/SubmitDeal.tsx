@@ -87,6 +87,7 @@ import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
+import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 
@@ -829,15 +830,31 @@ export default function SubmitDeal() {
         return false;
       }
 
-      // If target is 2 (Review), allow demo access without validation
-      if (targetStep === 2) {
+      // If target is 3 (Review), allow demo access without validation
+      if (targetStep === 3) {
         // Allowing direct access to Review & Submit for demo purposes
         return true;
       }
     } else if (formStep === 1) {
-      // Temporarily bypass validation for demo purposes to allow navigation to Review
-      // In a production app, we would keep the full validation below
-      /* Uncomment for production use
+      // Validate Business Context step
+      form.trigger("growthOpportunityMIQ");
+      form.trigger("growthAmbition");
+      form.trigger("growthOpportunityClient");
+      
+      const growthMIQError = form.getFieldState('growthOpportunityMIQ').error;
+      const growthAmbitionError = form.getFieldState('growthAmbition').error;
+      const growthClientError = form.getFieldState('growthOpportunityClient').error;
+      
+      if (growthMIQError || growthAmbitionError || growthClientError) {
+        toast({
+          title: "Validation Error",
+          description: "Please fix the errors in the Business Context section before continuing.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } else if (formStep === 2) {
+      // Validate Value Structure step
       form.trigger("dealStructure");
       form.trigger("termStartDate");
       form.trigger("termEndDate");
@@ -854,7 +871,6 @@ export default function SubmitDeal() {
         });
         return false;
       }
-      */
     }
 
     // If all validations pass, go to the target step
@@ -863,7 +879,7 @@ export default function SubmitDeal() {
   }
 
   function nextStep() {
-    const targetStep = Math.min(formStep + 1, 2);
+    const targetStep = Math.min(formStep + 1, 3);
     validateAndGoToStep(targetStep);
   }
 
@@ -1001,8 +1017,9 @@ export default function SubmitDeal() {
       <FormProgressTracker
         steps={[
           { id: 0, label: "Deal Overview" },
-          { id: 1, label: "Value Structure" },
-          { id: 2, label: "Review & Submit" },
+          { id: 1, label: "Business Context" },
+          { id: 2, label: "Value Structure" },
+          { id: 3, label: "Review & Submit" },
         ]}
         currentStep={formStep}
         onStepClick={(stepId) => {
@@ -1560,8 +1577,25 @@ export default function SubmitDeal() {
               </CardContent>
             )}
 
-            {/* Step 2: Value Structure */}
+            {/* Step 1: Business Context */}
             {formStep === 1 && (
+              <>
+                <BusinessContextSection form={form} />
+                <CardContent className="p-6 border-t">
+                  <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={prevStep}>
+                      Previous: Deal Overview
+                    </Button>
+                    <Button type="button" onClick={nextStep}>
+                      Next: Value Structure
+                    </Button>
+                  </div>
+                </CardContent>
+              </>
+            )}
+
+            {/* Step 2: Value Structure */}
+            {formStep === 2 && (
               <CardContent className="p-6">
                 <FormSectionHeader
                   title="Value Structure"
@@ -2966,7 +3000,7 @@ export default function SubmitDeal() {
                 
                 <div className="mt-8 flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep}>
-                    Previous: Deal Overview
+                    Previous: Business Context
                   </Button>
                   <Button type="button" onClick={nextStep}>
                     Next: Review & Submit
@@ -2977,7 +3011,7 @@ export default function SubmitDeal() {
             )}
 
             {/* Step 3: Review & Submit */}
-            {formStep === 2 && (
+            {formStep === 3 && (
               <CardContent className="p-6">
                 <FormSectionHeader
                   title="Review & Submit"
@@ -3255,6 +3289,59 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {getTypedValue("businessSummary")
                               ? String(getTypedValue("businessSummary"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+
+                  {/* Business Context Section */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">
+                        Business Context
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Growth Opportunity (MIQ)
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("growthOpportunityMIQ")
+                              ? String(getTypedValue("growthOpportunityMIQ"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            2025 Growth Ambition
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("growthAmbition")
+                              ? `$${Number(getTypedValue("growthAmbition")).toLocaleString()}`
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Growth Opportunity (Client)
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("growthOpportunityClient")
+                              ? String(getTypedValue("growthOpportunityClient"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Client Asks
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {getTypedValue("clientAsks")
+                              ? String(getTypedValue("clientAsks"))
                               : "Not provided"}
                           </dd>
                         </div>
