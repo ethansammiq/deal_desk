@@ -1010,8 +1010,8 @@ export default function SubmitDeal() {
                 salesChannel={salesChannel}
                 dealStructureType={dealStructureType}
                 setDealStructure={setDealStructure}
-                agencies={agencies.data || []}
-                advertisers={advertisers.data || []}
+                agencies={agencies}
+                advertisers={advertisers}
                 nextStep={nextStep}
               />
             )}
