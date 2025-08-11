@@ -193,19 +193,8 @@ export default function SubmitDeal() {
     previousYearMargin?: number;
   }
 
-  // Legacy interface - replaced by DealTier from useDealTiers hook
-  // Keeping for migration purposes only
-  interface DealTierData {
-    tierNumber: number;
-    annualRevenue?: number;
-    annualGrossMargin?: number;
-    annualGrossMargin?: number;
-    incentivePercentage?: number;
-    incentiveNotes?: string;
-    incentiveType?: "rebate" | "discount" | "bonus" | "other";
-    incentiveThreshold?: number; // Revenue threshold to achieve this incentive
-    incentiveAmount?: number; // Monetary value of the incentive
-  }
+  // ✅ PHASE 2.3: Legacy interface removal target
+  // This DealTierData interface should be removed once all references are migrated to DealTier
 
   // ✅ NEW: Using tierManager hook instead of manual state
   // dealTiers replaced by tierManager.tiers
