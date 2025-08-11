@@ -86,6 +86,7 @@ import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisp
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
+import { IncentiveStructureSection } from "@/components/deal-form/IncentiveStructureSection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
@@ -1411,6 +1412,23 @@ export default function SubmitDeal() {
                     showAddIncentiveForm={showAddIncentiveForm}
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
+
+                  {/* Separate Incentive Structure Section */}
+                  {dealStructureType === "tiered" && (
+                    <IncentiveStructureSection
+                      form={form}
+                      dealStructureType={dealStructureType}
+                      dealTiers={dealTiers}
+                      setDealTiers={setDealTiers}
+                      selectedIncentives={selectedIncentives}
+                      setSelectedIncentives={setSelectedIncentives}
+                      tierIncentives={tierIncentives}
+                      setTierIncentives={setTierIncentives}
+                      showAddIncentiveForm={showAddIncentiveForm}
+                      setShowAddIncentiveForm={setShowAddIncentiveForm}
+                    />
+                  )}
+
                   {/* Legacy flat_commit handling - now handled in ValueStructureSection */}
                   {false && (
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">

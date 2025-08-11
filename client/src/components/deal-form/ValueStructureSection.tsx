@@ -95,155 +95,41 @@ export function ValueStructureSection({
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <FormSectionHeader
-          title="Value Structure"
-          description="Define the financial structure and value proposition for this deal"
-        />
+    <div className="space-y-8">
+      {/* Flat Commit Structure */}
+      {dealStructureType === "flat_commit" && (
+        <div className="space-y-6">
+          <FinancialInputGroup
+            form={form}
+            revenueFieldName="annualRevenue"
+            marginFieldName="annualGrossMargin"
+            revenueLabel="Annual Revenue"
+            marginLabel="Annual Gross Margin %"
+            revenueTooltip="Committed annual revenue for this deal"
+            marginTooltip="Expected gross margin percentage"
+          />
 
-        <div className="space-y-8">
-          {/* Flat Commit Structure */}
-          {dealStructureType === "flat_commit" && (
-            <div className="space-y-6">
-              <FinancialInputGroup
-                form={form}
-                revenueFieldName="annualRevenue"
-                marginFieldName="annualGrossMargin"
-                revenueLabel="Annual Revenue"
-                marginLabel="Annual Gross Margin %"
-                revenueTooltip="Committed annual revenue for this deal"
-                marginTooltip="Expected gross margin percentage"
-              />
-
-              {/* Incentives for Flat Commit */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Deal Incentives</h3>
-                <IncentiveSelector
-                  selectedIncentives={selectedIncentives}
-                  dealTiers={[{ tierNumber: 1, annualRevenue: 0 }]}
-                  onChange={setSelectedIncentives}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tiered Structure */}
-          {dealStructureType === "tiered" && (
-            <div className="space-y-6">
-              {/* Enhanced Financial Table */}
-              <FinancialTierTable
-                dealTiers={dealTiers}
-                setDealTiers={setDealTiers}
-                lastYearRevenue={850000}
-                lastYearGrossMargin={35.0}
-              />
-
-              {/* Tier Configuration Details */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tier Configuration Details</h3>
-                <div className="grid gap-4">
-                  {dealTiers.map((tier) => (
-                    <div
-                      key={tier.tierNumber}
-                      className="border border-slate-200 rounded-lg p-4 bg-slate-50"
-                    >
-                      <h4 className="font-medium mb-3">Tier {tier.tierNumber} - Additional Settings</h4>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">
-                            Incentive Type
-                          </label>
-                          <Select
-                            value={tier.incentiveType || "rebate"}
-                            onValueChange={(value: "rebate" | "discount" | "bonus" | "other") => {
-                              updateTier(tier.tierNumber, { incentiveType: value });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="rebate">Rebate</SelectItem>
-                              <SelectItem value="discount">Discount</SelectItem>
-                              <SelectItem value="bonus">Bonus</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">
-                            Incentive Percentage
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            placeholder="Enter incentive %"
-                            value={tier.incentivePercentage || ""}
-                            onChange={(e) => {
-                              const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                              updateTier(tier.tierNumber, { incentivePercentage: value });
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <label className="text-sm font-medium text-gray-700">
-                          Tier Notes
-                        </label>
-                        <Textarea
-                          placeholder="Notes about this tier's structure, targets, or special conditions..."
-                          value={tier.incentiveNotes || ""}
-                          onChange={(e) => {
-                            updateTier(tier.tierNumber, { incentiveNotes: e.target.value });
-                          }}
-                          className="min-h-[60px] mt-1"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Hierarchical Incentives for Tiered Structure */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Hierarchical Incentives</h3>
-                <p className="text-sm text-gray-600">
-                  Select incentives that apply across multiple tiers
-                </p>
-                <IncentiveSelector
-                  selectedIncentives={selectedIncentives}
-                  dealTiers={dealTiers.map(tier => ({ 
-                    tierNumber: tier.tierNumber, 
-                    annualRevenue: tier.annualRevenue || 0 
-                  }))}
-                  onChange={setSelectedIncentives}
-                />
-              </div>
-
-              {/* Tier-Specific Incentives */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tier-Specific Incentives</h3>
-                <p className="text-sm text-gray-600">
-                  Configure specific incentives for individual tiers
-                </p>
-                <TierSpecificIncentives
-                  dealTiers={dealTiers.map(tier => ({
-                    tierNumber: tier.tierNumber,
-                    annualRevenue: tier.annualRevenue || 0
-                  }))}
-                  incentives={tierIncentives}
-                  onChange={setTierIncentives}
-                />
-              </div>
-            </div>
-          )}
+          {/* Incentives for Flat Commit */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Deal Incentives</h3>
+            <IncentiveSelector
+              selectedIncentives={selectedIncentives}
+              dealTiers={[{ tierNumber: 1, annualRevenue: 0 }]}
+              onChange={setSelectedIncentives}
+            />
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Tiered Structure */}
+      {dealStructureType === "tiered" && (
+        <FinancialTierTable
+          dealTiers={dealTiers}
+          setDealTiers={setDealTiers}
+          lastYearRevenue={850000}
+          lastYearGrossMargin={35.0}
+        />
+      )}
+    </div>
   );
 }
