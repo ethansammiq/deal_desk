@@ -102,6 +102,11 @@ const dealFormSchema = z.object({
   // Business summary is in ReviewSubmitSection
   businessSummary: z.string().optional(),
   
+  // Business Context fields (required for SubmitDeal)
+  growthOpportunityMIQ: z.string().min(1, "Growth Opportunity (MIQ) is required"),
+  growthOpportunityClient: z.string().min(1, "Growth Opportunity (Client) is required"),
+  clientAsks: z.string().min(1, "Client Asks is required"),
+  
   // Essential financial data for calculations
   annualRevenue: z.coerce.number().positive("Annual revenue must be positive").optional(),
   annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),

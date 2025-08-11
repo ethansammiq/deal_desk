@@ -107,6 +107,12 @@ export const deals = pgTable("deals", {
   
   // Business information
   businessSummary: text("business_summary"), // long text for describing deal purpose
+  
+  // Business Context fields (for SubmitDeal form)
+  growthOpportunityMIQ: text("growth_opportunity_miq"),
+  growthOpportunityClient: text("growth_opportunity_client"),
+  clientAsks: text("client_asks"),
+  
   status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
   
   // Timeframe - using ISO 8601 date strings

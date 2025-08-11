@@ -168,19 +168,13 @@ export function useDealFormValidation(
     const errors: string[] = [];
     const missingFields: string[] = [];
 
-    // Debug logging for step validation
-    console.log(`🔍 Validating step ${stepNumber}:`, step.title);
-    console.log(`📋 Required fields:`, step.fields);
-    console.log(`🔍 Form state snapshot:`, form.getValues());
-
     // Check required fields for this step
     for (const fieldName of step.fields) {
       // Handle conditional fields
       const fieldNameStr = String(fieldName);
       
-      // Debug: log the field being checked
+      // Get the field value
       const value = form.getValues(fieldNameStr);
-      console.log(`🔍 Checking field '${fieldNameStr}':`, value);
       
       if (fieldNameStr === 'advertiserName') {
         if (salesChannel === 'client_direct') {
