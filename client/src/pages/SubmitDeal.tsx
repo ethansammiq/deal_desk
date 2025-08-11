@@ -266,15 +266,15 @@ export default function SubmitDeal() {
   
   // Helper function to get dealTiers in legacy format for backward compatibility
   const getDealTiers = () => {
-    return tierManager.tiers.map(tier => ({
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualRevenue ? tier.annualRevenue * (tier.annualGrossMarginPercent || 35) / 100 : undefined,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent,
+    return tierManager.tiers.map((tier, index) => ({
+      tierNumber: index + 1, // Use index for tier number
+      annualRevenue: tier.minimumCommit, // Use minimumCommit as revenue
+      annualGrossMargin: tier.minimumCommit ? tier.minimumCommit * (tier.incentivePercentage || 35) / 100 : undefined,
+      annualGrossMarginPercent: tier.incentivePercentage,
       incentivePercentage: tier.incentivePercentage,
       incentiveNotes: tier.incentiveNotes || "",
-      incentiveType: tier.incentiveType || "rebate" as const,
-      incentiveThreshold: tier.incentiveThreshold,
+      incentiveType: "rebate" as const, // Fixed type
+      incentiveThreshold: tier.minimumCommit, // Use minimumCommit as threshold
       incentiveAmount: tier.incentiveAmount,
     }));
   };
@@ -283,15 +283,13 @@ export default function SubmitDeal() {
   const setDealTiers = (updatedTiers: any[]) => {
     updatedTiers.forEach((updatedTier, index) => {
       if (index < tierManager.tiers.length) {
-        tierManager.updateTier(index, {
-          tierNumber: updatedTier.tierNumber,
-          annualRevenue: updatedTier.annualRevenue,
-          annualGrossMarginPercent: updatedTier.annualGrossMarginPercent,
-          incentivePercentage: updatedTier.incentivePercentage,
-          incentiveNotes: updatedTier.incentiveNotes,
-          incentiveType: updatedTier.incentiveType,
-          incentiveThreshold: updatedTier.incentiveThreshold,
+        tierManager.updateTier(tierManager.tiers[index].id, { // Use id as identifier
+          tierName: `Tier ${updatedTier.tierNumber}`,
+          minimumCommit: updatedTier.annualRevenue,
+          incentivePercentage: updatedTier.annualGrossMarginPercent,
           incentiveAmount: updatedTier.incentiveAmount,
+          incentiveNotes: updatedTier.incentiveNotes,
+          incentiveType: 'rebate' as const,
         });
       }
     });
@@ -1570,21 +1568,12 @@ export default function SubmitDeal() {
                         type="button"
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
-                          const result = tierManager.addTier({
-                            tierNumber: tierManager.tiers.length + 1,
-                            annualRevenue: undefined,
-                            annualGrossMarginPercent: undefined,
-                            incentivePercentage: undefined,
-                            incentiveNotes: "",
-                            incentiveType: "rebate",
-                            incentiveThreshold: undefined,
-                            incentiveAmount: undefined,
-                          });
-                          
-                          if (!result.success) {
+                          try {
+                            tierManager.addTier();
+                          } catch (error: any) {
                             toast({
                               title: "Cannot Add Tier",
-                              description: result.errors[0] || "Maximum tiers reached",
+                              description: error.message || "Maximum tiers reached",
                               variant: "destructive",
                             });
                           }
