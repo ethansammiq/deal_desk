@@ -675,8 +675,20 @@ export default function SubmitDeal() {
   // prevStep → formValidation.goToPreviousStep
 
   const nextStep = () => {
+    // Debug: Check current form values for Business Context step
+    if (formStep === 1) {
+      const formValues = form.getValues();
+      console.log("🔍 Debug: Business Context form values before validation:", {
+        growthOpportunityMIQ: formValues.growthOpportunityMIQ,
+        growthOpportunityClient: formValues.growthOpportunityClient,
+        clientAsks: formValues.clientAsks,
+        allValues: formValues
+      });
+    }
+    
     const success = formValidation.goToNextStep();
     if (!success && formValidation.currentStepValidation.errors.length > 0) {
+      console.log("❌ Validation failed:", formValidation.currentStepValidation);
       toast({
         title: "Validation Error",
         description: formValidation.currentStepValidation.errors[0],
