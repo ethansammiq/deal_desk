@@ -904,9 +904,9 @@ export default function SubmitDeal() {
           if (step === 0) {
             prevStep();
           } else if (step > formStep) {
-            validateAndGoToStep(step);
+            formValidation.nextStep(); // Use hook's navigation
           } else {
-            setFormStep(step);
+            formValidation.goToStep(step + 1); // Convert to 1-based indexing for hook
           }
         }}
       />
