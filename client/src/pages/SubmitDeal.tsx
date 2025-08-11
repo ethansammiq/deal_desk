@@ -92,6 +92,8 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
+import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
+import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -190,7 +192,7 @@ export default function SubmitDeal() {
     incentiveAmount?: number; // Monetary value of the incentive
   }
 
-  // State for tiered deal structure
+  // Legacy tier state - can be gradually migrated to tierManager.tiers
   const [dealTiers, setDealTiers] = useState([
     {
       tierNumber: 1,
@@ -280,6 +282,17 @@ export default function SubmitDeal() {
 
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
+  
+  // 🚀 NEW: Advanced hooks for streamlined architecture
+  const tierManager = useDealTiers({
+    maxTiers: 5,
+    minTiers: 1
+  });
+  
+  const formValidation = useDealFormValidation(form, {
+    enableAutoAdvance: false,
+    validateOnChange: true
+  });
   
   // Trigger AI analysis when critical deal data changes
   React.useEffect(() => {
