@@ -63,7 +63,7 @@ export function FinancialTierTable({
   };
 
   // Calculate last year's gross profit
-  const lastYearGrossProfit = calculationService.calculateGrossProfit(lastYearRevenue, lastYearGrossMargin);
+  const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
   return (
     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
@@ -210,10 +210,7 @@ export function FinancialTierTable({
                 ${lastYearGrossProfit.toLocaleString()}
               </td>
               {dealTiers.map((tier) => {
-                const grossProfit = calculationService.calculateGrossProfit(
-                  tier.annualRevenue || 0,
-                  tier.annualGrossMarginPercent || 0
-                );
+                const grossProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
                 return (
                   <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center text-slate-700">
                     ${grossProfit.toLocaleString()}
@@ -234,10 +231,15 @@ export function FinancialTierTable({
                 -
               </td>
               {dealTiers.map((tier) => {
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                };
                 const growthRate = calculationService.calculateRevenueGrowthRate(
-                  tier.annualRevenue || 0,
-                  lastYearRevenue
-                );
+                  serviceTier,
+                  "independent_agency"
+                ) * 100; // Convert to percentage
                 const isNegative = growthRate < 0;
                 return (
                   <td 
@@ -264,10 +266,15 @@ export function FinancialTierTable({
                 -
               </td>
               {dealTiers.map((tier) => {
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                };
                 const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
-                  tier.annualGrossMarginPercent || 0,
-                  lastYearGrossMargin
-                );
+                  serviceTier,
+                  "independent_agency"
+                ) * 100; // Convert to percentage
                 const isNegative = marginGrowthRate < 0;
                 return (
                   <td 
@@ -294,14 +301,15 @@ export function FinancialTierTable({
                 -
               </td>
               {dealTiers.map((tier) => {
-                const currentGrossProfit = calculationService.calculateGrossProfit(
-                  tier.annualRevenue || 0,
-                  tier.annualGrossMarginPercent || 0
-                );
-                const profitGrowthRate = calculationService.calculateGrossProfitGrowthRate(
-                  currentGrossProfit,
-                  lastYearGrossProfit
-                );
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                };
+                const profitGrowthRate = calculationService.calculateProfitGrowthRate(
+                  serviceTier,
+                  "independent_agency"
+                ) * 100; // Convert to percentage
                 const isNegative = profitGrowthRate < 0;
                 return (
                   <td 
