@@ -127,7 +127,7 @@ export function ClientInfoSection({
                 onValueChange={(value) => {
                   field.onChange(value);
                   // Reset related fields when changing sales channel
-                  if (value === "client_direct") {
+                  if (value === "client_direct" || value === "Client Direct") {
                     form.setValue("agencyName", "");
                   } else {
                     form.setValue("advertiserName", "");
@@ -154,7 +154,7 @@ export function ClientInfoSection({
 
       {/* Conditional Client/Agency Selection */}
       <div className="grid grid-cols-1 gap-6">
-        {salesChannel === "client_direct" && (
+        {(salesChannel === "client_direct" || salesChannel === "Client Direct") && (
           <FormField
             control={form.control}
             name="advertiserName"
@@ -189,7 +189,8 @@ export function ClientInfoSection({
           />
         )}
 
-        {(salesChannel === "holding_company" || salesChannel === "independent_agency") && (
+        {(salesChannel === "holding_company" || salesChannel === "independent_agency" || 
+          salesChannel === "Holding Company" || salesChannel === "Independent Agency") && (
           <FormField
             control={form.control}
             name="agencyName"
@@ -210,10 +211,11 @@ export function ClientInfoSection({
                   <SelectContent>
                     {agencies
                       .filter((agency) => {
-                        if (salesChannel === "holding_company") {
-                          return agency.type === "holding_company";
-                        } else if (salesChannel === "independent_agency") {
-                          return agency.type === "independent";
+                        // Handle both underscore and space formats for sales channel values
+                        if (salesChannel === "holding_company" || salesChannel === "Holding Company") {
+                          return agency.type === "holding_company" || agency.type === "holding company";
+                        } else if (salesChannel === "independent_agency" || salesChannel === "Independent Agency") {
+                          return agency.type === "independent" || agency.type === "independent agency";
                         }
                         return false;
                       })
