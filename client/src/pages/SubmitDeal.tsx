@@ -107,6 +107,12 @@ const dealFormSchema = z.object({
   growthOpportunityClient: z.string().min(1, "Growth Opportunity (Client) is required"),
   clientAsks: z.string().min(1, "Client Asks is required"),
   
+  // Optional fields that may come from shared components
+  businessContext: z.string().optional(),
+  growthAmbition: z.number().optional(),
+  requestType: z.string().optional(),
+  contractTermMonths: z.number().optional(),
+  
   // Essential financial data for calculations
   annualRevenue: z.coerce.number().positive("Annual revenue must be positive").optional(),
   annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
@@ -226,6 +232,12 @@ export default function SubmitDeal() {
       growthOpportunityMIQ: "",
       growthOpportunityClient: "",
       clientAsks: "",
+      
+      // Optional RequestSupport fields
+      businessContext: "",
+      growthAmbition: 0,
+      requestType: "",
+      contractTermMonths: 12,
 
       // Client/Agency information
       salesChannel: undefined,

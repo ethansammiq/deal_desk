@@ -113,6 +113,14 @@ export const deals = pgTable("deals", {
   growthOpportunityClient: text("growth_opportunity_client"),
   clientAsks: text("client_asks"),
   
+  // RequestSupport specific fields
+  businessContext: text("business_context"), // Used in RequestSupport form
+  growthAmbition: doublePrecision("growth_ambition"), // Used in RequestSupport form
+  requestType: text("request_type"), // Used in RequestSupport form
+  
+  // Contract term input field (months)
+  contractTermMonths: integer("contract_term_months"),
+  
   status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
   
   // Timeframe - using ISO 8601 date strings
@@ -162,6 +170,17 @@ export const insertDealSchema = createInsertSchema(deals)
     // Date validations - ISO 8601 format (YYYY-MM-DD)
     termStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
     termEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
+    
+    // Contract term validation
+    contractTermMonths: z.number().positive("Contract term must be positive").optional(),
+    
+    // Business Context validations
+    growthOpportunityMIQ: z.string().optional(),
+    growthOpportunityClient: z.string().optional(),
+    clientAsks: z.string().optional(),
+    businessContext: z.string().optional(),
+    growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M").optional(),
+    requestType: z.enum(["scoping", "pricing", "technical"]).optional(),
     
     // Financial validations
     annualRevenue: z.number().positive("Annual revenue must be positive").optional(),
