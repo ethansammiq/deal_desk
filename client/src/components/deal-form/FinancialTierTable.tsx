@@ -6,6 +6,7 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
+import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
 
 interface FinancialTierTableProps {
   dealTiers: DealTier[];

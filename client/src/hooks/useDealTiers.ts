@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from '@/config/businessConstants';
 
 // Unified tier interface - matches database schema exactly
 export interface DealTier {
@@ -36,7 +37,11 @@ export interface UseDealTiersOptions {
 }
 
 export function useDealTiers(options: UseDealTiersOptions = {}) {
-  const { initialTiers = [], maxTiers = 10, minTiers = 1 } = options;
+  const { 
+    initialTiers = [], 
+    maxTiers = DEAL_CONSTANTS.MAX_TIERS, 
+    minTiers = DEAL_CONSTANTS.MIN_TIERS 
+  } = options;
 
   const [tiers, setTiers] = useState<DealTier[]>(() => {
     if (initialTiers.length > 0) {
@@ -45,11 +50,11 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     // Create default first tier with required fields
     return [{
       tierNumber: 1,
-      annualRevenue: 0,
-      annualGrossMargin: 0.35, // 35% as decimal
-      incentiveCategory: "financial",
-      incentiveSubCategory: "discounts",
-      specificIncentive: "Volume Discount",
+      annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+      annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
+      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
+      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
       incentiveValue: 0,
       incentiveNotes: "",
     }];
@@ -65,11 +70,11 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       const newTierNumber = prev.length + 1;
       const newTier: DealTier = {
         tierNumber: newTierNumber,
-        annualRevenue: 0,
-        annualGrossMargin: 0.35, // 35% as decimal
-        incentiveCategory: "financial",
-        incentiveSubCategory: "discounts",
-        specificIncentive: "Volume Discount",
+        annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+        annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+        incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
+        incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
+        specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
         incentiveValue: 0,
         incentiveNotes: "",
       };
@@ -132,11 +137,11 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     } else {
       setTiers([{
         tierNumber: 1,
-        annualRevenue: 0,
-        annualGrossMargin: 0.35, // 35% as decimal
-        incentiveCategory: "financial",
-        incentiveSubCategory: "discounts",
-        specificIncentive: "Volume Discount",
+        annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+        annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+        incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
+        incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
+        specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
         incentiveValue: 0,
         incentiveNotes: "",
       }]);

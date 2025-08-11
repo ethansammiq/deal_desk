@@ -96,6 +96,7 @@ import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
+import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -114,7 +115,7 @@ const dealFormSchema = z.object({
   
   // Essential financial data for calculations
   annualRevenue: z.coerce.number().positive("Annual revenue must be positive").optional(),
-  annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
+  annualGrossMarginPercent: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
   
   // System fields
   status: z.string().default("submitted"),
@@ -533,7 +534,7 @@ export default function SubmitDeal() {
         if (advertiser) {
           // Only set the region value
           const regionValue =
-            (advertiser.region as
+            (advertiser?.region as
               | "northeast"
               | "midwest"
               | "midatlantic"
@@ -550,7 +551,7 @@ export default function SubmitDeal() {
         if (agency) {
           // Only set the region value
           const regionValue =
-            (agency.region as
+            (agency?.region as
               | "northeast"
               | "midwest"
               | "midatlantic"
@@ -590,8 +591,8 @@ export default function SubmitDeal() {
 
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = advertisers.find((a) => a.name === advertiserName);
-      if (advertiser && advertiser.previousYearRevenue) {
-        previousYearRevenue = advertiser.previousYearRevenue;
+      if (advertiser && advertiser?.previousYearRevenue) {
+        previousYearRevenue = advertiser?.previousYearRevenue;
       }
     } else if (
       (salesChannel === "holding_company" ||
@@ -599,8 +600,8 @@ export default function SubmitDeal() {
       agencyName
     ) {
       const agency = agencies.find((a) => a.name === agencyName);
-      if (agency && agency.previousYearRevenue) {
-        previousYearRevenue = agency.previousYearRevenue;
+      if (agency && agency?.previousYearRevenue) {
+        previousYearRevenue = agency?.previousYearRevenue;
       }
     }
 
@@ -698,22 +699,7 @@ export default function SubmitDeal() {
 
     // Generate deal name format:
     // Deal Type_Sales Channel_Advertiser Name/Agency Name_Deal Structure_Deal Start Date-Deal End Date
-    const dealTypeMap = {
-      grow: "Grow",
-      protect: "Protect",
-      custom: "Custom",
-    };
-
-    const salesChannelMap = {
-      client_direct: "Direct",
-      holding_company: "Holding",
-      independent_agency: "Indep",
-    };
-
-    const dealStructureMap = {
-      tiered: "Tiered",
-      flat_commit: "Flat",
-    };
+    // ✅ MIGRATED: Using business constants instead of hardcoded maps
 
     // Generate deal name using the data mapping service
     const dealName = DataMappingService.generateDealName({
@@ -731,8 +717,8 @@ export default function SubmitDeal() {
       ...data,
       dealName: dealName,
       // Add missing required fields for API compatibility
-      annualRevenue: data.annualRevenue || 0,
-      annualGrossMargin: data.annualGrossMargin || 35,
+      annualRevenue: data.annualRevenue || DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+      annualGrossMargin: (data.annualGrossMarginPercent || DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN * 100) / 100,
       // Only include dealTiers if the structure is tiered
       ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),
       // Include selected incentives
@@ -933,10 +919,10 @@ export default function SubmitDeal() {
                               <SelectContent>
                                 {advertisers.map((advertiser) => (
                                   <SelectItem
-                                    key={advertiser.id}
-                                    value={advertiser.name}
+                                    key={advertiser?.id}
+                                    value={advertiser?.name}
                                   >
-                                    {advertiser.name}
+                                    {advertiser?.name}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -975,15 +961,15 @@ export default function SubmitDeal() {
                                 {agencies
                                   .filter((agency) =>
                                     salesChannel === "holding_company"
-                                      ? agency.type === "holding_company"
-                                      : agency.type === "independent",
+                                      ? agency?.type === "holding_company"
+                                      : agency?.type === "independent",
                                   )
                                   .map((agency) => (
                                     <SelectItem
-                                      key={agency.id}
-                                      value={agency.name}
+                                      key={agency?.id}
+                                      value={agency?.name}
                                     >
-                                      {agency.name}
+                                      {agency?.name}
                                     </SelectItem>
                                   ))}
                               </SelectContent>
@@ -1576,10 +1562,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser.previousYearRevenue !== undefined
+                                      advertiser?.previousYearRevenue !== undefined
                                     ) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue;
+                                        advertiser?.previousYearRevenue;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1589,9 +1575,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearRevenue !== undefined) {
+                                    if (agency && agency?.previousYearRevenue !== undefined) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue;
+                                        agency?.previousYearRevenue;
                                     }
                                   }
 
@@ -1660,10 +1646,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser.previousYearMargin !== undefined
+                                      advertiser?.previousYearMargin !== undefined
                                     ) {
                                       previousYearMargin =
-                                        advertiser.previousYearMargin;
+                                        advertiser?.previousYearMargin;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1673,9 +1659,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearMargin !== undefined) {
+                                    if (agency && agency?.previousYearMargin !== undefined) {
                                       previousYearMargin =
-                                        agency.previousYearMargin;
+                                        agency?.previousYearMargin;
                                     }
                                   }
 
@@ -1752,10 +1738,10 @@ export default function SubmitDeal() {
                                     );
                                     if (advertiser) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue ||
+                                        advertiser?.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        advertiser.previousYearMargin ||
+                                        advertiser?.previousYearMargin ||
                                         previousYearMargin;
                                     }
                                   } else if (
@@ -1768,10 +1754,10 @@ export default function SubmitDeal() {
                                     );
                                     if (agency) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue ||
+                                        agency?.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        agency.previousYearMargin ||
+                                        agency?.previousYearMargin ||
                                         previousYearMargin;
                                     }
                                   }
@@ -1909,10 +1895,10 @@ export default function SubmitDeal() {
                                   );
                                   if (advertiser) {
                                     previousYearRevenue =
-                                      advertiser.previousYearRevenue ||
+                                      advertiser?.previousYearRevenue ||
                                       previousYearRevenue;
                                     previousYearMargin =
-                                      advertiser.previousYearMargin ||
+                                      advertiser?.previousYearMargin ||
                                       previousYearMargin;
                                   }
                                 } else if (
@@ -1925,10 +1911,10 @@ export default function SubmitDeal() {
                                   );
                                   if (agency) {
                                     previousYearRevenue =
-                                      agency.previousYearRevenue ||
+                                      agency?.previousYearRevenue ||
                                       previousYearRevenue;
                                     previousYearMargin =
-                                      agency.previousYearMargin ||
+                                      agency?.previousYearMargin ||
                                       previousYearMargin;
                                   }
                                 }
@@ -3161,10 +3147,10 @@ export default function SubmitDeal() {
                                         );
                                         if (
                                           advertiser &&
-                                          advertiser.previousYearRevenue
+                                          advertiser?.previousYearRevenue
                                         ) {
                                           previousYearRevenue =
-                                            advertiser.previousYearRevenue;
+                                            advertiser?.previousYearRevenue;
                                         }
                                       } else if (
                                         (salesChannel === "holding_company" ||
@@ -3177,10 +3163,10 @@ export default function SubmitDeal() {
                                         );
                                         if (
                                           agency &&
-                                          agency.previousYearRevenue
+                                          agency?.previousYearRevenue
                                         ) {
                                           previousYearRevenue =
-                                            agency.previousYearRevenue;
+                                            agency?.previousYearRevenue;
                                         }
                                       }
 
@@ -3570,10 +3556,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser.previousYearRevenue
+                                      advertiser?.previousYearRevenue
                                     ) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue;
+                                        advertiser?.previousYearRevenue;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -3583,9 +3569,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearRevenue) {
+                                    if (agency && agency?.previousYearRevenue) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue;
+                                        agency?.previousYearRevenue;
                                     }
                                   }
 
@@ -3652,10 +3638,10 @@ export default function SubmitDeal() {
                                 );
                                 if (
                                   advertiser &&
-                                  advertiser.previousYearRevenue
+                                  advertiser?.previousYearRevenue
                                 ) {
                                   previousYearRevenue =
-                                    advertiser.previousYearRevenue;
+                                    advertiser?.previousYearRevenue;
                                 }
                               } else if (
                                 (salesChannel === "holding_company" ||
@@ -3665,9 +3651,9 @@ export default function SubmitDeal() {
                                 const agency = agencies.find(
                                   (a) => a.name === agencyName,
                                 );
-                                if (agency && agency.previousYearRevenue) {
+                                if (agency && agency?.previousYearRevenue) {
                                   previousYearRevenue =
-                                    agency.previousYearRevenue;
+                                    agency?.previousYearRevenue;
                                 }
                               }
 

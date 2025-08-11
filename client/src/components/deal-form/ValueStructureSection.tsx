@@ -24,6 +24,7 @@ type ValueStructureFormValues = any;
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
+import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
 
 interface ValueStructureSectionProps {
   form: UseFormReturn<ValueStructureFormValues>;
@@ -55,11 +56,11 @@ export function ValueStructureSection({
     const newTierNumber = dealTiers.length + 1;
     const newTier: DealTier = {
       tierNumber: newTierNumber,
-      annualRevenue: 0,
-      annualGrossMargin: 0.35, // 35% as decimal
-      incentiveCategory: "financial",
-      incentiveSubCategory: "discounts",
-      specificIncentive: "Volume Discount",
+      annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+      annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
+      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
+      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
       incentiveValue: 0,
       incentiveNotes: "",
     };
