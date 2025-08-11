@@ -173,8 +173,8 @@ export function useDealFormValidation(
       // Handle conditional fields
       const fieldNameStr = String(fieldName);
       
-      // Get the field value
-      const value = form.getValues(fieldNameStr);
+      // Get the field value - use getValues() with specific key to ensure fresh data
+      const value = form.getValues()[fieldNameStr];
       
       if (fieldNameStr === 'advertiserName') {
         if (salesChannel === 'client_direct') {
@@ -203,7 +203,14 @@ export function useDealFormValidation(
           
       // Debug logging for Business Context fields
       if (['growthOpportunityMIQ', 'growthOpportunityClient', 'clientAsks'].includes(fieldNameStr)) {
-        console.log(`🔍 Validating ${fieldNameStr}:`, { value, isEmpty, type: typeof value });
+        const alternateValue = form.getValues(fieldNameStr);
+        console.log(`🔍 Validating ${fieldNameStr}:`, { 
+          value, 
+          alternateValue, 
+          isEmpty, 
+          type: typeof value,
+          formState: form.formState.isDirty 
+        });
       }
       
       if (isEmpty) {
@@ -218,8 +225,9 @@ export function useDealFormValidation(
     // Additional business logic validation
     if (stepNumber === 1) {
       // Date validation
-      const startDate = form.getValues('termStartDate');
-      const endDate = form.getValues('termEndDate');
+      const formValues = form.getValues();
+      const startDate = formValues.termStartDate;
+      const endDate = formValues.termEndDate;
       
       if (startDate && endDate) {
         const start = new Date(startDate);
@@ -233,8 +241,9 @@ export function useDealFormValidation(
 
     if (stepNumber === 3) {
       // Revenue validation
-      const revenue = form.getValues('annualRevenue');
-      const margin = form.getValues('annualGrossMargin');
+      const formValues = form.getValues();
+      const revenue = formValues.annualRevenue;
+      const margin = formValues.annualGrossMargin;
       
       if (revenue && revenue <= 0) {
         errors.push('Annual revenue must be greater than 0');
