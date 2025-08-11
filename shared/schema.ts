@@ -113,8 +113,8 @@ export const deals = pgTable("deals", {
   status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
   
   // Timeframe
-  termStartDate: date("term_start_date"),
-  termEndDate: date("term_end_date"),
+  termStartDate: text("term_start_date"),
+  termEndDate: text("term_end_date"),
   contractTerm: integer("contract_term"), // calculated in months from start and end dates
   
   // Financial data for flat commit structure
