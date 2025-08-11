@@ -30,7 +30,7 @@ interface DealDetailsFormValues {
   contractTermMonths?: string;
   termStartDate?: Date | null;
   termEndDate?: Date | null;
-  businessSummary?: string; // Make optional for RequestSupport
+  // businessSummary removed - moved to ReviewSubmitSection
   // Allow additional fields for different form types
   [key: string]: any;
 }
@@ -311,32 +311,7 @@ export function DealDetailsSection({
           />
         </div>
 
-        {/* Business Summary - Conditional */}
-        {showBusinessSummary && (
-          <FormField
-          control={form.control}
-          name="businessSummary"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Business Summary <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Briefly describe the deal, its objectives, and any special considerations"
-                  className="min-h-[100px]"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-              <FormDescription>
-                Briefly describe the business opportunity, growth potential, and any special considerations.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        )}
+        {/* Business Summary moved to ReviewSubmitSection with auto-population */}
 
         {/* Navigation Button - Conditional */}
         {showNavigationButton && nextStep && (

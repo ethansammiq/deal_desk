@@ -81,6 +81,11 @@ A comprehensive deal desk application that leverages AI and advanced analytics t
 - Phase 3: Performance optimization and lazy loading
 
 ## Recent Changes
+- **2025-01-11**: ✅ Fixed BusinessContextSection display in RequestSupport form
+- **2025-01-11**: ✅ Incorporated ALL growth opportunity fields into RequestSupport (growthAmbition, growthOpportunityMIQ, growthOpportunityClient, clientAsks)
+- **2025-01-11**: ✅ Moved businessSummary field from DealDetailsSection to ReviewSubmitSection with auto-population logic
+- **2025-01-11**: ✅ BusinessSummary now auto-generates from BusinessContextSection fields but remains editable
+- **2025-01-11**: ✅ Resolved all TypeScript interface conflicts between shared components
 - **2025-01-08**: ✅ Form restoration and backend schema alignment completed
 - **2025-01-08**: ✅ Removed Contact Email field to match original design
 - **2025-01-08**: ✅ Added Contract Term (Months) input with auto-calculation logic

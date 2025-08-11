@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,15 @@ import {
   type DealFinancialSummary,
 } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 
 // Type this component to accept any valid form structure
 type ReviewSubmitFormValues = any;
@@ -63,6 +72,35 @@ export function ReviewSubmitSection({
   const endDate = formValues.termEndDate;
   const contractTerm = startDate && endDate ?
     Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
+
+  // Auto-populate business summary based on business context fields
+  useEffect(() => {
+    const generateBusinessSummary = () => {
+      const parts = [];
+      
+      if (formValues.growthOpportunityMIQ) {
+        parts.push(`Growth Opportunity (MIQ): ${formValues.growthOpportunityMIQ}`);
+      }
+      
+      if (formValues.growthOpportunityClient) {
+        parts.push(`Growth Opportunity (Client): ${formValues.growthOpportunityClient}`);
+      }
+      
+      if (formValues.clientAsks) {
+        parts.push(`Client Requirements: ${formValues.clientAsks}`);
+      }
+      
+      if (parts.length > 0) {
+        const autoSummary = parts.join(' | ');
+        // Only update if business summary is empty or different
+        if (!formValues.businessSummary || formValues.businessSummary !== autoSummary) {
+          form.setValue('businessSummary', autoSummary);
+        }
+      }
+    };
+
+    generateBusinessSummary();
+  }, [formValues.growthOpportunityMIQ, formValues.growthOpportunityClient, formValues.clientAsks, form]);
 
   return (
     <div className="space-y-6">
@@ -121,9 +159,31 @@ export function ReviewSubmitSection({
             <p className="text-base">{contractTerm} months</p>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700">Business Summary</label>
-            <p className="text-base text-gray-600">{formValues.businessSummary}</p>
+          {/* Auto-populated Business Summary Field */}
+          <div className="col-span-2">
+            <FormField
+              control={form.control}
+              name="businessSummary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Business Summary <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Auto-populated from business context fields..."
+                      className="min-h-[100px]"
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This summary is auto-generated from your business context inputs but can be edited as needed.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </CardContent>
       </Card>
@@ -250,7 +310,7 @@ export function ReviewSubmitSection({
       {/* Approval Requirements */}
       {currentApprover && (
         <ApprovalAlert
-          approvalInfo={currentApprover}
+          currentApprover={currentApprover}
           onApprovalChange={() => {}}
         />
       )}
