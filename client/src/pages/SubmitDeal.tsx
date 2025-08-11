@@ -83,11 +83,11 @@ import TierSpecificIncentives, {
 } from "@/components/TierSpecificIncentives";
 import { TierConfigurationPanel } from "@/components/deal-form/TierConfigurationPanel";
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
-import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { DataMappingService } from "@/services/dataMappingService";
-
+import { BasicDealInfoSection } from "@/components/deal-form/BasicDealInfoSection";
 import { ValueStructureSection } from "@/components/deal-form/ValueStructureSection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { DataMappingService } from "@/services/dataMappingService";
 
 // Simplified deal schema with only essential fields
 const dealFormSchema = z
@@ -1003,8 +1003,64 @@ export default function SubmitDeal() {
             console.log("Form submit event triggered");
             form.handleSubmit(onSubmit)(e);
           }}>
-            {/* Step 1: Deal Overview */}
+            {/* Step 1: Deal Overview - Using extracted component */}
             {formStep === 0 && (
+              <BasicDealInfoSection
+                form={form}
+                salesChannel={salesChannel}
+                dealStructureType={dealStructureType}
+                setDealStructure={setDealStructure}
+                agencies={agencies.data || []}
+                advertisers={advertisers.data || []}
+              />
+            )}
+
+            {/* Step 2: Value Structure - Using extracted component */}
+            {formStep === 1 && (
+              <ValueStructureSection
+                form={form}
+                dealStructureType={dealStructureType}
+                dealTiers={dealTiers}
+                setDealTiers={setDealTiers}
+                selectedIncentives={selectedIncentives}
+                setSelectedIncentives={setSelectedIncentives}
+                tierIncentives={tierIncentives}
+                setTierIncentives={setTierIncentives}
+                dealCalculations={dealCalculations}
+                salesChannel={salesChannel}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            )}
+
+            {/* Step 3: Review & Submit - Using extracted component */}
+            {formStep === 2 && (
+              <ReviewSubmitSection
+                form={form}
+                dealStructureType={dealStructureType}
+                dealTiers={dealTiers}
+                selectedIncentives={selectedIncentives}
+                tierIncentives={tierIncentives}
+                dealCalculations={dealCalculations}
+                salesChannel={salesChannel}
+                currentApprover={currentApprover}
+                onSubmit={onSubmit}
+                prevStep={prevStep}
+                createDeal={createDeal}
+              />
+            )}
+
+            {/* Fallback for development - can be removed in production */}
+            {(formStep < 0 || formStep > 2) && (
+              <CardContent className="p-6">
+                <div className="text-center text-slate-500">
+                  Invalid step: {formStep}. Please refresh the page.
+                </div>
+              </CardContent>
+            )}
+
+            {/* LEGACY INLINE FORM - TO BE REPLACED WITH COMPONENTS ABOVE */}
+            {false && formStep === 0 && (
               <CardContent className="p-6">
                 <FormSectionHeader
                   title="Basic Deal Information"
