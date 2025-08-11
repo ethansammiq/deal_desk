@@ -82,22 +82,7 @@ export function FinancialTierTable({
           </h3>
           <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
         </div>
-        <Button
-          type="button"
-          onClick={addTier}
-          variant="outline"
-          size="sm"
-          disabled={isFlat}
-          className={`${
-            isFlat 
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
-              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-          }`}
-          title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Tier
-        </Button>
+        {/* Add Tier button removed - handled by parent component */}
       </div>
 
       {/* Info banner */}
