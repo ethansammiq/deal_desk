@@ -37,7 +37,13 @@ interface DealDetailsSectionProps {
   form: UseFormReturn<DealDetailsFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
   setDealStructure: (value: "tiered" | "flat_commit" | "") => void;
-  nextStep: () => void;
+  nextStep?: () => void;
+  // Configuration props to control which fields are shown
+  showBusinessSummary?: boolean;
+  showDealStructure?: boolean;
+  showNavigationButton?: boolean;
+  title?: string;
+  description?: string;
 }
 
 export function DealDetailsSection({
@@ -45,12 +51,17 @@ export function DealDetailsSection({
   dealStructureType,
   setDealStructure,
   nextStep,
+  showBusinessSummary = true,
+  showDealStructure = true,
+  showNavigationButton = true,
+  title = "Deal Details",
+  description = "Configure the deal type, structure, and timeline",
 }: DealDetailsSectionProps) {
   return (
     <CardContent className="p-6">
       <FormSectionHeader
-        title="Deal Details"
-        description="Configure the deal type, structure, and timeline"
+        title={title}
+        description={description}
       />
 
       <div className="space-y-6">
@@ -137,8 +148,9 @@ export function DealDetailsSection({
           />
         </div>
 
-        {/* Deal Structure */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Deal Structure - Conditional */}
+        {showDealStructure && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
             name="dealStructure"
@@ -222,7 +234,8 @@ export function DealDetailsSection({
               );
             }}
           />
-        </div>
+          </div>
+        )}
 
         {/* Date Range Selection */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -296,8 +309,9 @@ export function DealDetailsSection({
           />
         </div>
 
-        {/* Business Summary */}
-        <FormField
+        {/* Business Summary - Conditional */}
+        {showBusinessSummary && (
+          <FormField
           control={form.control}
           name="businessSummary"
           render={({ field }) => (
@@ -320,17 +334,20 @@ export function DealDetailsSection({
             </FormItem>
           )}
         />
+        )}
 
-        {/* Navigation Button */}
-        <div className="flex justify-end pt-4">
-          <Button
-            type="button"
-            onClick={nextStep}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            Next: Value Structure
-          </Button>
-        </div>
+        {/* Navigation Button - Conditional */}
+        {showNavigationButton && nextStep && (
+          <div className="flex justify-end pt-4">
+            <Button
+              type="button"
+              onClick={nextStep}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              Next: Value Structure
+            </Button>
+          </div>
+        )}
       </div>
     </CardContent>
   );
