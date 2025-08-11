@@ -41,6 +41,7 @@ import {
 import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
+import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 
 // Schema for deal scoping requests
 const dealScopingSchema = z
@@ -325,168 +326,17 @@ export default function RequestSupport() {
               className="w-full"
             >
               <TabsContent value="sales-channel" className="space-y-6 pt-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Your email address"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                {/* Client Information Section - Shared Component */}
+                <ClientInfoSection
+                  form={form}
+                  agencies={agencies}
+                  advertisers={advertisers}
+                  salesChannel={form.watch("salesChannel")}
+                  includeEmail={true}
+                  emailLabel="Email Address"
+                  emailPlaceholder="Your email address"
+                  layout="stacked"
                 />
-
-                <FormField
-                  control={form.control}
-                  name="region"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Region <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select region" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="northeast">Northeast</SelectItem>
-                          <SelectItem value="midwest">Midwest</SelectItem>
-                          <SelectItem value="midatlantic">
-                            Mid-Atlantic
-                          </SelectItem>
-                          <SelectItem value="south">South</SelectItem>
-                          <SelectItem value="west">West</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="salesChannel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Sales Channel <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Reset related fields when changing sales channel
-                          if (value === "client_direct") {
-                            form.setValue("agencyName", "");
-                          } else {
-                            form.setValue("advertiserName", "");
-                          }
-                        }}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select sales channel" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="holding_company">
-                            Holding Company
-                          </SelectItem>
-                          <SelectItem value="independent_agency">
-                            Independent Agency
-                          </SelectItem>
-                          <SelectItem value="client_direct">
-                            Client Direct
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Show Advertiser Name only if Client Direct is selected */}
-                {form.watch("salesChannel") === "client_direct" && (
-                  <FormField
-                    control={form.control}
-                    name="advertiserName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Advertiser Name{" "}
-                          <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select advertiser" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {advertisers.map((advertiser) => (
-                              <SelectItem
-                                key={advertiser.id}
-                                value={advertiser.name}
-                              >
-                                {advertiser.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {/* Show Agency Name only if Holding Company or Independent Agency is selected */}
-                {(form.watch("salesChannel") === "holding_company" ||
-                  form.watch("salesChannel") === "independent_agency") && (
-                  <FormField
-                    control={form.control}
-                    name="agencyName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Agency Name <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select agency" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {agencies.map((agency) => (
-                              <SelectItem key={agency.id} value={agency.name}>
-                                {agency.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
               </TabsContent>
 
               <TabsContent
