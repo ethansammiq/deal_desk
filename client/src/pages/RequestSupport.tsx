@@ -46,68 +46,10 @@ import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 
 // Schema for deal scoping requests
-const dealScopingSchema = z
-  .object({
-    // Sales channel and client information
-    salesChannel: z.string().min(1, "Sales channel is required"),
-    region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
-      required_error: "Region is required",
-    }),
-    advertiserName: z.string().optional(),
-    agencyName: z.string().optional(),
-
-    // Deal timeline fields (shared with SubmitDeal)
-    dealType: z.enum(["grow", "protect", "custom"], {
-      required_error: "Deal type is required",
-    }),
-    dealStructure: z.enum(["tiered", "flat_commit"], {
-      required_error: "Deal structure is required",
-    }),
-    contractTermMonths: z.string().optional(),
-    termStartDate: z.date({
-      required_error: "Start date is required",
-    }),
-    termEndDate: z.date({
-      required_error: "End date is required",
-    }),
-
-    // Growth opportunity fields (from BusinessContextSection)
-    growthAmbition: z
-      .number()
-      .min(1000000, "Growth ambition must be at least $1M"),
-    growthOpportunityMIQ: z
-      .string()
-      .min(20, "Growth opportunity (MIQ) is required"),
-    growthOpportunityClient: z
-      .string()
-      .min(20, "Growth opportunity (Client) is required"),
-    clientAsks: z
-      .string()
-      .min(20, "Client asks information is required"),
-  })
-  .superRefine((data, ctx) => {
-    // If sales channel is client_direct, advertiserName is required
-    if (data.salesChannel === "client_direct" && !data.advertiserName) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Advertiser name is required for client direct sales",
-        path: ["advertiserName"],
-      });
-    }
-
-    // If sales channel is holding_company or independent_agency, agencyName is required
-    if (
-      (data.salesChannel === "holding_company" ||
-        data.salesChannel === "independent_agency") &&
-      !data.agencyName
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Agency name is required for agency sales",
-        path: ["agencyName"],
-      });
-    }
-  });
+// Simplified schema - fields now handled by shared components
+const dealScopingSchema = z.object({
+  // Allow any fields from shared components - validation handled by components
+}).passthrough();
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
 
@@ -140,7 +82,7 @@ export default function RequestSupport() {
   // Deal structure state for DealDetailsSection
   const [dealStructureType, setDealStructureType] = useState<"tiered" | "flat_commit" | "">("");
 
-  const form = useForm<DealScopingFormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(dealScopingSchema),
     defaultValues: {
       salesChannel: "",

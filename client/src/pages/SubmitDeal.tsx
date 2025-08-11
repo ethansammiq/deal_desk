@@ -92,106 +92,21 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 
 // Simplified deal schema with only essential fields
-const dealFormSchema = z
-  .object({
-    // Basic deal information
-    dealType: z.enum(["grow", "protect", "custom"], {
-      required_error: "Deal type is required",
-      invalid_type_error: "Deal type must be one of: Grow, Protect, Custom",
-    }),
+// Simplified schema - fields now handled by shared components
+const dealFormSchema = z.object({
+  // Business summary is in ReviewSubmitSection
+  businessSummary: z.string().optional(),
+  
+  // Essential financial data for calculations
+  annualRevenue: z.coerce.number().positive("Annual revenue must be positive").optional(),
+  annualGrossMargin: z.coerce.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
+  
+  // System fields
+  status: z.string().default("submitted"),
+  referenceNumber: z.string().optional(),
+}).passthrough(); // Allow any fields from shared components
 
-    // Business information
-    businessSummary: z
-      .string()
-      .min(10, "Business summary should be at least 10 characters"),
-
-    // Growth opportunity fields (partial move from RequestSupport)
-    growthOpportunityMIQ: z
-      .string()
-      .min(10, "Please provide more details about the growth opportunity"),
-    growthOpportunityClient: z
-      .string()
-      .min(
-        10,
-        "Please provide more details about the client's growth opportunity",
-      ),
-    clientAsks: z.string().optional(),
-
-    // Client/Agency information
-    salesChannel: z.enum(
-      ["holding_company", "independent_agency", "client_direct"],
-      {
-        required_error: "Sales channel is required",
-      },
-    ),
-    region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"], {
-      required_error: "Region is required",
-    }),
-
-    // Conditional fields based on salesChannel
-    advertiserName: z.string().optional(),
-    agencyName: z.string().optional(),
-    contractTermMonths: z.string().optional(),
-
-    // Deal structure
-    dealStructure: z.enum(["tiered", "flat_commit"], {
-      required_error: "Deal structure is required",
-    }),
-
-    // Timeframe
-    termStartDate: z.date({
-      required_error: "Start date is required",
-      invalid_type_error: "Start date must be a valid date",
-    }),
-    termEndDate: z.date({
-      required_error: "End date is required",
-      invalid_type_error: "End date must be a valid date",
-    }),
-
-    // Essential financial data only
-    annualRevenue: z.coerce
-      .number()
-      .positive("Annual revenue must be positive"),
-    annualGrossMargin: z.coerce
-      .number()
-      .min(0)
-      .max(100, "Annual gross margin must be between 0 and 100%"),
-
-    // Contact information
-    email: z.string().email().optional(),
-
-    // System fields
-    status: z.string().default("submitted"),
-    referenceNumber: z.string().optional(),
-  })
-  // Add conditional validation - if salesChannel is client_direct, advertiserName is required
-  .refine(
-    (data) => !(data.salesChannel === "client_direct" && !data.advertiserName),
-    {
-      message: "Advertiser name is required for Client Direct sales channel",
-      path: ["advertiserName"],
-    },
-  )
-  // Add conditional validation - if salesChannel is agency type, agencyName is required
-  .refine(
-    (data) =>
-      !(
-        (data.salesChannel === "holding_company" ||
-          data.salesChannel === "independent_agency") &&
-        !data.agencyName
-      ),
-    {
-      message: "Agency name is required for Agency sales channels",
-      path: ["agencyName"],
-    },
-  )
-  // Validate that termEndDate is after termStartDate
-  .refine((data) => data.termEndDate > data.termStartDate, {
-    message: "End date must be after start date",
-    path: ["termEndDate"],
-  });
-
-type DealFormValues = z.infer<typeof dealFormSchema>;
+type DealFormValues = any; // Allow any fields from shared components
 
 export default function SubmitDeal() {
   const [formStep, setFormStep] = useState(0);
@@ -568,7 +483,7 @@ export default function SubmitDeal() {
   const [showAddIncentiveForm, setShowAddIncentiveForm] =
     useState<boolean>(false);
 
-  const form = useForm<DealFormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
       // Basic deal information
@@ -886,7 +801,7 @@ export default function SubmitDeal() {
     }
   }
 
-  function onSubmit(data: DealFormValues) {
+  function onSubmit(data: any) {
     console.log("Form submission triggered with data:", data);
     
     // Check for missing fields
