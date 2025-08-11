@@ -674,11 +674,16 @@ export default function SubmitDeal() {
 
   // Calculate real-time financial impact based on changes to dealTiers
   useEffect(() => {
-    // Calculate contract term from dates
-    const startDate = form.getValues("termStartDate") as Date;
-    const endDate = form.getValues("termEndDate") as Date;
-    const contractTerm = startDate && endDate ? 
-      Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
+    // Calculate contract term from ISO 8601 date strings
+    const startDateStr = form.getValues("termStartDate") as string;
+    const endDateStr = form.getValues("termEndDate") as string;
+    
+    let contractTerm = 12; // Default to 12 months
+    if (startDateStr && endDateStr) {
+      const startDate = new Date(startDateStr);
+      const endDate = new Date(endDateStr);
+      contractTerm = Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()));
+    }
 
     // Get advertiser/agency to find previous year revenue
     const advertiserName = form.getValues("advertiserName") as string;
