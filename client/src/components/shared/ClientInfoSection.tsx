@@ -212,9 +212,10 @@ export function ClientInfoSection({
                       .filter((agency) => {
                         if (salesChannel === "holding_company") {
                           return agency.type === "holding_company";
-                        } else {
+                        } else if (salesChannel === "independent_agency") {
                           return agency.type === "independent";
                         }
+                        return false;
                       })
                       .map((agency) => (
                         <SelectItem key={agency.id} value={agency.name}>
