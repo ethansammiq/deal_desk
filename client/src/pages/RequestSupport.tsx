@@ -44,6 +44,7 @@ import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
+import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 // Schema for deal scoping requests
 // Simplified schema - fields now handled by shared components
@@ -100,6 +101,13 @@ export default function RequestSupport() {
       clientAsks: "",
     },
     mode: "onChange",
+  });
+
+  // ✅ SYNCHRONIZED: Form validation hook for RequestSupport
+  const formValidation = useDealFormValidation(form, {
+    enableAutoAdvance: false,
+    validateOnChange: true,
+    formType: 'requestSupport' // Use RequestSupport form steps (3 steps max)
   });
 
   // Create deal scoping request mutation
@@ -252,7 +260,7 @@ export default function RequestSupport() {
         }
       />
 
-      {/* Standardized Form Progress Tracker */}
+      {/* ✅ SYNCHRONIZED: Form Progress Tracker with validation-aware navigation */}
       <FormProgressTracker
         steps={[
           { id: "sales-channel", label: "Client Information" },
@@ -260,7 +268,26 @@ export default function RequestSupport() {
           { id: "growth-opportunity", label: "Growth Opportunity" }
         ]}
         currentStep={activeTab}
-        onStepClick={(stepId) => setActiveTab(stepId.toString())}
+        onStepClick={(stepId) => {
+          const targetStep = stepId.toString();
+          // Map tab IDs to step numbers for validation
+          const stepMap: Record<string, number> = {
+            'sales-channel': 1,
+            'deal-details': 2,
+            'growth-opportunity': 3
+          };
+          
+          const stepNumber = stepMap[targetStep];
+          if (stepNumber && formValidation.canAdvanceToStep(stepNumber)) {
+            setActiveTab(targetStep);
+          } else {
+            toast({
+              title: "Complete Current Step",
+              description: "Please fill out the required fields before proceeding.",
+              variant: "destructive",
+            });
+          }
+        }}
       />
 
       {/* Form Card */}

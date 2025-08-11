@@ -258,7 +258,8 @@ export default function SubmitDeal() {
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
-    validateOnChange: true
+    validateOnChange: true,
+    formType: 'submitDeal' // ✅ SYNCHRONIZED: Use SubmitDeal form steps
   });
   
   // ✅ MIGRATED: Use hook-managed form step instead of local state

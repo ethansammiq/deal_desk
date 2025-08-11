@@ -51,56 +51,88 @@ export interface StepValidationResult {
 export interface UseDealFormValidationOptions {
   enableAutoAdvance?: boolean;
   validateOnChange?: boolean;
+  formType?: 'submitDeal' | 'requestSupport'; // New: specify form type
 }
 
-// Define form steps with their required fields
-const FORM_STEPS: FormStep[] = [
+// ✅ REDESIGNED: Logical form steps based on actual shared component usage
+// SUBMIT DEAL FORM STEPS (4 steps max)
+const SUBMIT_DEAL_STEPS: FormStep[] = [
   {
     id: 1,
-    title: 'Basic Deal Information',
+    title: 'Deal Overview', // Step 0 in actual implementation
     fields: [
-      'dealType',
-      'salesChannel', 
-      'advertiserName', // conditional on salesChannel
-      'agencyName', // conditional on salesChannel
-      'region',
-      'termStartDate',
-      'termEndDate'
+      'salesChannel',    // ClientInfoSection
+      'advertiserName',  // ClientInfoSection (conditional)
+      'agencyName',      // ClientInfoSection (conditional)
+      'region',          // ClientInfoSection
+      'dealType',        // DealDetailsSection
+      'dealStructure',   // DealDetailsSection
+      'contractTermMonths', // DealDetailsSection
+      'termStartDate',   // DealDetailsSection
+      'termEndDate'      // DealDetailsSection
     ]
   },
   {
     id: 2,
-    title: 'Deal Details & Structure',
+    title: 'Business Context', // Step 1 in actual implementation
     fields: [
-      'dealStructure',
-      'contractTermMonths'
+      'growthAmbition',        // BusinessContextSection
+      'growthOpportunityMIQ',  // BusinessContextSection
+      'growthOpportunityClient', // BusinessContextSection
+      'clientAsks'             // BusinessContextSection
     ]
   },
   {
     id: 3,
-    title: 'Value Structure',
+    title: 'Value Structure', // Step 2 in actual implementation
     fields: [
-      'annualRevenue',
-      'annualGrossMargin'
+      'annualRevenue',      // Financial configuration
+      'annualGrossMargin'   // Financial configuration
+      // Tier configuration handled separately by useDealTiers hook
     ]
   },
   {
     id: 4,
-    title: 'Business Context',
+    title: 'Review & Submit', // Step 3 in actual implementation
     fields: [
-      'businessSummary',
-      'growthAmbition',
-      'growthOpportunityMIQ',
-      'growthOpportunityClient',
-      'clientAsks'
+      'businessSummary'  // ReviewSubmitSection (auto-populated, editable)
     ],
-    isOptional: true
+    isOptional: true  // Business summary is optional
+  }
+];
+
+// REQUEST SUPPORT FORM STEPS (3 steps max)
+const REQUEST_SUPPORT_STEPS: FormStep[] = [
+  {
+    id: 1,
+    title: 'Client Information', // Tab: sales-channel
+    fields: [
+      'salesChannel',    // ClientInfoSection
+      'advertiserName',  // ClientInfoSection (conditional)
+      'agencyName',      // ClientInfoSection (conditional)
+      'region'           // ClientInfoSection
+    ]
   },
   {
-    id: 5,
-    title: 'Review & Submit',
-    fields: [], // No additional fields, just review
-    isOptional: true
+    id: 2,
+    title: 'Deal Timeline', // Tab: deal-details
+    fields: [
+      'dealType',           // DealDetailsSection
+      'dealStructure',      // DealDetailsSection
+      'contractTermMonths', // DealDetailsSection
+      'termStartDate',      // DealDetailsSection
+      'termEndDate'         // DealDetailsSection
+    ]
+  },
+  {
+    id: 3,
+    title: 'Growth Opportunity', // Tab: growth-opportunity
+    fields: [
+      'growthAmbition',         // BusinessContextSection
+      'growthOpportunityMIQ',   // BusinessContextSection
+      'growthOpportunityClient', // BusinessContextSection
+      'clientAsks'              // BusinessContextSection
+    ]
   }
 ];
 
@@ -108,7 +140,11 @@ export function useDealFormValidation(
   form: UseFormReturn<DealFormData>,
   options: UseDealFormValidationOptions = {}
 ) {
-  const { enableAutoAdvance = false, validateOnChange = true } = options;
+  const { enableAutoAdvance = false, validateOnChange = true, formType = 'submitDeal' } = options;
+  
+  // Select appropriate step configuration based on form type
+  const formSteps = formType === 'requestSupport' ? REQUEST_SUPPORT_STEPS : SUBMIT_DEAL_STEPS;
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([1]));
   const [stepValidationCache, setStepValidationCache] = useState<Map<number, StepValidationResult>>(new Map());
@@ -120,7 +156,7 @@ export function useDealFormValidation(
 
   // Validate individual step
   const validateStep = useCallback((stepNumber: number): StepValidationResult => {
-    const step = FORM_STEPS.find(s => s.id === stepNumber);
+    const step = formSteps.find(s => s.id === stepNumber);
     if (!step) {
       return { isValid: false, errors: ['Invalid step'], missingFields: [] };
     }
@@ -226,7 +262,7 @@ export function useDealFormValidation(
   // Check if user can advance to next step
   const canAdvanceToStep = useCallback((targetStep: number): boolean => {
     if (targetStep <= currentStep) return true; // Can always go back
-    if (targetStep > FORM_STEPS.length) return false; // Beyond max steps
+    if (targetStep > formSteps.length) return false; // Beyond max steps
     
     // Check all steps between current and target
     for (let step = currentStep; step < targetStep; step++) {
@@ -241,7 +277,7 @@ export function useDealFormValidation(
 
   // Navigate to specific step
   const goToStep = useCallback((targetStep: number): boolean => {
-    if (targetStep < 1 || targetStep > FORM_STEPS.length) {
+    if (targetStep < 1 || targetStep > formSteps.length) {
       return false;
     }
 
@@ -255,7 +291,7 @@ export function useDealFormValidation(
     setVisitedSteps(prev => new Set([...Array.from(prev), targetStep]));
     
     return true;
-  }, [currentStep, currentStepValidation.isValid]);
+  }, [currentStep, currentStepValidation.isValid, formSteps.length]);
 
   // Navigate to next step
   const goToNextStep = useCallback((): boolean => {
@@ -271,14 +307,14 @@ export function useDealFormValidation(
 
   // Auto-advance functionality
   useEffect(() => {
-    if (enableAutoAdvance && currentStepValidation.isValid && currentStep < FORM_STEPS.length) {
+    if (enableAutoAdvance && currentStepValidation.isValid && currentStep < formSteps.length) {
       const timer = setTimeout(() => {
         goToNextStep();
       }, 1000); // 1 second delay
 
       return () => clearTimeout(timer);
     }
-  }, [enableAutoAdvance, currentStepValidation.isValid, currentStep, goToNextStep]);
+  }, [enableAutoAdvance, currentStepValidation.isValid, currentStep, goToNextStep, formSteps.length]);
 
   // Get overall form validation status
   const overallValidation = useMemo(() => {
@@ -286,7 +322,7 @@ export function useDealFormValidation(
     let isFormValid = true;
     const visitedArray = Array.from(visitedSteps);
 
-    FORM_STEPS.forEach(step => {
+    formSteps.forEach(step => {
       const validation = stepValidationCache.get(step.id) || validateStep(step.id);
       if (!validation.isValid && !step.isOptional) {
         isFormValid = false;
@@ -301,14 +337,14 @@ export function useDealFormValidation(
         const validation = stepValidationCache.get(step) || validateStep(step);
         return validation.isValid;
       }).length,
-      totalSteps: FORM_STEPS.filter(step => !step.isOptional).length
+      totalSteps: formSteps.filter(step => !step.isOptional).length
     };
-  }, [stepValidationCache, validateStep, visitedSteps]);
+  }, [stepValidationCache, validateStep, visitedSteps, formSteps]);
 
   // Get step info
   const getStepInfo = useCallback((stepNumber: number) => {
-    return FORM_STEPS.find(step => step.id === stepNumber);
-  }, []);
+    return formSteps.find(step => step.id === stepNumber);
+  }, [formSteps]);
 
   // Reset form validation state
   const resetValidation = useCallback(() => {
@@ -339,13 +375,13 @@ export function useDealFormValidation(
     
     // Computed
     isFirstStep: currentStep === 1,
-    isLastStep: currentStep === FORM_STEPS.length,
-    canGoNext: currentStep < FORM_STEPS.length && currentStepValidation.isValid,
+    isLastStep: currentStep === formSteps.length,
+    canGoNext: currentStep < formSteps.length && currentStepValidation.isValid,
     canGoPrevious: currentStep > 1,
     progressPercentage: Math.round((overallValidation.completedSteps / overallValidation.totalSteps) * 100),
     
     // Constants
-    totalSteps: FORM_STEPS.length,
-    steps: FORM_STEPS
+    totalSteps: formSteps.length,
+    steps: formSteps
   };
 }
