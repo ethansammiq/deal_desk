@@ -39,14 +39,109 @@ interface BusinessContextSectionProps {
 
 export function BusinessContextSection({ form, variant = "submitDeal" }: BusinessContextSectionProps) {
   const isRequestSupport = variant === "requestSupport";
+  
+  if (isRequestSupport) {
+    // For RequestSupport, don't wrap in CardContent since it's inside TabsContent
+    return (
+      <div className="space-y-6 p-6">
+        <FormSectionHeader
+          title="Request Details"
+          description="Specify the type of assistance needed and provide business context"
+        />
+        <div className="space-y-6">
+          {/* Request Support fields */}
+          <FormField
+            control={form.control}
+            name="requestType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Request Type <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select the type of assistance needed" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="scoping">Deal Scoping & Strategy</SelectItem>
+                    <SelectItem value="pricing">Pricing & Structure</SelectItem>
+                    <SelectItem value="technical">Technical Requirements</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  What type of assistance do you need with this deal?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="growthAmbition"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  2025 Growth Ambition ($) <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1000000"
+                    placeholder="Enter amount (minimum $1M)"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(parseFloat(e.target.value))
+                    }
+                  />
+                </FormControl>
+                <FormDescription>
+                  Growth ambition must be at least $1M for partnership team review.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="businessContext"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Business Context <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Provide context about the opportunity, client needs, and what assistance you're seeking..."
+                    className="resize-none"
+                    rows={6}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Describe the business opportunity, client requirements, and the specific help you need from our partnership team.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+    );
+  }
+  
+  // For SubmitDeal, keep the CardContent wrapper
   return (
     <CardContent className="p-6">
       <FormSectionHeader
-        title={isRequestSupport ? "Request Details" : "Business Context"}
-        description={isRequestSupport 
-          ? "Specify the type of assistance needed and provide business context"
-          : "Provide detailed information about the growth opportunity and client requirements"
-        }
+        title="Business Context"
+        description="Provide detailed information about the growth opportunity and client requirements"
       />
 
       <div className="space-y-6">
