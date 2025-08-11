@@ -42,6 +42,7 @@ import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
+import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 
 // Schema for deal scoping requests
 const dealScopingSchema = z
@@ -53,6 +54,21 @@ const dealScopingSchema = z
     }),
     advertiserName: z.string().optional(),
     agencyName: z.string().optional(),
+
+    // Deal timeline fields (shared with SubmitDeal)
+    dealType: z.enum(["grow", "protect", "custom"], {
+      required_error: "Deal type is required",
+    }),
+    dealStructure: z.enum(["tiered", "flat_commit"], {
+      required_error: "Deal structure is required",
+    }),
+    contractTermMonths: z.string().optional(),
+    termStartDate: z.date({
+      required_error: "Start date is required",
+    }),
+    termEndDate: z.date({
+      required_error: "End date is required",
+    }),
 
     // Growth opportunity fields
     growthOpportunityMIQ: z
@@ -120,6 +136,9 @@ export default function RequestSupport() {
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+  
+  // Deal structure state for DealDetailsSection
+  const [dealStructureType, setDealStructureType] = useState<"tiered" | "flat_commit" | "">("");
 
   const form = useForm<DealScopingFormValues>({
     resolver: zodResolver(dealScopingSchema),
@@ -193,11 +212,19 @@ export default function RequestSupport() {
   }
 
   function goToNextTab() {
-    setActiveTab("growth-opportunity");
+    if (activeTab === "sales-channel") {
+      setActiveTab("deal-details");
+    } else if (activeTab === "deal-details") {
+      setActiveTab("growth-opportunity");
+    }
   }
 
   function goToPrevTab() {
-    setActiveTab("sales-channel");
+    if (activeTab === "growth-opportunity") {
+      setActiveTab("deal-details");
+    } else if (activeTab === "deal-details") {
+      setActiveTab("sales-channel");
+    }
   }
 
   function goToDealSubmission() {
@@ -282,6 +309,7 @@ export default function RequestSupport() {
       <FormProgressTracker
         steps={[
           { id: "sales-channel", label: "Client Information" },
+          { id: "deal-details", label: "Deal Timeline" },
           { id: "growth-opportunity", label: "Opportunity Assessment" }
         ]}
         currentStep={activeTab}
@@ -306,6 +334,22 @@ export default function RequestSupport() {
                   salesChannel={form.watch("salesChannel")}
                   includeEmail={false}
                   layout="stacked"
+                />
+              </TabsContent>
+
+              <TabsContent value="deal-details" className="space-y-6 pt-4">
+                {/* Deal Details Section - Shared Component */}
+                <DealDetailsSection
+                  form={form}
+                  dealStructureType={dealStructureType}
+                  setDealStructure={(value) => {
+                    setDealStructureType(value);
+                    form.setValue("dealStructure", value as "tiered" | "flat_commit");
+                  }}
+                  showBusinessSummary={false}
+                  showNavigationButton={false}
+                  title="Deal Timeline"
+                  description="Configure the basic deal structure and timeline"
                 />
               </TabsContent>
 
@@ -424,7 +468,18 @@ export default function RequestSupport() {
         {activeTab === "sales-channel" && (
           <div className="flex justify-end">
             <Button type="button" onClick={goToNextTab}>
-              Next: Growth Opportunity
+              Next: Deal Timeline
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "deal-details" && (
+          <div className="flex justify-between">
+            <Button type="button" variant="outline" onClick={goToPrevTab}>
+              Previous: Client Information
+            </Button>
+            <Button type="button" onClick={goToNextTab}>
+              Next: Opportunity Assessment
             </Button>
           </div>
         )}
@@ -432,7 +487,7 @@ export default function RequestSupport() {
         {activeTab === "growth-opportunity" && (
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={goToPrevTab}>
-              Previous: Client Information
+              Previous: Deal Timeline
             </Button>
             <Button
               type="button"
