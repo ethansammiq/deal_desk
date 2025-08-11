@@ -81,7 +81,7 @@ import {
 import TierSpecificIncentives, {
   type TierIncentive,
 } from "@/components/TierSpecificIncentives";
-import { TierConfigurationPanel } from "@/components/deal-form/TierConfigurationPanel";
+
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
@@ -1398,17 +1398,21 @@ export default function SubmitDeal() {
                     )}
                   {/* Standard Deal Criteria Help Info moved to Review & Submit tab */}
                   {/* Structure card removed as it's now empty since fields were moved to Deal Overview */}
-                  {/* Collapsible Revenue & Profitability Section - Default for all deal structures */}
-                  {dealStructureType === "tiered" ? (
-                    <TierConfigurationPanel
-                      dealTiers={dealTiers}
-                      setDealTiers={setDealTiers}
-                      calculateTierIncentiveCost={calculateTierIncentiveCost}
-                      calculateGrossMarginGrowthRate={calculateGrossMarginGrowthRate}
-                      calculateTierGrossProfit={calculateTierGrossProfit}
-                      calculateTierNetValue={calculateClientValue}
-                    />
-                  ) : (
+                  {/* Use ValueStructureSection for all deal structures */}
+                  <ValueStructureSection
+                    form={form}
+                    dealStructureType={dealStructureType}
+                    dealTiers={dealTiers}
+                    setDealTiers={setDealTiers}
+                    selectedIncentives={selectedIncentives}
+                    setSelectedIncentives={setSelectedIncentives}
+                    tierIncentives={tierIncentives}
+                    setTierIncentives={setTierIncentives}
+                    showAddIncentiveForm={showAddIncentiveForm}
+                    setShowAddIncentiveForm={setShowAddIncentiveForm}
+                  />
+                  {/* All structure handling now done in ValueStructureSection */}
+                  {false && dealStructureType === "flat_commit" && (
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     {/* Revenue section header with collapsible control */}
                     <div className="flex items-center justify-between mb-4">

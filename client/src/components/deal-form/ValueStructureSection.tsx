@@ -16,11 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FormFieldWithTooltip,
-  FinancialInputGroup,
-  INCENTIVE_TYPE_OPTIONS,
-} from "@/components/ui/form-components";
+import { FinancialInputGroup } from "@/components/ui/form-components";
 
 // Type this component to accept any valid form structure
 type ValueStructureFormValues = any;
@@ -102,7 +98,7 @@ export function ValueStructureSection({
       <CardContent className="p-6">
         <FormSectionHeader
           title="Value Structure"
-          description="Configure the financial structure and incentives for this deal"
+          description="Define the financial structure and value proposition for this deal"
         />
 
         <div className="space-y-8">
@@ -135,7 +131,9 @@ export function ValueStructureSection({
           {dealStructureType === "tiered" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Deal Tiers</h3>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  📈 Deal Tier Configuration
+                </h3>
                 <Button
                   type="button"
                   onClick={addTier}
@@ -152,11 +150,11 @@ export function ValueStructureSection({
               {dealTiers.map((tier) => (
                 <div
                   key={tier.tierNumber}
-                  className="border border-gray-200 rounded-lg p-4 space-y-4"
+                  className="border-l-4 border-blue-500 bg-gray-50 rounded-lg p-6 space-y-4"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-base">
-                      Tier {tier.tierNumber}
+                    <h4 className="font-medium text-lg">
+                      Tier {tier.tierNumber} <span className="text-sm text-gray-500 font-normal">0</span>
                     </h4>
                     {dealTiers.length > 1 && (
                       <Button
@@ -174,7 +172,7 @@ export function ValueStructureSection({
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                       <label className="text-sm font-medium text-gray-700">
-                        Annual Revenue
+                        Annual Revenue <span className="text-red-500">*</span>
                       </label>
                       <Input
                         type="number"
@@ -185,11 +183,12 @@ export function ValueStructureSection({
                           updateTier(tier.tierNumber, { annualRevenue: value });
                         }}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Expected revenue for this tier</p>
                     </div>
 
                     <div>
                       <label className="text-sm font-medium text-gray-700">
-                        Gross Margin %
+                        Gross Margin % <span className="text-red-500">*</span>
                       </label>
                       <Input
                         type="number"
@@ -203,6 +202,7 @@ export function ValueStructureSection({
                           updateTier(tier.tierNumber, { annualGrossMarginPercent: value });
                         }}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Gross margin percentage</p>
                     </div>
 
                     <div>
@@ -248,10 +248,10 @@ export function ValueStructureSection({
 
                   <div>
                     <label className="text-sm font-medium text-gray-700">
-                      Incentive Notes
+                      Tier Notes
                     </label>
                     <Textarea
-                      placeholder="Notes about this tier's incentives..."
+                      placeholder="Notes about this tier's structure, targets, or special conditions..."
                       value={tier.incentiveNotes || ""}
                       onChange={(e) => {
                         updateTier(tier.tierNumber, { incentiveNotes: e.target.value });
