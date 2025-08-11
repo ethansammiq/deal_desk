@@ -788,13 +788,13 @@ export default function SubmitDeal() {
       />
 
       {/* Form Container */}
-      <Form {...form}>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          console.log("Form submit event triggered");
-          form.handleSubmit(onSubmit)(e);
-        }}>
-          <Card>
+      <Card>
+        <Form {...form}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form submit event triggered");
+            form.handleSubmit(onSubmit)(e);
+          }}>
             {/* Step 1: Deal Overview - Using clean direct component structure */}
             {formStep === 0 && (
               <>
@@ -1389,7 +1389,19 @@ export default function SubmitDeal() {
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
 
-                  {/* Removed duplicate IncentiveStructureSection - handled in ValueStructureSection */}
+                  {/* Separate Incentive Structure Section - Show for both types */}
+                  <IncentiveStructureSection
+                    form={form}
+                    dealStructureType={dealStructureType}
+                    dealTiers={dealTiers}
+                    setDealTiers={setDealTiers}
+                    selectedIncentives={selectedIncentives}
+                    setSelectedIncentives={setSelectedIncentives}
+                    tierIncentives={tierIncentives}
+                    setTierIncentives={setTierIncentives}
+                    showAddIncentiveForm={showAddIncentiveForm}
+                    setShowAddIncentiveForm={setShowAddIncentiveForm}
+                  />
 
                   {/* Legacy flat_commit handling - now handled in ValueStructureSection */}
                   {false && (
@@ -1970,24 +1982,1958 @@ export default function SubmitDeal() {
                     </div>
                   </div>
                 )}
+                {/* Incentives Section - Now outside Structure container */}
+                <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
+                  {/* Incentives section header with collapsible control */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => {
+                        // Toggle collapse state
+                        const incentivesSection =
+                          document.getElementById("incentives-section");
+                        const chevron =
+                          document.getElementById("incentives-chevron");
+                        if (incentivesSection?.classList.contains("h-0")) {
+                          incentivesSection.classList.remove(
+                            "h-0",
+                            "overflow-hidden",
+                            "py-0",
+                          );
+                          incentivesSection.classList.add("h-auto");
+                          chevron?.classList.remove("transform", "rotate-180");
+                        } else {
+                          incentivesSection?.classList.add(
+                            "h-0",
+                            "overflow-hidden",
+                            "py-0",
+                          );
+                          incentivesSection?.classList.remove("h-auto");
+                          chevron?.classList.add("transform", "rotate-180");
+                        }
+                      }}
+                    >
+                      <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                        Incentive Structure
+                      </h3>
+                      <svg
+                        id="incentives-chevron"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="ml-2 text-slate-500 transition-transform"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
 
-                {/* Value Structure Section - End */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+                      onClick={() =>
+                        setShowAddIncentiveForm(!showAddIncentiveForm)
+                      }
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Incentive
+                    </Button>
+                  </div>
+                  {/* Incentive Values section - with table and IncentiveSelector component */}
+                  <div
+                    id="incentives-section"
+                    className="transition-all h-auto space-y-6"
+                  >
+                    {/* Incentive Structure help text */}
+                    <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+                      <Info className="h-4 w-4 inline mr-2" />
+                      Incentives are additional benefits provided to the client
+                      based on performance. Select appropriate incentive types
+                      and amounts for each tier of the deal.
+                    </div>
+
+                    {/* Financial metrics table removed from here */}
+
+                    {/* Hierarchical Incentive Selector */}
+                    <div>
+                      <IncentiveSelector
+                        selectedIncentives={selectedIncentives}
+                        dealTiers={dealTiers}
+                        onChange={handleIncentiveChange}
+                        showAddForm={showAddIncentiveForm}
+                      />
+                    </div>
+
+                    {/* Financial metrics table - Moved below IncentiveSelector */}
+                    <div className="mt-6 mb-6">
+                      <h4 className="text-sm font-medium text-gray-500 mb-3">
+                        Cost & Value Analysis
+                      </h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse table-fixed">
+                          <colgroup>
+                            <col className="w-[30%]" />
+                            <col className="w-[14%]" />
+                            {dealTiers.map((tier) => (
+                              <col
+                                key={`col-cost-${tier.tierNumber}`}
+                                className="w-[14%]"
+                              />
+                            ))}
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                              <th className="text-center p-3 bg-slate-100 border border-slate-200">
+                                Last Year
+                              </th>
+                              {dealTiers.map((tier) => (
+                                <th
+                                  key={tier.tierNumber}
+                                  className="text-center p-3 bg-slate-100 border border-slate-200"
+                                >
+                                  Tier {tier.tierNumber}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {/* Total Incentive Cost */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Total Incentive Cost
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  All incentives applied to this tier
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(dealCalculations.getPreviousYearIncentiveCost())}{" "}
+                                {/* Last year value - 50,000 */}
+                              </td>
+                              {dealTiers.map((tier) => (
+                                <td
+                                  key={tier.tierNumber}
+                                  className="p-3 border border-slate-200 text-center"
+                                >
+                                  {formatCurrency(
+                                    calculateTierIncentiveCost(tier.tierNumber),
+                                  )}
+                                </td>
+                              ))}
+                            </tr>
+
+                            {/* Incentive Cost Growth Rate */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Incentive Cost Growth Rate
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  Change vs. last year
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                —
+                              </td>
+                              {dealTiers.map((tier) => {
+                                const currentCost = calculateTierIncentiveCost(
+                                  tier.tierNumber,
+                                );
+                                const previousCost =
+                                  dealCalculations.getPreviousYearIncentiveCost();
+                                const growthRate =
+                                  previousCost > 0
+                                    ? currentCost / previousCost - 1
+                                    : 0;
+
+                                return (
+                                  <td
+                                    key={tier.tierNumber}
+                                    className="p-3 border border-slate-200 text-center"
+                                  >
+                                    <span
+                                      className={
+                                        growthRate > 0
+                                          ? "text-red-600"
+                                          : "text-green-600"
+                                      }
+                                    >
+                                      {formatPercentage(growthRate)}
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+
+                            {/* Total Client Value */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Total Client Value
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  Expected business value from incentive
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(340000)}{" "} {/* Previous year client value - 40% of $850k */}
+                                {/* Previous year client value */}
+                              </td>
+                              {dealTiers.map((tier) => (
+                                <td
+                                  key={tier.tierNumber}
+                                  className="p-3 border border-slate-200 text-center"
+                                >
+                                  {formatCurrency(calculateClientValue(tier))}
+                                </td>
+                              ))}
+                            </tr>
+
+                            {/* Client Value Growth Rate */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Client Value Growth Rate
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  Change vs. last year
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                —
+                              </td>
+                              {dealTiers.map((tier) => {
+                                // Calculate client value growth rate for this tier
+                                const growthRate =
+                                  calculateClientValueGrowthRate(tier);
+                                return (
+                                  <td
+                                    key={tier.tierNumber}
+                                    className="p-3 border border-slate-200 text-center"
+                                  >
+                                    <span
+                                      className={
+                                        growthRate > 0
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      {formatPercentage(growthRate)}
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Close the main incentives section container div */}
+                  {/* This section is hidden - we use tiered view for all deal types */}
+                  {false && dealStructureType === "flat_commit" && (
+                    <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-slate-900">
+                          Flat Commitment Structure
+                        </h3>
+                      </div>
+
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Annual Revenue */}
+                          <FormField
+                            control={form.control}
+                            name="annualRevenue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  Annual Revenue{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">
+                                      $
+                                    </span>
+                                  </div>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      placeholder="0.00"
+                                      className="pl-7"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormDescription>
+                                  Total annual revenue expectation for this deal
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Gross Margin Percentage */}
+                          <FormField
+                            control={form.control}
+                            name="annualGrossMargin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  Gross Margin (%){" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      placeholder="0"
+                                      className="pr-8"
+                                      min="0"
+                                      max="100"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">
+                                      %
+                                    </span>
+                                  </div>
+                                </div>
+                                <FormDescription>
+                                  Expected gross margin percentage for this
+                                  revenue
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Calculated Values */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-slate-200">
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Total Revenue
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                Number(form.watch("annualRevenue")) || 0,
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Gross Margin
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                ((Number(form.watch("annualRevenue")) ||
+                                  0) *
+                                  (Number(
+                                    form.watch("annualGrossMargin"),
+                                  ) || 0)) /
+                                  100,
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Monthly Revenue
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                (Number(form.watch("annualRevenue")) ||
+                                  0) /
+                                  (Number(form.watch("contractTerm")) ||
+                                    12),
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Incentive Value for Flat Commit - No header as requested */}
+                      <div className="mt-6">
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">
+                                  Field
+                                </th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-2/3">
+                                  Current
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Incentive Type Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Type
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <Select
+                                    defaultValue="rebate"
+                                    onValueChange={(value) => {
+                                      const newTier = { ...dealTiers[0] };
+                                      newTier.incentiveType = value as any;
+                                      const newTiers = [
+                                        newTier,
+                                        ...dealTiers.slice(1),
+                                      ];
+                                      setDealTiers(newTiers);
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="rebate">
+                                        Rebate
+                                      </SelectItem>
+                                      <SelectItem value="discount">
+                                        Discount
+                                      </SelectItem>
+                                      <SelectItem value="bonus">
+                                        Bonus
+                                      </SelectItem>
+                                      <SelectItem value="other">
+                                        Other
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Percentage Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Percentage
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      className="pr-8 w-full"
+                                      placeholder="0.00"
+                                      min="0"
+                                      max="100"
+                                      value={
+                                        dealTiers[0].incentivePercentage || 0
+                                      }
+                                      onChange={(e) => {
+                                        const newTier = { ...dealTiers[0] };
+                                        newTier.incentivePercentage =
+                                          parseFloat(e.target.value);
+
+                                        // Calculate incentive amount based on percentage and total revenue
+                                        const annualRevenue =
+                                          Number(
+                                            form.watch("annualRevenue"),
+                                          ) || 0;
+                                        const percent =
+                                          parseFloat(e.target.value) / 100;
+                                        newTier.incentiveAmount =
+                                          annualRevenue * percent;
+
+                                        const newTiers = [
+                                          newTier,
+                                          ...dealTiers.slice(1),
+                                        ];
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">
+                                        %
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Amount Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Amount
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">
+                                        $
+                                      </span>
+                                    </div>
+                                    <Input
+                                      type="number"
+                                      className="pl-7 w-full"
+                                      placeholder="0.00"
+                                      value={dealTiers[0].incentiveAmount || 0}
+                                      onChange={(e) => {
+                                        const newTier = { ...dealTiers[0] };
+                                        newTier.incentiveAmount = parseFloat(
+                                          e.target.value,
+                                        );
+
+                                        // Calculate percentage if revenue is not zero
+                                        const annualRevenue =
+                                          Number(
+                                            form.watch("annualRevenue"),
+                                          ) || 0;
+                                        if (annualRevenue > 0) {
+                                          newTier.incentivePercentage =
+                                            (parseFloat(e.target.value) /
+                                              annualRevenue) *
+                                            100;
+                                        }
+
+                                        const newTiers = [
+                                          newTier,
+                                          ...dealTiers.slice(1),
+                                        ];
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Notes Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Notes
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <Textarea
+                                    placeholder="Enter any notes about this incentive..."
+                                    value={dealTiers[0].incentiveNotes || ""}
+                                    onChange={(e) => {
+                                      const newTier = { ...dealTiers[0] };
+                                      newTier.incentiveNotes = e.target.value;
+                                      const newTiers = [
+                                        newTier,
+                                        ...dealTiers.slice(1),
+                                      ];
+                                      setDealTiers(newTiers);
+                                    }}
+                                    className="min-h-[80px]"
+                                  />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+                          <Info className="h-4 w-4 inline mr-2" />
+                          Flat commitment deals typically have a single
+                          incentive structure based on the total annual revenue.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                
                 </div>
+                
+                {/* Financial Summary Table - Calculated values for each tier */}
+                <div className="mt-8 mb-6 bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                    Financial Summary
+                  </h3>
 
-                {/* Step 4: Review & Submit */}
-                {formStep === 3 && (
-                  <ReviewSubmitSection
-                    form={form}
-                    dealTiers={dealTiers}
-                    selectedIncentives={selectedIncentives}
-                    tierIncentives={tierIncentives}
-                  />
-                )}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse table-fixed">
+                      <colgroup>
+                        <col className="w-[30%]" />
+                        <col className="w-[14%]" />
+                        {dealTiers.map((tier) => (
+                          <col
+                            key={`col-summary-${tier.tierNumber}`}
+                            className="w-[14%]"
+                          />
+                        ))}
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200">
+                            Last Year
+                          </th>
+                          {dealTiers.map((tier) => (
+                            <th
+                              key={tier.tierNumber}
+                              className="text-center p-3 bg-slate-100 border border-slate-200"
+                            >
+                              Tier {tier.tierNumber}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Adjusted Gross Margin */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Margin
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Gross margin after incentives
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {(() => {
+                              const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                              return formatPercentage(dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100);
+                            })()}{" "}
+                            {/* Last year value */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin =
+                              revenue > 0 ? grossProfit / revenue : 0;
+
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                {formatPercentage(adjustedMargin)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+
+                        {/* Adjusted Gross Profit */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Profit
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Gross profit after incentive costs
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(
+                              form.watch("salesChannel"), 
+                              form.watch("advertiserName"), 
+                              form.watch("agencyName")
+                            ))}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross profit for this tier
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                {formatCurrency(grossProfit)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Adjusted Gross Margin Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Margin Growth Rate
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Percentage change in adjusted margin
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin =
+                              revenue > 0 ? grossProfit / revenue : 0;
+
+                            // Get previous year margin for comparison
+                            const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                            const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
+
+                            // Calculate growth rate (difference in percentage points)
+                            const marginGrowthRate =
+                              adjustedMargin - previousYearMargin;
+
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                <span
+                                  className={
+                                    marginGrowthRate > 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }
+                                >
+                                  {formatPercentage(marginGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+
+                        {/* Adjusted Gross Profit Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Profit Growth Rate
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Percentage increase in adjusted profit vs last
+                              year
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate adjusted profit growth rate for this tier
+                            const profitGrowthRate =
+                              calculateAdjustedGrossProfitGrowthRate(tier);
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                <span
+                                  className={
+                                    profitGrowthRate > 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }
+                                >
+                                  {formatPercentage(profitGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <div className="mt-8 flex justify-between">
+                  <Button type="button" variant="outline" onClick={prevStep}>
+                    Previous: Business Context
+                  </Button>
+                  <Button type="button" onClick={nextStep}>
+                    Next: Review & Submit
+                  </Button>
+                </div>
+                </div>
               </CardContent>
             )}
-          </Card>
-        </form>
-      </Form>
+
+            {/* Step 3: Review & Submit */}
+            {formStep === 3 && (
+              <CardContent className="p-6">
+                <FormSectionHeader
+                  title="Review & Submit"
+                />
+
+                <div className="bg-slate-50 p-4 rounded-lg mb-6">
+                  <div className="text-sm text-slate-500 italic">
+                    By submitting this deal, you confirm that all information is
+                    accurate and complete. The deal will be reviewed by the
+                    appropriate team members based on your department and deal
+                    value.
+                  </div>
+                </div>
+
+                {/* Review Sections */}
+                <div className="space-y-10">
+                  {/* Deal Information Section */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">
+                        Deal Information
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Deal Name
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {(() => {
+                              // Preview the auto-generated deal name
+                              const dealType = form.getValues("dealType");
+                              const salesChannel =
+                                form.getValues("salesChannel");
+                              const termStartDate =
+                                form.getValues("termStartDate");
+                              const termEndDate = form.getValues("termEndDate");
+                              const dealStructure =
+                                form.getValues("dealStructure");
+
+                              if (
+                                !dealType ||
+                                !salesChannel ||
+                                !termStartDate ||
+                                !termEndDate ||
+                                !dealStructure
+                              ) {
+                                return "Will be auto-generated on submission";
+                              }
+
+                              // Get client name
+                              let clientName = "";
+                              if (
+                                salesChannel === "client_direct" &&
+                                form.getValues("advertiserName")
+                              ) {
+                                clientName = String(
+                                  form.getValues("advertiserName"),
+                                );
+                              } else if (
+                                (salesChannel === "holding_company" ||
+                                  salesChannel === "independent_agency") &&
+                                form.getValues("agencyName")
+                              ) {
+                                clientName = String(
+                                  form.getValues("agencyName"),
+                                );
+                              }
+
+                              if (!clientName)
+                                return "Will be auto-generated on submission";
+
+                              // Format mapping
+                              const dealTypeMap = {
+                                grow: "Grow",
+                                protect: "Protect",
+                                custom: "Custom",
+                              };
+
+                              const salesChannelMap = {
+                                client_direct: "Direct",
+                                holding_company: "Holding",
+                                independent_agency: "Indep",
+                              };
+
+                              const dealStructureMap = {
+                                tiered: "Tiered",
+                                flat_commit: "Flat",
+                              };
+
+                              // Format dates - ensure we're working with Date objects
+                              const startDateObj =
+                                typeof termStartDate === "string"
+                                  ? new Date(termStartDate)
+                                  : (termStartDate as Date);
+                              const endDateObj =
+                                typeof termEndDate === "string"
+                                  ? new Date(termEndDate)
+                                  : (termEndDate as Date);
+
+                              const startDateFormatted = startDateObj.toISOString().split('T')[0].replace(/-/g, '');
+                              const endDateFormatted = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+
+                              // Safely access map values with type casting
+                              const dealTypeKey =
+                                typeof dealType === "string"
+                                  ? (dealType as keyof typeof dealTypeMap)
+                                  : "grow";
+                              const salesChannelKey =
+                                typeof salesChannel === "string"
+                                  ? (salesChannel as keyof typeof salesChannelMap)
+                                  : "client_direct";
+                              const dealStructureKey =
+                                typeof dealStructure === "string"
+                                  ? (dealStructure as keyof typeof dealStructureMap)
+                                  : "flat_commit";
+
+                              return `${dealTypeMap[dealTypeKey]}_${salesChannelMap[salesChannelKey]}_${clientName}_${dealStructureMap[dealStructureKey]}_${startDateFormatted}-${endDateFormatted}`;
+                            })()}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            Region
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {(() => {
+                              const regionValue = form.getValues("region");
+                              console.log("Region value:", regionValue);
+                              if (!regionValue) return "Not provided";
+
+                              // Use the same mapping as in the dropdown
+                              const regionMap: Record<string, string> = {
+                                northeast: "Northeast",
+                                midwest: "Midwest",
+                                midatlantic: "Mid-Atlantic",
+                                south: "South",
+                                west: "West",
+                                southeast: "Southeast",
+                                southwest: "Southwest",
+                              };
+
+                              const result =
+                                regionMap[String(regionValue)] ||
+                                String(regionValue)
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (c) => c.toUpperCase());
+                              console.log("Region mapped:", result);
+                              return result;
+                            })()}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            Deal Type
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {(() => {
+                              const dealTypeValue = form.getValues("dealType");
+                              console.log("Deal Type value:", dealTypeValue);
+                              if (!dealTypeValue) return "Not provided";
+
+                              // Use a mapping for deal types
+                              const dealTypeMap: Record<string, string> = {
+                                standard_deal: "Standard Deal",
+                                seasonal_promotion: "Seasonal Promotion",
+                                annual_commitment: "Annual Commitment",
+                                new_business: "New Business",
+                                grow: "Grow", // Add missing value from the form
+                              };
+
+                              const result =
+                                dealTypeMap[String(dealTypeValue)] ||
+                                String(dealTypeValue);
+                              console.log("Deal Type mapped:", result);
+                              return result;
+                            })()}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            Sales Channel
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {(() => {
+                              const salesChannelValue =
+                                form.getValues("salesChannel");
+                              console.log(
+                                "Sales Channel value:",
+                                salesChannelValue,
+                              );
+                              if (!salesChannelValue) return "Not provided";
+
+                              // Use a mapping for sales channel
+                              const salesChannelMap: Record<string, string> = {
+                                client_direct: "Client Direct",
+                                agency: "Agency",
+                                independent_agency: "Independent Agency",
+                              };
+
+                              const result =
+                                salesChannelMap[String(salesChannelValue)] ||
+                                String(salesChannelValue);
+                              console.log("Sales Channel mapped:", result);
+                              return result;
+                            })()}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            {salesChannel === "client_direct"
+                              ? "Advertiser Name"
+                              : "Agency Name"}
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {salesChannel === "client_direct"
+                              ? String(
+                                  form.getValues("advertiserName") ||
+                                    "Not provided",
+                                )
+                              : String(
+                                  form.getValues("agencyName") || "Not provided",
+                                )}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            Deal Structure
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {(() => {
+                              const dealStructureValue =
+                                form.getValues("dealStructure");
+                              console.log(
+                                "Deal Structure value:",
+                                dealStructureValue,
+                              );
+                              if (!dealStructureValue) return "Not provided";
+
+                              // Use a mapping for deal structure
+                              const dealStructureMap: Record<string, string> = {
+                                tiered: "Tiered",
+                                flat_commit: "Flat Commitment",
+                              };
+
+                              const result =
+                                dealStructureMap[String(dealStructureValue)] ||
+                                String(dealStructureValue);
+                              console.log("Deal Structure mapped:", result);
+                              return result;
+                            })()}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-sm font-medium text-slate-500">
+                            Contract Term
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("contractTerm")
+                              ? `${form.getValues("contractTerm")} months`
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Business Summary
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("businessSummary")
+                              ? String(form.getValues("businessSummary"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+
+                  {/* Business Context Section */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">
+                        Business Context
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Growth Opportunity (MIQ)
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("growthOpportunityMIQ")
+                              ? String(form.getValues("growthOpportunityMIQ"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Growth Opportunity (Client)
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("growthOpportunityClient")
+                              ? String(form.getValues("growthOpportunityClient"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <dt className="text-sm font-medium text-slate-500">
+                            Client Asks
+                          </dt>
+                          <dd className="mt-1 text-sm text-slate-900">
+                            {form.getValues("clientAsks")
+                              ? String(form.getValues("clientAsks"))
+                              : "Not provided"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+
+                  {/* Deal Structure Summary */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">
+                        Deal Structure Summary
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      {/* Financial Summary Table */}
+                      {dealTiers.length > 0 && (
+                        <div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse table-fixed text-sm">
+                              <colgroup>
+                                <col className="w-[30%]" />
+                                <col className="w-[14%]" />
+                                {dealTiers.map((tier) => (
+                                  <col
+                                    key={`col-review-${tier.tierNumber}`}
+                                    className="w-[14%]"
+                                  />
+                                ))}
+                              </colgroup>
+                              <thead>
+                                <tr>
+                                  <th className="text-left p-2 bg-slate-100 border border-slate-200"></th>
+                                  <th className="text-center p-2 bg-slate-100 border border-slate-200">
+                                    Last Year
+                                  </th>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => (
+                                      <th
+                                        key={tier.tierNumber}
+                                        className="text-center p-2 bg-slate-100 border border-slate-200"
+                                      >
+                                        Tier {tier.tierNumber}
+                                      </th>
+                                    ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {/* Annual Revenue */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Annual Revenue
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    {formatCurrency(850000)}
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => (
+                                      <td
+                                        key={tier.tierNumber}
+                                        className="p-2 border border-slate-200 text-center"
+                                      >
+                                        {formatCurrency(
+                                          tier.annualRevenue || 0,
+                                        )}
+                                      </td>
+                                    ))}
+                                </tr>
+
+                                {/* Revenue Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Revenue Growth Rate
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    --
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Find previous year revenue for actual revenue growth calculation
+                                      let previousYearRevenue = 850000; // Default to mock value
+                                      const salesChannel =
+                                        form.watch("salesChannel");
+                                      const advertiserName =
+                                        form.watch("advertiserName");
+                                      const agencyName =
+                                        form.watch("agencyName");
+
+                                      if (
+                                        salesChannel === "client_direct" &&
+                                        advertiserName
+                                      ) {
+                                        const advertiser = advertisers.find(
+                                          (a) => a.name === advertiserName,
+                                        );
+                                        if (
+                                          advertiser &&
+                                          advertiser.previousYearRevenue
+                                        ) {
+                                          previousYearRevenue =
+                                            advertiser.previousYearRevenue;
+                                        }
+                                      } else if (
+                                        (salesChannel === "holding_company" ||
+                                          salesChannel ===
+                                            "independent_agency") &&
+                                        agencyName
+                                      ) {
+                                        const agency = agencies.find(
+                                          (a) => a.name === agencyName,
+                                        );
+                                        if (
+                                          agency &&
+                                          agency.previousYearRevenue
+                                        ) {
+                                          previousYearRevenue =
+                                            agency.previousYearRevenue;
+                                        }
+                                      }
+
+                                      // Calculate actual revenue growth rate
+                                      const revenueGrowthRate =
+                                        previousYearRevenue > 0 &&
+                                        tier.annualRevenue
+                                          ? tier.annualRevenue /
+                                              previousYearRevenue -
+                                            1
+                                          : 0;
+
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          <span
+                                            className={
+                                              revenueGrowthRate > 0
+                                                ? "text-green-600"
+                                                : "text-red-600"
+                                            }
+                                          >
+                                            {(revenueGrowthRate * 100).toFixed(
+                                              1,
+                                            )}
+                                            %
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+
+                                {/* Adjusted Gross Margin Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Adjusted Gross Margin Growth Rate
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    --
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Get previous year margin
+                                      const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                                      const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
+                                      // Calculate current tier margin
+                                      const currentMargin =
+                                        (tier.annualGrossMarginPercent || 0) /
+                                        100;
+                                      // Calculate growth rate
+                                      const marginGrowthRate =
+                                        previousYearMargin > 0
+                                          ? currentMargin / previousYearMargin -
+                                            1
+                                          : 0;
+
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          <span
+                                            className={
+                                              marginGrowthRate > 0
+                                                ? "text-green-600"
+                                                : "text-red-600"
+                                            }
+                                          >
+                                            {(marginGrowthRate * 100).toFixed(
+                                              1,
+                                            )}
+                                            %
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+
+                                {/* Adjusted Gross Profit Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Adjusted Gross Profit Growth Rate
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    --
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Calculate adjusted profit growth rate for this tier
+                                      const profitGrowthRate =
+                                        calculateAdjustedGrossProfitGrowthRate(tier);
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          <span
+                                            className={
+                                              profitGrowthRate > 0
+                                                ? "text-green-600"
+                                                : "text-red-600"
+                                            }
+                                          >
+                                            {formatPercentage(profitGrowthRate)}
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+
+                                {/* Total Incentive Cost */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Total Incentive Cost
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    {formatCurrency(
+                                      dealCalculations.getPreviousYearIncentiveCost(),
+                                    )}
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      const incentiveCost =
+                                        calculateTierIncentiveCost(
+                                          tier.tierNumber,
+                                        );
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          {formatCurrency(incentiveCost)}
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+
+                                {/* Total Client Value */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Total Client Value
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    {formatCurrency(850000 * 0.4)} {/* 40% of last year's revenue */}
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Using a fixed calculation for client value as 40% of revenue
+                                      const clientValue =
+                                        (tier.annualRevenue || 0) * 0.4;
+                                      
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          {formatCurrency(clientValue)}
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+
+                                {/* Client Value Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Client Value Growth Rate
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    --
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Using a fixed calculation for client value as 40% of revenue
+                                      const clientValue =
+                                        (tier.annualRevenue || 0) * 0.4;
+                                      const lastYearValue = 850000 * 0.4; // 40% of last year's revenue
+                                      const growthRate =
+                                        clientValue / lastYearValue - 1;
+
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          <span
+                                            className={
+                                              growthRate > 0
+                                                ? "text-green-600"
+                                                : "text-red-600"
+                                            }
+                                          >
+                                            {(growthRate * 100).toFixed(1)}%
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+                                
+                                {/* Incentive Cost Growth Rate */}
+                                <tr>
+                                  <td className="p-2 border border-slate-200 font-medium">
+                                    Incentive Cost Growth Rate
+                                  </td>
+                                  <td className="p-2 border border-slate-200 text-center">
+                                    --
+                                  </td>
+                                  {dealTiers
+                                    .filter((tier) => tier.annualRevenue)
+                                    .map((tier) => {
+                                      // Get previous year incentive cost
+                                      const previousYearCost = dealCalculations.getPreviousYearIncentiveCost();
+                                      // Calculate current tier incentive cost
+                                      const currentCost = calculateTierIncentiveCost(tier.tierNumber);
+                                      // Calculate growth rate
+                                      const costGrowthRate = 
+                                        previousYearCost > 0 
+                                          ? currentCost / previousYearCost - 1 
+                                          : 0;
+                                          
+                                      return (
+                                        <td
+                                          key={tier.tierNumber}
+                                          className="p-2 border border-slate-200 text-center"
+                                        >
+                                          <span
+                                            className={
+                                              costGrowthRate > 0
+                                                ? "text-red-600"  // Higher cost is shown in red
+                                                : "text-green-600" // Lower cost is shown in green
+                                            }
+                                          >
+                                            {(costGrowthRate * 100).toFixed(1)}%
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DealGenie AI Assessment */}
+                  <div className="border border-slate-200 rounded-lg overflow-hidden bg-gradient-to-r from-purple-50 to-slate-50">
+                    <div className="px-4 py-3 bg-gradient-to-r from-purple-100 to-slate-100 border-b border-slate-200 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-800 flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 mr-2 text-purple-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                          />
+                        </svg>
+                        DealGenie AI Assessment
+                      </h3>
+                      <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                        AI-Powered
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      {/* AI Analysis Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-yellow-400 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">
+                            Deal Classification
+                          </h4>
+                        </div>
+                        <div className="flex items-center mb-4">
+                          <span className="inline-flex items-center rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-800 mr-3">
+                            Non-Standard Deal
+                          </span>
+                          <span className="text-sm text-slate-500">
+                            Manual review required
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-700 mb-3">
+                          This deal falls outside standard guidelines for the
+                          following reasons:
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1 mb-3">
+                          <li>
+                            Incentive structure exceeds standard thresholds
+                          </li>
+                          <li>
+                            Tiered revenue structure with potential margin
+                            impact
+                          </li>
+                          <li>
+                            Growth rate projections exceed benchmark ranges
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* AI Insights Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-purple-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">
+                            Deal Structure Analysis
+                          </h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="p-3 bg-slate-50 rounded-md">
+                            <div className="text-sm font-medium text-slate-700 mb-1">
+                              Profitability Impact
+                            </div>
+                            <div className="text-xl font-semibold">
+                              {(() => {
+                                // Use the first tier's profit growth rate calculation
+                                if (
+                                  dealTiers.length > 0 &&
+                                  dealTiers[0].annualRevenue
+                                ) {
+                                  const profitGrowthRate =
+                                    calculateAdjustedGrossProfitGrowthRate(
+                                      dealTiers[0],
+                                    );
+                                  const formattedRate = (
+                                    profitGrowthRate * 100
+                                  ).toFixed(1);
+                                  const isPositive = profitGrowthRate > 0;
+                                  return (
+                                    <span
+                                      className={
+                                        isPositive
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      {isPositive ? "+" : ""}
+                                      {formattedRate}%
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <span className="text-slate-700">N/A</span>
+                                );
+                              })()}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              vs. Last Year
+                            </div>
+                          </div>
+                          <div className="p-3 bg-slate-50 rounded-md">
+                            <div className="text-sm font-medium text-slate-700 mb-1">
+                              Revenue Growth
+                            </div>
+                            <div className="text-xl font-semibold">
+                              {(() => {
+                                // Use the first tier's revenue growth rate calculation - using the correct growth function
+                                if (
+                                  dealTiers.length > 0 &&
+                                  dealTiers[0].annualRevenue
+                                ) {
+                                  // Get previous year revenue
+                                  let previousYearRevenue = 850000; // Default to mock value
+                                  const salesChannel =
+                                    form.watch("salesChannel");
+                                  const advertiserName =
+                                    form.watch("advertiserName");
+                                  const agencyName = form.watch("agencyName");
+
+                                  if (
+                                    salesChannel === "client_direct" &&
+                                    advertiserName
+                                  ) {
+                                    const advertiser = advertisers.find(
+                                      (a) => a.name === advertiserName,
+                                    );
+                                    if (
+                                      advertiser &&
+                                      advertiser.previousYearRevenue
+                                    ) {
+                                      previousYearRevenue =
+                                        advertiser.previousYearRevenue;
+                                    }
+                                  } else if (
+                                    (salesChannel === "holding_company" ||
+                                      salesChannel === "independent_agency") &&
+                                    agencyName
+                                  ) {
+                                    const agency = agencies.find(
+                                      (a) => a.name === agencyName,
+                                    );
+                                    if (agency && agency.previousYearRevenue) {
+                                      previousYearRevenue =
+                                        agency.previousYearRevenue;
+                                    }
+                                  }
+
+                                  // Calculate growth rate
+                                  const revenueGrowthRate =
+                                    previousYearRevenue > 0 &&
+                                    dealTiers[0].annualRevenue
+                                      ? dealTiers[0].annualRevenue /
+                                          previousYearRevenue -
+                                        1
+                                      : 0;
+
+                                  const formattedRate = (
+                                    revenueGrowthRate * 100
+                                  ).toFixed(1);
+                                  const isPositive = revenueGrowthRate > 0;
+                                  return (
+                                    <span
+                                      className={
+                                        isPositive
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      {isPositive ? "+" : ""}
+                                      {formattedRate}%
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <span className="text-slate-700">N/A</span>
+                                );
+                              })()}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              vs. Last Year
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-700">
+                          {(() => {
+                            if (
+                              dealTiers.length > 0 &&
+                              dealTiers[0].annualRevenue
+                            ) {
+                              const profitGrowthRate =
+                                calculateAdjustedGrossProfitGrowthRate(
+                                  dealTiers[0],
+                                );
+
+                              // Get previous year revenue for actual revenue growth calculation
+                              let previousYearRevenue = 850000; // Default to mock value
+                              const salesChannel = form.watch("salesChannel");
+                              const advertiserName =
+                                form.watch("advertiserName");
+                              const agencyName = form.watch("agencyName");
+
+                              if (
+                                salesChannel === "client_direct" &&
+                                advertiserName
+                              ) {
+                                const advertiser = advertisers.find(
+                                  (a) => a.name === advertiserName,
+                                );
+                                if (
+                                  advertiser &&
+                                  advertiser.previousYearRevenue
+                                ) {
+                                  previousYearRevenue =
+                                    advertiser.previousYearRevenue;
+                                }
+                              } else if (
+                                (salesChannel === "holding_company" ||
+                                  salesChannel === "independent_agency") &&
+                                agencyName
+                              ) {
+                                const agency = agencies.find(
+                                  (a) => a.name === agencyName,
+                                );
+                                if (agency && agency.previousYearRevenue) {
+                                  previousYearRevenue =
+                                    agency.previousYearRevenue;
+                                }
+                              }
+
+                              // Calculate actual revenue growth rate
+                              const revenueGrowthRate =
+                                previousYearRevenue > 0 &&
+                                dealTiers[0].annualRevenue
+                                  ? dealTiers[0].annualRevenue /
+                                      previousYearRevenue -
+                                    1
+                                  : 0;
+
+                              if (
+                                revenueGrowthRate > 0 &&
+                                profitGrowthRate < 0
+                              ) {
+                                return "The proposed structure offers higher revenue growth but with reduced profitability compared to standard deals. Consider adjusting tier thresholds or incentive amounts.";
+                              } else if (
+                                revenueGrowthRate > 0 &&
+                                profitGrowthRate > 0
+                              ) {
+                                return "This deal structure shows positive growth in both revenue and profitability, though the approval matrix indicates additional oversight required.";
+                              } else if (revenueGrowthRate < 0) {
+                                return "This deal structure shows a revenue decrease compared to last year. Recommend revisiting revenue targets before submission.";
+                              }
+                            }
+
+                            return "Unable to analyze deal structure with the current data. Please ensure all tier values are completed.";
+                          })()}
+                        </p>
+                      </div>
+
+                      {/* Approval Workflow Section */}
+                      <div className="mb-6 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">
+                            Required Approval Workflow
+                          </h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
+                            </svg>
+                            Finance Team
+                          </div>
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                            Regional Director
+                          </div>
+                          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
+                            </svg>
+                            Legal Review
+                          </div>
+                        </div>
+                        <div className="text-sm text-slate-700">
+                          <p>
+                            Estimated approval time:{" "}
+                            <span className="font-medium">
+                              3-5 business days
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Recommendations Section */}
+                      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className="w-2 h-6 bg-green-500 rounded-full mr-3"></div>
+                          <h4 className="font-medium text-slate-800">
+                            Recommendations
+                          </h4>
+                        </div>
+                        <ul className="space-y-2">
+                          <li className="flex items-start">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span className="text-sm text-slate-700">
+                              Consider adjusting Tier 1 incentive to stay within
+                              standard margin parameters
+                            </span>
+                          </li>
+                          <li className="flex items-start">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span className="text-sm text-slate-700">
+                              Include a quarterly performance review clause to
+                              re-evaluate tiers
+                            </span>
+                          </li>
+                          <li className="flex items-start">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span className="text-sm text-slate-700">
+                              Prepare detailed business justification for
+                              non-standard incentive structure
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-between">
+                  <Button type="button" variant="outline" onClick={prevStep}>
+                    Previous: Deal Structure
+                  </Button>
+                  <Button 
+                    type="button" 
+                    disabled={submitDealMutation.isPending}
+                    onClick={() => {
+                      console.log("Submit button clicked");
+                      
+                      // Generate a sample deal submission
+                      const formValues = form.getValues();
+                      
+                      // Set a sample deal name for testing
+                      const dealName = "Test Deal " + new Date().toISOString();
+                      
+                      // Use actual form dates (they should be properly set by now)
+                      const startDate = formValues.termStartDate || new Date();
+                      const endDate = formValues.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+                      // Create a complete object with all required fields
+                      const dealData = {
+                        dealName,
+                        dealType: formValues.dealType || "grow",
+                        region: formValues.region || "midwest", 
+                        salesChannel: formValues.salesChannel || "independent_agency",
+                        businessSummary: formValues.businessSummary || "Test business summary",
+                        advertiserName: formValues.advertiserName || "Test Advertiser",
+                        agencyName: formValues.agencyName || "Test Agency",
+                        termStartDate: startDate,
+                        termEndDate: endDate,
+                        annualRevenue: Number(formValues.annualRevenue) || 0,
+                        annualGrossMargin: Number(formValues.annualGrossMargin) || 0,
+                        dealStructure: dealStructureType || "tiered",
+                        dealTiers: dealTiers,
+                        selectedIncentives: selectedIncentives,
+                        tierIncentives: tierIncentives,
+                        status: "pending_approval"
+                      };
+                      
+                      // Submit directly to the API
+                      try {
+                        console.log("Submitting deal data:", dealData);
+                        submitDealMutation.mutate(dealData);
+                        toast({
+                          title: "Deal Submitted",
+                          description: "Your deal has been submitted for approval",
+                        });
+                      } catch (error) {
+                        console.error("Error submitting deal:", error);
+                        toast({
+                          title: "Submission Error",
+                          description: "There was an error submitting your deal. Please try again.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    {submitDealMutation.isPending
+                      ? "Submitting..."
+                      : "Submit Deal for Approval"}
+                  </Button>
+                </div>
+              </CardContent>
+            )}
+          </form>
+        </Form>
+      </Card>
     </div>
   );
 }
