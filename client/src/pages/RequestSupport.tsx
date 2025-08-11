@@ -124,7 +124,6 @@ export default function RequestSupport() {
   const form = useForm<DealScopingFormValues>({
     resolver: zodResolver(dealScopingSchema),
     defaultValues: {
-      email: "",
       salesChannel: "",
       region: undefined,
       advertiserName: "",
@@ -133,8 +132,6 @@ export default function RequestSupport() {
       growthAmbition: 1000000,
       growthOpportunityClient: "",
       clientAsks: "",
-      requestTitle: "Deal Scoping Request",
-      description: "",
     },
     mode: "onChange",
   });
@@ -144,12 +141,11 @@ export default function RequestSupport() {
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
 
-      // Add requestTitle if not present
+      // Add default title for backend compatibility
       const formData = {
         ...data,
-        requestTitle: data.requestTitle || "Deal Scoping Request",
-        description:
-          data.description || `Request from ${data.email || "unknown"}`,
+        requestTitle: "Deal Scoping Request",
+        description: "Growth opportunity assessment request",
       };
 
       const res = await fetch("/api/deal-scoping-requests", {
@@ -261,21 +257,7 @@ export default function RequestSupport() {
       <FormSectionHeader
         title="Deal Scoping"
         badge="Step 1 of 2"
-        description={
-          <>
-            New to the deal process? Start here to get help with scoping, pricing,
-            or technical aspects of your deals.
-            <span className="block mt-1 text-primary">
-              Already familiar with the process?{" "}
-              <button
-                onClick={goToDealSubmission}
-                className="underline font-medium"
-              >
-                Skip straight to Deal Submission
-              </button>
-            </span>
-          </>
-        }
+        description="New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals."
         helpTitle="About Deal Scoping"
         helpContent={
           <>

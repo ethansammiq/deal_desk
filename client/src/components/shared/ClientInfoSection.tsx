@@ -211,9 +211,9 @@ export function ClientInfoSection({
                     {agencies
                       .filter((agency) => {
                         if (salesChannel === "holding_company") {
-                          return agency.type === "Holding Company";
+                          return agency.type === "holding_company";
                         } else {
-                          return agency.type === "Independent";
+                          return agency.type === "independent";
                         }
                       })
                       .map((agency) => (
