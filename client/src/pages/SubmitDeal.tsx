@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { format } from "date-fns";
+// Date formatting no longer needed - using ISO 8601 strings directly
 import { Info } from "lucide-react";
 import { FormSectionHeader, FormProgressTracker, FormHelpPopover, StyledFormField, FormStyles } from "@/components/ui/form-style-guide";
 import {
@@ -506,11 +506,9 @@ export default function SubmitDeal() {
       // Deal structure
       dealStructure: undefined,
 
-      // Timeframe
-      termStartDate: new Date(),
-      termEndDate: new Date(
-        new Date().setFullYear(new Date().getFullYear() + 1),
-      ),
+      // Timeframe - ISO 8601 strings
+      termStartDate: new Date().toISOString().split('T')[0],
+      termEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
 
       // Financial data (simplified)
       annualRevenue: 0,
@@ -1388,17 +1386,17 @@ export default function SubmitDeal() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                              value={field.value || ""}
                               onChange={(e) => {
-                                const date = e.target.value ? new Date(e.target.value) : null;
-                                field.onChange(date);
+                                const dateString = e.target.value;
+                                field.onChange(dateString);
                                 
                                 // Auto-update end date if contract term is set
                                 const contractTermMonths = parseInt(form.getValues("contractTermMonths") || "0");
-                                if (date && contractTermMonths > 0) {
-                                  const endDate = new Date(date);
-                                  endDate.setMonth(endDate.getMonth() + contractTermMonths);
-                                  form.setValue("termEndDate", endDate);
+                                if (dateString && contractTermMonths > 0) {
+                                  const startDate = new Date(dateString);
+                                  startDate.setMonth(startDate.getMonth() + contractTermMonths);
+                                  form.setValue("termEndDate", startDate.toISOString().split('T')[0]);
                                 }
                               }}
                             />
@@ -1422,16 +1420,16 @@ export default function SubmitDeal() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                              value={field.value || ""}
                               onChange={(e) => {
-                                const date = e.target.value ? new Date(e.target.value) : null;
-                                field.onChange(date);
+                                const dateString = e.target.value;
+                                field.onChange(dateString);
                                 
                                 // Auto-update contract term when end date changes
                                 const startDate = form.getValues("termStartDate");
-                                if (startDate && date && startDate < date) {
+                                if (startDate && dateString && startDate < dateString) {
                                   const start = new Date(startDate);
-                                  const end = new Date(date);
+                                  const end = new Date(dateString);
                                   const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
                                   form.setValue("contractTermMonths", monthsDiff.toString());
                                 }

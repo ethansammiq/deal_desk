@@ -635,10 +635,10 @@ export class MemStorage implements IStorage {
     const dealReferenceNumber = referenceNumber || 
       `DEAL-${now.getFullYear()}-${String(id).padStart(3, '0')}`;
     
-    // Calculate contract term in months
-    const startDate = new Date(insertDeal.termStartDate);
-    const endDate = new Date(insertDeal.termEndDate);
-    const contractTerm = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)); // 30.44 avg days per month
+    // Calculate contract term in months from ISO date strings
+    const contractTerm = insertDeal.termStartDate && insertDeal.termEndDate 
+      ? Math.round((new Date(insertDeal.termEndDate).getTime() - new Date(insertDeal.termStartDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+      : null;
 
     // Create a new deal with the provided data and default values
     const deal: Deal = {

@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+// Removed date-fns import - using ISO 8601 strings directly
 
 /**
  * Service for handling data display mapping and formatting
