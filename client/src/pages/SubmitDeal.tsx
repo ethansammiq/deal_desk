@@ -283,14 +283,26 @@ export default function SubmitDeal() {
   
   // Helper function to update tier data
   const setDealTiers = (updatedTiers: any[]) => {
+    // Handle adding new tiers
+    while (updatedTiers.length > tierManager.tiers.length) {
+      tierManager.addTier();
+    }
+    
+    // Handle removing tiers
+    while (updatedTiers.length < tierManager.tiers.length) {
+      const lastTier = tierManager.tiers[tierManager.tiers.length - 1];
+      tierManager.removeTier(lastTier.id);
+    }
+    
+    // Update existing tiers
     updatedTiers.forEach((updatedTier, index) => {
       if (index < tierManager.tiers.length) {
         tierManager.updateTier(tierManager.tiers[index].id, { // Use id as identifier
           tierName: `Tier ${updatedTier.tierNumber}`,
-          minimumCommit: updatedTier.annualRevenue,
-          incentivePercentage: updatedTier.annualGrossMarginPercent,
-          incentiveAmount: updatedTier.incentiveAmount,
-          incentiveNotes: updatedTier.incentiveNotes,
+          minimumCommit: updatedTier.annualRevenue || 0,
+          incentivePercentage: updatedTier.annualGrossMarginPercent || 0,
+          incentiveAmount: updatedTier.incentiveAmount || 0,
+          incentiveNotes: updatedTier.incentiveNotes || "",
           incentiveType: 'rebate' as const,
         });
       }

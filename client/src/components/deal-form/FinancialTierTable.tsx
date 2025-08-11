@@ -34,16 +34,21 @@ export function FinancialTierTable({
 
   // Helper function to add a new tier
   const addTier = () => {
+    console.log('Add Tier clicked', { currentTiers: dealTiers.length, isFlat }); // Debug log
+    if (isFlat) return; // Don't add tiers for flat commit
+    
     const newTierNumber = dealTiers.length + 1;
     const newTier: DealTierData = {
       tierNumber: newTierNumber,
-      annualRevenue: undefined,
-      annualGrossMarginPercent: undefined,
-      incentivePercentage: undefined,
+      annualRevenue: 0,
+      annualGrossMarginPercent: 35,
+      incentivePercentage: 0,
       incentiveNotes: "",
       incentiveType: "rebate",
     };
-    setDealTiers([...dealTiers, newTier]);
+    const updatedTiers = [...dealTiers, newTier];
+    console.log('Setting new tiers:', updatedTiers); // Debug log
+    setDealTiers(updatedTiers);
   };
 
   // Helper function to remove a tier
