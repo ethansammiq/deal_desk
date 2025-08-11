@@ -83,13 +83,27 @@ A comprehensive deal desk application that leverages AI and advanced analytics t
 - **Zero LSP Diagnostics** - ✅ All type errors resolved during hook creation and integration
 - **Architecture Streamlining** - ✅ Ready for tier management and form validation logic extraction (~700 additional lines can be moved)
 
+### ⚠️ Critical Technical Debt - Form Validation Synchronization
+- **PRIORITY HIGH**: Form validation hooks need updating to match current step structure
+- **Issue**: SubmitDeal and RequestSupport forms now use shared components (BusinessContextSection, ClientInfoSection)
+- **Impact**: useDealFormValidation hook step definitions may be misaligned with actual form rendering
+- **Required**: Audit and update form step validation logic to match shared component integration
+- **Timeline**: Must be addressed before Phase 2 migration completion
+
 ### Next Optimization Areas  
-- Phase 2: Migrate legacy tier state to new useDealTiers hook
-- Phase 3: Extract remaining validation logic to useDealFormValidation
+- Phase 2: Complete legacy tier state migration + **Form validation synchronization**
+- Phase 3: Extract remaining validation logic to useDealFormValidation (after sync)
 - Phase 4: Add comprehensive error boundaries and loading states
 - Phase 5: Performance optimization and lazy loading
 
+## Critical Reminders
+- **Form Validation Hook Sync**: useDealFormValidation and useDealTiers hooks created but need step definition updates to match shared component integration between SubmitDeal and RequestSupport forms
+
 ## Recent Changes
+- **2025-01-11**: ⚠️ Form validation hooks need step synchronization after shared component integration
+- **2025-01-11**: ✅ Created useDealTiers and useDealFormValidation hooks with comprehensive state management
+- **2025-01-11**: ✅ Successfully migrated tier management from manual state to hook-based architecture
+- **2025-01-11**: ✅ Eliminated ~280 lines of manual state management through hook modernization
 - **2025-01-11**: ✅ Implemented industry-standard ISO 8601 date handling throughout application
 - **2025-01-11**: ✅ Replaced problematic Date object → string conversion with consistent string-based approach
 - **2025-01-11**: ✅ Updated frontend date inputs to work directly with YYYY-MM-DD strings
