@@ -114,9 +114,7 @@ export const deals = pgTable("deals", {
   clientAsks: text("client_asks"),
   
   // RequestSupport specific fields
-  businessContext: text("business_context"), // Used in RequestSupport form
   growthAmbition: doublePrecision("growth_ambition"), // Used in RequestSupport form
-  requestType: text("request_type"), // Used in RequestSupport form
   
   // Contract term input field (months)
   contractTermMonths: integer("contract_term_months"),
@@ -178,9 +176,7 @@ export const insertDealSchema = createInsertSchema(deals)
     growthOpportunityMIQ: z.string().optional(),
     growthOpportunityClient: z.string().optional(),
     clientAsks: z.string().optional(),
-    businessContext: z.string().optional(),
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M").optional(),
-    requestType: z.enum(["scoping", "pricing", "technical"]).optional(),
     
     // Financial validations
     annualRevenue: z.number().positive("Annual revenue must be positive").optional(),

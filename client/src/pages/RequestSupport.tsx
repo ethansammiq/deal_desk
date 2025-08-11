@@ -99,8 +99,7 @@ export default function RequestSupport() {
       growthOpportunityMIQ: "",
       growthOpportunityClient: "",
       clientAsks: "",
-      businessContext: "",
-      requestType: "",
+
     },
     mode: "onChange",
   });

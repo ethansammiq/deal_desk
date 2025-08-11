@@ -108,9 +108,7 @@ const dealFormSchema = z.object({
   clientAsks: z.string().min(1, "Client Asks is required"),
   
   // Optional fields that may come from shared components
-  businessContext: z.string().optional(),
   growthAmbition: z.number().optional(),
-  requestType: z.string().optional(),
   contractTermMonths: z.number().optional(),
   
   // Essential financial data for calculations
@@ -234,9 +232,7 @@ export default function SubmitDeal() {
       clientAsks: "",
       
       // Optional RequestSupport fields
-      businessContext: "",
       growthAmbition: 0,
-      requestType: "",
       contractTermMonths: 12,
 
       // Client/Agency information
