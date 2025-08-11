@@ -96,32 +96,14 @@ export function ValueStructureSection({
 
   return (
     <div className="space-y-8">
-      {/* Flat Commit Structure */}
-      {dealStructureType === "flat_commit" && (
-        <div className="space-y-6">
-          <FinancialInputGroup
-            form={form}
-            revenueFieldName="annualRevenue"
-            marginFieldName="annualGrossMargin"
-            revenueLabel="Annual Revenue"
-            marginLabel="Annual Gross Margin %"
-            revenueTooltip="Committed annual revenue for this deal"
-            marginTooltip="Expected gross margin percentage"
-          />
-
-
-        </div>
-      )}
-
-      {/* Tiered Structure */}
-      {dealStructureType === "tiered" && (
-        <FinancialTierTable
-          dealTiers={dealTiers}
-          setDealTiers={setDealTiers}
-          lastYearRevenue={850000}
-          lastYearGrossMargin={35.0}
-        />
-      )}
+      {/* Unified Financial Structure - Always show table */}
+      <FinancialTierTable
+        dealTiers={dealTiers}
+        setDealTiers={setDealTiers}
+        lastYearRevenue={850000}
+        lastYearGrossMargin={35.0}
+        isFlat={dealStructureType === "flat_commit"}
+      />
     </div>
   );
 }

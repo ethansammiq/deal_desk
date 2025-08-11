@@ -1413,21 +1413,19 @@ export default function SubmitDeal() {
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
 
-                  {/* Separate Incentive Structure Section */}
-                  {dealStructureType === "tiered" && (
-                    <IncentiveStructureSection
-                      form={form}
-                      dealStructureType={dealStructureType}
-                      dealTiers={dealTiers}
-                      setDealTiers={setDealTiers}
-                      selectedIncentives={selectedIncentives}
-                      setSelectedIncentives={setSelectedIncentives}
-                      tierIncentives={tierIncentives}
-                      setTierIncentives={setTierIncentives}
-                      showAddIncentiveForm={showAddIncentiveForm}
-                      setShowAddIncentiveForm={setShowAddIncentiveForm}
-                    />
-                  )}
+                  {/* Separate Incentive Structure Section - Show for both types */}
+                  <IncentiveStructureSection
+                    form={form}
+                    dealStructureType={dealStructureType}
+                    dealTiers={dealTiers}
+                    setDealTiers={setDealTiers}
+                    selectedIncentives={selectedIncentives}
+                    setSelectedIncentives={setSelectedIncentives}
+                    tierIncentives={tierIncentives}
+                    setTierIncentives={setTierIncentives}
+                    showAddIncentiveForm={showAddIncentiveForm}
+                    setShowAddIncentiveForm={setShowAddIncentiveForm}
+                  />
 
                   {/* Legacy flat_commit handling - now handled in ValueStructureSection */}
                   {false && (

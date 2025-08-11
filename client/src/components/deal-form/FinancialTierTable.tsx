@@ -18,6 +18,7 @@ interface FinancialTierTableProps {
   setDealTiers: (tiers: DealTierData[]) => void;
   lastYearRevenue?: number;
   lastYearGrossMargin?: number;
+  isFlat?: boolean;
 }
 
 export function FinancialTierTable({
@@ -25,6 +26,7 @@ export function FinancialTierTable({
   setDealTiers,
   lastYearRevenue = 850000,
   lastYearGrossMargin = 35.0,
+  isFlat = false,
 }: FinancialTierTableProps) {
   const { 
     calculationService 
@@ -80,7 +82,13 @@ export function FinancialTierTable({
           onClick={addTier}
           variant="outline"
           size="sm"
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+          disabled={isFlat}
+          className={`${
+            isFlat 
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
+              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+          }`}
+          title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
         >
           <Plus className="h-4 w-4 mr-1" />
           Add Tier
@@ -90,9 +98,10 @@ export function FinancialTierTable({
       {/* Info banner */}
       <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
         <Info className="h-4 w-4 inline mr-2" />
-        This section details revenue targets, gross margin percentages, and calculated profitability metrics for
-        each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's
-        performance.
+        {isFlat 
+          ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
+          : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
+        }
       </div>
 
       {/* Financial metrics table */}
