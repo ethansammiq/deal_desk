@@ -122,9 +122,9 @@ export class DataMappingService {
         .toUpperCase();
     }
 
-    // Format dates
-    const startDateFormatted = termStartDate ? format(termStartDate, "yyyyMMdd") : "NODATE";
-    const endDateFormatted = termEndDate ? format(termEndDate, "yyyyMMdd") : "NODATE";
+    // Format dates - using ISO date strings
+    const startDateFormatted = termStartDate ? new Date(termStartDate).toISOString().split('T')[0].replace(/-/g, '') : "NODATE";
+    const endDateFormatted = termEndDate ? new Date(termEndDate).toISOString().split('T')[0].replace(/-/g, '') : "NODATE";
 
     // Safely access map values with type casting and fallbacks
     const dealTypeKey = typeof dealType === "string" 

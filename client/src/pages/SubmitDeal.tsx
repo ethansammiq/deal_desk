@@ -90,6 +90,8 @@ import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection"
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
+import { useAIAnalysis } from "@/hooks/useAIAnalysis";
+import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -161,25 +163,55 @@ export default function SubmitDeal() {
     setTierIncentives(incentives);
   };
 
+  // AI Analysis Integration
+  const aiAnalysis = useAIAnalysis();
+  
+  // Trigger AI analysis when critical deal data changes
+  React.useEffect(() => {
+    const currentDealName = String(form.watch("dealName") || "");
+    const currentSalesChannel = String(form.watch("salesChannel") || "");
+    const currentRegion = String(form.watch("region") || "");
+    
+    if (formStep >= 2 && currentDealName && currentSalesChannel && currentRegion) {
+      const dealData = {
+        dealType: String(form.watch("dealType") || ""),
+        salesChannel: currentSalesChannel,
+        region: currentRegion,
+        advertiserName: String(form.watch("advertiserName") || ""),
+        agencyName: String(form.watch("agencyName") || ""),
+        dealStructure: dealStructureType,
+        annualRevenue: Number(form.watch("annualRevenue") || 0),
+        contractTermMonths: String(form.watch("contractTermMonths") || ""),
+        termStartDate: String(form.watch("termStartDate") || ""),
+        termEndDate: String(form.watch("termEndDate") || ""),
+        businessSummary: String(form.watch("businessSummary") || "")
+      };
+      
+      if (dealData.annualRevenue > 0 && dealData.termStartDate && dealData.termEndDate) {
+        aiAnalysis.triggerAnalysis(dealData);
+      }
+    }
+  }, [formStep, dealStructureType, form.watch("dealName"), form.watch("salesChannel"), form.watch("region"), form.watch("annualRevenue"), form.watch("termStartDate"), form.watch("termEndDate"), form.watch("businessSummary")]);
+
   // Financial calculation helper functions - now using extracted service
   
   // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.getPreviousYearValue(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const getPreviousYearMargin = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearMargin(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.getPreviousYearMargin(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const getPreviousYearGrossProfit = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearGrossProfit(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.getPreviousYearGrossProfit(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const getPreviousYearIncentiveCost = (): number => {
@@ -189,7 +221,7 @@ export default function SubmitDeal() {
   const getPreviousYearAdjustedGrossProfit = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const getPreviousYearAdjustedGrossMargin = (): number => {
@@ -199,13 +231,13 @@ export default function SubmitDeal() {
   const getPreviousYearAdjustedProfit = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.getPreviousYearValue(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const getPreviousYearClientValue = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.calculationService.getPreviousYearClientValue(salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.calculationService.getPreviousYearClientValue(String(salesChannel || ""), advertiserName, agencyName);
   };
 
   const calculateTierIncentiveCost = (tierNumber: number): number => {
@@ -823,9 +855,9 @@ export default function SubmitDeal() {
       return;
     }
   
-    // Format dates for deal name
-    const startDateFormatted = format(data.termStartDate, "yyyyMMdd");
-    const endDateFormatted = format(data.termEndDate, "yyyyMMdd");
+    // Format dates for deal name - using ISO strings  
+    const startDateFormatted = data.termStartDate.replace(/-/g, '');
+    const endDateFormatted = data.termEndDate.replace(/-/g, '');
 
     // Determine client/agency name
     let clientName = "";
@@ -3020,14 +3052,8 @@ export default function SubmitDeal() {
                                   ? new Date(termEndDate)
                                   : (termEndDate as Date);
 
-                              const startDateFormatted = format(
-                                startDateObj,
-                                "yyyyMMdd",
-                              );
-                              const endDateFormatted = format(
-                                endDateObj,
-                                "yyyyMMdd",
-                              );
+                              const startDateFormatted = startDateObj.toISOString().split('T')[0].replace(/-/g, '');
+                              const endDateFormatted = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
 
                               // Safely access map values with type casting
                               const dealTypeKey =

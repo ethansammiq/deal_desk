@@ -221,9 +221,9 @@ export function DealDetailsSection({
                         // Auto-calculate end date based on start date + months
                         const startDate = form.getValues("termStartDate");
                         if (startDate && months > 0) {
-                          const endDate = new Date(startDate);
-                          endDate.setMonth(endDate.getMonth() + months);
-                          form.setValue("termEndDate", endDate.toISOString().split('T')[0]);
+                          const startDateObj = new Date(startDate);
+                          startDateObj.setMonth(startDateObj.getMonth() + months);
+                          form.setValue("termEndDate", startDateObj.toISOString().split('T')[0]);
                         }
                       }}
                     />
