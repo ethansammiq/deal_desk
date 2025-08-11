@@ -149,8 +149,8 @@ export function ValueStructureSection({
           
           <TierSpecificIncentives
             dealTiers={dealTiers}
-            tierIncentives={tierIncentives}
-            onTierIncentiveChange={setTierIncentives}
+            incentives={tierIncentives}
+            onChange={setTierIncentives}
           />
         </div>
       )}
