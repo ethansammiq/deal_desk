@@ -75,6 +75,9 @@ const dealScopingSchema = z
     requestType: z.enum(["scoping", "pricing", "technical"], {
       required_error: "Request type is required",
     }),
+    growthAmbition: z
+      .number()
+      .min(1000000, "Growth ambition must be at least $1M"),
     businessContext: z
       .string()
       .min(20, "Please provide more details about your request"),

@@ -22,12 +22,24 @@ import {
 
 // Interface for business context form values - compatible with both forms
 interface BusinessContextFormValues {
+  // SubmitDeal fields
   growthOpportunityMIQ?: string;
   growthOpportunityClient?: string;
   clientAsks?: string;
+  // RequestSupport fields
   growthAmbition?: number;
   businessContext?: string;
-  requestType?: string;
+  requestType?: "scoping" | "pricing" | "technical";
+  // Common fields that both forms may have
+  salesChannel?: string;
+  region?: string;
+  dealType?: string;
+  dealStructure?: string;
+  termStartDate?: Date;
+  termEndDate?: Date;
+  contractTermMonths?: string;
+  advertiserName?: string;
+  agencyName?: string;
   // We need to be compatible with both SubmitDeal and RequestSupport form structures
   [key: string]: any;
 }

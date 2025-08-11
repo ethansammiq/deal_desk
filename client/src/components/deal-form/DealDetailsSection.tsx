@@ -30,7 +30,8 @@ interface DealDetailsFormValues {
   contractTermMonths?: string;
   termStartDate?: Date | null;
   termEndDate?: Date | null;
-  businessSummary: string;
+  businessSummary?: string; // Make optional for RequestSupport
+  [key: string]: any; // Allow additional fields for different form types
 }
 
 interface DealDetailsSectionProps {
