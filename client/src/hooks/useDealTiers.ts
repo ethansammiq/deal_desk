@@ -1,20 +1,18 @@
 import { useState, useCallback, useMemo } from 'react';
 
-// Simplified tier interface matching component expectations
+// Types for tier management
 export interface DealTier {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMargin?: number;
-  annualGrossMarginPercent?: number;
-  incentivePercentage?: number;
+  id: string;
+  tierName: string;
+  minimumCommit: number;
+  incentiveType: 'rebate' | 'bonus' | 'other';
+  incentivePercentage: number;
+  incentiveAmount: number;
   incentiveNotes?: string;
-  incentiveType?: "rebate" | "discount" | "bonus" | "other";
-  incentiveThreshold?: number;
-  incentiveAmount?: number;
 }
 
 export interface TierValidationError {
-  tierNumber: number;
+  tierId: string;
   field: string;
   message: string;
 }
@@ -34,15 +32,13 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     }
     // Create default first tier
     return [{
-      tierNumber: 1,
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-      annualGrossMarginPercent: 35,
+      id: crypto.randomUUID(),
+      tierName: 'Tier 1',
+      minimumCommit: 0,
+      incentiveType: 'rebate' as const,
       incentivePercentage: 0,
-      incentiveNotes: "",
-      incentiveType: "rebate",
-      incentiveThreshold: 0,
       incentiveAmount: 0,
+      incentiveNotes: ''
     }];
   });
 
@@ -54,37 +50,34 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       }
 
       const newTier: DealTier = {
-        tierNumber: prev.length + 1,
-        annualRevenue: 0,
-        annualGrossMargin: 0,
-        annualGrossMarginPercent: 35,
+        id: crypto.randomUUID(),
+        tierName: `Tier ${prev.length + 1}`,
+        minimumCommit: 0,
+        incentiveType: 'rebate',
         incentivePercentage: 0,
-        incentiveNotes: "",
-        incentiveType: "rebate",
-        incentiveThreshold: 0,
         incentiveAmount: 0,
+        incentiveNotes: ''
       };
 
       return [...prev, newTier];
     });
+    return {} as DealTier; // Return placeholder since we can't return the actual tier from inside setTiers
   }, [maxTiers]);
 
   // Remove tier
-  const removeTier = useCallback((tierNumber: number) => {
+  const removeTier = useCallback((tierId: string) => {
     setTiers(prev => {
       if (prev.length <= minTiers) {
         throw new Error(`Minimum of ${minTiers} tier(s) required`);
       }
-      return prev
-        .filter(tier => tier.tierNumber !== tierNumber)
-        .map((tier, index) => ({ ...tier, tierNumber: index + 1 })); // Renumber remaining tiers
+      return prev.filter(tier => tier.id !== tierId);
     });
   }, [minTiers]);
 
   // Update specific tier
-  const updateTier = useCallback((tierNumber: number, updates: Partial<DealTier>) => {
+  const updateTier = useCallback((tierId: string, updates: Partial<DealTier>) => {
     setTiers(prev => prev.map(tier => 
-      tier.tierNumber === tierNumber 
+      tier.id === tierId 
         ? { ...tier, ...updates }
         : tier
     ));
@@ -92,23 +85,23 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   // Update tier with revenue-based calculations
   const updateTierWithCalculations = useCallback((
-    tierNumber: number, 
-    updates: Partial<DealTier>
+    tierId: string, 
+    updates: Partial<DealTier>,
+    annualRevenue?: number
   ) => {
     setTiers(prev => prev.map(tier => {
-      if (tier.tierNumber !== tierNumber) return tier;
+      if (tier.id !== tierId) return tier;
 
       const updatedTier = { ...tier, ...updates };
-      const revenue = updatedTier.annualRevenue || 0;
 
-      // Auto-calculate gross margin from percentage
-      if (updates.annualGrossMarginPercent !== undefined && revenue > 0) {
-        updatedTier.annualGrossMargin = (revenue * updates.annualGrossMarginPercent) / 100;
+      // Auto-calculate incentive amount from percentage
+      if (updates.incentivePercentage !== undefined && annualRevenue) {
+        updatedTier.incentiveAmount = (annualRevenue * updates.incentivePercentage) / 100;
       }
       
-      // Auto-calculate percentage from gross margin
-      if (updates.annualGrossMargin !== undefined && revenue > 0) {
-        updatedTier.annualGrossMarginPercent = (updates.annualGrossMargin / revenue) * 100;
+      // Auto-calculate percentage from amount
+      if (updates.incentiveAmount !== undefined && annualRevenue && annualRevenue > 0) {
+        updatedTier.incentivePercentage = (updates.incentiveAmount / annualRevenue) * 100;
       }
 
       return updatedTier;
@@ -126,15 +119,13 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       setTiers(initialTiers);
     } else {
       setTiers([{
-        tierNumber: 1,
-        annualRevenue: 0,
-        annualGrossMargin: 0,
-        annualGrossMarginPercent: 35,
+        id: crypto.randomUUID(),
+        tierName: 'Tier 1',
+        minimumCommit: 0,
+        incentiveType: 'rebate',
         incentivePercentage: 0,
-        incentiveNotes: "",
-        incentiveType: "rebate",
-        incentiveThreshold: 0,
         incentiveAmount: 0,
+        incentiveNotes: ''
       }]);
     }
   }, [initialTiers]);

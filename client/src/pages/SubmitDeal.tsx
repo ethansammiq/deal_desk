@@ -93,7 +93,7 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
-import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
+// Removed useDealTiers import - using simple state management
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 // Simplified deal schema with only essential fields
@@ -264,40 +264,18 @@ export default function SubmitDeal() {
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
   
-  // ✅ RESTORED: Using tierManager hook for proper architecture
-  const tierManager = useDealTiers({
-    maxTiers: 5,
-    minTiers: 1
-  });
-  
-  // Helper function to convert tier data for compatibility
-  const dealTiers: DealTierData[] = tierManager.tiers.map((tier, index) => ({
-    tierNumber: index + 1,
-    annualRevenue: tier.minimumCommit,
-    annualGrossMargin: tier.minimumCommit ? tier.minimumCommit * (tier.incentivePercentage || 35) / 100 : 0,
-    annualGrossMarginPercent: tier.incentivePercentage || 35,
-    incentivePercentage: tier.incentivePercentage,
-    incentiveNotes: tier.incentiveNotes || "",
-    incentiveType: tier.incentiveType as "rebate" | "discount" | "bonus" | "other",
-    incentiveThreshold: tier.minimumCommit,
-    incentiveAmount: tier.incentiveAmount,
-  }));
-  
-  // Helper function to update tiers
-  const setDealTiers = (updatedTiers: DealTierData[]) => {
-    // Sync changes back to tierManager
-    updatedTiers.forEach((updatedTier, index) => {
-      if (index < tierManager.tiers.length) {
-        const tier = tierManager.tiers[index];
-        tierManager.updateTier(tier.id, {
-          minimumCommit: updatedTier.annualRevenue || 0,
-          incentivePercentage: updatedTier.annualGrossMarginPercent || 35,
-          incentiveAmount: updatedTier.incentiveAmount || 0,
-          incentiveNotes: updatedTier.incentiveNotes || "",
-        });
-      }
-    });
-  };
+  // State for deal tiers (simplified - using direct state instead of complex hook)
+  const [dealTiers, setDealTiers] = useState<DealTierData[]>([{
+    tierNumber: 1,
+    annualRevenue: 0,
+    annualGrossMargin: 0,
+    annualGrossMarginPercent: 35,
+    incentivePercentage: 0,
+    incentiveNotes: "",
+    incentiveType: "rebate",
+    incentiveThreshold: 0,
+    incentiveAmount: 0,
+  }]);
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -635,7 +613,7 @@ export default function SubmitDeal() {
 
     // Update the financial summary state
     setFinancialSummary(summary);
-  }, [tierManager.tiers, salesChannel, advertisers, agencies]);
+  }, [dealTiers, salesChannel, advertisers, agencies]);
 
   // ✅ MIGRATED: Form navigation now handled by formValidation hook
   // Legacy functions replaced with hook methods:
@@ -1488,15 +1466,19 @@ export default function SubmitDeal() {
                         type="button"
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
-                          try {
-                            tierManager.addTier();
-                          } catch (error: any) {
-                            toast({
-                              title: "Cannot Add Tier",
-                              description: error.message || "Maximum tiers reached",
-                              variant: "destructive",
-                            });
-                          }
+                          const newTierNumber = dealTiers.length + 1;
+                          const newTier: DealTierData = {
+                            tierNumber: newTierNumber,
+                            annualRevenue: 0,
+                            annualGrossMargin: 0,
+                            annualGrossMarginPercent: 35,
+                            incentivePercentage: 0,
+                            incentiveNotes: "",
+                            incentiveType: "rebate",
+                            incentiveThreshold: 0,
+                            incentiveAmount: 0,
+                          };
+                          setDealTiers([...dealTiers, newTier]);
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />
