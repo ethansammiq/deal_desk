@@ -111,6 +111,25 @@ export class DealCalculationService {
   }
 
   /**
+   * Calculate current client value (40% of tier revenue)
+   */
+  calculateClientValue(tier: DealTier): number {
+    const revenue = tier.annualRevenue || 0;
+    return revenue * 0.4; // 40% of current tier revenue
+  }
+
+  /**
+   * Calculate tier gross profit (revenue * margin - incentive cost)
+   */
+  calculateTierGrossProfit(tier: DealTier, selectedIncentives: SelectedIncentive[], tierIncentives: TierIncentive[]): number {
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0;
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    return grossProfit - incentiveCost;
+  }
+
+  /**
    * Calculate total incentive cost for a tier
    */
   calculateTierIncentiveCost(tierNumber: number, selectedIncentives: SelectedIncentive[], tierIncentives: TierIncentive[]): number {

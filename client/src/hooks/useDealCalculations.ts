@@ -83,8 +83,16 @@ export function useDealCalculations(
     getPreviousYearGrossProfit: calculationService.getPreviousYearGrossProfit.bind(calculationService),
     getPreviousYearIncentiveCost: calculationService.getPreviousYearIncentiveCost.bind(calculationService),
     calculateTierIncentiveCost: calculationService.calculateTierIncentiveCost.bind(calculationService),
+    calculateTierGrossProfit: calculationService.calculateTierGrossProfit.bind(calculationService),
     calculateGrossMarginGrowthRate: calculationService.calculateGrossMarginGrowthRate.bind(calculationService),
     calculateProfitGrowthRate: calculationService.calculateProfitGrowthRate.bind(calculationService),
     calculateRevenueGrowthRate: calculationService.calculateRevenueGrowthRate.bind(calculationService),
+    calculateGrossProfitGrowthRate: calculationService.calculateGrossProfitGrowthRate.bind(calculationService),
+    calculateAdjustedGrossProfitGrowthRate: calculationService.calculateAdjustedGrossProfitGrowthRate.bind(calculationService),
+    calculateAdjustedGrossMargin: calculationService.calculateAdjustedGrossMargin.bind(calculationService),
+    calculateAdjustedGrossMarginGrowthRate: calculationService.calculateAdjustedGrossMarginGrowthRate.bind(calculationService),
+    calculateClientValue: calculationService.calculateClientValue.bind(calculationService),
+    calculateClientValueGrowthRate: calculationService.calculateClientValueGrowthRate.bind(calculationService),
+    calculateCostGrowthRate: calculationService.calculateCostGrowthRate.bind(calculationService),
   };
 }
