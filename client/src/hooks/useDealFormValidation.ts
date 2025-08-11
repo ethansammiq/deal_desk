@@ -76,10 +76,10 @@ const SUBMIT_DEAL_STEPS: FormStep[] = [
     id: 2,
     title: 'Business Context', // Step 1 in actual implementation
     fields: [
-      'growthAmbition',        // BusinessContextSection
-      'growthOpportunityMIQ',  // BusinessContextSection
-      'growthOpportunityClient', // BusinessContextSection
-      'clientAsks'             // BusinessContextSection
+      'growthOpportunityMIQ',  // BusinessContextSection - SubmitDeal only
+      'growthOpportunityClient', // BusinessContextSection - SubmitDeal only
+      'clientAsks'             // BusinessContextSection - SubmitDeal only
+      // Note: growthAmbition field is NOT in SubmitDeal form, only in RequestSupport
     ]
   },
   {
