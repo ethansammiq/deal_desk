@@ -328,71 +328,40 @@ export default function SubmitDeal() {
   // Financial calculation helper functions - now using extracted service
 
   // Helper functions that use the calculation service
-  const getPreviousYearValue = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearValue(String(salesChannel || ""), advertiserName, agencyName);
-  };
-
-  const getPreviousYearMargin = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearMargin(String(salesChannel || ""), advertiserName, agencyName);
-  };
-
-  const getPreviousYearGrossProfit = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearGrossProfit(String(salesChannel || ""), advertiserName, agencyName);
-  };
-
-  const getPreviousYearIncentiveCost = (): number => {
-    return dealCalculations.calculationService.getPreviousYearIncentiveCost();
-  };
-
-  const getPreviousYearAdjustedGrossProfit = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(String(salesChannel || ""), advertiserName, agencyName);
-  };
-
-  const getPreviousYearAdjustedGrossMargin = (): number => {
-    return dealCalculations.calculationService.getPreviousYearAdjustedGrossMargin();
-  };
-
-  const getPreviousYearAdjustedProfit = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.getPreviousYearValue(String(salesChannel || ""), advertiserName, agencyName);
-  };
-
-  const getPreviousYearClientValue = (): number => {
-    const advertiserName = String(form.watch("advertiserName") || "");
-    const agencyName = String(form.watch("agencyName") || "");
-    return dealCalculations.calculationService.getPreviousYearClientValue(String(salesChannel || ""), advertiserName, agencyName);
-  };
+  // ✅ PHASE 1 COMPLETE: Eliminated 8 pure wrapper functions (~50 lines)
+  // Direct service calls replace all wrapper function usage
+  
+  // Helper to get advertiser/agency names for calculations
+  const getClientNames = () => ({
+    advertiserName: String(form.watch("advertiserName") || ""),
+    agencyName: String(form.watch("agencyName") || ""),
+    salesChannel: String(salesChannel || "")
+  });
 
   const calculateTierIncentiveCost = (tierNumber: number): number => {
     return dealCalculations.calculateTierIncentiveCost(tierNumber, selectedIncentives, tierIncentives);
   };
 
-  // Calculate gross profit for a tier
+  // ✅ PHASE 2: Replace duplicate logic with service calls
   const calculateTierGrossProfit = (tier: DealTierData): number => {
-    const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0.35; // Default to 35% if not specified
-    const grossMargin = revenue * (marginPercent / 100);
-    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-
-    return grossMargin - incentiveCost;
+    // Convert DealTierData to DealTier format and use service
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateTierGrossProfit(serviceTier, selectedIncentives, tierIncentives);
   };
 
-  // Calculate revenue growth rate (Tier specific revenue / last year revenue - 1)
+  // ✅ PHASE 2: Replace with service call  
   const calculateRevenueGrowthRate = (tier: DealTierData): number => {
-    const currentRevenue = tier.annualRevenue || 0;
-    const previousRevenue = getPreviousYearValue();
-
-    if (previousRevenue === 0) return 0;
-    return currentRevenue / previousRevenue - 1;
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateRevenueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
   // Calculate gross margin growth rate using the service
@@ -410,149 +379,78 @@ export default function SubmitDeal() {
     return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, String(salesChannel || ""), advertiserName, agencyName);
   };
 
-  // Calculate gross profit growth rate (Tier specific gross profit / last year gross profit - 1)
+  // ✅ PHASE 3: Migrated to service - calculateGrossProfitGrowthRate
   const calculateGrossProfitGrowthRate = (tier: DealTierData): number => {
-    const currentProfit =
-      (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
-    const previousProfit = getPreviousYearGrossProfit();
-
-    if (previousProfit === 0) return 0;
-    return currentProfit / previousProfit - 1;
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateGrossProfitGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
-  // Calculate adjusted gross profit growth rate (Tier specific adjusted gross profit / last year adjusted gross profit - 1)
-  const calculateAdjustedGrossProfitGrowthRate = (
-    tier: DealTierData,
-  ): number => {
-    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
-    const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-    const currentAdjustedProfit = grossProfit - incentiveCost;
-
-    // For last year's adjusted gross profit, we need to do the same calculation with last year's values
-    const lastYearRevenue = getPreviousYearValue(); // 850,000
-    const lastYearMarginPercent = getPreviousYearMargin(); // 35%
-    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
-    const lastYearIncentiveCost = getPreviousYearIncentiveCost(); // 50,000
-    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
-
-    // Debug logging
-    console.log("DEBUG - Adjusted Gross Profit Rate Calculation:", {
-      currentValues: {
-        revenue,
-        marginPercent,
-        grossProfit,
-        incentiveCost,
-        adjustedProfit: currentAdjustedProfit,
-      },
-      lastYearValues: {
-        revenue: lastYearRevenue,
-        marginPercent: lastYearMarginPercent,
-        grossProfit: lastYearGrossProfit,
-        incentiveCost: lastYearIncentiveCost,
-        adjustedProfit: lastYearAdjustedProfit,
-      },
-      result:
-        lastYearAdjustedProfit > 0
-          ? currentAdjustedProfit / lastYearAdjustedProfit - 1
-          : 0,
-    });
-
-    if (lastYearAdjustedProfit === 0) return 0;
-    return currentAdjustedProfit / lastYearAdjustedProfit - 1;
+  // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossProfitGrowthRate
+  const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
   };
 
-  // Calculate adjusted gross margin
+  // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMargin  
   const calculateAdjustedGrossMargin = (tier: DealTierData): number => {
-    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
-    const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-    const adjustedGrossProfit = grossProfit - incentiveCost;
-
-    if (revenue === 0) return 0;
-    return adjustedGrossProfit / revenue;
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateAdjustedGrossMargin(serviceTier, selectedIncentives, tierIncentives);
   };
 
-  // Calculate adjusted gross margin growth rate (Tier specific adjusted gross margin - last year adjusted gross margin)
-  const calculateAdjustedGrossMarginGrowthRate = (
-    tier: DealTierData,
-  ): number => {
-    // For your example: if tier 1 adjusted gross margin is 24% and last year's is 35%
-    // The formula should be: (0.24 - 0.35) = -0.11 or -11 percentage points
-    // Not: ((0.24 - 0.35) / 0.35) = -0.3143 or -31.43%
-
-    // Calculate current tier's adjusted gross margin as a decimal (0.24 in your example)
-    const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-    const adjustedGrossProfit = grossProfit - incentiveCost;
-    const currentAdjustedGrossMargin =
-      revenue > 0 ? adjustedGrossProfit / revenue : 0;
-
-    // Calculate last year's adjusted gross margin as a decimal (0.35 in your example)
-    const lastYearRevenue = getPreviousYearValue(); // 850,000
-    const lastYearMarginPercent = getPreviousYearMargin(); // 35%
-    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
-    const lastYearIncentiveCost = getPreviousYearIncentiveCost(); // 50,000
-    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
-    const lastYearAdjustedGrossMargin =
-      lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
-
-    // Debug logging
-    console.log("DEBUG - Adjusted Gross Margin Rate Calculation:", {
-      currentValues: {
-        revenue,
-        marginPercent,
-        grossProfit,
-        incentiveCost,
-        adjustedProfit: adjustedGrossProfit,
-        adjustedMargin: currentAdjustedGrossMargin,
-      },
-      lastYearValues: {
-        revenue: lastYearRevenue,
-        marginPercent: lastYearMarginPercent,
-        grossProfit: lastYearGrossProfit,
-        incentiveCost: lastYearIncentiveCost,
-        adjustedProfit: lastYearAdjustedProfit,
-        adjustedMargin: lastYearAdjustedGrossMargin,
-      },
-      result: currentAdjustedGrossMargin - lastYearAdjustedGrossMargin,
-      resultPercentagePoints: `${((currentAdjustedGrossMargin - lastYearAdjustedGrossMargin) * 100).toFixed(2)}%`,
-    });
-
-    // Return the simple difference as percentage points (not a percentage of the previous margin)
-    // For example: 0.24 - 0.35 = -0.11 or -11 percentage points
-    return currentAdjustedGrossMargin - lastYearAdjustedGrossMargin;
+  // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMarginGrowthRate
+  const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
   };
 
-  // Calculate client value
+  // ✅ PHASE 2: Replace with service call
   const calculateClientValue = (tier: DealTierData): number => {
-    const revenue = tier.annualRevenue || 0;
-    return revenue * 0.4; // 40% of revenue as specified
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateClientValue(serviceTier);
   };
 
-  // Calculate client value growth rate (Tier specific client value / last year client value - 1)
+  // ✅ PHASE 3: Migrated to service - calculateClientValueGrowthRate
   const calculateClientValueGrowthRate = (tier: DealTierData): number => {
-    const currentClientValue = calculateClientValue(tier);
-    const previousClientValue = getPreviousYearClientValue();
-
-    if (previousClientValue === 0) return 0;
-    return currentClientValue / previousClientValue - 1;
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateClientValueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
-  // Calculate cost growth rate (Tier specific incentive cost / last year incentive cost - 1)
+  // ✅ PHASE 3: Migrated to service - calculateCostGrowthRate
   const calculateCostGrowthRate = (tier: DealTierData): number => {
-    const currentIncentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-    const previousIncentiveCost = getPreviousYearIncentiveCost(); // Now using 50,000
-
-    // With the new incentive cost of 50,000, this condition will no longer be triggered
-    if (previousIncentiveCost === 0) return 0;
-    return currentIncentiveCost / previousIncentiveCost - 1;
+    const serviceTier = {
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent
+    };
+    return dealCalculations.calculateCostGrowthRate(serviceTier, selectedIncentives, tierIncentives);
   };
 
   // Watch for dealStructure changes to handle conditional fields
@@ -2711,7 +2609,10 @@ export default function SubmitDeal() {
                             </div>
                           </td>
                           <td className="p-3 border border-slate-200 text-center">
-                            {formatPercentage(getPreviousYearMargin() / 100)}{" "}
+                            {(() => {
+                              const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                              return formatPercentage(dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100);
+                            })()}{" "}
                             {/* Last year value */}
                           </td>
                           {dealTiers.map((tier) => {
@@ -2783,8 +2684,8 @@ export default function SubmitDeal() {
                               revenue > 0 ? grossProfit / revenue : 0;
 
                             // Get previous year margin for comparison
-                            const previousYearMargin =
-                              getPreviousYearMargin() / 100;
+                            const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                            const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
 
                             // Calculate growth rate (difference in percentage points)
                             const marginGrowthRate =
@@ -3345,8 +3246,8 @@ export default function SubmitDeal() {
                                     .filter((tier) => tier.annualRevenue)
                                     .map((tier) => {
                                       // Get previous year margin
-                                      const previousYearMargin =
-                                        getPreviousYearMargin() / 100;
+                                      const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                                      const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
                                       // Calculate current tier margin
                                       const currentMargin =
                                         (tier.annualGrossMarginPercent || 0) /

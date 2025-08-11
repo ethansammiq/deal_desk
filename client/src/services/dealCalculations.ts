@@ -265,6 +265,134 @@ export class DealCalculationService {
   }
 
   /**
+   * Calculate gross profit growth rate for a tier
+   */
+  calculateGrossProfitGrowthRate(
+    tier: DealTier, 
+    salesChannel: string, 
+    advertiserName?: string, 
+    agencyName?: string
+  ): number {
+    const currentProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
+    const previousProfit = this.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
+
+    if (previousProfit === 0) return 0;
+    return currentProfit / previousProfit - 1;
+  }
+
+  /**
+   * Calculate adjusted gross profit growth rate for a tier
+   */
+  calculateAdjustedGrossProfitGrowthRate(
+    tier: DealTier,
+    selectedIncentives: SelectedIncentive[],
+    tierIncentives: TierIncentive[],
+    salesChannel: string,
+    advertiserName?: string,
+    agencyName?: string
+  ): number {
+    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0;
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const currentAdjustedProfit = grossProfit - incentiveCost;
+
+    // For last year's adjusted gross profit, we need to do the same calculation with last year's values
+    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
+    const lastYearMarginPercent = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 35%
+    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
+
+    if (lastYearAdjustedProfit === 0) return 0;
+    return currentAdjustedProfit / lastYearAdjustedProfit - 1;
+  }
+
+  /**
+   * Calculate adjusted gross margin for a tier
+   */
+  calculateAdjustedGrossMargin(
+    tier: DealTier,
+    selectedIncentives: SelectedIncentive[],
+    tierIncentives: TierIncentive[]
+  ): number {
+    // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0;
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const adjustedGrossProfit = grossProfit - incentiveCost;
+
+    if (revenue === 0) return 0;
+    return adjustedGrossProfit / revenue;
+  }
+
+  /**
+   * Calculate adjusted gross margin growth rate for a tier
+   */
+  calculateAdjustedGrossMarginGrowthRate(
+    tier: DealTier,
+    selectedIncentives: SelectedIncentive[],
+    tierIncentives: TierIncentive[],
+    salesChannel: string,
+    advertiserName?: string,
+    agencyName?: string
+  ): number {
+    // Calculate current tier's adjusted gross margin as a decimal (0.24 in your example)
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0;
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const adjustedGrossProfit = grossProfit - incentiveCost;
+    const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
+
+    // Calculate last year's adjusted gross margin as a decimal (0.35 in your example)
+    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
+    const lastYearMarginPercent = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 35%
+    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
+    const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
+
+    // Return the simple difference as percentage points (not a percentage of the previous margin)
+    // For example: 0.24 - 0.35 = -0.11 or -11 percentage points
+    return currentAdjustedGrossMargin - lastYearAdjustedGrossMargin;
+  }
+
+  /**
+   * Calculate client value growth rate for a tier
+   */
+  calculateClientValueGrowthRate(
+    tier: DealTier,
+    salesChannel: string,
+    advertiserName?: string,
+    agencyName?: string
+  ): number {
+    const currentClientValue = this.calculateClientValue(tier);
+    const previousClientValue = this.getPreviousYearClientValue(salesChannel, advertiserName, agencyName);
+
+    if (previousClientValue === 0) return 0;
+    return currentClientValue / previousClientValue - 1;
+  }
+
+  /**
+   * Calculate cost growth rate for a tier
+   */
+  calculateCostGrowthRate(
+    tier: DealTier,
+    selectedIncentives: SelectedIncentive[],
+    tierIncentives: TierIncentive[]
+  ): number {
+    const currentIncentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const previousIncentiveCost = this.getPreviousYearIncentiveCost(); // Now using 50,000
+
+    // With the new incentive cost of 50,000, this condition will no longer be triggered
+    if (previousIncentiveCost === 0) return 0;
+    return currentIncentiveCost / previousIncentiveCost - 1;
+  }
+
+  /**
    * Update advertiser and agency data
    */
   updateClientData(advertisers: any[], agencies: any[]): void {
