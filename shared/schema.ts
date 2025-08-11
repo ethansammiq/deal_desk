@@ -69,9 +69,6 @@ export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequ
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
   }).passthrough(); // Allow additional fields from shared components
 
-export type DealScopingRequest = typeof dealScopingRequests.$inferSelect;
-export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSchema>;
-
 // Tier configuration for tiered deals
 export const dealTiers = pgTable("deal_tiers", {
   id: serial("id").primaryKey(),
