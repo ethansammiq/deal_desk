@@ -1,18 +1,20 @@
 import { useState, useCallback, useMemo } from 'react';
 
-// Types for tier management
+// Unified tier interface - matches existing DealTierData throughout the app
 export interface DealTier {
-  id: string;
-  tierName: string;
-  minimumCommit: number;
-  incentiveType: 'rebate' | 'bonus' | 'other';
-  incentivePercentage: number;
-  incentiveAmount: number;
+  tierNumber: number;
+  annualRevenue?: number;
+  annualGrossMargin?: number;
+  annualGrossMarginPercent?: number;
+  incentivePercentage?: number;
   incentiveNotes?: string;
+  incentiveType?: "rebate" | "discount" | "bonus" | "other";
+  incentiveThreshold?: number;
+  incentiveAmount?: number;
 }
 
 export interface TierValidationError {
-  tierId: string;
+  tierNumber: number;
   field: string;
   message: string;
 }
@@ -30,15 +32,17 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     if (initialTiers.length > 0) {
       return initialTiers;
     }
-    // Create default first tier
+    // Create default first tier matching app structure
     return [{
-      id: crypto.randomUUID(),
-      tierName: 'Tier 1',
-      minimumCommit: 0,
-      incentiveType: 'rebate' as const,
+      tierNumber: 1,
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+      annualGrossMarginPercent: 35,
       incentivePercentage: 0,
+      incentiveNotes: "",
+      incentiveType: "rebate",
+      incentiveThreshold: 0,
       incentiveAmount: 0,
-      incentiveNotes: ''
     }];
   });
 
@@ -49,35 +53,39 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         throw new Error(`Maximum of ${maxTiers} tiers allowed`);
       }
 
+      const newTierNumber = prev.length + 1;
       const newTier: DealTier = {
-        id: crypto.randomUUID(),
-        tierName: `Tier ${prev.length + 1}`,
-        minimumCommit: 0,
-        incentiveType: 'rebate',
+        tierNumber: newTierNumber,
+        annualRevenue: 0,
+        annualGrossMargin: 0,
+        annualGrossMarginPercent: 35,
         incentivePercentage: 0,
+        incentiveNotes: "",
+        incentiveType: "rebate",
+        incentiveThreshold: 0,
         incentiveAmount: 0,
-        incentiveNotes: ''
       };
 
       return [...prev, newTier];
     });
-    return {} as DealTier; // Return placeholder since we can't return the actual tier from inside setTiers
   }, [maxTiers]);
 
   // Remove tier
-  const removeTier = useCallback((tierId: string) => {
+  const removeTier = useCallback((tierNumber: number) => {
     setTiers(prev => {
       if (prev.length <= minTiers) {
         throw new Error(`Minimum of ${minTiers} tier(s) required`);
       }
-      return prev.filter(tier => tier.id !== tierId);
+      // Filter out the tier and renumber remaining tiers
+      const filtered = prev.filter(tier => tier.tierNumber !== tierNumber);
+      return filtered.map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
     });
   }, [minTiers]);
 
   // Update specific tier
-  const updateTier = useCallback((tierId: string, updates: Partial<DealTier>) => {
+  const updateTier = useCallback((tierNumber: number, updates: Partial<DealTier>) => {
     setTiers(prev => prev.map(tier => 
-      tier.id === tierId 
+      tier.tierNumber === tierNumber 
         ? { ...tier, ...updates }
         : tier
     ));
@@ -85,12 +93,12 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   // Update tier with revenue-based calculations
   const updateTierWithCalculations = useCallback((
-    tierId: string, 
+    tierNumber: number, 
     updates: Partial<DealTier>,
     annualRevenue?: number
   ) => {
     setTiers(prev => prev.map(tier => {
-      if (tier.id !== tierId) return tier;
+      if (tier.tierNumber !== tierNumber) return tier;
 
       const updatedTier = { ...tier, ...updates };
 
@@ -119,13 +127,15 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       setTiers(initialTiers);
     } else {
       setTiers([{
-        id: crypto.randomUUID(),
-        tierName: 'Tier 1',
-        minimumCommit: 0,
-        incentiveType: 'rebate',
+        tierNumber: 1,
+        annualRevenue: 0,
+        annualGrossMargin: 0,
+        annualGrossMarginPercent: 35,
         incentivePercentage: 0,
+        incentiveNotes: "",
+        incentiveType: "rebate",
+        incentiveThreshold: 0,
         incentiveAmount: 0,
-        incentiveNotes: ''
       }]);
     }
   }, [initialTiers]);
@@ -135,53 +145,41 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     const errors: TierValidationError[] = [];
 
     tiers.forEach(tier => {
-      // Required field validation
-      if (!tier.tierName || tier.tierName.trim() === '') {
+      // Validate annual revenue
+      if (tier.annualRevenue !== undefined && tier.annualRevenue < 0) {
         errors.push({
-          tierId: tier.id,
-          field: 'tierName',
-          message: 'Tier name is required'
+          tierNumber: tier.tierNumber,
+          field: 'annualRevenue',
+          message: 'Annual revenue cannot be negative'
         });
       }
 
-      if (tier.minimumCommit < 0) {
+      // Validate incentive percentage
+      if (tier.incentivePercentage !== undefined && (tier.incentivePercentage < 0 || tier.incentivePercentage > 100)) {
         errors.push({
-          tierId: tier.id,
-          field: 'minimumCommit',
-          message: 'Minimum commit cannot be negative'
-        });
-      }
-
-      if (tier.incentivePercentage < 0 || tier.incentivePercentage > 100) {
-        errors.push({
-          tierId: tier.id,
+          tierNumber: tier.tierNumber,
           field: 'incentivePercentage',
           message: 'Incentive percentage must be between 0 and 100'
         });
       }
 
-      if (tier.incentiveAmount < 0) {
+      // Validate incentive amount
+      if (tier.incentiveAmount !== undefined && tier.incentiveAmount < 0) {
         errors.push({
-          tierId: tier.id,
+          tierNumber: tier.tierNumber,
           field: 'incentiveAmount',
           message: 'Incentive amount cannot be negative'
         });
       }
-    });
 
-    // Check for duplicate tier names
-    const tierNames = tiers.map(t => t.tierName.toLowerCase());
-    const duplicateNames = tierNames.filter((name, index) => tierNames.indexOf(name) !== index);
-    
-    duplicateNames.forEach(name => {
-      const duplicateTiers = tiers.filter(t => t.tierName.toLowerCase() === name);
-      duplicateTiers.forEach(tier => {
+      // Validate gross margin percent
+      if (tier.annualGrossMarginPercent !== undefined && (tier.annualGrossMarginPercent < 0 || tier.annualGrossMarginPercent > 100)) {
         errors.push({
-          tierId: tier.id,
-          field: 'tierName',
-          message: 'Tier names must be unique'
+          tierNumber: tier.tierNumber,
+          field: 'annualGrossMarginPercent',
+          message: 'Gross margin percentage must be between 0 and 100'
         });
-      });
+      }
     });
 
     return errors;
@@ -192,11 +190,22 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     return tiers.reduce((sum, tier) => sum + (tier.incentiveAmount || 0), 0);
   }, [tiers]);
 
+  const totalAnnualRevenue = useMemo(() => {
+    return tiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0);
+  }, [tiers]);
+
   const averageIncentivePercentage = useMemo(() => {
-    const validPercentages = tiers.filter(t => t.incentivePercentage > 0);
+    const validPercentages = tiers.filter(t => (t.incentivePercentage || 0) > 0);
     if (validPercentages.length === 0) return 0;
     
-    return validPercentages.reduce((sum, tier) => sum + tier.incentivePercentage, 0) / validPercentages.length;
+    return validPercentages.reduce((sum, tier) => sum + (tier.incentivePercentage || 0), 0) / validPercentages.length;
+  }, [tiers]);
+
+  const averageGrossMarginPercent = useMemo(() => {
+    const validMargins = tiers.filter(t => (t.annualGrossMarginPercent || 0) > 0);
+    if (validMargins.length === 0) return 0;
+    
+    return validMargins.reduce((sum, tier) => sum + (tier.annualGrossMarginPercent || 0), 0) / validMargins.length;
   }, [tiers]);
 
   const isValid = validationErrors.length === 0;
@@ -218,7 +227,9 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     
     // Computed
     totalIncentiveAmount,
+    totalAnnualRevenue,
     averageIncentivePercentage,
+    averageGrossMarginPercent,
     isValid,
     canAddTier,
     canRemoveTier,

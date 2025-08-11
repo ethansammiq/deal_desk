@@ -24,14 +24,14 @@ import {
 
 interface DealTierData {
   tierNumber: number;
-  annualRevenue?: number | undefined;
-  annualGrossMargin?: number | undefined;
-  annualGrossMarginPercent?: number | undefined;
-  incentivePercentage?: number | undefined;
-  incentiveNotes: string;
-  incentiveType: "rebate";
-  incentiveThreshold?: number | undefined;
-  incentiveAmount?: number | undefined;
+  annualRevenue?: number;
+  annualGrossMargin?: number;
+  annualGrossMarginPercent?: number;
+  incentivePercentage?: number;
+  incentiveNotes?: string;
+  incentiveType?: "rebate" | "discount" | "bonus" | "other";
+  incentiveThreshold?: number;
+  incentiveAmount?: number;
 }
 
 interface TierConfigurationPanelProps {

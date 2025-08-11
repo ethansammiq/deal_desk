@@ -93,7 +93,7 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
-// Removed useDealTiers import - using simple state management
+import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 // Simplified deal schema with only essential fields
@@ -264,18 +264,15 @@ export default function SubmitDeal() {
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
   
-  // State for deal tiers (simplified - using direct state instead of complex hook)
-  const [dealTiers, setDealTiers] = useState<DealTierData[]>([{
-    tierNumber: 1,
-    annualRevenue: 0,
-    annualGrossMargin: 0,
-    annualGrossMarginPercent: 35,
-    incentivePercentage: 0,
-    incentiveNotes: "",
-    incentiveType: "rebate",
-    incentiveThreshold: 0,
-    incentiveAmount: 0,
-  }]);
+  // Unified tier management using useDealTiers hook
+  const tierManager = useDealTiers({
+    maxTiers: 5,
+    minTiers: 1
+  });
+  
+  // Use tierManager.tiers as dealTiers for backward compatibility
+  const dealTiers = tierManager.tiers;
+  const setDealTiers = tierManager.updateAllTiers;
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -734,7 +731,7 @@ export default function SubmitDeal() {
       annualRevenue: data.annualRevenue || 0,
       annualGrossMargin: data.annualGrossMargin || 35,
       // Only include dealTiers if the structure is tiered
-      ...(dealStructureType === "tiered" ? { dealTiers: getDealTiers() } : {}),
+      ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),
       // Include selected incentives
       selectedIncentives,
       // Include tier-specific incentives
@@ -1466,19 +1463,15 @@ export default function SubmitDeal() {
                         type="button"
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
-                          const newTierNumber = dealTiers.length + 1;
-                          const newTier: DealTierData = {
-                            tierNumber: newTierNumber,
-                            annualRevenue: 0,
-                            annualGrossMargin: 0,
-                            annualGrossMarginPercent: 35,
-                            incentivePercentage: 0,
-                            incentiveNotes: "",
-                            incentiveType: "rebate",
-                            incentiveThreshold: 0,
-                            incentiveAmount: 0,
-                          };
-                          setDealTiers([...dealTiers, newTier]);
+                          try {
+                            tierManager.addTier();
+                          } catch (error: any) {
+                            toast({
+                              title: "Cannot Add Tier",
+                              description: error.message || "Maximum tiers reached",
+                              variant: "destructive",
+                            });
+                          }
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />

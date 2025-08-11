@@ -142,15 +142,18 @@ export function ValueStructureSection({
           
           <IncentiveSelector
             selectedIncentives={selectedIncentives}
-            onIncentiveChange={setSelectedIncentives}
+            onChange={setSelectedIncentives}
+            dealTiers={dealTiers}
             showAddForm={showAddIncentiveForm}
-            onToggleAddForm={setShowAddIncentiveForm}
           />
           
           <TierSpecificIncentives
-            dealTiers={dealTiers}
-            tierIncentives={tierIncentives}
-            onTierIncentiveChange={setTierIncentives}
+            dealTiers={dealTiers.map(tier => ({
+              ...tier,
+              annualRevenue: tier.annualRevenue || 0
+            }))}
+            incentives={tierIncentives}
+            onChange={setTierIncentives}
           />
         </div>
       )}
