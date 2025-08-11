@@ -155,6 +155,9 @@ export function useDealFormValidation(
 
   // Validate individual step
   const validateStep = useCallback((stepNumber: number): StepValidationResult => {
+    console.log(`🔍 validateStep called for step ${stepNumber}`);
+    const allFormValues = form.getValues();
+    console.log(`🔍 Current form values:`, allFormValues);
     const step = formSteps.find(s => s.id === stepNumber);
     if (!step) {
       return { isValid: false, errors: ['Invalid step'], missingFields: [] };
@@ -311,8 +314,22 @@ export function useDealFormValidation(
   // Navigate to next step
   const goToNextStep = useCallback((): boolean => {
     const nextStep = currentStep + 1;
-    return goToStep(nextStep);
-  }, [currentStep, goToStep]);
+    if (nextStep > formSteps.length) return false;
+    
+    // Force fresh validation bypassing stale cache
+    console.log("🚀 goToNextStep: Performing fresh validation for step", currentStep);
+    const freshValidation = validateStep(currentStep);
+    console.log("🚀 Fresh validation result:", freshValidation);
+    
+    if (!freshValidation.isValid) {
+      console.log("🚀 Fresh validation failed, blocking navigation");
+      return false;
+    }
+    
+    setCurrentStep(nextStep);
+    setVisitedSteps(prev => new Set([...prev, nextStep]));
+    return true;
+  }, [currentStep, validateStep, formSteps.length]);
 
   // Navigate to previous step
   const goToPreviousStep = useCallback((): boolean => {
