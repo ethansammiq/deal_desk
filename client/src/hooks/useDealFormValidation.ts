@@ -197,9 +197,16 @@ export function useDealFormValidation(
       }
 
       // Regular field validation - value already retrieved above
-      if (value === undefined || value === null || 
+      const isEmpty = value === undefined || value === null || 
           (typeof value === 'string' && value.trim() === '') ||
-          (typeof value === 'number' && isNaN(value))) {
+          (typeof value === 'number' && isNaN(value));
+          
+      // Debug logging for Business Context fields
+      if (['growthOpportunityMIQ', 'growthOpportunityClient', 'clientAsks'].includes(fieldNameStr)) {
+        console.log(`🔍 Validating ${fieldNameStr}:`, { value, isEmpty, type: typeof value });
+      }
+      
+      if (isEmpty) {
         missingFields.push(fieldNameStr);
         
         // Generate human-readable error message
