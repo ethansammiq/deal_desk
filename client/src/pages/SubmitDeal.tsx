@@ -586,13 +586,22 @@ export default function SubmitDeal() {
     };
 
     updateRegionData();
-  }, [form, salesChannel, agencies, advertisers]);
+  }, [salesChannel, agencies, advertisers]);
 
   // ✅ MIGRATED: Calculate real-time financial impact using tierManager.tiers
   useEffect(() => {
+    // Get fresh values from form without causing re-renders
+    const getFormData = () => {
+      const startDateStr = form.getValues("termStartDate") as string;
+      const endDateStr = form.getValues("termEndDate") as string;
+      const advertiserName = form.getValues("advertiserName") as string;
+      const agencyName = form.getValues("agencyName") as string;
+      return { startDateStr, endDateStr, advertiserName, agencyName };
+    };
+    
+    const { startDateStr, endDateStr, advertiserName, agencyName } = getFormData();
+    
     // Calculate contract term from ISO 8601 date strings
-    const startDateStr = form.getValues("termStartDate") as string;
-    const endDateStr = form.getValues("termEndDate") as string;
     
     let contractTerm = 12; // Default to 12 months
     if (startDateStr && endDateStr) {
@@ -601,9 +610,7 @@ export default function SubmitDeal() {
       contractTerm = Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()));
     }
 
-    // Get advertiser/agency to find previous year revenue
-    const advertiserName = form.getValues("advertiserName") as string;
-    const agencyName = form.getValues("agencyName") as string;
+    // Use the form data from above
 
     // Find the previous year revenue for YoY calculations
     let previousYearRevenue = 0;
@@ -646,7 +653,7 @@ export default function SubmitDeal() {
 
     // Update the financial summary state
     setFinancialSummary(summary);
-  }, [tierManager.tiers, form, salesChannel, advertisers, agencies]);
+  }, [tierManager.tiers, salesChannel, advertisers, agencies]);
 
   // ✅ MIGRATED: Form navigation now handled by formValidation hook
   // Legacy functions replaced with hook methods:
