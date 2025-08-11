@@ -109,15 +109,7 @@ export function ValueStructureSection({
             marginTooltip="Expected gross margin percentage"
           />
 
-          {/* Incentives for Flat Commit */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Deal Incentives</h3>
-            <IncentiveSelector
-              selectedIncentives={selectedIncentives}
-              dealTiers={[{ tierNumber: 1, annualRevenue: 0 }]}
-              onChange={setSelectedIncentives}
-            />
-          </div>
+
         </div>
       )}
 
