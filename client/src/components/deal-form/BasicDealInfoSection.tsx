@@ -1,18 +1,11 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
-import {
-  FormFieldWithTooltip,
-  FormSelectField,
-  ConditionalFieldGroup,
-  FinancialInputGroup,
-  DateRangeInput,
-  REGION_OPTIONS,
-  SALES_CHANNEL_OPTIONS,
-  DEAL_TYPE_OPTIONS,
-  DEAL_STRUCTURE_OPTIONS,
-} from "@/components/ui/form-components";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
 import {
   FormField,
   FormItem,
@@ -28,22 +21,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-// Type this component to accept any valid form structure
-type BasicDealInfoFormValues = any;
+// Interface definitions matching the original form structure
+interface BasicDealInfoFormValues {
+  region: string;
+  salesChannel: string;
+  advertiserName?: string;
+  agencyName?: string;
+  dealType: string;
+  dealStructure: string;
+  contractTermMonths?: string;
+  termStartDate?: Date | null;
+  termEndDate?: Date | null;
+  businessSummary: string;
+}
 
-interface AdvertiserData {
-  id: number;
+interface AgencyData {
+  id: string;
   name: string;
+  type: string;
+  tier?: string;
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
 }
 
-interface AgencyData {
-  id: number;
+interface AdvertiserData {
+  id: string;
   name: string;
-  type: string;
+  tier?: string;
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
@@ -56,6 +63,7 @@ interface BasicDealInfoSectionProps {
   setDealStructure: (value: "tiered" | "flat_commit" | "") => void;
   agencies: AgencyData[];
   advertisers: AdvertiserData[];
+  nextStep: () => void;
 }
 
 export function BasicDealInfoSection({
@@ -65,76 +73,87 @@ export function BasicDealInfoSection({
   setDealStructure,
   agencies,
   advertisers,
+  nextStep,
 }: BasicDealInfoSectionProps) {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <FormSectionHeader
-          title="Basic Deal Information"
-          description="Provide the basic details about this commercial deal"
-        />
+    <CardContent className="p-6">
+      <FormSectionHeader
+        title="Basic Deal Information"
+        description="Provide the basic details about this commercial deal"
+      />
 
-        <div className="space-y-6">
-          {/* Region and Sales Channel using shared components */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormSelectField
-              form={form}
-              name="region"
-              label="Region"
-              placeholder="Select your region"
-              description="Your geographical sales region"
-              tooltip="Choose the region where this deal will be executed"
-              options={REGION_OPTIONS}
-              required
-            />
+      <div className="space-y-6">
+        {/* Region and Sales Channel at the top */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="region"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Region <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="northeast">Northeast</SelectItem>
+                    <SelectItem value="midwest">Midwest</SelectItem>
+                    <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
+                    <SelectItem value="south">South</SelectItem>
+                    <SelectItem value="west">West</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormSelectField
-              form={form}
-              name="salesChannel"
-              label="Sales Channel"
-              placeholder="Select sales channel"
-              description="How this deal will be structured from a sales perspective"
-              tooltip="Determines the approval workflow and client relationship structure"
-              options={SALES_CHANNEL_OPTIONS}
-              required
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="salesChannel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Sales Channel <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sales channel" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="client_direct">Client Direct</SelectItem>
+                    <SelectItem value="holding_company">Holding Company</SelectItem>
+                    <SelectItem value="independent_agency">Independent Agency</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-          {/* Deal Type and Structure using shared components */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <FormSelectField
-              form={form}
-              name="dealType"
-              label="Deal Type"
-              placeholder="Select deal type"
-              description="The strategic intent of this deal"
-              tooltip="Grow deals focus on expansion, Protect on retention, Custom on unique scenarios"
-              options={DEAL_TYPE_OPTIONS}
-              required
-            />
-
-            <FormSelectField
-              form={form}
-              name="dealStructure"
-              label="Deal Structure"
-              placeholder="Choose tiered or flat commit structure"
-              description="The revenue structure for this deal"
-              tooltip="Tiered structures have performance-based incentives, flat commits are fixed"
-              options={DEAL_STRUCTURE_OPTIONS}
-              onValueChange={(value) => setDealStructure(value as "tiered" | "flat_commit")}
-              required
-            />
-          </div>
-
-          {/* Conditional Client/Agency Selection using shared components */}
-          <ConditionalFieldGroup condition={salesChannel === "client_direct"}>
+        {/* Conditional fields based on sales channel */}
+        <div className="grid grid-cols-1 gap-6">
+          {salesChannel === "client_direct" && (
             <FormField
               control={form.control}
               name="advertiserName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Advertiser <span className="text-red-500">*</span>
+                    Advertiser Name <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -154,24 +173,22 @@ export function BasicDealInfoSection({
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    The advertiser for this direct client deal
+                    Historical data will be loaded automatically when selected
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </ConditionalFieldGroup>
+          )}
 
-          <ConditionalFieldGroup 
-            condition={salesChannel === "holding_company" || salesChannel === "independent_agency"}
-          >
+          {(salesChannel === "holding_company" || salesChannel === "independent_agency") && (
             <FormField
               control={form.control}
               name="agencyName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Agency <span className="text-red-500">*</span>
+                    Agency Name <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -205,46 +222,287 @@ export function BasicDealInfoSection({
                 </FormItem>
               )}
             />
-          </ConditionalFieldGroup>
+          )}
+        </div>
 
-          {/* Date Range using shared component */}
-          <DateRangeInput
-            form={form}
-            startDateFieldName="termStartDate"
-            endDateFieldName="termEndDate"
-          />
+        {/* Deal Type as card-style selection */}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="dealType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal Type <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Deal Type Cards */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "grow" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                      onClick={() => field.onChange("grow")}
+                    >
+                      <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-md flex items-center space-x-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                          </svg>
+                          <span>Grow</span>
+                        </CardTitle>
+                        <CardDescription>20%+ YOY Growth</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-slate-600">
+                          For existing clients with strong growth potential. Focuses on exceeding 20% year-over-year revenue growth through expanded product usage or new business units.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-          {/* Financial Information using shared component */}
-          <FinancialInputGroup
-            form={form}
-            revenueFieldName="annualRevenue"
-            marginFieldName="annualGrossMargin"
-          />
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "protect" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                      onClick={() => field.onChange("protect")}
+                    >
+                      <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-md flex items-center space-x-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                          </svg>
+                          <span>Protect</span>
+                        </CardTitle>
+                        <CardDescription>Large Account Retention</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-slate-600">
+                          Designed for strategic account retention, especially for large enterprise clients. Focuses on maintaining current revenue levels while ensuring long-term partnership stability.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-          {/* Business Summary using shared component */}
-          <FormFieldWithTooltip
-            form={form}
-            name="businessSummary"
-            label="Business Summary"
-            type="textarea"
-            placeholder="Provide a brief summary of the business case for this deal..."
-            description="Describe the strategic rationale and business value of this deal"
-            tooltip="Include competitive landscape, market opportunity, and expected business outcomes"
-            required
-          />
-
-          {/* Contact Email using shared component */}
-          <FormFieldWithTooltip
-            form={form}
-            name="email"
-            label="Contact Email"
-            type="email"
-            placeholder="your.email@company.com"
-            description="Contact email for questions about this deal"
-            tooltip="This email will be used for approval notifications and follow-up questions"
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "custom" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
+                      onClick={() => field.onChange("custom")}
+                    >
+                      <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-md flex items-center space-x-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                          <span>Custom</span>
+                        </CardTitle>
+                        <CardDescription>Special Requirements</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-slate-600">
+                          For specialized deals requiring custom implementation, non-standard terms, or unique technical requirements. Typically used for strategic partnerships and innovative projects.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Deal Structure */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="dealStructure"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal Structure <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setDealStructure(value as "tiered" | "flat_commit" | "");
+                  }}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose tiered or flat commit structure" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                    <SelectItem value="flat_commit">Flat Commit</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  The revenue structure for this deal
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="contractTermMonths"
+            render={({ field }) => {
+              // Auto-calculate contract term when dates change
+              const startDate = form.watch("termStartDate");
+              const endDate = form.watch("termEndDate");
+              
+              React.useEffect(() => {
+                if (startDate && endDate && startDate < endDate) {
+                  const start = new Date(startDate);
+                  const end = new Date(endDate);
+                  const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                  if (monthsDiff !== parseInt(field.value || "0")) {
+                    field.onChange(monthsDiff.toString());
+                  }
+                }
+              }, [startDate, endDate, field]);
+
+              return (
+                <FormItem>
+                  <FormLabel>
+                    Contract Term (Months) <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="14"
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const months = parseInt(e.target.value) || 0;
+                        field.onChange(e.target.value);
+                        // Auto-calculate end date based on start date + months
+                        const startDate = form.getValues("termStartDate");
+                        if (startDate && months > 0) {
+                          const endDate = new Date(startDate);
+                          endDate.setMonth(endDate.getMonth() + months);
+                          form.setValue("termEndDate", endDate);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Length of the contract in months (auto-calculated from dates)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        </div>
+
+        {/* Date Range Selection */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="termStartDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal Start Date <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : null;
+                      field.onChange(date);
+                      
+                      // Auto-update end date if contract term is set
+                      const contractTermMonths = parseInt(form.getValues("contractTermMonths") || "0");
+                      if (date && contractTermMonths > 0) {
+                        const endDate = new Date(date);
+                        endDate.setMonth(endDate.getMonth() + contractTermMonths);
+                        form.setValue("termEndDate", endDate);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  When the deal term begins
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="termEndDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal End Date <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : null;
+                      field.onChange(date);
+                      
+                      // Auto-update contract term when end date changes
+                      const startDate = form.getValues("termStartDate");
+                      if (startDate && date && startDate < date) {
+                        const start = new Date(startDate);
+                        const end = new Date(date);
+                        const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                        form.setValue("contractTermMonths", monthsDiff.toString());
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  When the deal term ends
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Business Summary */}
+        <FormField
+          control={form.control}
+          name="businessSummary"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Business Summary <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Briefly describe the deal, its objectives, and any special considerations"
+                  className="min-h-[100px]"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormDescription>
+                Briefly describe the business opportunity, growth potential, and any special considerations.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Navigation Button */}
+        <div className="flex justify-end pt-4">
+          <Button
+            type="button"
+            onClick={nextStep}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Next: Value Structure
+          </Button>
+        </div>
+      </div>
+    </CardContent>
   );
 }
