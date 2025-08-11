@@ -337,7 +337,7 @@ export default function SubmitDeal() {
         aiAnalysis.triggerAnalysis(dealData);
       }
     }
-  }, [formStep, dealStructureType, form.watch("dealName"), form.watch("salesChannel"), form.watch("region"), form.watch("annualRevenue"), form.watch("termStartDate"), form.watch("termEndDate"), form.watch("businessSummary")]);
+  }, [formStep, dealStructureType, aiAnalysis]);
 
   // Financial calculation helper functions - now using extracted service
 
@@ -625,16 +625,16 @@ export default function SubmitDeal() {
     }
 
     // Convert tierManager.tiers to legacy format for calculateDealFinancialSummary
-    const legacyTiers = tierManager.tiers.map(tier => ({
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualRevenue ? tier.annualRevenue * (tier.annualGrossMarginPercent || 35) / 100 : undefined,
-      annualGrossMarginPercent: tier.annualGrossMarginPercent,
-      incentivePercentage: tier.incentivePercentage,
+    const legacyTiers = tierManager.tiers.map((tier, index) => ({
+      tierNumber: index + 1, // Use index instead of tierNumber
+      annualRevenue: tier.minimumCommit || 0,
+      annualGrossMargin: tier.minimumCommit ? tier.minimumCommit * (tier.incentivePercentage || 35) / 100 : 0,
+      annualGrossMarginPercent: tier.incentivePercentage || 35,
+      incentivePercentage: tier.incentivePercentage || 0,
       incentiveNotes: tier.incentiveNotes || "",
       incentiveType: tier.incentiveType || "rebate" as const,
-      incentiveThreshold: tier.incentiveThreshold,
-      incentiveAmount: tier.incentiveAmount,
+      incentiveThreshold: tier.minimumCommit || 0,
+      incentiveAmount: tier.incentiveAmount || 0,
     }));
 
     // Calculate financial summary using converted tiers
@@ -816,7 +816,7 @@ export default function SubmitDeal() {
           if (step === 0) {
             prevStep();
           } else if (step > formStep) {
-            formValidation.nextStep(); // Use hook's navigation
+            formValidation.goToNextStep(); // Use hook's navigation
           } else {
             formValidation.goToStep(step + 1); // Convert to 1-based indexing for hook
           }
@@ -1609,7 +1609,7 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser.previousYearRevenue
+                                      advertiser.previousYearRevenue !== undefined
                                     ) {
                                       previousYearRevenue =
                                         advertiser.previousYearRevenue;
@@ -1622,7 +1622,7 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearRevenue) {
+                                    if (agency && agency.previousYearRevenue !== undefined) {
                                       previousYearRevenue =
                                         agency.previousYearRevenue;
                                     }
@@ -1693,7 +1693,7 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser.previousYearMargin
+                                      advertiser.previousYearMargin !== undefined
                                     ) {
                                       previousYearMargin =
                                         advertiser.previousYearMargin;
@@ -1706,7 +1706,7 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearMargin) {
+                                    if (agency && agency.previousYearMargin !== undefined) {
                                       previousYearMargin =
                                         agency.previousYearMargin;
                                     }
@@ -1743,7 +1743,7 @@ export default function SubmitDeal() {
                                         ].annualGrossMarginPercent = e.target
                                           .value
                                           ? parseFloat(e.target.value)
-                                          : undefined;
+                                          : 0;
                                         // Also update the gross margin value based on percentage and revenue
                                         const percent = e.target.value
                                           ? parseFloat(e.target.value) / 100
