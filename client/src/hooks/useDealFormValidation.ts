@@ -168,14 +168,21 @@ export function useDealFormValidation(
     const errors: string[] = [];
     const missingFields: string[] = [];
 
+    // Debug logging for step validation
+    console.log(`🔍 Validating step ${stepNumber}:`, step.title);
+    console.log(`📋 Required fields:`, step.fields);
+
     // Check required fields for this step
     for (const fieldName of step.fields) {
       // Handle conditional fields
       const fieldNameStr = String(fieldName);
       
+      // Debug: log the field being checked
+      const value = form.getValues(fieldNameStr);
+      console.log(`🔍 Checking field '${fieldNameStr}':`, value);
+      
       if (fieldNameStr === 'advertiserName') {
         if (salesChannel === 'client_direct') {
-          const value = form.getValues(fieldName as keyof DealFormData);
           if (!value || (typeof value === 'string' && value.trim() === '')) {
             missingFields.push(fieldNameStr);
             errors.push('Advertiser name is required for client direct deals');
@@ -186,7 +193,6 @@ export function useDealFormValidation(
 
       if (fieldNameStr === 'agencyName') {
         if (salesChannel === 'holding_company' || salesChannel === 'independent_agency') {
-          const value = form.getValues(fieldName as keyof DealFormData);
           if (!value || (typeof value === 'string' && value.trim() === '')) {
             missingFields.push(fieldNameStr);
             errors.push('Agency name is required for agency deals');
@@ -195,8 +201,7 @@ export function useDealFormValidation(
         continue;
       }
 
-      // Regular field validation
-      const value = form.getValues(fieldName as keyof DealFormData);
+      // Regular field validation - value already retrieved above
       if (value === undefined || value === null || 
           (typeof value === 'string' && value.trim() === '') ||
           (typeof value === 'number' && isNaN(value))) {
