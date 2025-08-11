@@ -81,6 +81,7 @@ export function useDealCalculations(
     getPreviousYearValue: calculationService.getPreviousYearValue.bind(calculationService),
     getPreviousYearMargin: calculationService.getPreviousYearMargin.bind(calculationService),
     getPreviousYearGrossProfit: calculationService.getPreviousYearGrossProfit.bind(calculationService),
+    getPreviousYearIncentiveCost: calculationService.getPreviousYearIncentiveCost.bind(calculationService),
     calculateTierIncentiveCost: calculationService.calculateTierIncentiveCost.bind(calculationService),
     calculateGrossMarginGrowthRate: calculationService.calculateGrossMarginGrowthRate.bind(calculationService),
     calculateProfitGrowthRate: calculationService.calculateProfitGrowthRate.bind(calculationService),

@@ -2153,7 +2153,7 @@ export default function SubmitDeal() {
                                   tier.tierNumber,
                                 );
                                 const previousCost =
-                                  dealCalculations.calculationService.getPreviousYearIncentiveCost();
+                                  dealCalculations.getPreviousYearIncentiveCost();
                                 const growthRate =
                                   previousCost > 0
                                     ? currentCost / previousCost - 1
@@ -3422,7 +3422,7 @@ export default function SubmitDeal() {
                                     .filter((tier) => tier.annualRevenue)
                                     .map((tier) => {
                                       // Get previous year incentive cost
-                                      const previousYearCost = dealCalculations.calculationService.getPreviousYearIncentiveCost();
+                                      const previousYearCost = dealCalculations.getPreviousYearIncentiveCost();
                                       // Calculate current tier incentive cost
                                       const currentCost = calculateTierIncentiveCost(tier.tierNumber);
                                       // Calculate growth rate
