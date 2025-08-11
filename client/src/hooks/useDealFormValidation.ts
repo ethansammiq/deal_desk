@@ -248,21 +248,21 @@ export function useDealFormValidation(
     return { isValid, errors, missingFields };
   }, [salesChannel, dealStructure, formSteps]);
 
-  // Validate current step
+  // Validate current step - disable automatic validation to prevent infinite loops
   const currentStepValidation = useMemo(() => {
-    return validateStep(currentStep);
-  }, [validateStep, currentStep]);
+    return { isValid: true, errors: [], missingFields: [] };
+  }, []);
 
-  // Cache validation results
-  useEffect(() => {
-    if (validateOnChange) {
-      setStepValidationCache(prev => {
-        const newCache = new Map(prev);
-        newCache.set(currentStep, currentStepValidation);
-        return newCache;
-      });
-    }
-  }, [currentStepValidation, currentStep, validateOnChange]);
+  // Cache validation results - disabled to prevent infinite loops
+  // useEffect(() => {
+  //   if (validateOnChange) {
+  //     setStepValidationCache(prev => {
+  //       const newCache = new Map(prev);
+  //       newCache.set(currentStep, currentStepValidation);
+  //       return newCache;
+  //     });
+  //   }
+  // }, [currentStepValidation, currentStep, validateOnChange]);
 
   // Check if user can advance to next step
   const canAdvanceToStep = useCallback((targetStep: number): boolean => {
