@@ -163,14 +163,132 @@ export default function SubmitDeal() {
     setTierIncentives(incentives);
   };
 
+  // State to track selected agencies and advertisers for dropdowns
+  const [agencies, setAgencies] = useState<AgencyData[]>([]);
+  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+
+  // Initialize calculation service with current advertiser/agency data
+  const dealCalculations = useDealCalculations(advertisers, agencies);
+
+  // Type definitions for advertisers and agencies (simplified)
+  interface AdvertiserData {
+    id: number;
+    name: string;
+    region: string;
+    // Historical fields - maintained in interface for API compatibility
+    // but not used in the simplified UI implementation
+    previousYearRevenue?: number;
+    previousYearMargin?: number;
+  }
+
+  interface AgencyData {
+    id: number;
+    name: string;
+    type: string;
+    region: string;
+    // Historical fields - maintained in interface for API compatibility
+    // but not used in the simplified UI implementation
+    previousYearRevenue?: number;
+    previousYearMargin?: number;
+  }
+
+  interface DealTierData {
+    tierNumber: number;
+    annualRevenue?: number;
+    annualGrossMargin?: number;
+    annualGrossMarginPercent?: number;
+    incentivePercentage?: number;
+    incentiveNotes?: string;
+    incentiveType?: "rebate" | "discount" | "bonus" | "other";
+    incentiveThreshold?: number; // Revenue threshold to achieve this incentive
+    incentiveAmount?: number; // Monetary value of the incentive
+  }
+
+  // State for tiered deal structure
+  const [dealTiers, setDealTiers] = useState([
+    {
+      tierNumber: 1,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
+      incentiveNotes: "Base tier - no incentives",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined,
+    },
+    {
+      tierNumber: 2,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
+      incentiveNotes: "",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined,
+    },
+    {
+      tierNumber: 3,
+      annualRevenue: undefined as number | undefined,
+      annualGrossMargin: undefined as number | undefined,
+      annualGrossMarginPercent: undefined as number | undefined,
+      incentivePercentage: undefined as number | undefined,
+      incentiveNotes: "",
+      incentiveType: "rebate" as const,
+      incentiveThreshold: undefined as number | undefined,
+      incentiveAmount: undefined as number | undefined,
+    },
+  ]);
+
+  // State for selected incentives from the hierarchical selector
+  const [selectedIncentives, setSelectedIncentives] = useState<
+    SelectedIncentive[]
+  >([]);
+
+  // State for tier-specific incentives (volume discount, rebates, etc.)
+  const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>([]);
+  const [showAddIncentiveForm, setShowAddIncentiveForm] =
+    useState<boolean>(false);
+
   // Initialize the form
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
+      // Basic deal information
+      dealType: "grow",
+
+      // Business information
       businessSummary: "",
-      annualRevenue: undefined,
-      annualGrossMargin: undefined,
+
+      // Growth opportunity fields (partial move from RequestSupport)
+      growthOpportunityMIQ: "",
+      growthOpportunityClient: "",
+      clientAsks: "",
+
+      // Client/Agency information
+      salesChannel: undefined,
+      region: undefined,
+      advertiserName: "",
+      agencyName: "",
+
+      // Deal structure
+      dealStructure: undefined,
+
+      // Timeframe - ISO 8601 strings
+      termStartDate: new Date().toISOString().split('T')[0],
+      termEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+
+      // Financial data (simplified)
+      annualRevenue: 0,
+      annualGrossMargin: 0,
+
+      // Contact information
+      email: "",
+
+      // Status
       status: "submitted",
+      referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
     },
   });
 
@@ -205,7 +323,7 @@ export default function SubmitDeal() {
   }, [formStep, dealStructureType, form.watch("dealName"), form.watch("salesChannel"), form.watch("region"), form.watch("annualRevenue"), form.watch("termStartDate"), form.watch("termEndDate"), form.watch("businessSummary")]);
 
   // Financial calculation helper functions - now using extracted service
-  
+
   // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
     const advertiserName = String(form.watch("advertiserName") || "");
@@ -434,145 +552,11 @@ export default function SubmitDeal() {
     return currentIncentiveCost / previousIncentiveCost - 1;
   };
 
-  // State to track selected agencies and advertisers for dropdowns
-  const [agencies, setAgencies] = useState<AgencyData[]>([]);
-  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
-
-  // Initialize calculation service with current advertiser/agency data
-  const dealCalculations = useDealCalculations(advertisers, agencies);
-
-  // Removed previous year data interface - no longer needed in simplified UI
-
-  interface DealTierData {
-    tierNumber: number;
-    annualRevenue?: number;
-    annualGrossMargin?: number;
-    annualGrossMarginPercent?: number;
-    incentivePercentage?: number;
-    incentiveNotes?: string;
-    incentiveType?: "rebate" | "discount" | "bonus" | "other";
-    incentiveThreshold?: number; // Revenue threshold to achieve this incentive
-    incentiveAmount?: number; // Monetary value of the incentive
-  }
-
-  // Type definitions for advertisers and agencies (simplified)
-  interface AdvertiserData {
-    id: number;
-    name: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
-
-  interface AgencyData {
-    id: number;
-    name: string;
-    type: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
-
-  // Removed previous year data state as it's no longer needed for simplified UI
-
-  // State for tiered deal structure
-  const [dealTiers, setDealTiers] = useState([
-    {
-      tierNumber: 1,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "Base tier - no incentives",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-    {
-      tierNumber: 2,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-    {
-      tierNumber: 3,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-  ]);
-
-  // State for selected incentives from the hierarchical selector
-  const [selectedIncentives, setSelectedIncentives] = useState<
-    SelectedIncentive[]
-  >([]);
-
-  // State for tier-specific incentives (volume discount, rebates, etc.)
-  const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>([]);
-  const [showAddIncentiveForm, setShowAddIncentiveForm] =
-    useState<boolean>(false);
-
-  const form = useForm<any>({
-    resolver: zodResolver(dealFormSchema),
-    defaultValues: {
-      // Basic deal information
-      dealType: "grow",
-
-      // Business information
-      businessSummary: "",
-
-      // Growth opportunity fields (partial move from RequestSupport)
-      growthOpportunityMIQ: "",
-      growthOpportunityClient: "",
-      clientAsks: "",
-
-      // Client/Agency information
-      salesChannel: undefined,
-      region: undefined,
-      advertiserName: "",
-      agencyName: "",
-
-      // Deal structure
-      dealStructure: undefined,
-
-      // Timeframe - ISO 8601 strings
-      termStartDate: new Date().toISOString().split('T')[0],
-      termEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-
-      // Financial data (simplified)
-      annualRevenue: 0,
-      annualGrossMargin: 0,
-
-      // Contact information
-      email: "",
-
-      // Status
-      status: "submitted",
-      referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(
-        Math.random() * 1000,
-      )
-        .toString()
-        .padStart(3, "0")}`,
-    },
-    mode: "onChange",
-  });
-
-  // Create deal mutation
-  const createDeal = useMutation({
+  // Watch for salesChannel and dealStructure changes to handle conditional fields  
+  const salesChannel = watchTypedValue("salesChannel");
+  
+  // Mutation for submitting the deal
+  const submitDealMutation = useMutation({
     mutationFn: async (data: DealFormValues) => {
       console.log("Sending data to API:", data);
       return apiRequest("/api/deals", {
