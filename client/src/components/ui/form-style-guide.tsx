@@ -185,38 +185,38 @@ export function FormProgressTracker({
       <div className={FormStyles.progress.track}>
         {/* Progress Bar */}
         <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <React.Fragment key={step.id}>
-              {/* Step Circle */}
-              <div
-                onClick={() => onStepClick(step.id)}
-                className={cn(
-                  FormStyles.progress.step.base,
-                  currentStep === step.id || index < steps.findIndex(s => s.id === currentStep) 
-                    ? FormStyles.progress.step.active
-                    : FormStyles.progress.step.inactive
-                )}
-              >
-                {index + 1}
-              </div>
-              
-              {/* Connecting Line (except for the last step) */}
-              {index < steps.length - 1 && (
-                <div
-                  className={cn(
-                    FormStyles.progress.line.base,
-                    index < steps.findIndex(s => s.id === currentStep)
-                      ? FormStyles.progress.line.active
-                      : FormStyles.progress.line.inactive
-                  )}
-                  style={{ 
-                    left: `${10 + (index * (100 / (steps.length - 1)))}%`, 
-                    right: `${100 - (10 + ((index + 1) * (100 / (steps.length - 1))))}%`
-                  }}
-                ></div>
+          {steps.map((step, index) => [
+            // Step Circle
+            <div
+              key={`step-${step.id}`}
+              onClick={() => onStepClick(step.id)}
+              className={cn(
+                FormStyles.progress.step.base,
+                currentStep === step.id || index < steps.findIndex(s => s.id === currentStep) 
+                  ? FormStyles.progress.step.active
+                  : FormStyles.progress.step.inactive
               )}
-            </React.Fragment>
-          ))}
+            >
+              {index + 1}
+            </div>,
+            
+            // Connecting Line (except for the last step)
+            index < steps.length - 1 ? (
+              <div
+                key={`line-${step.id}`}
+                className={cn(
+                  FormStyles.progress.line.base,
+                  index < steps.findIndex(s => s.id === currentStep)
+                    ? FormStyles.progress.line.active
+                    : FormStyles.progress.line.inactive
+                )}
+                style={{ 
+                  left: `${10 + (index * (100 / (steps.length - 1)))}%`, 
+                  right: `${100 - (10 + ((index + 1) * (100 / (steps.length - 1))))}%`
+                }}
+              ></div>
+            ) : null
+          ]).flat().filter(Boolean)}
         </div>
         
         {/* Labels */}
