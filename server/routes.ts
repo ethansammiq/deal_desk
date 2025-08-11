@@ -1,7 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDealSchema } from "@shared/schema";
+import { insertDealSchema, insertDealScopingRequestSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
@@ -64,6 +64,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Deal scoping requests endpoint  
+  router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      console.log("Creating deal scoping request with data:", req.body);
+      
+      // Validate the request data against the schema
+      const validatedData = insertDealScopingRequestSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        console.error("Deal scoping request validation failed:", validatedData.error);
+        const errorMessage = fromZodError(validatedData.error);
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: errorMessage.message 
+        });
+      }
+      
+      // Create the deal scoping request in storage
+      const request = await storage.createDealScopingRequest(validatedData.data);
+      console.log("Deal scoping request created successfully:", request);
+      
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Failed to create deal scoping request:", error);
+      res.status(500).json({ message: "Failed to create deal scoping request" });
+    }
+  });
+
   router.post("/deals", async (req: Request, res: Response) => {
     try {
       // Extract dealTiers from request body if present
@@ -102,7 +130,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.status(201).json(newDeal);
+      // Trigger AI analysis for deal optimization recommendations
+      try {
+        const aiAnalysis = await analyzeDeal(newDeal);
+        console.log("AI analysis completed for deal:", newDeal.id);
+        
+        res.status(201).json({ 
+          deal: newDeal, 
+          aiAnalysis: {
+            recommendations: aiAnalysis.recommendations,
+            riskFactors: aiAnalysis.riskFactors,
+            confidence: aiAnalysis.confidence
+          }
+        });
+      } catch (aiError) {
+        console.warn("AI analysis failed, but deal was created:", aiError);
+        res.status(201).json({ deal: newDeal });
+      }
     } catch (error) {
       console.error("Error creating deal:", error);
       res.status(500).json({ message: "Failed to create deal" });

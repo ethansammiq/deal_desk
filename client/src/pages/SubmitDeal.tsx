@@ -165,20 +165,20 @@ export default function SubmitDeal() {
   
   // Helper functions that use the calculation service
   const getPreviousYearValue = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearMargin = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.getPreviousYearMargin(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearGrossProfit = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.getPreviousYearGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -187,8 +187,8 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedGrossProfit = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -197,14 +197,14 @@ export default function SubmitDeal() {
   };
 
   const getPreviousYearAdjustedProfit = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.getPreviousYearValue(salesChannel || "", advertiserName, agencyName);
   };
 
   const getPreviousYearClientValue = (): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     return dealCalculations.calculationService.getPreviousYearClientValue(salesChannel || "", advertiserName, agencyName);
   };
 
@@ -233,8 +233,8 @@ export default function SubmitDeal() {
 
   // Calculate gross margin growth rate using the service
   const calculateGrossMarginGrowthRate = (tier: DealTierData): number => {
-    const advertiserName = String(watchTypedValue("advertiserName") || "");
-    const agencyName = String(watchTypedValue("agencyName") || "");
+    const advertiserName = String(form.watch("advertiserName") || "");
+    const agencyName = String(form.watch("agencyName") || "");
     
     // Convert DealTierData to DealTier format expected by service
     const serviceTier = {
