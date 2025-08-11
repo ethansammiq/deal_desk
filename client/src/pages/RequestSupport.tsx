@@ -43,6 +43,7 @@ import { useLocation } from "wouter";
 import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
+import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 
 // Schema for deal scoping requests
 const dealScopingSchema = z
@@ -352,89 +353,9 @@ export default function RequestSupport() {
 
               <TabsContent
                 value="growth-opportunity"
-                className="space-y-6 pt-4"
+                className="space-y-0"
               >
-                <FormField
-                  control={form.control}
-                  name="requestType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Request Type <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select the type of assistance needed" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="scoping">Deal Scoping & Strategy</SelectItem>
-                          <SelectItem value="pricing">Pricing & Structure</SelectItem>
-                          <SelectItem value="technical">Technical Requirements</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        What type of assistance do you need with this deal?
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="growthAmbition"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        2025 Growth Ambition ($) <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1000000"
-                          placeholder="Enter amount (minimum $1M)"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Growth ambition must be at least $1M for partnership team review.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="businessContext"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Business Context <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Provide context about the opportunity, client needs, and what assistance you're seeking..."
-                          className="resize-none"
-                          rows={6}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Describe the business opportunity, client requirements, and the specific help you need from our partnership team.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <BusinessContextSection form={form} variant="requestSupport" />
               </TabsContent>
             </Tabs>
           </Form>
