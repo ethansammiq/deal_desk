@@ -149,8 +149,7 @@ export function useDealFormValidation(
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([1]));
   const [stepValidationCache, setStepValidationCache] = useState<Map<number, StepValidationResult>>(new Map());
 
-  // Watch form values for validation
-  const formValues = form.watch();
+  // Watch specific values to avoid infinite re-renders  
   const salesChannel = form.watch('salesChannel');
   const dealStructure = form.watch('dealStructure');
 
@@ -176,7 +175,7 @@ export function useDealFormValidation(
       
       if (fieldNameStr === 'advertiserName') {
         if (salesChannel === 'client_direct') {
-          const value = formValues[fieldName];
+          const value = form.getValues(fieldName as keyof DealFormData);
           if (!value || (typeof value === 'string' && value.trim() === '')) {
             missingFields.push(fieldNameStr);
             errors.push('Advertiser name is required for client direct deals');
@@ -187,7 +186,7 @@ export function useDealFormValidation(
 
       if (fieldNameStr === 'agencyName') {
         if (salesChannel === 'holding_company' || salesChannel === 'independent_agency') {
-          const value = formValues[fieldName];
+          const value = form.getValues(fieldName as keyof DealFormData);
           if (!value || (typeof value === 'string' && value.trim() === '')) {
             missingFields.push(fieldNameStr);
             errors.push('Agency name is required for agency deals');
@@ -197,7 +196,7 @@ export function useDealFormValidation(
       }
 
       // Regular field validation
-      const value = formValues[fieldName];
+      const value = form.getValues(fieldName as keyof DealFormData);
       if (value === undefined || value === null || 
           (typeof value === 'string' && value.trim() === '') ||
           (typeof value === 'number' && isNaN(value))) {
@@ -212,8 +211,8 @@ export function useDealFormValidation(
     // Additional business logic validation
     if (stepNumber === 1) {
       // Date validation
-      const startDate = formValues.termStartDate;
-      const endDate = formValues.termEndDate;
+      const startDate = form.getValues('termStartDate');
+      const endDate = form.getValues('termEndDate');
       
       if (startDate && endDate) {
         const start = new Date(startDate);
@@ -227,8 +226,8 @@ export function useDealFormValidation(
 
     if (stepNumber === 3) {
       // Revenue validation
-      const revenue = formValues.annualRevenue;
-      const margin = formValues.annualGrossMargin;
+      const revenue = form.getValues('annualRevenue');
+      const margin = form.getValues('annualGrossMargin');
       
       if (revenue && revenue <= 0) {
         errors.push('Annual revenue must be greater than 0');
@@ -241,7 +240,7 @@ export function useDealFormValidation(
 
     const isValid = errors.length === 0;
     return { isValid, errors, missingFields };
-  }, [formValues, salesChannel, dealStructure]);
+  }, [salesChannel, dealStructure, formSteps]);
 
   // Validate current step
   const currentStepValidation = useMemo(() => {

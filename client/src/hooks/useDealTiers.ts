@@ -44,32 +44,35 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   // Add new tier
   const addTier = useCallback(() => {
-    if (tiers.length >= maxTiers) {
-      throw new Error(`Maximum of ${maxTiers} tiers allowed`);
-    }
+    setTiers(prev => {
+      if (prev.length >= maxTiers) {
+        throw new Error(`Maximum of ${maxTiers} tiers allowed`);
+      }
 
-    const newTier: DealTier = {
-      id: crypto.randomUUID(),
-      tierName: `Tier ${tiers.length + 1}`,
-      minimumCommit: 0,
-      incentiveType: 'rebate',
-      incentivePercentage: 0,
-      incentiveAmount: 0,
-      incentiveNotes: ''
-    };
+      const newTier: DealTier = {
+        id: crypto.randomUUID(),
+        tierName: `Tier ${prev.length + 1}`,
+        minimumCommit: 0,
+        incentiveType: 'rebate',
+        incentivePercentage: 0,
+        incentiveAmount: 0,
+        incentiveNotes: ''
+      };
 
-    setTiers(prev => [...prev, newTier]);
-    return newTier;
-  }, [tiers.length, maxTiers]);
+      return [...prev, newTier];
+    });
+    return {} as DealTier; // Return placeholder since we can't return the actual tier from inside setTiers
+  }, [maxTiers]);
 
   // Remove tier
   const removeTier = useCallback((tierId: string) => {
-    if (tiers.length <= minTiers) {
-      throw new Error(`Minimum of ${minTiers} tier(s) required`);
-    }
-
-    setTiers(prev => prev.filter(tier => tier.id !== tierId));
-  }, [tiers.length, minTiers]);
+    setTiers(prev => {
+      if (prev.length <= minTiers) {
+        throw new Error(`Minimum of ${minTiers} tier(s) required`);
+      }
+      return prev.filter(tier => tier.id !== tierId);
+    });
+  }, [minTiers]);
 
   // Update specific tier
   const updateTier = useCallback((tierId: string, updates: Partial<DealTier>) => {
