@@ -1376,7 +1376,7 @@ export default function SubmitDeal() {
             {/* Step 1: Business Context */}
             {formStep === 1 && (
               <>
-                <BusinessContextSection form={form} />
+                <BusinessContextSection form={form} variant="submitDeal" />
                 <CardContent className="p-6 border-t">
                   <div className="flex justify-between">
                     <Button type="button" variant="outline" onClick={prevStep}>

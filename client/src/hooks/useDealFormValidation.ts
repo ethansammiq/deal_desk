@@ -171,6 +171,7 @@ export function useDealFormValidation(
     // Debug logging for step validation
     console.log(`🔍 Validating step ${stepNumber}:`, step.title);
     console.log(`📋 Required fields:`, step.fields);
+    console.log(`🔍 Form state snapshot:`, form.getValues());
 
     // Check required fields for this step
     for (const fieldName of step.fields) {
