@@ -404,7 +404,7 @@ export default function SubmitDeal() {
       annualGrossMarginPercent: tier.annualGrossMarginPercent
     };
     
-    return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, salesChannel || "", advertiserName, agencyName);
+    return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, String(salesChannel || ""), advertiserName, agencyName);
   };
 
   // Calculate gross profit growth rate (Tier specific gross profit / last year gross profit - 1)
@@ -552,8 +552,7 @@ export default function SubmitDeal() {
     return currentIncentiveCost / previousIncentiveCost - 1;
   };
 
-  // Watch for salesChannel and dealStructure changes to handle conditional fields  
-  const salesChannel = watchTypedValue("salesChannel");
+  // Watch for dealStructure changes to handle conditional fields
   
   // Mutation for submitting the deal
   const submitDealMutation = useMutation({
@@ -919,7 +918,7 @@ export default function SubmitDeal() {
       tierIncentives,
     };
 
-    createDeal.mutate(dealData);
+    submitDealMutation.mutate(dealData);
   }
 
   return (
@@ -990,7 +989,7 @@ export default function SubmitDeal() {
                       form={form}
                       agencies={agencies}
                       advertisers={advertisers}
-                      salesChannel={salesChannel}
+                      salesChannel={String(salesChannel || "")}
                       layout="grid"
                     />
                   </div>
@@ -1560,7 +1559,7 @@ export default function SubmitDeal() {
                   {dealStructureType === "tiered" ? (
                     <TierConfigurationPanel
                       dealTiers={dealTiers}
-                      setDealTiers={setDealTiers}
+                      setDealTiers={setDealTiers as any}
                       calculateTierIncentiveCost={calculateTierIncentiveCost}
                       calculateGrossMarginGrowthRate={calculateGrossMarginGrowthRate}
                       calculateTierGrossProfit={calculateTierGrossProfit}
@@ -4052,7 +4051,7 @@ export default function SubmitDeal() {
                   </Button>
                   <Button 
                     type="button" 
-                    disabled={createDeal.isPending}
+                    disabled={submitDealMutation.isPending}
                     onClick={() => {
                       console.log("Submit button clicked");
                       
@@ -4089,7 +4088,7 @@ export default function SubmitDeal() {
                       // Submit directly to the API
                       try {
                         console.log("Submitting deal data:", dealData);
-                        createDeal.mutate(dealData);
+                        submitDealMutation.mutate(dealData);
                         toast({
                           title: "Deal Submitted",
                           description: "Your deal has been submitted for approval",
@@ -4104,7 +4103,7 @@ export default function SubmitDeal() {
                       }
                     }}
                   >
-                    {createDeal.isPending
+                    {submitDealMutation.isPending
                       ? "Submitting..."
                       : "Submit Deal for Approval"}
                   </Button>
