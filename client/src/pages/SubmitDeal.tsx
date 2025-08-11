@@ -618,8 +618,8 @@ export default function SubmitDeal() {
   // Auto-populate region when selecting advertiser or agency
   useEffect(() => {
     const updateRegionData = async () => {
-      const advertiserName = form.watch("advertiserName");
-      const agencyName = form.watch("agencyName");
+      const advertiserName = form.getValues("advertiserName");
+      const agencyName = form.getValues("agencyName");
 
       if (salesChannel === "client_direct" && advertiserName) {
         const advertiser = advertisers.find(
@@ -662,14 +662,14 @@ export default function SubmitDeal() {
   // Calculate real-time financial impact based on changes to dealTiers
   useEffect(() => {
     // Calculate contract term from dates
-    const startDate = getTypedValue("termStartDate") as Date;
-    const endDate = getTypedValue("termEndDate") as Date;
+    const startDate = form.getValues("termStartDate") as Date;
+    const endDate = form.getValues("termEndDate") as Date;
     const contractTerm = startDate && endDate ? 
       Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
 
     // Get advertiser/agency to find previous year revenue
-    const advertiserName = getTypedValue("advertiserName") as string;
-    const agencyName = getTypedValue("agencyName") as string;
+    const advertiserName = form.getValues("advertiserName") as string;
+    const agencyName = form.getValues("agencyName") as string;
 
     // Find the previous year revenue for YoY calculations
     let previousYearRevenue = 0;
@@ -2513,7 +2513,7 @@ export default function SubmitDeal() {
                             </h4>
                             <div className="text-xl font-semibold text-slate-900">
                               {formatCurrency(
-                                Number(watchTypedValue("annualRevenue")) || 0,
+                                Number(form.watch("annualRevenue")) || 0,
                               )}
                             </div>
                           </div>
@@ -2523,10 +2523,10 @@ export default function SubmitDeal() {
                             </h4>
                             <div className="text-xl font-semibold text-slate-900">
                               {formatCurrency(
-                                ((Number(watchTypedValue("annualRevenue")) ||
+                                ((Number(form.watch("annualRevenue")) ||
                                   0) *
                                   (Number(
-                                    watchTypedValue("annualGrossMargin"),
+                                    form.watch("annualGrossMargin"),
                                   ) || 0)) /
                                   100,
                               )}
@@ -2538,9 +2538,9 @@ export default function SubmitDeal() {
                             </h4>
                             <div className="text-xl font-semibold text-slate-900">
                               {formatCurrency(
-                                (Number(watchTypedValue("annualRevenue")) ||
+                                (Number(form.watch("annualRevenue")) ||
                                   0) /
-                                  (Number(watchTypedValue("contractTerm")) ||
+                                  (Number(form.watch("contractTerm")) ||
                                     12),
                               )}
                             </div>
@@ -2626,7 +2626,7 @@ export default function SubmitDeal() {
                                         // Calculate incentive amount based on percentage and total revenue
                                         const annualRevenue =
                                           Number(
-                                            watchTypedValue("annualRevenue"),
+                                            form.watch("annualRevenue"),
                                           ) || 0;
                                         const percent =
                                           parseFloat(e.target.value) / 100;
@@ -2675,7 +2675,7 @@ export default function SubmitDeal() {
                                         // Calculate percentage if revenue is not zero
                                         const annualRevenue =
                                           Number(
-                                            watchTypedValue("annualRevenue"),
+                                            form.watch("annualRevenue"),
                                           ) || 0;
                                         if (annualRevenue > 0) {
                                           newTier.incentivePercentage =
@@ -2963,14 +2963,14 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               // Preview the auto-generated deal name
-                              const dealType = getTypedValue("dealType");
+                              const dealType = form.getValues("dealType");
                               const salesChannel =
-                                getTypedValue("salesChannel");
+                                form.getValues("salesChannel");
                               const termStartDate =
-                                getTypedValue("termStartDate");
-                              const termEndDate = getTypedValue("termEndDate");
+                                form.getValues("termStartDate");
+                              const termEndDate = form.getValues("termEndDate");
                               const dealStructure =
-                                getTypedValue("dealStructure");
+                                form.getValues("dealStructure");
 
                               if (
                                 !dealType ||
@@ -2986,18 +2986,18 @@ export default function SubmitDeal() {
                               let clientName = "";
                               if (
                                 salesChannel === "client_direct" &&
-                                getTypedValue("advertiserName")
+                                form.getValues("advertiserName")
                               ) {
                                 clientName = String(
-                                  getTypedValue("advertiserName"),
+                                  form.getValues("advertiserName"),
                                 );
                               } else if (
                                 (salesChannel === "holding_company" ||
                                   salesChannel === "independent_agency") &&
-                                getTypedValue("agencyName")
+                                form.getValues("agencyName")
                               ) {
                                 clientName = String(
-                                  getTypedValue("agencyName"),
+                                  form.getValues("agencyName"),
                                 );
                               }
 
@@ -3059,7 +3059,7 @@ export default function SubmitDeal() {
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
-                              const regionValue = getTypedValue("region");
+                              const regionValue = form.getValues("region");
                               console.log("Region value:", regionValue);
                               if (!regionValue) return "Not provided";
 
@@ -3090,7 +3090,7 @@ export default function SubmitDeal() {
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
-                              const dealTypeValue = getTypedValue("dealType");
+                              const dealTypeValue = form.getValues("dealType");
                               console.log("Deal Type value:", dealTypeValue);
                               if (!dealTypeValue) return "Not provided";
 
@@ -3118,7 +3118,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const salesChannelValue =
-                                getTypedValue("salesChannel");
+                                form.getValues("salesChannel");
                               console.log(
                                 "Sales Channel value:",
                                 salesChannelValue,
@@ -3149,11 +3149,11 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {salesChannel === "client_direct"
                               ? String(
-                                  getTypedValue("advertiserName") ||
+                                  form.getValues("advertiserName") ||
                                     "Not provided",
                                 )
                               : String(
-                                  getTypedValue("agencyName") || "Not provided",
+                                  form.getValues("agencyName") || "Not provided",
                                 )}
                           </dd>
                         </div>
@@ -3164,7 +3164,7 @@ export default function SubmitDeal() {
                           <dd className="mt-1 text-sm text-slate-900">
                             {(() => {
                               const dealStructureValue =
-                                getTypedValue("dealStructure");
+                                form.getValues("dealStructure");
                               console.log(
                                 "Deal Structure value:",
                                 dealStructureValue,
@@ -3190,8 +3190,8 @@ export default function SubmitDeal() {
                             Contract Term
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("contractTerm")
-                              ? `${getTypedValue("contractTerm")} months`
+                            {form.getValues("contractTerm")
+                              ? `${form.getValues("contractTerm")} months`
                               : "Not provided"}
                           </dd>
                         </div>
@@ -3200,8 +3200,8 @@ export default function SubmitDeal() {
                             Business Summary
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("businessSummary")
-                              ? String(getTypedValue("businessSummary"))
+                            {form.getValues("businessSummary")
+                              ? String(form.getValues("businessSummary"))
                               : "Not provided"}
                           </dd>
                         </div>
@@ -3223,8 +3223,8 @@ export default function SubmitDeal() {
                             Growth Opportunity (MIQ)
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("growthOpportunityMIQ")
-                              ? String(getTypedValue("growthOpportunityMIQ"))
+                            {form.getValues("growthOpportunityMIQ")
+                              ? String(form.getValues("growthOpportunityMIQ"))
                               : "Not provided"}
                           </dd>
                         </div>
@@ -3234,8 +3234,8 @@ export default function SubmitDeal() {
                             Growth Opportunity (Client)
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("growthOpportunityClient")
-                              ? String(getTypedValue("growthOpportunityClient"))
+                            {form.getValues("growthOpportunityClient")
+                              ? String(form.getValues("growthOpportunityClient"))
                               : "Not provided"}
                           </dd>
                         </div>
@@ -3244,8 +3244,8 @@ export default function SubmitDeal() {
                             Client Asks
                           </dt>
                           <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("clientAsks")
-                              ? String(getTypedValue("clientAsks"))
+                            {form.getValues("clientAsks")
+                              ? String(form.getValues("clientAsks"))
                               : "Not provided"}
                           </dd>
                         </div>
