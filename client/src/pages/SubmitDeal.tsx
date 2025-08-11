@@ -78,6 +78,7 @@ import {
   type SelectedIncentive,
   incentiveCategories,
 } from "@/lib/incentive-data";
+import { useIncentiveSelection } from "@/hooks/useIncentiveSelection";
 import TierSpecificIncentives, {
   type TierIncentive,
 } from "@/components/TierSpecificIncentives";
@@ -95,6 +96,7 @@ import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
+
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
 
@@ -147,21 +149,21 @@ export default function SubmitDeal() {
       projectedNetValue: 0,
     });
 
-  // Legacy helper functions removed - using form.watch() and form.getValues() directly
+  // ✅ Phase 2.3: Legacy helper functions removed - using form.watch() and form.getValues() directly
 
   // Handle approval level changes
   const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
     setCurrentApprover(approvalInfo);
   };
 
-  // Handle incentive selection changes
+  // ✅ Phase 2.2: Updated to use hook actions
   const handleIncentiveChange = (incentives: SelectedIncentive[]) => {
-    setSelectedIncentives(incentives);
+    incentiveManager.clearAllIncentives();
+    incentives.forEach(incentive => incentiveManager.addSelectedIncentive(incentive));
   };
 
-  // Handle tier-specific incentive changes
   const handleTierIncentiveChange = (incentives: TierIncentive[]) => {
-    setTierIncentives(incentives);
+    incentives.forEach(incentive => incentiveManager.addTierIncentive(incentive));
   };
 
   // State to track selected agencies and advertisers for dropdowns
@@ -194,20 +196,18 @@ export default function SubmitDeal() {
   }
 
   // ✅ PHASE 2.3: Legacy interface removal target
-  // This DealTierData interface should be removed once all references are migrated to DealTier
+  // This DealTier interface should be removed once all references are migrated to DealTier
 
   // ✅ NEW: Using tierManager hook instead of manual state
   // dealTiers replaced by tierManager.tiers
 
-  // State for selected incentives from the hierarchical selector
-  const [selectedIncentives, setSelectedIncentives] = useState<
-    SelectedIncentive[]
-  >([]);
-
-  // State for tier-specific incentives (volume discount, rebates, etc.)
-  const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>([]);
-  const [showAddIncentiveForm, setShowAddIncentiveForm] =
-    useState<boolean>(false);
+  // ✅ Phase 2.2: Migrated incentive state to useIncentiveSelection hook
+  const incentiveManager = useIncentiveSelection();
+  const { 
+    selectedIncentives, 
+    tierIncentives, 
+    showAddIncentiveForm
+  } = incentiveManager;
 
   // Initialize the form
   const form = useForm<DealFormValues>({
@@ -349,7 +349,7 @@ export default function SubmitDeal() {
     const advertiserName = String(form.watch("advertiserName") || "");
     const agencyName = String(form.watch("agencyName") || "");
     
-    // Convert DealTierData to DealTier format expected by service
+    // Convert DealTier to DealTier format expected by service
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
@@ -371,7 +371,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossProfitGrowthRate
-  const calculateAdjustedGrossProfitGrowthRate = (tier: DealTierData): number => {
+  const calculateAdjustedGrossProfitGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
     const serviceTier = {
       tierNumber: tier.tierNumber,
@@ -382,7 +382,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMargin  
-  const calculateAdjustedGrossMargin = (tier: DealTierData): number => {
+  const calculateAdjustedGrossMargin = (tier: DealTier): number => {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
@@ -392,7 +392,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMarginGrowthRate
-  const calculateAdjustedGrossMarginGrowthRate = (tier: DealTierData): number => {
+  const calculateAdjustedGrossMarginGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
     const serviceTier = {
       tierNumber: tier.tierNumber,
@@ -403,7 +403,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 2: Replace with service call
-  const calculateClientValue = (tier: DealTierData): number => {
+  const calculateClientValue = (tier: DealTier): number => {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
@@ -413,7 +413,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 3: Migrated to service - calculateClientValueGrowthRate
-  const calculateClientValueGrowthRate = (tier: DealTierData): number => {
+  const calculateClientValueGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
     const serviceTier = {
       tierNumber: tier.tierNumber,
@@ -424,7 +424,7 @@ export default function SubmitDeal() {
   };
 
   // ✅ PHASE 3: Migrated to service - calculateCostGrowthRate
-  const calculateCostGrowthRate = (tier: DealTierData): number => {
+  const calculateCostGrowthRate = (tier: DealTier): number => {
     const serviceTier = {
       tierNumber: tier.tierNumber,
       annualRevenue: tier.annualRevenue,
@@ -580,8 +580,8 @@ export default function SubmitDeal() {
 
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = advertisers.find((a) => a.name === advertiserName);
-      if (advertiser && advertiser?.previousYearRevenue) {
-        previousYearRevenue = advertiser?.previousYearRevenue;
+      if (advertiser && advertiser.previousYearRevenue) {
+        previousYearRevenue = advertiser.previousYearRevenue;
       }
     } else if (
       (salesChannel === "holding_company" ||
@@ -589,8 +589,8 @@ export default function SubmitDeal() {
       agencyName
     ) {
       const agency = agencies.find((a) => a.name === agencyName);
-      if (agency && agency?.previousYearRevenue) {
-        previousYearRevenue = agency?.previousYearRevenue;
+      if (agency && agency.previousYearRevenue) {
+        previousYearRevenue = agency.previousYearRevenue;
       }
     }
 
@@ -1360,11 +1360,16 @@ export default function SubmitDeal() {
                     dealTiers={dealTiers}
                     setDealTiers={setDealTiers}
                     selectedIncentives={selectedIncentives}
-                    setSelectedIncentives={setSelectedIncentives}
+                    setSelectedIncentives={(incentives) => {
+                      incentiveManager.clearAllIncentives();
+                      incentives.forEach(incentive => incentiveManager.addSelectedIncentive(incentive));
+                    }}
                     tierIncentives={tierIncentives}
-                    setTierIncentives={setTierIncentives}
+                    setTierIncentives={(incentives) => {
+                      incentives.forEach(incentive => incentiveManager.addTierIncentive(incentive));
+                    }}
                     showAddIncentiveForm={showAddIncentiveForm}
-                    setShowAddIncentiveForm={setShowAddIncentiveForm}
+                    setShowAddIncentiveForm={incentiveManager.toggleAddIncentiveForm}
                   />
 
                   {/* Separate Incentive Structure Section - Show for both types */}
@@ -1374,14 +1379,19 @@ export default function SubmitDeal() {
                     dealTiers={dealTiers}
                     setDealTiers={setDealTiers}
                     selectedIncentives={selectedIncentives}
-                    setSelectedIncentives={setSelectedIncentives}
+                    setSelectedIncentives={(incentives) => {
+                      incentiveManager.clearAllIncentives();
+                      incentives.forEach(incentive => incentiveManager.addSelectedIncentive(incentive));
+                    }}
                     tierIncentives={tierIncentives}
-                    setTierIncentives={setTierIncentives}
+                    setTierIncentives={(incentives) => {
+                      incentives.forEach(incentive => incentiveManager.addTierIncentive(incentive));
+                    }}
                     showAddIncentiveForm={showAddIncentiveForm}
-                    setShowAddIncentiveForm={setShowAddIncentiveForm}
+                    setShowAddIncentiveForm={incentiveManager.toggleAddIncentiveForm}
                   />
 
-                  {/* Legacy flat_commit handling - now handled in ValueStructureSection */}
+                  {/* ✅ Phase 2.3: Legacy flat_commit code block removed */}
                   {false && (
                     <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm mb-8">
                     {/* Revenue section header with collapsible control */}
@@ -1551,10 +1561,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser?.previousYearRevenue !== undefined
+                                      advertiser.previousYearRevenue !== undefined
                                     ) {
                                       previousYearRevenue =
-                                        advertiser?.previousYearRevenue;
+                                        advertiser.previousYearRevenue;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1564,9 +1574,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency?.previousYearRevenue !== undefined) {
+                                    if (agency && agency.previousYearRevenue !== undefined) {
                                       previousYearRevenue =
-                                        agency?.previousYearRevenue;
+                                        agency.previousYearRevenue;
                                     }
                                   }
 
@@ -1598,7 +1608,7 @@ export default function SubmitDeal() {
                                         newTiers[index].annualRevenue = e.target
                                           .value
                                           ? parseFloat(e.target.value)
-                                          : undefined;
+                                          : 0;
                                         setDealTiers(newTiers);
                                       }}
                                     />
@@ -1635,10 +1645,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser?.previousYearMargin !== undefined
+                                      advertiser.previousYearMargin !== undefined
                                     ) {
                                       previousYearMargin =
-                                        advertiser?.previousYearMargin;
+                                        advertiser.previousYearMargin;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1648,9 +1658,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency?.previousYearMargin !== undefined) {
+                                    if (agency && agency.previousYearMargin !== undefined) {
                                       previousYearMargin =
-                                        agency?.previousYearMargin;
+                                        agency.previousYearMargin;
                                     }
                                   }
 
@@ -1727,10 +1737,10 @@ export default function SubmitDeal() {
                                     );
                                     if (advertiser) {
                                       previousYearRevenue =
-                                        advertiser?.previousYearRevenue ||
+                                        advertiser.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        advertiser?.previousYearMargin ||
+                                        advertiser.previousYearMargin ||
                                         previousYearMargin;
                                     }
                                   } else if (
@@ -1743,10 +1753,10 @@ export default function SubmitDeal() {
                                     );
                                     if (agency) {
                                       previousYearRevenue =
-                                        agency?.previousYearRevenue ||
+                                        agency.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        agency?.previousYearMargin ||
+                                        agency.previousYearMargin ||
                                         previousYearMargin;
                                     }
                                   }
@@ -1884,10 +1894,10 @@ export default function SubmitDeal() {
                                   );
                                   if (advertiser) {
                                     previousYearRevenue =
-                                      advertiser?.previousYearRevenue ||
+                                      advertiser.previousYearRevenue ||
                                       previousYearRevenue;
                                     previousYearMargin =
-                                      advertiser?.previousYearMargin ||
+                                      advertiser.previousYearMargin ||
                                       previousYearMargin;
                                   }
                                 } else if (
@@ -1900,10 +1910,10 @@ export default function SubmitDeal() {
                                   );
                                   if (agency) {
                                     previousYearRevenue =
-                                      agency?.previousYearRevenue ||
+                                      agency.previousYearRevenue ||
                                       previousYearRevenue;
                                     previousYearMargin =
-                                      agency?.previousYearMargin ||
+                                      agency.previousYearMargin ||
                                       previousYearMargin;
                                   }
                                 }
@@ -2008,9 +2018,7 @@ export default function SubmitDeal() {
                       size="sm"
                       type="button"
                       className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-                      onClick={() =>
-                        setShowAddIncentiveForm(!showAddIncentiveForm)
-                      }
+                      onClick={incentiveManager.toggleAddIncentiveForm}
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add Incentive
@@ -3136,10 +3144,10 @@ export default function SubmitDeal() {
                                         );
                                         if (
                                           advertiser &&
-                                          advertiser?.previousYearRevenue
+                                          advertiser.previousYearRevenue
                                         ) {
                                           previousYearRevenue =
-                                            advertiser?.previousYearRevenue;
+                                            advertiser.previousYearRevenue;
                                         }
                                       } else if (
                                         (salesChannel === "holding_company" ||
@@ -3152,10 +3160,10 @@ export default function SubmitDeal() {
                                         );
                                         if (
                                           agency &&
-                                          agency?.previousYearRevenue
+                                          agency.previousYearRevenue
                                         ) {
                                           previousYearRevenue =
-                                            agency?.previousYearRevenue;
+                                            agency.previousYearRevenue;
                                         }
                                       }
 
@@ -3545,10 +3553,10 @@ export default function SubmitDeal() {
                                     );
                                     if (
                                       advertiser &&
-                                      advertiser?.previousYearRevenue
+                                      advertiser.previousYearRevenue
                                     ) {
                                       previousYearRevenue =
-                                        advertiser?.previousYearRevenue;
+                                        advertiser.previousYearRevenue;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -3558,9 +3566,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency?.previousYearRevenue) {
+                                    if (agency && agency.previousYearRevenue) {
                                       previousYearRevenue =
-                                        agency?.previousYearRevenue;
+                                        agency.previousYearRevenue;
                                     }
                                   }
 
@@ -3627,10 +3635,10 @@ export default function SubmitDeal() {
                                 );
                                 if (
                                   advertiser &&
-                                  advertiser?.previousYearRevenue
+                                  advertiser.previousYearRevenue
                                 ) {
                                   previousYearRevenue =
-                                    advertiser?.previousYearRevenue;
+                                    advertiser.previousYearRevenue;
                                 }
                               } else if (
                                 (salesChannel === "holding_company" ||
@@ -3640,9 +3648,9 @@ export default function SubmitDeal() {
                                 const agency = agencies.find(
                                   (a) => a.name === agencyName,
                                 );
-                                if (agency && agency?.previousYearRevenue) {
+                                if (agency && agency.previousYearRevenue) {
                                   previousYearRevenue =
-                                    agency?.previousYearRevenue;
+                                    agency.previousYearRevenue;
                                 }
                               }
 
