@@ -264,11 +264,18 @@ export default function SubmitDeal() {
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
   
-  // 🚀 NEW: Advanced hooks for streamlined architecture
-  const tierManager = useDealTiers({
-    maxTiers: 5,
-    minTiers: 1
-  });
+  // State for deal tiers (simplified - using direct state instead of complex hook)
+  const [dealTiers, setDealTiers] = useState<DealTierData[]>([{
+    tierNumber: 1,
+    annualRevenue: 0,
+    annualGrossMargin: 0,
+    annualGrossMarginPercent: 35,
+    incentivePercentage: 0,
+    incentiveNotes: "",
+    incentiveType: "rebate",
+    incentiveThreshold: 0,
+    incentiveAmount: 0,
+  }]);
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -279,51 +286,7 @@ export default function SubmitDeal() {
   // ✅ MIGRATED: Use hook-managed form step instead of local state
   const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
   
-  // Helper function to get dealTiers in legacy format for backward compatibility
-  const getDealTiers = () => {
-    return tierManager.tiers.map((tier, index) => ({
-      tierNumber: index + 1, // Use index for tier number
-      annualRevenue: tier.minimumCommit, // Use minimumCommit as revenue
-      annualGrossMargin: tier.minimumCommit ? tier.minimumCommit * (tier.incentivePercentage || 35) / 100 : undefined,
-      annualGrossMarginPercent: tier.incentivePercentage,
-      incentivePercentage: tier.incentivePercentage,
-      incentiveNotes: tier.incentiveNotes || "",
-      incentiveType: "rebate" as const, // Fixed type
-      incentiveThreshold: tier.minimumCommit, // Use minimumCommit as threshold
-      incentiveAmount: tier.incentiveAmount,
-    }));
-  };
-  
-  // Helper function to update tier data
-  const setDealTiers = (updatedTiers: any[]) => {
-    // Handle adding new tiers
-    while (updatedTiers.length > tierManager.tiers.length) {
-      tierManager.addTier();
-    }
-    
-    // Handle removing tiers
-    while (updatedTiers.length < tierManager.tiers.length) {
-      const lastTier = tierManager.tiers[tierManager.tiers.length - 1];
-      tierManager.removeTier(lastTier.id);
-    }
-    
-    // Update existing tiers
-    updatedTiers.forEach((updatedTier, index) => {
-      if (index < tierManager.tiers.length) {
-        tierManager.updateTier(tierManager.tiers[index].id, { // Use id as identifier
-          tierName: `Tier ${updatedTier.tierNumber}`,
-          minimumCommit: updatedTier.annualRevenue || 0,
-          incentivePercentage: updatedTier.annualGrossMarginPercent || 0,
-          incentiveAmount: updatedTier.incentiveAmount || 0,
-          incentiveNotes: updatedTier.incentiveNotes || "",
-          incentiveType: 'rebate' as const,
-        });
-      }
-    });
-  };
-  
-  // Legacy compatibility - creates dealTiers array
-  const dealTiers = getDealTiers();
+  // Removed complex tier manager - using simple state management
   
   // Trigger AI analysis when critical deal data changes
   React.useEffect(() => {

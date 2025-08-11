@@ -96,14 +96,64 @@ export function ValueStructureSection({
 
   return (
     <div className="space-y-8">
-      {/* Unified Financial Structure - Always show table */}
-      <FinancialTierTable
-        dealTiers={dealTiers}
-        setDealTiers={setDealTiers}
-        lastYearRevenue={850000}
-        lastYearGrossMargin={35.0}
-        isFlat={dealStructureType === "flat_commit"}
-      />
+      {/* Revenue & Profitability Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Revenue & Profitability</h3>
+          {dealStructureType === "tiered" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addTier}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Tier
+            </Button>
+          )}
+        </div>
+        
+        <FinancialTierTable
+          dealTiers={dealTiers}
+          setDealTiers={setDealTiers}
+          lastYearRevenue={850000}
+          lastYearGrossMargin={35.0}
+          isFlat={dealStructureType === "flat_commit"}
+        />
+      </div>
+
+      {/* Incentive Structure Section */}
+      {dealStructureType === "tiered" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Incentive Structure</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddIncentiveForm(!showAddIncentiveForm)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Incentive
+            </Button>
+          </div>
+          
+          <IncentiveSelector
+            selectedIncentives={selectedIncentives}
+            onIncentiveChange={setSelectedIncentives}
+            showAddForm={showAddIncentiveForm}
+            onToggleAddForm={setShowAddIncentiveForm}
+          />
+          
+          <TierSpecificIncentives
+            dealTiers={dealTiers}
+            tierIncentives={tierIncentives}
+            onTierIncentiveChange={setTierIncentives}
+          />
+        </div>
+      )}
     </div>
   );
 }
