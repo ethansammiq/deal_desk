@@ -93,7 +93,7 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
-import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
+// Removed useDealTiers import - using simple state management
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 // Simplified deal schema with only essential fields
@@ -564,7 +564,7 @@ export default function SubmitDeal() {
     updateRegionData();
   }, [salesChannel, agencies, advertisers]);
 
-  // ✅ MIGRATED: Calculate real-time financial impact using tierManager.tiers
+  // Calculate real-time financial impact using dealTiers
   useEffect(() => {
     // Get fresh values from form without causing re-renders
     const getFormData = () => {
@@ -578,15 +578,12 @@ export default function SubmitDeal() {
     const { startDateStr, endDateStr, advertiserName, agencyName } = getFormData();
     
     // Calculate contract term from ISO 8601 date strings
-    
     let contractTerm = 12; // Default to 12 months
     if (startDateStr && endDateStr) {
       const startDate = new Date(startDateStr);
       const endDate = new Date(endDateStr);
       contractTerm = Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()));
     }
-
-    // Use the form data from above
 
     // Find the previous year revenue for YoY calculations
     let previousYearRevenue = 0;
@@ -607,29 +604,16 @@ export default function SubmitDeal() {
       }
     }
 
-    // Convert tierManager.tiers to legacy format for calculateDealFinancialSummary
-    const legacyTiers = tierManager.tiers.map((tier, index) => ({
-      tierNumber: index + 1, // Use index instead of tierNumber
-      annualRevenue: tier.minimumCommit || 0,
-      annualGrossMargin: tier.minimumCommit ? tier.minimumCommit * (tier.incentivePercentage || 35) / 100 : 0,
-      annualGrossMarginPercent: tier.incentivePercentage || 35,
-      incentivePercentage: tier.incentivePercentage || 0,
-      incentiveNotes: tier.incentiveNotes || "",
-      incentiveType: tier.incentiveType || "rebate" as const,
-      incentiveThreshold: tier.minimumCommit || 0,
-      incentiveAmount: tier.incentiveAmount || 0,
-    }));
-
-    // Calculate financial summary using converted tiers
+    // Calculate financial summary using dealTiers
     const summary = calculateDealFinancialSummary(
-      legacyTiers,
+      dealTiers,
       contractTerm,
       previousYearRevenue,
     );
 
     // Update the financial summary state
     setFinancialSummary(summary);
-  }, [tierManager.tiers, salesChannel, advertisers, agencies]);
+  }, [dealTiers, salesChannel, advertisers, agencies]);
 
   // ✅ MIGRATED: Form navigation now handled by formValidation hook
   // Legacy functions replaced with hook methods:
@@ -1482,15 +1466,19 @@ export default function SubmitDeal() {
                         type="button"
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
-                          try {
-                            tierManager.addTier();
-                          } catch (error: any) {
-                            toast({
-                              title: "Cannot Add Tier",
-                              description: error.message || "Maximum tiers reached",
-                              variant: "destructive",
-                            });
-                          }
+                          const newTierNumber = dealTiers.length + 1;
+                          const newTier: DealTierData = {
+                            tierNumber: newTierNumber,
+                            annualRevenue: 0,
+                            annualGrossMargin: 0,
+                            annualGrossMarginPercent: 35,
+                            incentivePercentage: 0,
+                            incentiveNotes: "",
+                            incentiveType: "rebate",
+                            incentiveThreshold: 0,
+                            incentiveAmount: 0,
+                          };
+                          setDealTiers([...dealTiers, newTier]);
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />
