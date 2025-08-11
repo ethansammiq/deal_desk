@@ -109,9 +109,9 @@ export const deals = pgTable("deals", {
   businessSummary: text("business_summary"), // long text for describing deal purpose
   status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
   
-  // Timeframe
-  termStartDate: text("term_start_date"),
-  termEndDate: text("term_end_date"),
+  // Timeframe - using ISO 8601 date strings
+  termStartDate: text("term_start_date"), // ISO 8601: "2025-01-15"
+  termEndDate: text("term_end_date"), // ISO 8601: "2025-12-15"
   contractTerm: integer("contract_term"), // calculated in months from start and end dates
   
   // Financial data for flat commit structure
@@ -153,9 +153,9 @@ export const insertDealSchema = createInsertSchema(deals)
     // Deal structure validation
     dealStructure: z.enum(["tiered", "flat_commit"]),
     
-    // Date validations
-    termStartDate: z.date({ coerce: true }),
-    termEndDate: z.date({ coerce: true }),
+    // Date validations - ISO 8601 format (YYYY-MM-DD)
+    termStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
+    termEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
     
     // Financial validations
     annualRevenue: z.number().positive("Annual revenue must be positive").optional(),
