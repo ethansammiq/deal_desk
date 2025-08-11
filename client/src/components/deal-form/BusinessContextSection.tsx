@@ -16,7 +16,6 @@ import {
 // Interface for business context form values - matching SubmitDeal form structure
 interface BusinessContextFormValues {
   growthOpportunityMIQ: string;
-  growthAmbition: number;
   growthOpportunityClient: string;
   clientAsks?: string;
   // We need to be compatible with SubmitDeal's broader form structure
@@ -61,33 +60,7 @@ export function BusinessContextSection({ form }: BusinessContextSectionProps) {
           )}
         />
 
-        {/* Growth Ambition */}
-        <FormField
-          control={form.control}
-          name="growthAmbition"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                2025 Growth Ambition ($) <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="1000000"
-                  placeholder="Enter amount (minimum $1M)"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(parseFloat(e.target.value))
-                  }
-                />
-              </FormControl>
-              <FormDescription>
-                Growth ambition must be at least $1M. What revenue target are we aiming for in 2025?
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
 
         {/* Growth Opportunity (Client) */}
         <FormField

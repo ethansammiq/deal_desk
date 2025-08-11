@@ -147,6 +147,7 @@ export default function RequestSupport() {
       termEndDate: undefined,
       requestType: undefined,
       businessContext: "",
+      growthAmbition: 1000000,
     },
     mode: "onChange",
   });
@@ -378,6 +379,33 @@ export default function RequestSupport() {
                       </Select>
                       <FormDescription>
                         What type of assistance do you need with this deal?
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="growthAmbition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        2025 Growth Ambition ($) <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1000000"
+                          placeholder="Enter amount (minimum $1M)"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Growth ambition must be at least $1M for partnership team review.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

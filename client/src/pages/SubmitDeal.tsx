@@ -105,13 +105,10 @@ const dealFormSchema = z
       .string()
       .min(10, "Business summary should be at least 10 characters"),
 
-    // Growth opportunity fields (moved from RequestSupport)
+    // Growth opportunity fields (partial move from RequestSupport)
     growthOpportunityMIQ: z
       .string()
       .min(10, "Please provide more details about the growth opportunity"),
-    growthAmbition: z
-      .number()
-      .min(1000000, "Growth ambition must be at least $1M"),
     growthOpportunityClient: z
       .string()
       .min(
@@ -580,9 +577,8 @@ export default function SubmitDeal() {
       // Business information
       businessSummary: "",
 
-      // Growth opportunity fields (moved from RequestSupport)
+      // Growth opportunity fields (partial move from RequestSupport)
       growthOpportunityMIQ: "",
-      growthAmbition: 1000000,
       growthOpportunityClient: "",
       clientAsks: "",
 
@@ -838,14 +834,12 @@ export default function SubmitDeal() {
     } else if (formStep === 1) {
       // Validate Business Context step
       form.trigger("growthOpportunityMIQ");
-      form.trigger("growthAmbition");
       form.trigger("growthOpportunityClient");
       
       const growthMIQError = form.getFieldState('growthOpportunityMIQ').error;
-      const growthAmbitionError = form.getFieldState('growthAmbition').error;
       const growthClientError = form.getFieldState('growthOpportunityClient').error;
       
-      if (growthMIQError || growthAmbitionError || growthClientError) {
+      if (growthMIQError || growthClientError) {
         toast({
           title: "Validation Error",
           description: "Please fix the errors in the Business Context section before continuing.",
@@ -3315,16 +3309,7 @@ export default function SubmitDeal() {
                               : "Not provided"}
                           </dd>
                         </div>
-                        <div>
-                          <dt className="text-sm font-medium text-slate-500">
-                            2025 Growth Ambition
-                          </dt>
-                          <dd className="mt-1 text-sm text-slate-900">
-                            {getTypedValue("growthAmbition")
-                              ? `$${Number(getTypedValue("growthAmbition")).toLocaleString()}`
-                              : "Not provided"}
-                          </dd>
-                        </div>
+
                         <div className="sm:col-span-2">
                           <dt className="text-sm font-medium text-slate-500">
                             Growth Opportunity (Client)
