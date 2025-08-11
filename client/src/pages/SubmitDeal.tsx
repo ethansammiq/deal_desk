@@ -113,7 +113,8 @@ const dealFormSchema = z.object({
 type DealFormValues = any; // Allow any fields from shared components
 
 export default function SubmitDeal() {
-  const [formStep, setFormStep] = useState(0);
+  // ✅ MIGRATED: Form step now managed by formValidation hook
+  // const [formStep, setFormStep] = useState(0); // REPLACED
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
@@ -192,42 +193,8 @@ export default function SubmitDeal() {
     incentiveAmount?: number; // Monetary value of the incentive
   }
 
-  // Legacy tier state - can be gradually migrated to tierManager.tiers
-  const [dealTiers, setDealTiers] = useState([
-    {
-      tierNumber: 1,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "Base tier - no incentives",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-    {
-      tierNumber: 2,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-    {
-      tierNumber: 3,
-      annualRevenue: undefined as number | undefined,
-      annualGrossMargin: undefined as number | undefined,
-      annualGrossMarginPercent: undefined as number | undefined,
-      incentivePercentage: undefined as number | undefined,
-      incentiveNotes: "",
-      incentiveType: "rebate" as const,
-      incentiveThreshold: undefined as number | undefined,
-      incentiveAmount: undefined as number | undefined,
-    },
-  ]);
+  // ✅ NEW: Using tierManager hook instead of manual state
+  // dealTiers replaced by tierManager.tiers
 
   // State for selected incentives from the hierarchical selector
   const [selectedIncentives, setSelectedIncentives] = useState<
@@ -293,6 +260,45 @@ export default function SubmitDeal() {
     enableAutoAdvance: false,
     validateOnChange: true
   });
+  
+  // ✅ MIGRATED: Use hook-managed form step instead of local state
+  const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
+  
+  // Helper function to get dealTiers in legacy format for backward compatibility
+  const getDealTiers = () => {
+    return tierManager.tiers.map(tier => ({
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMargin: tier.annualRevenue ? tier.annualRevenue * (tier.annualGrossMarginPercent || 35) / 100 : undefined,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent,
+      incentivePercentage: tier.incentivePercentage,
+      incentiveNotes: tier.incentiveNotes || "",
+      incentiveType: tier.incentiveType || "rebate" as const,
+      incentiveThreshold: tier.incentiveThreshold,
+      incentiveAmount: tier.incentiveAmount,
+    }));
+  };
+  
+  // Helper function to update tier data
+  const setDealTiers = (updatedTiers: any[]) => {
+    updatedTiers.forEach((updatedTier, index) => {
+      if (index < tierManager.tiers.length) {
+        tierManager.updateTier(index, {
+          tierNumber: updatedTier.tierNumber,
+          annualRevenue: updatedTier.annualRevenue,
+          annualGrossMarginPercent: updatedTier.annualGrossMarginPercent,
+          incentivePercentage: updatedTier.incentivePercentage,
+          incentiveNotes: updatedTier.incentiveNotes,
+          incentiveType: updatedTier.incentiveType,
+          incentiveThreshold: updatedTier.incentiveThreshold,
+          incentiveAmount: updatedTier.incentiveAmount,
+        });
+      }
+    });
+  };
+  
+  // Legacy compatibility - creates dealTiers array
+  const dealTiers = getDealTiers();
   
   // Trigger AI analysis when critical deal data changes
   React.useEffect(() => {
@@ -672,7 +678,7 @@ export default function SubmitDeal() {
     updateRegionData();
   }, [form, salesChannel, agencies, advertisers]);
 
-  // Calculate real-time financial impact based on changes to dealTiers
+  // ✅ MIGRATED: Calculate real-time financial impact using tierManager.tiers
   useEffect(() => {
     // Calculate contract term from ISO 8601 date strings
     const startDateStr = form.getValues("termStartDate") as string;
@@ -708,126 +714,62 @@ export default function SubmitDeal() {
       }
     }
 
-    // Calculate financial summary
+    // Convert tierManager.tiers to legacy format for calculateDealFinancialSummary
+    const legacyTiers = tierManager.tiers.map(tier => ({
+      tierNumber: tier.tierNumber,
+      annualRevenue: tier.annualRevenue,
+      annualGrossMargin: tier.annualRevenue ? tier.annualRevenue * (tier.annualGrossMarginPercent || 35) / 100 : undefined,
+      annualGrossMarginPercent: tier.annualGrossMarginPercent,
+      incentivePercentage: tier.incentivePercentage,
+      incentiveNotes: tier.incentiveNotes || "",
+      incentiveType: tier.incentiveType || "rebate" as const,
+      incentiveThreshold: tier.incentiveThreshold,
+      incentiveAmount: tier.incentiveAmount,
+    }));
+
+    // Calculate financial summary using converted tiers
     const summary = calculateDealFinancialSummary(
-      dealTiers,
+      legacyTiers,
       contractTerm,
       previousYearRevenue,
     );
 
     // Update the financial summary state
     setFinancialSummary(summary);
-  }, [dealTiers, form, salesChannel, advertisers, agencies]);
+  }, [tierManager.tiers, form, salesChannel, advertisers, agencies]);
 
-  // Validates the current step and allows or prevents navigation
-  function validateAndGoToStep(targetStep: number): boolean {
-    // If going to a step we've already completed or the current step, allow it
-    if (formStep >= targetStep) {
-      setFormStep(targetStep);
-      return true;
+  // ✅ MIGRATED: Form navigation now handled by formValidation hook
+  // Legacy functions replaced with hook methods:
+  // validateAndGoToStep → formValidation.goToStep
+  // nextStep → formValidation.goToNextStep  
+  // prevStep → formValidation.goToPreviousStep
+
+  const nextStep = () => {
+    const success = formValidation.goToNextStep();
+    if (!success && formValidation.currentStepValidation.errors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: formValidation.currentStepValidation.errors[0],
+        variant: "destructive",
+      });
     }
+  };
 
-    // Validate current step fields before allowing navigation
-    if (formStep === 0) {
-      // Use individual triggers for each field instead of array syntax
-      form.trigger("dealType");
-      form.trigger("businessSummary");
-      form.trigger("salesChannel");
-      form.trigger("region");
+  const prevStep = () => {
+    formValidation.goToPreviousStep();
+  };
 
-      const dealTypeError = form.getFieldState("dealType").error;
-      const businessSummaryError = form.getFieldState("businessSummary").error;
-      const salesChannelError = form.getFieldState("salesChannel").error;
-      const regionError = form.getFieldState("region").error;
-
-      // Check conditional field validation based on salesChannel
-      let conditionalError = false;
-      if (salesChannel === "client_direct") {
-        form.trigger("advertiserName");
-        conditionalError = !!form.getFieldState("advertiserName").error;
-      } else if (
-        salesChannel === "holding_company" ||
-        salesChannel === "independent_agency"
-      ) {
-        form.trigger("agencyName");
-        conditionalError = !!form.getFieldState("agencyName").error;
-      }
-
-      if (
-        dealTypeError ||
-        businessSummaryError ||
-        salesChannelError ||
-        regionError ||
-        conditionalError
-      ) {
-        toast({
-          title: "Validation Error",
-          description:
-            "Please fix the errors in the Deal Overview section before continuing.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // If target is 3 (Review), allow demo access without validation
-      if (targetStep === 3) {
-        // Allowing direct access to Review & Submit for demo purposes
-        return true;
-      }
-    } else if (formStep === 1) {
-      // Validate Business Context step
-      form.trigger("growthOpportunityMIQ");
-      form.trigger("growthOpportunityClient");
-      
-      const growthMIQError = form.getFieldState('growthOpportunityMIQ').error;
-      const growthClientError = form.getFieldState('growthOpportunityClient').error;
-      
-      if (growthMIQError || growthClientError) {
-        toast({
-          title: "Validation Error",
-          description: "Please fix the errors in the Business Context section before continuing.",
-          variant: "destructive",
-        });
-        return false;
-      }
-    } else if (formStep === 2) {
-      // Validate Value Structure step
-      form.trigger("dealStructure");
-      form.trigger("termStartDate");
-      form.trigger("termEndDate");
-      
-      const dealStructureError = form.getFieldState('dealStructure').error;
-      const termStartDateError = form.getFieldState('termStartDate').error;
-      const termEndDateError = form.getFieldState('termEndDate').error;
-      
-      if (dealStructureError || termStartDateError || termEndDateError) {
-        toast({
-          title: "Validation Error",
-          description: "Please fix the errors in the Value Structure section before continuing.",
-          variant: "destructive",
-        });
-        return false;
-      }
+  const validateAndGoToStep = (targetStep: number): boolean => {
+    const success = formValidation.goToStep(targetStep + 1); // Convert to 1-based indexing
+    if (!success && formValidation.currentStepValidation.errors.length > 0) {
+      toast({
+        title: "Validation Error", 
+        description: formValidation.currentStepValidation.errors[0],
+        variant: "destructive",
+      });
     }
-
-    // If all validations pass, go to the target step
-    setFormStep(targetStep);
-    return true;
-  }
-
-  function nextStep() {
-    const targetStep = Math.min(formStep + 1, 3);
-    validateAndGoToStep(targetStep);
-  }
-
-  function prevStep() {
-    // For going back, we don't need validation - we can simply navigate to the previous step
-    // Only navigate if we're not already on the first step
-    if (formStep > 0) {
-      const targetStep = formStep - 1;
-      setFormStep(targetStep);
-    }
-  }
+    return success;
+  };
 
   function onSubmit(data: any) {
     console.log("Form submission triggered with data:", data);
@@ -915,7 +857,7 @@ export default function SubmitDeal() {
       annualRevenue: data.annualRevenue || 0,
       annualGrossMargin: data.annualGrossMargin || 35,
       // Only include dealTiers if the structure is tiered
-      ...(dealStructureType === "tiered" ? { dealTiers } : {}),
+      ...(dealStructureType === "tiered" ? { dealTiers: getDealTiers() } : {}),
       // Include selected incentives
       selectedIncentives,
       // Include tier-specific incentives
@@ -1563,7 +1505,7 @@ export default function SubmitDeal() {
                   {dealStructureType === "tiered" ? (
                     <TierConfigurationPanel
                       dealTiers={dealTiers}
-                      setDealTiers={setDealTiers as any}
+                      setDealTiers={setDealTiers}
                       calculateTierIncentiveCost={calculateTierIncentiveCost}
                       calculateGrossMarginGrowthRate={calculateGrossMarginGrowthRate}
                       calculateTierGrossProfit={calculateTierGrossProfit}
@@ -1628,37 +1570,21 @@ export default function SubmitDeal() {
                         type="button"
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
-                          // Add a new tier to the dealTiers state
-                          if (dealTiers.length < 6) {
-                            setDealTiers([
-                              ...dealTiers,
-                              {
-                                tierNumber: dealTiers.length + 1,
-                                annualRevenue: undefined as number | undefined,
-                                annualGrossMargin: undefined as
-                                  | number
-                                  | undefined,
-                                annualGrossMarginPercent: undefined as
-                                  | number
-                                  | undefined,
-                                incentivePercentage: undefined as
-                                  | number
-                                  | undefined,
-                                incentiveNotes: "",
-                                incentiveType: "rebate" as const,
-                                incentiveThreshold: undefined as
-                                  | number
-                                  | undefined,
-                                incentiveAmount: undefined as
-                                  | number
-                                  | undefined,
-                              },
-                            ]);
-                          } else {
+                          const result = tierManager.addTier({
+                            tierNumber: tierManager.tiers.length + 1,
+                            annualRevenue: undefined,
+                            annualGrossMarginPercent: undefined,
+                            incentivePercentage: undefined,
+                            incentiveNotes: "",
+                            incentiveType: "rebate",
+                            incentiveThreshold: undefined,
+                            incentiveAmount: undefined,
+                          });
+                          
+                          if (!result.success) {
                             toast({
-                              title: "Maximum tiers reached",
-                              description:
-                                "You can add a maximum of 6 revenue tiers",
+                              title: "Cannot Add Tier",
+                              description: result.errors[0] || "Maximum tiers reached",
                               variant: "destructive",
                             });
                           }
