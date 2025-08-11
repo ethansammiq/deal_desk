@@ -155,9 +155,6 @@ export function useDealFormValidation(
 
   // Validate individual step
   const validateStep = useCallback((stepNumber: number): StepValidationResult => {
-    console.log(`🔍 validateStep called for step ${stepNumber}`);
-    const allFormValues = form.getValues();
-    console.log(`🔍 Current form values:`, allFormValues);
     const step = formSteps.find(s => s.id === stepNumber);
     if (!step) {
       return { isValid: false, errors: ['Invalid step'], missingFields: [] };
@@ -204,17 +201,7 @@ export function useDealFormValidation(
           (typeof value === 'string' && value.trim() === '') ||
           (typeof value === 'number' && isNaN(value));
           
-      // Debug logging for Business Context fields
-      if (['growthOpportunityMIQ', 'growthOpportunityClient', 'clientAsks'].includes(fieldNameStr)) {
-        const alternateValue = form.getValues(fieldNameStr);
-        console.log(`🔍 Validating ${fieldNameStr}:`, { 
-          value, 
-          alternateValue, 
-          isEmpty, 
-          type: typeof value,
-          formState: form.formState.isDirty 
-        });
-      }
+      // Debug logging removed - validation working correctly
       
       if (isEmpty) {
         missingFields.push(fieldNameStr);
@@ -317,12 +304,9 @@ export function useDealFormValidation(
     if (nextStep > formSteps.length) return false;
     
     // Force fresh validation bypassing stale cache
-    console.log("🚀 goToNextStep: Performing fresh validation for step", currentStep);
     const freshValidation = validateStep(currentStep);
-    console.log("🚀 Fresh validation result:", freshValidation);
     
     if (!freshValidation.isValid) {
-      console.log("🚀 Fresh validation failed, blocking navigation");
       return false;
     }
     
