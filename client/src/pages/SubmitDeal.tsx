@@ -163,6 +163,17 @@ export default function SubmitDeal() {
     setTierIncentives(incentives);
   };
 
+  // Initialize the form
+  const form = useForm<DealFormValues>({
+    resolver: zodResolver(dealFormSchema),
+    defaultValues: {
+      businessSummary: "",
+      annualRevenue: undefined,
+      annualGrossMargin: undefined,
+      status: "submitted",
+    },
+  });
+
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
   
