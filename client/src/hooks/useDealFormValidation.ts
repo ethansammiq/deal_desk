@@ -293,7 +293,7 @@ export function useDealFormValidation(
 
     // For backward navigation or valid forward navigation
     setCurrentStep(targetStep);
-    setVisitedSteps(prev => new Set([...Array.from(prev), targetStep]));
+    setVisitedSteps(prev => new Set([...prev, targetStep]));
     
     return true;
   }, [currentStep, currentStepValidation.isValid, formSteps.length]);
