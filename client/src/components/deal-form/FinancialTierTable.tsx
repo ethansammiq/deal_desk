@@ -2,7 +2,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Info } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
 
@@ -52,30 +51,25 @@ export function FinancialTierTable({
 
   return (
     <FinancialSection title="Revenue & Profitability">
-      <Accordion type="single" collapsible defaultValue="revenue">
-        <AccordionItem value="revenue">
-          <div className="flex items-center justify-between">
-            <AccordionTrigger>
-              Financial Details
-            </AccordionTrigger>
-            <Button
-              type="button"
-              onClick={addTier}
-              variant="outline"
-              size="sm"
-              disabled={isFlat}
-              className={`${
-                isFlat 
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
-                  : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-              }`}
-              title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Tier
-            </Button>
-          </div>
-          <AccordionContent>
+      <div className="flex items-center justify-between mb-4">
+        <span></span> {/* Empty span for flexbox alignment */}
+        <Button
+          type="button"
+          onClick={addTier}
+          variant="outline"
+          size="sm"
+          disabled={isFlat}
+          className={`${
+            isFlat 
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
+              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+          }`}
+          title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Tier
+        </Button>
+      </div>
             {/* Info banner */}
             <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
               <Info className="h-4 w-4 inline mr-2" />
@@ -286,9 +280,6 @@ export function FinancialTierTable({
           </tr>
             </FinancialTableBody>
           </FinancialTable>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </FinancialSection>
   );
 }
