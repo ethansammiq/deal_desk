@@ -48,6 +48,11 @@ This project is a comprehensive deal desk application designed to streamline com
   - Eliminated 3 redundant "Incentive Structure" sections
   - Revenue & Profitability management migrated to IncentiveStructureSection
   - Tier management functions (add/remove/update) consolidated
+- **✅ Data Integrity Issues Identified**: Multiple overlapping incentive data structures
+  - SelectedIncentive (UI selection state)
+  - TierIncentive (calculation intermediary)
+  - DealTier (database schema - actual source of truth)
+  - **Problem**: $50k/$75k values stored in dealTiers but not displayed correctly in Selected Incentives table
 
 ## Migration Progress
 - **Phase 1**: Hook ecosystem foundation ✅ COMPLETE
@@ -56,6 +61,7 @@ This project is a comprehensive deal desk application designed to streamline com
   - Phase 2.5: UI consolidation ✅ COMPLETE
 - **Phase 3**: Error boundaries and loading states (NEXT)
 - **Phase 4**: Performance optimization and lazy loading (PENDING)
+- **Phase 5**: Incentive Data Structure Consolidation (IDENTIFIED - PENDING)
 
 ## External Dependencies
 - **Anthropic AI (Claude)**: Integrated for intelligent deal assessment, analysis, and recommendations.
