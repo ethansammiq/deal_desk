@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
@@ -35,6 +35,7 @@ export function FinancialTierTable({
   lastYearGrossMargin = 35.0,
   isFlat = false,
 }: FinancialTierTableProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { 
     calculationService 
   } = useDealCalculations();
@@ -82,12 +83,21 @@ export function FinancialTierTable({
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
   return (
-    <FinancialSection title="Revenue & Profitability">
-
-      {/* Header with collapsible control */}
+    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+      {/* Header with collapsible control and title */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
+          <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+            Revenue & Profitability
+          </h3>
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="ml-2 p-1 hover:bg-slate-100 rounded transition-colors"
+            aria-label={isCollapsed ? "Expand section" : "Collapse section"}
+          >
+            <ChevronDown className={`h-5 w-5 text-slate-500 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
+          </button>
         </div>
         <Button
           type="button"
@@ -107,19 +117,22 @@ export function FinancialTierTable({
         </Button>
       </div>
 
-      {/* Info banner */}
-      <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
-        <Info className="h-4 w-4 inline mr-2" />
-        {isFlat 
-          ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
-          : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
-        }
-      </div>
+      {/* Collapsible content */}
+      {!isCollapsed && (
+        <>
+          {/* Info banner */}
+          <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+            <Info className="h-4 w-4 inline mr-2" />
+            {isFlat 
+              ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
+              : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
+            }
+          </div>
 
-      <FinancialTable>
-        <FinancialTableColGroup dealTiers={dealTiers} />
-        
-        <FinancialTableHeader>
+          <FinancialTable>
+            <FinancialTableColGroup dealTiers={dealTiers} />
+            
+            <FinancialTableHeader>
           <tr>
             <FinancialHeaderCell isMetricName />
             <FinancialHeaderCell>Last Year</FinancialHeaderCell>
@@ -142,9 +155,9 @@ export function FinancialTierTable({
               </FinancialHeaderCell>
             ))}
           </tr>
-        </FinancialTableHeader>
+            </FinancialTableHeader>
 
-        <FinancialTableBody>
+            <FinancialTableBody>
           {/* Annual Revenue Row */}
           <tr>
             <FinancialDataCell isMetricLabel>
@@ -315,8 +328,10 @@ export function FinancialTierTable({
               );
             })}
           </tr>
-        </FinancialTableBody>
-      </FinancialTable>
-    </FinancialSection>
+            </FinancialTableBody>
+          </FinancialTable>
+        </>
+      )}
+    </div>
   );
 }
