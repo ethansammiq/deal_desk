@@ -5,8 +5,12 @@ import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { type TierIncentive } from "@/components/TierSpecificIncentives";
 import { type SelectedIncentive } from "@/lib/incentive-data";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown, Info } from "lucide-react";
+import { Plus, ChevronDown, Info, Trash2 } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { FinancialTierTable } from "./FinancialTierTable";
+import { IncentiveSelector } from "@/components/IncentiveSelector";
+import TierSpecificIncentives from "@/components/TierSpecificIncentives";
+import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
 
 // Type this component to accept any valid form structure
 type IncentiveStructureFormValues = any;
@@ -41,6 +45,38 @@ export function IncentiveStructureSection({
 }: IncentiveStructureSectionProps) {
   const { calculationService } = useDealCalculations();
 
+  // ✅ Phase 2.5: Migrated tier management from ValueStructureSection
+  const addTier = () => {
+    const newTierNumber = dealTiers.length + 1;
+    const newTier: DealTier = {
+      tierNumber: newTierNumber,
+      annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+      annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
+      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
+      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
+      incentiveValue: 0,
+      incentiveNotes: "",
+    };
+    setDealTiers([...dealTiers, newTier]);
+  };
+
+  const removeTier = (tierNumber: number) => {
+    if (dealTiers.length > 1) {
+      const updatedTiers = dealTiers
+        .filter((tier) => tier.tierNumber !== tierNumber)
+        .map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
+      setDealTiers(updatedTiers);
+    }
+  };
+
+  const updateTier = (tierNumber: number, updates: Partial<DealTier>) => {
+    const updatedTiers = dealTiers.map((tier) =>
+      tier.tierNumber === tierNumber ? { ...tier, ...updates } : tier
+    );
+    setDealTiers(updatedTiers);
+  };
+
 
 
   // Helper to calculate incentive costs for a tier
@@ -52,29 +88,60 @@ export function IncentiveStructureSection({
   const lastYearIncentiveCost = 50000;
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        {/* Header with collapsible control */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
-              Incentive Structure
-            </h3>
-            <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
+    <div className="space-y-8">
+      {/* ✅ Phase 2.5: Revenue & Profitability Section migrated from ValueStructureSection */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-medium">Revenue & Profitability</h3>
+            {dealStructureType === "tiered" && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTier}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Tier
+              </Button>
+            )}
           </div>
-          <Button
-            type="button"
-            onClick={() => setShowAddIncentiveForm(true)}
-            variant="outline"
-            size="sm"
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Incentive
-          </Button>
-        </div>
+          
+          <FinancialTierTable
+            dealTiers={dealTiers}
+            setDealTiers={setDealTiers}
+            lastYearRevenue={850000}
+            lastYearGrossMargin={35.0}
+            isFlat={dealStructureType === "flat_commit"}
+          />
+        </CardContent>
+      </Card>
 
-        {/* Info banner */}
+      {/* ✅ Phase 2.5: Incentive Structure Section */}
+      <Card>
+        <CardContent className="p-6">
+          {/* Header with collapsible control */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                Incentive Structure
+              </h3>
+              <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
+            </div>
+            <Button
+              type="button"
+              onClick={() => setShowAddIncentiveForm(true)}
+              variant="outline"
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Incentive
+            </Button>
+          </div>
+
+          {/* Info banner */}
         <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-6">
           <Info className="h-4 w-4 inline mr-2" />
           Incentives are additional benefits provided to the client based on performance.
@@ -176,7 +243,7 @@ export function IncentiveStructureSection({
                       const serviceTier = {
                         tierNumber: tier.tierNumber,
                         annualRevenue: tier.annualRevenue,
-                        annualGrossMarginPercent: tier.annualGrossMarginPercent
+                        annualGrossMargin: tier.annualGrossMargin
                       };
                       const clientValue = calculationService.calculateClientValue(serviceTier);
                       return (
@@ -202,7 +269,7 @@ export function IncentiveStructureSection({
                       const serviceTier = {
                         tierNumber: tier.tierNumber,
                         annualRevenue: tier.annualRevenue,
-                        annualGrossMarginPercent: tier.annualGrossMarginPercent
+                        annualGrossMargin: tier.annualGrossMargin
                       };
                       const growthRate = calculationService.calculateClientValueGrowthRate(
                         serviceTier,
@@ -226,7 +293,8 @@ export function IncentiveStructureSection({
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1946,6 +1946,580 @@ export default function SubmitDeal() {
                   </div>
                 )}
                 {/* ✅ Phase 2.5: Legacy inline incentive section removed - consolidated into IncentiveStructureSection */}
+                                        growthRate > 0
+                                          ? "text-red-600"
+                                          : "text-green-600"
+                                      }
+                                    >
+                                      {formatPercentage(growthRate)}
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+
+                            {/* Total Client Value */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Total Client Value
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  Expected business value from incentive
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                {formatCurrency(340000)}{" "} {/* Previous year client value - 40% of $850k */}
+                                {/* Previous year client value */}
+                              </td>
+                              {dealTiers.map((tier) => (
+                                <td
+                                  key={tier.tierNumber}
+                                  className="p-3 border border-slate-200 text-center"
+                                >
+                                  {formatCurrency(calculateClientValue(tier))}
+                                </td>
+                              ))}
+                            </tr>
+
+                            {/* Client Value Growth Rate */}
+                            <tr>
+                              <td className="p-3 border border-slate-200 bg-slate-50">
+                                <div className="font-medium">
+                                  Client Value Growth Rate
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  Change vs. last year
+                                </div>
+                              </td>
+                              <td className="p-3 border border-slate-200 text-center">
+                                —
+                              </td>
+                              {dealTiers.map((tier) => {
+                                // Calculate client value growth rate for this tier
+                                const growthRate =
+                                  calculateClientValueGrowthRate(tier);
+                                return (
+                                  <td
+                                    key={tier.tierNumber}
+                                    className="p-3 border border-slate-200 text-center"
+                                  >
+                                    <span
+                                      className={
+                                        growthRate > 0
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      {formatPercentage(growthRate)}
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Close the main incentives section container div */}
+                  {/* This section is hidden - we use tiered view for all deal types */}
+                  {false && dealStructureType === "flat_commit" && (
+                    <div className="mt-8 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-slate-900">
+                          Flat Commitment Structure
+                        </h3>
+                      </div>
+
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Annual Revenue */}
+                          <FormField
+                            control={form.control}
+                            name="annualRevenue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  Annual Revenue{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">
+                                      $
+                                    </span>
+                                  </div>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      placeholder="0.00"
+                                      className="pl-7"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormDescription>
+                                  Total annual revenue expectation for this deal
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Gross Margin Percentage */}
+                          <FormField
+                            control={form.control}
+                            name="annualGrossMargin"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  Gross Margin (%){" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <div className="relative">
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      placeholder="0"
+                                      className="pr-8"
+                                      min="0"
+                                      max="100"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : 0;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span className="text-slate-500 sm:text-sm">
+                                      %
+                                    </span>
+                                  </div>
+                                </div>
+                                <FormDescription>
+                                  Expected gross margin percentage for this
+                                  revenue
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Calculated Values */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-slate-200">
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Total Revenue
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                Number(form.watch("annualRevenue")) || 0,
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Gross Margin
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                ((Number(form.watch("annualRevenue")) ||
+                                  0) *
+                                  (Number(
+                                    form.watch("annualGrossMargin"),
+                                  ) || 0)) /
+                                  100,
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-slate-700 mb-1">
+                              Monthly Revenue
+                            </h4>
+                            <div className="text-xl font-semibold text-slate-900">
+                              {formatCurrency(
+                                (Number(form.watch("annualRevenue")) ||
+                                  0) /
+                                  (Number(form.watch("contractTerm")) ||
+                                    12),
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Incentive Value for Flat Commit - No header as requested */}
+                      <div className="mt-6">
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-1/3">
+                                  Field
+                                </th>
+                                <th className="text-left p-3 bg-slate-100 border border-slate-200 w-2/3">
+                                  Current
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Incentive Type Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Type
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <Select
+                                    defaultValue="rebate"
+                                    onValueChange={(value) => {
+                                      const newTier = { ...dealTiers[0] };
+                                      newTier.incentiveCategory = value as any;
+                                      const newTiers = [
+                                        newTier,
+                                        ...dealTiers.slice(1),
+                                      ];
+                                      setDealTiers(newTiers);
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="rebate">
+                                        Rebate
+                                      </SelectItem>
+                                      <SelectItem value="discount">
+                                        Discount
+                                      </SelectItem>
+                                      <SelectItem value="bonus">
+                                        Bonus
+                                      </SelectItem>
+                                      <SelectItem value="other">
+                                        Other
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Percentage Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Percentage
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      className="pr-8 w-full"
+                                      placeholder="0.00"
+                                      min="0"
+                                      max="100"
+                                      value={
+                                        dealTiers[0] ? (dealTiers[0].incentiveValue / (dealTiers[0].annualRevenue || 1)) * 100 : 0
+                                      }
+                                      onChange={(e) => {
+                                        const newTier = { ...dealTiers[0] };
+                                        // Calculate incentive value based on percentage and total revenue
+                                        const annualRevenue =
+                                          Number(
+                                            form.watch("annualRevenue"),
+                                          ) || 0;
+                                        const percent =
+                                          parseFloat(e.target.value) / 100;
+                                        newTier.incentiveValue =
+                                          annualRevenue * percent;
+
+                                        const newTiers = [
+                                          newTier,
+                                          ...dealTiers.slice(1),
+                                        ];
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">
+                                        %
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Amount Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Incentive Amount
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                      <span className="text-slate-500 sm:text-sm">
+                                        $
+                                      </span>
+                                    </div>
+                                    <Input
+                                      type="number"
+                                      className="pl-7 w-full"
+                                      placeholder="0.00"
+                                      value={dealTiers[0].incentiveValue || 0}
+                                      onChange={(e) => {
+                                        const newTier = { ...dealTiers[0] };
+                                        newTier.incentiveValue = parseFloat(
+                                          e.target.value,
+                                        );
+
+                                        const newTiers = [
+                                          newTier,
+                                          ...dealTiers.slice(1),
+                                        ];
+                                        setDealTiers(newTiers);
+                                      }}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {/* Incentive Notes Row */}
+                              <tr>
+                                <td className="font-medium p-3 border border-slate-200 bg-slate-50">
+                                  Notes
+                                </td>
+                                <td className="p-3 border border-slate-200">
+                                  <Textarea
+                                    placeholder="Enter any notes about this incentive..."
+                                    value={dealTiers[0].incentiveNotes || ""}
+                                    onChange={(e) => {
+                                      const newTier = { ...dealTiers[0] };
+                                      newTier.incentiveNotes = e.target.value;
+                                      const newTiers = [
+                                        newTier,
+                                        ...dealTiers.slice(1),
+                                      ];
+                                      setDealTiers(newTiers);
+                                    }}
+                                    className="min-h-[80px]"
+                                  />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+                          <Info className="h-4 w-4 inline mr-2" />
+                          Flat commitment deals typically have a single
+                          incentive structure based on the total annual revenue.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                
+                </div>
+                
+                {/* Financial Summary Table - Calculated values for each tier */}
+                <div className="mt-8 mb-6 bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
+                    Financial Summary
+                  </h3>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse table-fixed">
+                      <colgroup>
+                        <col className="w-[30%]" />
+                        <col className="w-[14%]" />
+                        {dealTiers.map((tier) => (
+                          <col
+                            key={`col-summary-${tier.tierNumber}`}
+                            className="w-[14%]"
+                          />
+                        ))}
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                          <th className="text-center p-3 bg-slate-100 border border-slate-200">
+                            Last Year
+                          </th>
+                          {dealTiers.map((tier) => (
+                            <th
+                              key={tier.tierNumber}
+                              className="text-center p-3 bg-slate-100 border border-slate-200"
+                            >
+                              Tier {tier.tierNumber}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Adjusted Gross Margin */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Margin
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Gross margin after incentives
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {(() => {
+                              const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                              return formatPercentage(dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100);
+                            })()}{" "}
+                            {/* Last year value */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin =
+                              revenue > 0 ? grossProfit / revenue : 0;
+
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                {formatPercentage(adjustedMargin)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+
+                        {/* Adjusted Gross Profit */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Profit
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Gross profit after incentive costs
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            {formatCurrency(dealCalculations.calculationService.getPreviousYearAdjustedGrossProfit(
+                              form.watch("salesChannel"), 
+                              form.watch("advertiserName"), 
+                              form.watch("agencyName")
+                            ))}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross profit for this tier
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                {formatCurrency(grossProfit)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                        
+                        {/* Adjusted Gross Margin Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Margin Growth Rate
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Percentage change in adjusted margin
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate the adjusted gross margin (%) for this tier
+                            // This takes into account the incentive cost
+                            const grossProfit = calculateTierGrossProfit(tier);
+                            const revenue = tier.annualRevenue || 0;
+                            const adjustedMargin =
+                              revenue > 0 ? grossProfit / revenue : 0;
+
+                            // Get previous year margin for comparison
+                            const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+                            const previousYearMargin = dealCalculations.getPreviousYearMargin(currentSalesChannel, advertiserName, agencyName) / 100;
+
+                            // Calculate growth rate (difference in percentage points)
+                            const marginGrowthRate =
+                              adjustedMargin - previousYearMargin;
+
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                <span
+                                  className={
+                                    marginGrowthRate > 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }
+                                >
+                                  {formatPercentage(marginGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+
+                        {/* Adjusted Gross Profit Growth Rate */}
+                        <tr>
+                          <td className="p-3 border border-slate-200 bg-slate-50">
+                            <div className="font-medium">
+                              Adjusted Gross Profit Growth Rate
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Percentage increase in adjusted profit vs last
+                              year
+                            </div>
+                          </td>
+                          <td className="p-3 border border-slate-200 text-center">
+                            — {/* Baseline */}
+                          </td>
+                          {dealTiers.map((tier) => {
+                            // Calculate adjusted profit growth rate for this tier
+                            const profitGrowthRate =
+                              calculateAdjustedGrossProfitGrowthRate(tier);
+                            return (
+                              <td
+                                key={tier.tierNumber}
+                                className="p-3 border border-slate-200 text-center"
+                              >
+                                <span
+                                  className={
+                                    profitGrowthRate > 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }
+                                >
+                                  {formatPercentage(profitGrowthRate)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
                 
                 <div className="mt-8 flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep}>
