@@ -74,14 +74,8 @@ import {
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2 } from "lucide-react";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
-import {
-  type SelectedIncentive,
-  incentiveCategories,
-} from "@/lib/incentive-data";
-import { useIncentiveSelection } from "@/hooks/useIncentiveSelection";
-import TierSpecificIncentives, {
-  type TierIncentive,
-} from "@/components/TierSpecificIncentives";
+// ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
+import { incentiveCategories } from "@/lib/incentive-data";
 
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
@@ -156,15 +150,7 @@ export default function SubmitDeal() {
     setCurrentApprover(approvalInfo);
   };
 
-  // ✅ Phase 2.2: Updated to use hook actions
-  const handleIncentiveChange = (incentives: SelectedIncentive[]) => {
-    incentiveManager.clearAllIncentives();
-    incentives.forEach(incentive => incentiveManager.addSelectedIncentive(incentive));
-  };
-
-  const handleTierIncentiveChange = (incentives: TierIncentive[]) => {
-    incentives.forEach(incentive => incentiveManager.addTierIncentive(incentive));
-  };
+  // ❌ ELIMINATED: Incentive change handlers - DealTier manages its own data
 
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
@@ -202,12 +188,8 @@ export default function SubmitDeal() {
   // dealTiers replaced by tierManager.tiers
 
   // ✅ Phase 2.2: Migrated incentive state to useIncentiveSelection hook
-  const incentiveManager = useIncentiveSelection();
-  const { 
-    selectedIncentives, 
-    tierIncentives, 
-    showAddIncentiveForm
-  } = incentiveManager;
+  // ❌ ELIMINATED: useIncentiveSelection - using DealTier as single source of truth
+  const [showAddIncentiveForm, setShowAddIncentiveForm] = useState(false);
 
   // Initialize the form
   const form = useForm<DealFormValues>({
@@ -318,8 +300,10 @@ export default function SubmitDeal() {
     salesChannel: String(salesChannel || "")
   });
 
+  // ❌ ELIMINATED: Using DealTier directly for incentive cost calculation
   const calculateTierIncentiveCost = (tierNumber: number): number => {
-    return dealCalculations.calculateTierIncentiveCost(tierNumber, selectedIncentives, tierIncentives);
+    const tier = dealTiers.find(t => t.tierNumber === tierNumber);
+    return tier?.incentiveValue || 0;
   };
 
   // ✅ PHASE 2: Replace duplicate logic with service calls
@@ -330,7 +314,7 @@ export default function SubmitDeal() {
       annualRevenue: tier.annualRevenue,
       annualGrossMargin: tier.annualGrossMargin
     };
-    return dealCalculations.calculateTierGrossProfit(serviceTier, selectedIncentives, tierIncentives);
+    return dealCalculations.calculateTierGrossProfit(serviceTier, [], []); // ❌ ELIMINATED: selectedIncentives, tierIncentives
   };
 
   // ✅ PHASE 2: Replace with service call  
@@ -1361,17 +1345,8 @@ export default function SubmitDeal() {
                     dealStructureType={dealStructureType}
                     dealTiers={dealTiers}
                     setDealTiers={setDealTiers}
-                    selectedIncentives={selectedIncentives}
-                    setSelectedIncentives={(incentives) => {
-                      incentiveManager.clearAllIncentives();
-                      incentives.forEach(incentive => incentiveManager.addSelectedIncentive(incentive));
-                    }}
-                    tierIncentives={tierIncentives}
-                    setTierIncentives={(incentives) => {
-                      incentives.forEach(incentive => incentiveManager.addTierIncentive(incentive));
-                    }}
                     showAddIncentiveForm={showAddIncentiveForm}
-                    setShowAddIncentiveForm={incentiveManager.toggleAddIncentiveForm}
+                    setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
 
                   {/* ✅ Phase 2.3: Legacy flat_commit code block removed */}
