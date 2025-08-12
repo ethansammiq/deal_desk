@@ -163,13 +163,15 @@ export function IncentiveSelector({
         {selectedOption && (
           <div>
             <Label className="text-sm font-medium">4. Configure Incentive by Tier</Label>
-            <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
+            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left p-3 font-medium text-gray-700">Value Details</th>
+                  <tr className="bg-gray-50">
+                    <th className="text-left p-4 font-medium text-gray-700 border-b border-gray-200 border-r border-gray-200">
+                      Value Details
+                    </th>
                     {dealTiers.map((tier) => (
-                      <th key={tier.tierNumber} className="text-center p-3 font-medium text-gray-700">
+                      <th key={tier.tierNumber} className="text-center p-4 font-medium text-gray-700 border-b border-gray-200 border-r border-gray-200 last:border-r-0">
                         Tier {tier.tierNumber}
                       </th>
                     ))}
@@ -177,11 +179,11 @@ export function IncentiveSelector({
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-3 border-r border-gray-200 font-medium">
+                    <td className="p-4 font-medium text-gray-900 bg-gray-50 border-r border-gray-200">
                       Incentive Value (USD)
                     </td>
                     {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="p-2 text-center">
+                      <td key={tier.tierNumber} className="p-3 text-center border-r border-gray-200 last:border-r-0">
                         <div className="flex items-center justify-center">
                           <span className="text-gray-500 mr-1">$</span>
                           <Input
@@ -189,7 +191,7 @@ export function IncentiveSelector({
                             placeholder="0"
                             value={tierValues[tier.tierNumber] || ""}
                             onChange={(e) => handleTierValueChange(tier.tierNumber, e.target.value)}
-                            className="w-20 text-center"
+                            className="w-24 text-center border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                           />
                         </div>
                       </td>

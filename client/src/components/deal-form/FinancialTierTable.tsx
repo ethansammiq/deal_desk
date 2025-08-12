@@ -37,9 +37,9 @@ export function FinancialTierTable({
       tierNumber: newTierNumber,
       annualRevenue: 0,
       annualGrossMargin: 0.35, // 35% as decimal
-      incentiveCategory: "financial",
-      incentiveSubCategory: "discounts",
-      specificIncentive: "Volume Discount",
+      categoryName: "Financial", // ✅ FIXED: Use consistent field names
+      subCategoryName: "Discounts", // ✅ FIXED: Use consistent field names
+      incentiveOption: "Volume Discount", // ✅ FIXED: Use consistent field names
       incentiveValue: 0,
       incentiveNotes: "",
     };
