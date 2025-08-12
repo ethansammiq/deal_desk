@@ -186,7 +186,7 @@ export function IncentiveStructureSection({
                               {incentive.option || 'Discount'}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {incentive.category || 'Financial'} → {incentive.subCategory || 'Discount'}
+                              {incentive.categoryId || 'Financial'} → {incentive.subCategoryId || 'Discount'}
                             </div>
                           </div>
                         </td>
@@ -205,11 +205,14 @@ export function IncentiveStructureSection({
                           </Button>
                         </td>
                         {dealTiers.map((tier) => {
+                          // Try multiple data sources for the incentive value
                           const tierIncentive = tierIncentives.find(ti => 
                             ti.tierId === tier.tierNumber && 
-                            ti.type === incentive.subCategory
+                            (ti.type === incentive.subCategoryId || ti.type === incentive.option)
                           );
-                          const value = tierIncentive ? tierIncentive.value : tier.incentiveValue;
+                          
+                          // Check for actual values in the dealTier - this is where the $50k/$75k values are stored
+                          const value = tier.incentiveValue || 0;
                           return (
                             <td key={`incentive-value-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
                               ${(value || 0).toLocaleString()}
