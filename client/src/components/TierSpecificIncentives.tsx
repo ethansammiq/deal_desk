@@ -34,7 +34,7 @@ export default function TierSpecificIncentives({
 
   // Find existing incentive for a tier or return null
   const getIncentiveForTier = (tierId: number) => {
-    return incentives.find(i => i.tierId === tierId) || null;
+    return incentives?.find(i => i.tierId === tierId) || null;
   };
 
   // Start editing an incentive for a tier
@@ -69,7 +69,7 @@ export default function TierSpecificIncentives({
     
     // Remove any existing incentive for this tier and add the new one
     const updatedIncentives = [
-      ...incentives.filter(i => i.tierId !== editingTierId),
+      ...(incentives || []).filter(i => i.tierId !== editingTierId),
       newIncentive
     ];
     
@@ -86,7 +86,7 @@ export default function TierSpecificIncentives({
 
   // Remove an incentive
   const removeIncentive = (tierId: number) => {
-    onChange(incentives.filter(i => i.tierId !== tierId));
+    onChange((incentives || []).filter(i => i.tierId !== tierId));
   };
 
   return (

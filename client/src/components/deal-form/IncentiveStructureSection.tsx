@@ -315,7 +315,7 @@ export function IncentiveStructureSection({
           <div className="mt-6">
             <TierSpecificIncentives
               dealTiers={dealTiers}
-              tierIncentives={tierIncentives}
+              incentives={tierIncentives}
               onChange={setTierIncentives}
             />
           </div>
