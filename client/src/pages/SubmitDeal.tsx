@@ -81,7 +81,9 @@ import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisp
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 
+import { FinancialTierTable } from "@/components/deal-form/FinancialTierTable";
 import { IncentiveStructureSection } from "@/components/deal-form/IncentiveStructureSection";
+import { CostValueAnalysisSection } from "@/components/deal-form/CostValueAnalysisSection";
 import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
@@ -1340,7 +1342,16 @@ export default function SubmitDeal() {
                   {/* Structure card removed as it's now empty since fields were moved to Deal Overview */}
                   {/* ✅ Phase 2.5: Removed ValueStructureSection - now handled by IncentiveStructureSection */}
 
-                  {/* Separate Incentive Structure Section - Show for both types */}
+                  {/* Revenue & Profitability Section */}
+                  <FinancialTierTable
+                    dealTiers={dealTiers}
+                    setDealTiers={setDealTiers}
+                    lastYearRevenue={850000}
+                    lastYearGrossMargin={35.0}
+                    isFlat={dealStructureType === "flat_commit"}
+                  />
+
+                  {/* Incentive Structure Section - Focused only on incentives */}
                   <IncentiveStructureSection
                     form={form}
                     dealStructureType={dealStructureType}
@@ -1350,7 +1361,12 @@ export default function SubmitDeal() {
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
 
-                  {/* Financial Summary Section - Separate from Incentive Structure */}
+                  {/* Cost & Value Analysis Section */}
+                  <CostValueAnalysisSection
+                    dealTiers={dealTiers}
+                  />
+
+                  {/* Financial Summary Section */}
                   <FinancialSummarySection 
                     dealTiers={dealTiers}
                     salesChannel={form.watch("salesChannel") || "independent_agency"}
