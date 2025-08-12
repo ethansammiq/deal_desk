@@ -89,40 +89,14 @@ export function IncentiveStructureSection({
 
   return (
     <div className="space-y-8">
-      {/* ✅ Phase 2.5: Single Revenue & Profitability Section */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium">Revenue & Profitability</h3>
-            {dealStructureType === "tiered" && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addTier}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Tier
-              </Button>
-            )}
-          </div>
-          
-          <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
-            <Info className="h-4 w-4 inline mr-2" />
-            This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include
-            Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance.
-          </div>
-          
-          <FinancialTierTable
-            dealTiers={dealTiers}
-            setDealTiers={setDealTiers}
-            lastYearRevenue={850000}
-            lastYearGrossMargin={35.0}
-            isFlat={dealStructureType === "flat_commit"}
-          />
-        </CardContent>
-      </Card>
+      {/* ✅ Revenue & Profitability - Clean single section */}
+      <FinancialTierTable
+        dealTiers={dealTiers}
+        setDealTiers={setDealTiers}
+        lastYearRevenue={850000}
+        lastYearGrossMargin={35.0}
+        isFlat={dealStructureType === "flat_commit"}
+      />
 
       {/* ✅ Phase 2.5: Incentive Structure Section */}
       <Card>
@@ -148,14 +122,109 @@ export function IncentiveStructureSection({
           </div>
 
           {/* Info banner */}
-        <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-6">
-          <Info className="h-4 w-4 inline mr-2" />
-          Incentives are additional benefits provided to the client based on performance.
-          Select appropriate incentive types and amounts for each tier of the deal.
-        </div>
+          <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-6">
+            <Info className="h-4 w-4 inline mr-2" />
+            Incentives are additional benefits provided to the client based on performance. Select appropriate incentive types and amounts for each tier of the deal.
+          </div>
 
-        <div className="space-y-6">
-          {/* Cost & Value Analysis Table */}
+          {/* Add Incentive Form - ABOVE Cost & Value Analysis */}
+          {showAddIncentiveForm && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+              <IncentiveSelector
+                selectedIncentives={selectedIncentives}
+                dealTiers={dealTiers}
+                onChange={setSelectedIncentives}
+                showAddForm={showAddIncentiveForm}
+              />
+              <Button
+                type="button"
+                onClick={() => setShowAddIncentiveForm(false)}
+                variant="outline"
+                size="sm"
+                className="mt-2"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {/* Selected Incentives Table - Shows applied incentives */}
+          {selectedIncentives && selectedIncentives.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold mb-4">Selected Incentives</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse bg-white rounded-lg border">
+                  <colgroup>
+                    <col className="w-[30%]" />
+                    <col className="w-[15%]" />
+                    {dealTiers.map((tier) => (
+                      <col key={`incentive-col-${tier.tierNumber}`} className="w-[15%]" />
+                    ))}
+                  </colgroup>
+                  
+                  <thead>
+                    <tr>
+                      <th className="text-left p-3 bg-slate-100 border border-slate-200 font-medium">Incentive Details</th>
+                      <th className="text-center p-3 bg-slate-100 border border-slate-200 font-medium">Actions</th>
+                      {dealTiers.map((tier) => (
+                        <th key={`incentive-th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
+                          Tier {tier.tierNumber}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {selectedIncentives.map((incentive, index) => (
+                      <tr key={index}>
+                        <td className="p-3 border border-slate-200">
+                          <div>
+                            <div className="font-medium text-purple-600 flex items-center">
+                              <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
+                                $
+                              </span>
+                              {incentive.type || 'Discount'}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Financial → {incentive.type}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3 border border-slate-200 text-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const updated = selectedIncentives.filter((_, i) => i !== index);
+                              setSelectedIncentives(updated);
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            🗑️
+                          </Button>
+                        </td>
+                        {dealTiers.map((tier) => {
+                          const tierIncentive = tierIncentives.find(ti => 
+                            ti.tierId === tier.tierNumber && 
+                            ti.type === incentive.type
+                          );
+                          const value = tierIncentive ? tierIncentive.value : (incentive.value || tier.incentiveValue);
+                          return (
+                            <td key={`incentive-value-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
+                              ${(value || 0).toLocaleString()}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Cost & Value Analysis Table - BELOW incentives */}
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Cost & Value Analysis</h4>
             <div className="overflow-x-auto">
@@ -299,27 +368,6 @@ export function IncentiveStructureSection({
             </div>
           </div>
 
-          {/* IncentiveSelector component for adding new incentives */}
-          {showAddIncentiveForm && (
-            <div className="mt-6">
-              <IncentiveSelector
-                selectedIncentives={selectedIncentives}
-                dealTiers={dealTiers}
-                onChange={setSelectedIncentives}
-                showAddForm={showAddIncentiveForm}
-              />
-            </div>
-          )}
-
-          {/* TierSpecificIncentives for managing per-tier incentives */}
-          <div className="mt-6">
-            <TierSpecificIncentives
-              dealTiers={dealTiers}
-              incentives={tierIncentives}
-              onChange={setTierIncentives}
-            />
-          </div>
-        </div>
         </CardContent>
       </Card>
 
