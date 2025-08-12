@@ -52,9 +52,9 @@ export function IncentiveStructureSection({
       tierNumber: newTierNumber,
       annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
       annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
-      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
-      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
+      categoryName: "Financial", // Display name from incentive library
+      subCategoryName: "Discounts", // Display name from incentive library
+      incentiveOption: "Volume Discount", // Selected option from incentive library
       incentiveValue: 0,
       incentiveNotes: "",
     };
@@ -183,10 +183,10 @@ export function IncentiveStructureSection({
                               <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
                                 $
                               </span>
-                              {incentive.option || 'Discount'}
+                              {tier.incentiveOption || 'Discount'}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {incentive.categoryId || 'Financial'} → {incentive.subCategoryId || 'Discount'}
+                              {tier.categoryName || 'Financial'} → {tier.subCategoryName || 'Discount'}
                             </div>
                           </div>
                         </td>
@@ -205,13 +205,7 @@ export function IncentiveStructureSection({
                           </Button>
                         </td>
                         {dealTiers.map((tier) => {
-                          // Try multiple data sources for the incentive value
-                          const tierIncentive = tierIncentives.find(ti => 
-                            ti.tierId === tier.tierNumber && 
-                            (ti.type === incentive.subCategoryId || ti.type === incentive.option)
-                          );
-                          
-                          // Check for actual values in the dealTier - this is where the $50k/$75k values are stored
+                          // ✅ SIMPLIFIED: Use DealTier as single source of truth
                           const value = tier.incentiveValue || 0;
                           return (
                             <td key={`incentive-value-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">

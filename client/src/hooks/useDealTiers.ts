@@ -11,9 +11,9 @@ export interface DealTier {
   tierNumber: number;
   annualRevenue: number;                    // USD
   annualGrossMargin: number;                // Decimal (0.355 for 35.5%)
-  incentiveCategory: "financial" | "resources" | "product-innovation" | "technology" | "analytics" | "marketing";
-  incentiveSubCategory: string;
-  specificIncentive: string;
+  categoryName: string;                     // Display name: "Financial", "Resources", etc.
+  subCategoryName: string;                  // Display name: "Discounts", "Bonuses", etc.
+  incentiveOption: string;                  // Selected option: "Volume Discount", "Growth Bonus", etc.
   incentiveValue: number;                   // USD amount
   
   // Optional field
@@ -52,9 +52,9 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       tierNumber: 1,
       annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
       annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
-      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
-      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
+      categoryName: "Financial", // Display name from incentive library
+      subCategoryName: "Discounts", // Display name from incentive library
+      incentiveOption: "Volume Discount", // Selected option from incentive library
       incentiveValue: 0,
       incentiveNotes: "",
     }];

@@ -76,11 +76,9 @@ export const dealTiers = pgTable("deal_tiers", {
   tierNumber: integer("tier_number").notNull(), // 1, 2, 3, 4 for tier ordering
   annualRevenue: doublePrecision("annual_revenue").notNull(),
   annualGrossMargin: doublePrecision("annual_gross_margin").notNull(), // stored as decimal (0.355 for 35.5%)
-  incentiveCategory: text("incentive_category", { 
-    enum: ["financial", "resources", "product-innovation", "technology", "analytics", "marketing"] 
-  }).notNull(),
-  incentiveSubCategory: text("incentive_sub_category").notNull(),
-  specificIncentive: text("specific_incentive").notNull(),
+  categoryName: text("category_name").notNull(), // Display name: "Financial", "Resources", etc.
+  subCategoryName: text("sub_category_name").notNull(), // Display name: "Discounts", "Bonuses", etc.
+  incentiveOption: text("incentive_option").notNull(), // Selected option: "Volume Discount", "Growth Bonus", etc.
   incentiveValue: doublePrecision("incentive_value").notNull(), // USD amount
   incentiveNotes: text("incentive_notes"), // Optional field
   createdAt: timestamp("created_at").defaultNow(),
@@ -94,9 +92,9 @@ export const insertDealTierSchema = createInsertSchema(dealTiers)
     annualRevenue: z.number().min(0, "Annual revenue must be positive"),
     annualGrossMargin: z.number().min(0).max(1, "Gross margin must be between 0 and 1 (decimal)"),
     incentiveValue: z.number().min(0, "Incentive value must be positive"),
-    incentiveCategory: z.enum(["financial", "resources", "product-innovation", "technology", "analytics", "marketing"]),
-    incentiveSubCategory: z.string().min(1, "Incentive subcategory is required"),
-    specificIncentive: z.string().min(1, "Specific incentive is required"),
+    categoryName: z.string().min(1, "Category name is required"),
+    subCategoryName: z.string().min(1, "Subcategory name is required"),
+    incentiveOption: z.string().min(1, "Incentive option is required"),
     incentiveNotes: z.string().optional(),
   });
 
