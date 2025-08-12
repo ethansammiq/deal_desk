@@ -15,6 +15,7 @@ export interface SelectedIncentive {
 
 export interface UseIncentiveSelectionOptions {
   initialSelectedIncentives?: SelectedIncentive[];
+  // initialTierIncentives?: TierIncentive[]; // REMOVED
 }
 
 export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}) {
@@ -22,8 +23,9 @@ export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}
     initialSelectedIncentives = []
   } = options;
 
-  // ✅ Phase 2.2: Simplified state management - TierIncentive eliminated
+  // ✅ Phase 2.2: Migrated from manual state management  
   const [selectedIncentives, setSelectedIncentives] = useState<SelectedIncentive[]>(initialSelectedIncentives);
+  // const [tierIncentives, setTierIncentives] = useState<TierIncentive[]>(initialTierIncentives); // ELIMINATED
   const [showAddIncentiveForm, setShowAddIncentiveForm] = useState<boolean>(false);
 
   // Add selected incentive
@@ -45,10 +47,24 @@ export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}
     );
   }, []);
 
+  // ❌ ELIMINATED: TierIncentive management functions - use DealTier directly
+
   // Clear all incentives
   const clearAllIncentives = useCallback(() => {
     setSelectedIncentives([]);
+    setTierIncentives([]);
+    setShowAddIncentiveForm(false);
   }, []);
+
+  // Get incentives by tier
+  const getIncentivesByTier = useCallback((tierNumber: number) => {
+    return tierIncentives.filter(incentive => incentive.tierNumber === tierNumber);
+  }, [tierIncentives]);
+
+  // Calculate total incentive value
+  const calculateTotalIncentiveValue = useCallback(() => {
+    return tierIncentives.reduce((total, incentive) => total + incentive.incentiveValue, 0);
+  }, [tierIncentives]);
 
   // Toggle add incentive form
   const toggleAddIncentiveForm = useCallback(() => {
@@ -56,25 +72,25 @@ export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}
   }, []);
 
   return {
-    // ✅ SIMPLIFIED: Hook state management - TierIncentive eliminated
+    // State
     selectedIncentives,
+    tierIncentives,
     showAddIncentiveForm,
     
-    // Setters for controlled components
-    setSelectedIncentives,
-    setShowAddIncentiveForm,
-    
-    // CRUD operations for selected incentives
+    // Actions
     addSelectedIncentive,
     removeSelectedIncentive,
     updateSelectedIncentive,
-    
-    // Utility functions
+    addTierIncentive,
+    removeTierIncentive,
+    updateTierIncentive,
     clearAllIncentives,
     toggleAddIncentiveForm,
     
     // Derived state
-    totalIncentiveCount: selectedIncentives.length,
-    hasIncentives: selectedIncentives.length > 0,
+    getIncentivesByTier,
+    calculateTotalIncentiveValue,
+    totalIncentiveCount: selectedIncentives.length + tierIncentives.length,
+    hasIncentives: selectedIncentives.length > 0 || tierIncentives.length > 0,
   };
 }

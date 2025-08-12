@@ -6,25 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from "@/components/ui/badge";
 
-export interface TierIncentive {
-  tierId: number;
-  type: string; // 'volume_discount', 'rebate', etc.
-  percentage: number;
-  value?: number;
-  notes?: string;
-}
+// ❌ ELIMINATED: TierIncentive interface - use DealTier directly
+// This interface has been removed to eliminate redundant data structures
 
+// ❌ ELIMINATED: Component uses DealTier directly now
 interface TierSpecificIncentivesProps {
   dealTiers: Array<{tierNumber: number, annualRevenue: number, [key: string]: any}>;
-  incentives: TierIncentive[];
-  onChange: (incentives: TierIncentive[]) => void;
+  // incentives: TierIncentive[]; // REMOVED
+  // onChange: (incentives: TierIncentive[]) => void; // REMOVED
 }
 
 export default function TierSpecificIncentives({
-  dealTiers,
-  incentives,
-  onChange
+  dealTiers
 }: TierSpecificIncentivesProps) {
+  // ❌ ELIMINATED: This component now deprecated - DealTier manages incentives directly
   const [editingTierId, setEditingTierId] = useState<number | null>(null);
   const [tempIncentive, setTempIncentive] = useState<Partial<TierIncentive>>({
     type: 'volume_discount',

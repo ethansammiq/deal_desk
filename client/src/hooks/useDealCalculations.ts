@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { DealCalculationService } from "@/services/dealCalculations";
-import { SelectedIncentive } from "@/lib/incentive-data";
-import { TierIncentive } from "@/components/TierSpecificIncentives";
+import { SelectedIncentive } from "@/hooks/useIncentiveSelection";
+// import { TierIncentive } from "@/components/TierSpecificIncentives"; // ELIMINATED
 import { DealFinancialSummary } from "@/lib/utils";
 
 // Define DealTier interface locally for now
@@ -30,7 +30,6 @@ export function useDealCalculations(
     () => (
       dealTiers: DealTier[],
       selectedIncentives: SelectedIncentive[],
-      tierIncentives: TierIncentive[],
       salesChannel: string,
       advertiserName?: string,
       agencyName?: string
@@ -38,7 +37,7 @@ export function useDealCalculations(
       return calculationService.calculateDealFinancialSummary(
         dealTiers,
         selectedIncentives,
-        tierIncentives,
+        [], // Empty tierIncentives - eliminated
         salesChannel,
         advertiserName,
         agencyName
