@@ -84,7 +84,7 @@ import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { FinancialTierTable } from "@/components/deal-form/FinancialTierTable";
 import { IncentiveStructureSection } from "@/components/deal-form/IncentiveStructureSection";
 import { CostValueAnalysisSection } from "@/components/deal-form/CostValueAnalysisSection";
-import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
+import FinancialSummarySection from "@/components/deal-form/FinancialSummarySection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";

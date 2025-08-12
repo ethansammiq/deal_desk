@@ -1,6 +1,7 @@
 import { DealTier } from "@shared/schema";
 import { useDealCalculations } from "../../hooks/useDealCalculations";
 import { useQuery } from "@tanstack/react-query";
+import { memo } from "react";
 import {
   FinancialSection,
   FinancialTable,
@@ -22,7 +23,7 @@ interface FinancialSummarySectionProps {
   agencyName?: string;
 }
 
-export function FinancialSummarySection({ 
+function FinancialSummarySection({ 
   dealTiers, 
   salesChannel = "independent_agency",
   advertiserName,
@@ -215,3 +216,9 @@ export function FinancialSummarySection({
     </FinancialSection>
   );
 }
+
+// Export memoized version for performance optimization
+export default memo(FinancialSummarySection);
+
+// Also export named version for backwards compatibility
+export { FinancialSummarySection };

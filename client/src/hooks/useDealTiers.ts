@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from '@/config/businessConstants';
 
 // Unified tier interface - matches database schema exactly

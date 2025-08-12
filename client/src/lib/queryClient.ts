@@ -44,11 +44,22 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      // Phase 4 Optimization: Improve caching strategy
+      staleTime: 5 * 60 * 1000, // 5 minutes for regular data
+      cacheTime: 10 * 60 * 1000, // 10 minutes cache retention
+      retry: (failureCount, error) => {
+        // Smart retry logic: retry network errors, not business logic errors
+        if (failureCount >= 3) return false;
+        return !(error as any)?.message?.includes('400');
+      },
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
     mutations: {
-      retry: false,
+      retry: (failureCount, error) => {
+        // Retry mutations only on network failures, not validation errors
+        if (failureCount >= 2) return false;
+        return !(error as any)?.message?.includes('4');
+      },
     },
   },
 });
