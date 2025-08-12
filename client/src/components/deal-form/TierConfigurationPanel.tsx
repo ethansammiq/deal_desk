@@ -216,7 +216,7 @@ export function TierConfigurationPanel({
                 </div>
 
                 {/* Calculated Metrics */}
-                {(tier.annualRevenue && tier.annualGrossMarginPercent) && (
+                {(tier.annualRevenue && tier.annualGrossMargin) && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">
                       Tier Performance Metrics
