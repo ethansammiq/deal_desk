@@ -1,20 +1,33 @@
 import { DealTier } from "../../../shared/schema";
+import { useDealCalculations } from "../../hooks/useDealCalculations";
+import { useQuery } from "@tanstack/react-query";
 
 interface FinancialSummarySectionProps {
   dealTiers: DealTier[];
+  salesChannel?: string;
+  advertiserName?: string;
+  agencyName?: string;
 }
 
-export function FinancialSummarySection({ dealTiers }: FinancialSummarySectionProps) {
-  // Use same calculation logic as Cost & Value Analysis
-  const calculateTierIncentiveCost = (tierNumber: number): number => {
-    const tier = dealTiers.find(t => t.tierNumber === tierNumber);
-    return tier?.incentiveValue || 0;
-  };
+export function FinancialSummarySection({ 
+  dealTiers, 
+  salesChannel = "independent_agency",
+  advertiserName,
+  agencyName 
+}: FinancialSummarySectionProps) {
+  // Fetch agencies and advertisers for calculation service
+  const { data: agencies = [] } = useQuery({ queryKey: ["/api/agencies"] });
+  const { data: advertisers = [] } = useQuery({ queryKey: ["/api/advertisers"] });
+  
+  // Use shared calculation service
+  const { calculationService } = useDealCalculations(advertisers, agencies);
 
-  // Consistent baseline values with Cost & Value Analysis
-  const lastYearIncentiveCost = 50000;
-  const lastYearGrossProfit = 1879600;
-  const lastYearGrossMargin = 26.8;
+  // Use shared service for all calculations (no duplicate logic)
+
+  // Get consistent baseline values from shared service
+  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
+  const lastYearGrossProfit = calculationService.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
+  const lastYearGrossMargin = calculationService.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
 
   return (
     <div className="space-y-4">
@@ -56,17 +69,21 @@ export function FinancialSummarySection({ dealTiers }: FinancialSummarySectionPr
                 {lastYearGrossMargin.toFixed(1)}%
               </td>
               {dealTiers.map((tier) => {
-                // Calculate adjusted margin: (gross profit - incentive cost) / revenue
-                const revenue = tier.annualRevenue || 0;
-                const grossMargin = tier.annualGrossMargin || 0;
-                const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                const grossProfit = revenue * grossMargin;
-                const adjustedProfit = grossProfit - incentiveCost;
-                const adjustedMargin = revenue > 0 ? (adjustedProfit / revenue) * 100 : 0;
+                // Transform DealTier to service-compatible format and calculate adjusted margin
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: (tier.annualGrossMargin || 0) * 100 // Convert decimal to percentage
+                };
+                const adjustedMargin = calculationService.calculateAdjustedGrossMargin(
+                  serviceTier as any, 
+                  [], // selectedIncentives - empty for now
+                  [] // tierIncentives - empty for now
+                );
                 
                 return (
                   <td key={`adj-margin-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
-                    {adjustedMargin.toFixed(1)}%
+                    {(adjustedMargin * 100).toFixed(1)}%
                   </td>
                 );
               })}
@@ -84,12 +101,19 @@ export function FinancialSummarySection({ dealTiers }: FinancialSummarySectionPr
                 ${lastYearGrossProfit.toLocaleString()}
               </td>
               {dealTiers.map((tier) => {
-                // Calculate: original gross profit - incentive costs
+                // Transform DealTier and calculate adjusted gross profit using shared service logic
                 const revenue = tier.annualRevenue || 0;
-                const grossMargin = tier.annualGrossMargin || 0;
-                const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                const grossProfit = revenue * grossMargin;
-                const adjustedProfit = grossProfit - incentiveCost;
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: (tier.annualGrossMargin || 0) * 100 // Convert decimal to percentage
+                };
+                const adjustedMargin = calculationService.calculateAdjustedGrossMargin(
+                  serviceTier as any,
+                  [], // selectedIncentives - empty for now
+                  [] // tierIncentives - empty for now
+                );
+                const adjustedProfit = revenue * adjustedMargin;
                 
                 return (
                   <td key={`adj-profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
@@ -111,21 +135,27 @@ export function FinancialSummarySection({ dealTiers }: FinancialSummarySectionPr
                 —
               </td>
               {dealTiers.map((tier) => {
-                const revenue = tier.annualRevenue || 0;
-                const grossMargin = tier.annualGrossMargin || 0;
-                const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                const grossProfit = revenue * grossMargin;
-                const adjustedProfit = grossProfit - incentiveCost;
-                const currentMargin = revenue > 0 ? (adjustedProfit / revenue) * 100 : 0;
+                // Transform DealTier and use shared service to calculate adjusted gross margin growth rate
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: (tier.annualGrossMargin || 0) * 100 // Convert decimal to percentage
+                };
+                const growthRate = calculationService.calculateAdjustedGrossMarginGrowthRate(
+                  serviceTier as any,
+                  [], // selectedIncentives - empty for now
+                  [], // tierIncentives - empty for now
+                  salesChannel,
+                  advertiserName,
+                  agencyName
+                );
                 
-                const growthRate = lastYearGrossMargin > 0 
-                  ? ((currentMargin - lastYearGrossMargin) / lastYearGrossMargin) * 100 
-                  : 0;
-                const isNegative = growthRate < 0;
+                const growthRatePercent = growthRate * 100;
+                const isNegative = growthRatePercent < 0;
                 
                 return (
                   <td key={`margin-growth-${tier.tierNumber}`} className={`p-3 border border-slate-200 text-center font-medium ${isNegative ? 'text-red-600' : 'text-green-600'}`}>
-                    {growthRate.toFixed(1)}%
+                    {growthRatePercent.toFixed(1)}%
                   </td>
                 );
               })}
@@ -143,20 +173,27 @@ export function FinancialSummarySection({ dealTiers }: FinancialSummarySectionPr
                 —
               </td>
               {dealTiers.map((tier) => {
-                const revenue = tier.annualRevenue || 0;
-                const grossMargin = tier.annualGrossMargin || 0;
-                const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                const grossProfit = revenue * grossMargin;
-                const currentProfit = grossProfit - incentiveCost;
+                // Transform DealTier and use shared service to calculate adjusted gross profit growth rate
+                const serviceTier = {
+                  tierNumber: tier.tierNumber,
+                  annualRevenue: tier.annualRevenue,
+                  annualGrossMarginPercent: (tier.annualGrossMargin || 0) * 100 // Convert decimal to percentage
+                };
+                const growthRate = calculationService.calculateAdjustedGrossProfitGrowthRate(
+                  serviceTier as any,
+                  [], // selectedIncentives - empty for now  
+                  [], // tierIncentives - empty for now
+                  salesChannel,
+                  advertiserName,
+                  agencyName
+                );
                 
-                const growthRate = lastYearGrossProfit > 0 
-                  ? ((currentProfit - lastYearGrossProfit) / lastYearGrossProfit) * 100 
-                  : 0;
-                const isNegative = growthRate < 0;
+                const growthRatePercent = growthRate * 100;
+                const isNegative = growthRatePercent < 0;
                 
                 return (
                   <td key={`profit-growth-${tier.tierNumber}`} className={`p-3 border border-slate-200 text-center font-medium ${isNegative ? 'text-red-600' : 'text-green-600'}`}>
-                    {growthRate.toFixed(1)}%
+                    {growthRatePercent.toFixed(1)}%
                   </td>
                 );
               })}

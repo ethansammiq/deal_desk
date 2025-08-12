@@ -1351,7 +1351,12 @@ export default function SubmitDeal() {
                   />
 
                   {/* Financial Summary Section - Separate from Incentive Structure */}
-                  <FinancialSummarySection dealTiers={dealTiers} />
+                  <FinancialSummarySection 
+                    dealTiers={dealTiers}
+                    salesChannel={form.watch("salesChannel") || "independent_agency"}
+                    advertiserName={form.watch("advertiserName")}
+                    agencyName={form.watch("agencyName")}
+                  />
 
                   {/* ✅ Phase 2.3: Legacy flat_commit code block removed */}
                   {false && (
