@@ -61,7 +61,10 @@ This project is a comprehensive deal desk application designed to streamline com
   - Phase 2.5: UI consolidation ✅ COMPLETE
 - **Phase 3**: Error boundaries and loading states (NEXT)
 - **Phase 4**: Performance optimization and lazy loading (PENDING)
-- **Phase 5**: Incentive Data Structure Consolidation (IDENTIFIED - PENDING)
+- **Phase 5**: Incentive Data Structure Consolidation (PROPOSAL READY)
+  - **Goal**: Eliminate SelectedIncentive and TierIncentive redundancy
+  - **Approach**: Use DealTier as single source of truth
+  - **Benefit**: Eliminates data mapping complexity and architectural debt
 
 ## External Dependencies
 - **Anthropic AI (Claude)**: Integrated for intelligent deal assessment, analysis, and recommendations.
