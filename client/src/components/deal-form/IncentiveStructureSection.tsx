@@ -183,10 +183,10 @@ export function IncentiveStructureSection({
                               <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
                                 $
                               </span>
-                              {incentive.type || 'Discount'}
+                              {incentive.option || 'Discount'}
                             </div>
                             <div className="text-xs text-slate-500">
-                              Financial → {incentive.type}
+                              {incentive.category || 'Financial'} → {incentive.subCategory || 'Discount'}
                             </div>
                           </div>
                         </td>
@@ -207,9 +207,9 @@ export function IncentiveStructureSection({
                         {dealTiers.map((tier) => {
                           const tierIncentive = tierIncentives.find(ti => 
                             ti.tierId === tier.tierNumber && 
-                            ti.type === incentive.type
+                            ti.type === incentive.subCategory
                           );
-                          const value = tierIncentive ? tierIncentive.value : (incentive.value || tier.incentiveValue);
+                          const value = tierIncentive ? tierIncentive.value : tier.incentiveValue;
                           return (
                             <td key={`incentive-value-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
                               ${(value || 0).toLocaleString()}
