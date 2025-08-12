@@ -8,6 +8,22 @@ interface DealTier {
   annualGrossMarginPercent?: number;
 }
 
+// Legacy interface types (will be eliminated in Phase 5)
+interface SelectedIncentive {
+  tierNumber: number;
+  category: string;
+  subCategory: string;
+  option: string;
+  value: number;
+  notes?: string;
+}
+
+interface TierIncentive {
+  tierNumber: number;
+  percentage: number;
+  flatAmount: number;
+}
+
 /**
  * Service class for all deal-related financial calculations
  * Extracted from SubmitDeal.tsx to improve maintainability and testability
@@ -344,6 +360,21 @@ export class DealCalculationService {
 
     if (revenue === 0) return 0;
     return adjustedGrossProfit / revenue;
+  }
+
+  /**
+   * Calculate adjusted gross profit for a tier (gross profit after incentive costs)
+   */
+  calculateAdjustedGrossProfit(
+    tier: DealTier,
+    selectedIncentives: any[] = [],
+    tierIncentives: any[] = []
+  ): number {
+    const revenue = tier.annualRevenue || 0;
+    const marginPercent = tier.annualGrossMarginPercent || 0;
+    const grossProfit = revenue * (marginPercent / 100);
+    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    return grossProfit - incentiveCost;
   }
 
   /**
