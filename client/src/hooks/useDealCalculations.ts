@@ -1,15 +1,8 @@
 import { useMemo } from "react";
 import { DealCalculationService } from "@/services/dealCalculations";
-import { SelectedIncentive } from "@/hooks/useIncentiveSelection";
-// import { TierIncentive } from "@/components/TierSpecificIncentives"; // ELIMINATED
 import { DealFinancialSummary } from "@/lib/utils";
-
-// Define DealTier interface locally for now
-interface DealTier {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMarginPercent?: number;
-}
+// Import DealTier from the central hook
+import { DealTier } from "@/hooks/useDealTiers";
 
 /**
  * Custom hook for deal calculations with memoization
@@ -29,15 +22,12 @@ export function useDealCalculations(
   const calculateFinancialSummary = useMemo(
     () => (
       dealTiers: DealTier[],
-      selectedIncentives: SelectedIncentive[],
       salesChannel: string,
       advertiserName?: string,
       agencyName?: string
     ): DealFinancialSummary => {
       return calculationService.calculateDealFinancialSummary(
         dealTiers,
-        selectedIncentives,
-        [], // Empty tierIncentives - eliminated
         salesChannel,
         advertiserName,
         agencyName
@@ -50,16 +40,12 @@ export function useDealCalculations(
   const generateDealAnalysis = useMemo(
     () => (
       dealTiers: DealTier[],
-      selectedIncentives: SelectedIncentive[],
-      tierIncentives: TierIncentive[],
       salesChannel: string,
       advertiserName?: string,
       agencyName?: string
     ): string => {
       return calculationService.generateDealAnalysis(
         dealTiers,
-        selectedIncentives,
-        tierIncentives,
         salesChannel,
         advertiserName,
         agencyName
@@ -81,6 +67,7 @@ export function useDealCalculations(
     getPreviousYearMargin: calculationService.getPreviousYearMargin.bind(calculationService),
     getPreviousYearGrossProfit: calculationService.getPreviousYearGrossProfit.bind(calculationService),
     getPreviousYearIncentiveCost: calculationService.getPreviousYearIncentiveCost.bind(calculationService),
+    calculateBasicGrossProfit: calculationService.calculateBasicGrossProfit.bind(calculationService),
     calculateTierIncentiveCost: calculationService.calculateTierIncentiveCost.bind(calculationService),
     calculateTierGrossProfit: calculationService.calculateTierGrossProfit.bind(calculationService),
     calculateGrossMarginGrowthRate: calculationService.calculateGrossMarginGrowthRate.bind(calculationService),

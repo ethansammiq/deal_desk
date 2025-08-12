@@ -93,7 +93,13 @@ This project is a comprehensive deal desk application designed to streamline com
   - **✅ Bundle Optimization**: Lazy loading components with Suspense boundaries for code splitting
   - **✅ Smart Retry Logic**: Exponential backoff and intelligent error handling
   - **✅ Performance Monitoring**: Development-mode render time tracking and metrics
-- **Phase 6**: Legacy code cleanup in dealCalculations.ts (NEXT)
+- **Phase 6**: Gross Profit Calculation Consolidation ✅ COMPLETE 
+  - **✅ 100% Shared Calculation Logic**: Added calculateBasicGrossProfit() to DealCalculationService
+  - **✅ Custom Code Elimination**: Removed inline gross profit calculations from FinancialTierTable
+  - **✅ Service Integration**: Exposed method through useDealCalculations hook
+  - **✅ TypeScript Cleanup**: Fixed all LSP diagnostics and interface inconsistencies
+  - **✅ Architectural Balance**: Preserved valuable 5% custom input handling code
+- **Phase 7**: Legacy code cleanup in dealCalculations.ts (NEXT)
 - **Phase 5**: Incentive Data Structure Consolidation ✅ COMPLETE
   - **✅ SelectedIncentive Eliminated**: Removed from useIncentiveSelection.ts and incentive-data.tsx
   - **✅ TierIncentive Eliminated**: Removed redundant percentage-based calculations

@@ -183,7 +183,7 @@ export function FinancialTierTable({
               {formatCurrency(lastYearGrossProfit)}
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const grossProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
+              const grossProfit = calculationService.calculateBasicGrossProfit(tier);
               return (
                 <FinancialDataCell key={`profit-${tier.tierNumber}`}>
                   {formatCurrency(grossProfit)}
@@ -204,13 +204,8 @@ export function FinancialTierTable({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const serviceTier = {
-                tierNumber: tier.tierNumber,
-                annualRevenue: tier.annualRevenue,
-                annualGrossMargin: tier.annualGrossMargin
-              };
               const growthRate = calculationService.calculateRevenueGrowthRate(
-                serviceTier,
+                tier,
                 "independent_agency"
               );
               return (
@@ -233,13 +228,8 @@ export function FinancialTierTable({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const serviceTier = {
-                tierNumber: tier.tierNumber,
-                annualRevenue: tier.annualRevenue,
-                annualGrossMargin: tier.annualGrossMargin
-              };
               const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
-                serviceTier,
+                tier,
                 "independent_agency"
               );
               return (
@@ -262,13 +252,8 @@ export function FinancialTierTable({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const serviceTier = {
-                tierNumber: tier.tierNumber,
-                annualRevenue: tier.annualRevenue,
-                annualGrossMargin: tier.annualGrossMargin
-              };
               const profitGrowthRate = calculationService.calculateProfitGrowthRate(
-                serviceTier,
+                tier,
                 "independent_agency"
               );
               return (

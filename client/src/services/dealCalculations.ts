@@ -117,6 +117,14 @@ export class DealCalculationService {
   }
 
   /**
+   * Calculate basic gross profit (revenue * margin only)
+   * Standardizes simple gross profit calculations across components
+   */
+  calculateBasicGrossProfit(tier: DealTier): number {
+    return (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
+  }
+
+  /**
    * Calculate tier gross profit (revenue * margin - incentive cost)
    */
   calculateTierGrossProfit(tier: DealTier): number {
@@ -375,12 +383,8 @@ export class DealCalculationService {
   /**
    * Calculate cost growth rate for a tier
    */
-  calculateCostGrowthRate(
-    tier: DealTier,
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[]
-  ): number {
-    const currentIncentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+  calculateCostGrowthRate(tier: DealTier): number {
+    const currentIncentiveCost = this.calculateTierIncentiveCost(tier);
     const previousIncentiveCost = this.getPreviousYearIncentiveCost(); // Now using 50,000
 
     // With the new incentive cost of 50,000, this condition will no longer be triggered
