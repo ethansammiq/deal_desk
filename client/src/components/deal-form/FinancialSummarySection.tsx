@@ -13,6 +13,7 @@ import {
   FinancialTableColGroup,
   formatCurrency
 } from "@/components/ui/financial-table";
+import { QueryStateHandler, SectionLoading } from "@/components/ui/loading-states";
 
 interface FinancialSummarySectionProps {
   dealTiers: DealTier[];
@@ -27,12 +28,20 @@ export function FinancialSummarySection({
   advertiserName,
   agencyName 
 }: FinancialSummarySectionProps) {
-  // Fetch agencies and advertisers for calculation service
-  const { data: agencies = [] } = useQuery({ queryKey: ["/api/agencies"] });
-  const { data: advertisers = [] } = useQuery({ queryKey: ["/api/advertisers"] });
+  // Fetch agencies and advertisers for calculation service with error handling
+  const agenciesQuery = useQuery({ 
+    queryKey: ["/api/agencies"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  const advertisersQuery = useQuery({ 
+    queryKey: ["/api/advertisers"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
   
-  // Use shared calculation service
-  const { calculationService } = useDealCalculations(advertisers || [], agencies || []);
+  // Use shared calculation service with query data
+  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
 
   // Use shared service for all calculations (no duplicate logic)
 
@@ -40,6 +49,19 @@ export function FinancialSummarySection({
   const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
   const lastYearGrossProfit = calculationService.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
   const lastYearGrossMargin = calculationService.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+
+  // Show loading or error states for data dependencies
+  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+    return <SectionLoading title="Loading Financial Data..." rows={5} />;
+  }
+
+  if (agenciesQuery.error || advertisersQuery.error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Error loading financial data. Please try again.</p>
+      </div>
+    );
+  }
 
   return (
     <FinancialSection title="Financial Summary">

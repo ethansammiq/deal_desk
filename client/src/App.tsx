@@ -2,19 +2,24 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/Dashboard";
-import SubmitDeal from "@/pages/SubmitDeal";
-import RequestSupport from "@/pages/RequestSupport";
-import HelpResources from "@/pages/HelpResources";
-import DealRequests from "@/pages/DealRequests";
-import Home from "@/pages/Home";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { PageLoading } from "@/components/ui/loading-states";
+import { lazy, Suspense } from "react";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ChatProvider } from "@/lib/chat-context";
 import FloatingChatbot from "@/components/FloatingChatbot";
 import { PageTransition } from "@/components/ui/page-transition";
 import { SmartSearch } from "@/components/SmartSearch";
+
+// Lazy load pages for better performance
+const NotFound = lazy(() => import("@/pages/not-found"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
+const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
+const HelpResources = lazy(() => import("@/pages/HelpResources"));
+const DealRequests = lazy(() => import("@/pages/DealRequests"));
+const Home = lazy(() => import("@/pages/Home"));
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -48,52 +53,58 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/support" component={RequestSupport} />
-        <Route path="/request-support" component={RequestSupport} />
-        <Route path="/submit-deal" component={SubmitDeal} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/help" component={HelpResources} />
-        <Route path="/deals" component={Dashboard} />
-        <Route path="/deal-requests" component={DealRequests} />
-        {/* Fallback to 404 */}
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <ErrorBoundary>
+      <AppLayout>
+        <Suspense fallback={<PageLoading title="Loading page..." />}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/support" component={RequestSupport} />
+            <Route path="/request-support" component={RequestSupport} />
+            <Route path="/submit-deal" component={SubmitDeal} />
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/help" component={HelpResources} />
+            <Route path="/deals" component={Dashboard} />
+            <Route path="/deal-requests" component={DealRequests} />
+            {/* Fallback to 404 */}
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </AppLayout>
+    </ErrorBoundary>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ChatProvider config={{
-        apiBasePath: '/api',
-        // Custom welcome message for the chatbot
-        welcomeMessage: "👋 Welcome to the Commercial Deal Desk! I'm DealGenie, your AI assistant. I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
-        // Default suggested questions
-        defaultSuggestedQuestions: [
-          "What is the deal process workflow?",
-          "What financial incentives are available?",
-          "How do I submit a new deal?",
-          "What documentation is required?",
-          "What are the eligibility requirements?",
-          "How are urgent deals handled?"
-        ],
-        // Enable conversation persistence across page refreshes
-        persistConversation: true,
-        // Maximum number of messages to keep in history
-        maxHistoryLength: 30,
-        // Number of characters before showing auto-suggestions
-        autoSuggestThreshold: 3,
-        // AI model to use - 'simple' for keyword matching or 'advanced' for more detailed responses
-        aiModel: 'advanced'
-      }}>
-        <Router />
-        <Toaster />
-      </ChatProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ChatProvider config={{
+          apiBasePath: '/api',
+          // Custom welcome message for the chatbot
+          welcomeMessage: "👋 Welcome to the Commercial Deal Desk! I'm DealGenie, your AI assistant. I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
+          // Default suggested questions
+          defaultSuggestedQuestions: [
+            "What is the deal process workflow?",
+            "What financial incentives are available?",
+            "How do I submit a new deal?",
+            "What documentation is required?",
+            "What are the eligibility requirements?",
+            "How are urgent deals handled?"
+          ],
+          // Enable conversation persistence across page refreshes
+          persistConversation: true,
+          // Maximum number of messages to keep in history
+          maxHistoryLength: 30,
+          // Number of characters before showing auto-suggestions
+          autoSuggestThreshold: 3,
+          // AI model to use - 'simple' for keyword matching or 'advanced' for more detailed responses
+          aiModel: 'advanced'
+        }}>
+          <Router />
+          <Toaster />
+        </ChatProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

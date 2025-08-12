@@ -94,6 +94,8 @@ import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useTierManagement } from "@/hooks/useTierManagement";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
+import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
+import { FormLoading } from "@/components/ui/loading-states";
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
@@ -762,12 +764,16 @@ export default function SubmitDeal() {
 
       {/* Form Container */}
       <Card>
-        <Form {...form}>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            console.log("Form submit event triggered");
-            form.handleSubmit(onSubmit)(e);
-          }}>
+        <FormErrorBoundary
+          fallbackTitle="Deal Form Error"
+          fallbackMessage="An error occurred while processing the deal form. Please try refreshing the page or contact support if the issue persists."
+        >
+          <Form {...form}>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              console.log("Form submit event triggered");
+              form.handleSubmit(onSubmit)(e);
+            }}>
             {/* Step 1: Deal Overview - Using clean direct component structure */}
             {formStep === 0 && (
               <>
@@ -3135,6 +3141,7 @@ export default function SubmitDeal() {
             )}
           </form>
         </Form>
+      </FormErrorBoundary>
       </Card>
     </div>
   );

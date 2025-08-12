@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlusIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
+import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
 
 // Status badge mapping
 const statusVariantMap: Record<string, any> = {
@@ -28,12 +29,16 @@ interface DealStats {
 }
 
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useQuery<DealStats>({
+  const statsQuery = useQuery<DealStats>({
     queryKey: ['/api/stats'],
+    retry: 3,
+    staleTime: 30000, // 30 seconds
   });
 
-  const { data: deals, isLoading: dealsLoading } = useQuery<Deal[]>({
+  const dealsQuery = useQuery<Deal[]>({
     queryKey: ['/api/deals'],
+    retry: 3,
+    staleTime: 30000, // 30 seconds
   });
 
   // Format the date from ISO string to relative time (e.g., "2 days ago")
@@ -129,26 +134,26 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Active Deals" 
-          value={statsLoading ? "..." : stats?.activeDeals || 0}
+          value={statsQuery.isLoading ? "..." : statsQuery.data?.activeDeals || 0}
           change={"+12%"}
           trend="up"
         />
         <StatCard 
           title="Pending Approval" 
-          value={statsLoading ? "..." : stats?.pendingApproval || 0}
+          value={statsQuery.isLoading ? "..." : statsQuery.data?.pendingApproval || 0}
           change={"+3"}
           changeLabel="new this week"
           trend="warning"
         />
         <StatCard 
           title="Completed Deals" 
-          value={statsLoading ? "..." : stats?.completedDeals || 0}
+          value={statsQuery.isLoading ? "..." : statsQuery.data?.completedDeals || 0}
           change={"+8%"}
           trend="up"
         />
         <StatCard 
           title="Deal Success Rate" 
-          value={statsLoading ? "..." : `${stats?.successRate || 0}%`}
+          value={statsQuery.isLoading ? "..." : `${statsQuery.data?.successRate || 0}%`}
           change={"+4%"}
           trend="up"
         />
@@ -174,13 +179,36 @@ export default function Dashboard() {
         <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
           <h3 className="text-lg font-medium leading-6 text-slate-900">Recent Deals</h3>
         </div>
-        <DataTable 
-          columns={columns} 
-          data={deals || []} 
-          searchKey="dealName"
-          placeholder="Search deals..."
-          statusFilter={true}
-        />
+        <QueryStateHandler
+          query={dealsQuery}
+          loadingComponent={<SectionLoading title="Loading deals..." rows={5} />}
+          errorComponent={
+            <ErrorState
+              title="Failed to load deals"
+              message="Unable to fetch deal data. Please try refreshing the page."
+              onRetry={dealsQuery.refetch}
+            />
+          }
+          emptyComponent={
+            <div className="text-center py-12">
+              <p className="text-gray-500">No deals found. Create your first deal to get started.</p>
+              <Button asChild className="mt-4">
+                <Link href="/submit-deal">Create Deal</Link>
+              </Button>
+            </div>
+          }
+          emptyCheck={(data) => data.length === 0}
+        >
+          {(deals) => (
+            <DataTable 
+              columns={columns} 
+              data={deals} 
+              searchKey="dealName"
+              placeholder="Search deals..."
+              statusFilter={true}
+            />
+          )}
+        </QueryStateHandler>
       </div>
     </div>
   );
