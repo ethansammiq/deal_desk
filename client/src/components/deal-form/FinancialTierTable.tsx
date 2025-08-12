@@ -59,7 +59,7 @@ export function FinancialTierTable({
   };
 
   // Helper function to update a tier
-  const updateTier = (tierNumber: number, updates: Partial<DealTierData>) => {
+  const updateTier = (tierNumber: number, updates: Partial<DealTier>) => {
     const updatedTiers = dealTiers.map((tier) =>
       tier.tierNumber === tierNumber ? { ...tier, ...updates } : tier
     );
@@ -196,10 +196,10 @@ export function FinancialTierTable({
                       max="100"
                       step="0.1"
                       placeholder="0.00"
-                      value={tier.annualGrossMarginPercent || ""}
+                      value={((tier.annualGrossMargin || 0) * 100).toString() || ""}
                       onChange={(e) => {
-                        const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                        updateTier(tier.tierNumber, { annualGrossMarginPercent: value });
+                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value) / 100; // Convert percentage to decimal
+                        updateTier(tier.tierNumber, { annualGrossMargin: value });
                       }}
                       className="text-center border-0 bg-transparent p-1 text-sm"
                     />
@@ -221,7 +221,7 @@ export function FinancialTierTable({
                 ${lastYearGrossProfit.toLocaleString()}
               </td>
               {dealTiers.map((tier) => {
-                const grossProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
+                const grossProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
                 return (
                   <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center text-slate-700">
                     ${grossProfit.toLocaleString()}
@@ -245,7 +245,7 @@ export function FinancialTierTable({
                 const serviceTier = {
                   tierNumber: tier.tierNumber,
                   annualRevenue: tier.annualRevenue,
-                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
                 };
                 const growthRate = calculationService.calculateRevenueGrowthRate(
                   serviceTier,
@@ -280,7 +280,7 @@ export function FinancialTierTable({
                 const serviceTier = {
                   tierNumber: tier.tierNumber,
                   annualRevenue: tier.annualRevenue,
-                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
                 };
                 const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
                   serviceTier,
@@ -315,7 +315,7 @@ export function FinancialTierTable({
                 const serviceTier = {
                   tierNumber: tier.tierNumber,
                   annualRevenue: tier.annualRevenue,
-                  annualGrossMarginPercent: tier.annualGrossMarginPercent
+                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
                 };
                 const profitGrowthRate = calculationService.calculateProfitGrowthRate(
                   serviceTier,
