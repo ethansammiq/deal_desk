@@ -92,6 +92,7 @@ import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
+import { useTierManagement } from "@/hooks/useTierManagement";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
@@ -251,6 +252,13 @@ export default function SubmitDeal() {
   // Use tierManager.tiers as dealTiers for backward compatibility
   const dealTiers = tierManager.tiers;
   const setDealTiers = (tiers: DealTier[]) => tierManager.updateAllTiers(tiers);
+  
+  // ✅ ADDED: useTierManagement for consistent CRUD operations
+  const tierManagement = useTierManagement({
+    dealTiers,
+    setDealTiers,
+    isFlat: dealStructureType === "flat_commit"
+  });
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -1435,7 +1443,7 @@ export default function SubmitDeal() {
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
                           try {
-                            tierManager.addTier();
+                            tierManagement.addTier();
                           } catch (error: any) {
                             toast({
                               title: "Cannot Add Tier",
@@ -1587,12 +1595,12 @@ export default function SubmitDeal() {
                                       placeholder="0.00"
                                       value={tier.annualRevenue || ""}
                                       onChange={(e) => {
-                                        const newTiers = [...dealTiers];
-                                        newTiers[index].annualRevenue = e.target
-                                          .value
+                                        const value = e.target.value
                                           ? parseFloat(e.target.value)
                                           : 0;
-                                        setDealTiers(newTiers);
+                                        tierManagement.updateTier(tier.tierNumber, { 
+                                          annualRevenue: value 
+                                        });
                                       }}
                                     />
                                   </div>
@@ -1672,13 +1680,13 @@ export default function SubmitDeal() {
                                         (tier.annualGrossMargin || 0) * 100
                                       }
                                       onChange={(e) => {
-                                        const newTiers = [...dealTiers];
                                         // Store as decimal (percentage / 100)
                                         const percent = e.target.value
                                           ? parseFloat(e.target.value) / 100
                                           : 0;
-                                        newTiers[index].annualGrossMargin = percent;
-                                        setDealTiers(newTiers);
+                                        tierManagement.updateTier(tier.tierNumber, { 
+                                          annualGrossMargin: percent 
+                                        });
                                       }}
                                     />
                                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

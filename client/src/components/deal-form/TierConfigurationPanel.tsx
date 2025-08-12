@@ -25,6 +25,7 @@ import {
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
+import { useTierManagement } from "@/hooks/useTierManagement";
 
 interface TierConfigurationPanelProps {
   dealTiers: DealTier[];
@@ -43,39 +44,15 @@ export function TierConfigurationPanel({
   calculateTierGrossProfit,
   calculateTierNetValue,
 }: TierConfigurationPanelProps) {
-  // Helper function to add a new tier
-  const addTier = () => {
-    const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTier = {
-      tierNumber: newTierNumber,
-      annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
-      annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-      incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
-      incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
-      specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
-      incentiveValue: 0,
-      incentiveNotes: "",
-    };
-    setDealTiers([...dealTiers, newTier]);
-  };
-
-  // Helper function to remove a tier
-  const removeTier = (tierNumber: number) => {
-    if (dealTiers.length > 1) {
-      const updatedTiers = dealTiers
-        .filter((tier) => tier.tierNumber !== tierNumber)
-        .map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
-      setDealTiers(updatedTiers);
-    }
-  };
-
-  // Helper function to update a tier
-  const updateTier = (tierNumber: number, updates: Partial<DealTierData>) => {
-    const updatedTiers = dealTiers.map((tier) =>
-      tier.tierNumber === tierNumber ? { ...tier, ...updates } : tier
-    );
-    setDealTiers(updatedTiers);
-  };
+  // ✅ MIGRATED: Using centralized useTierManagement hook
+  const tierManager = useTierManagement({
+    dealTiers,
+    setDealTiers,
+    isFlat: false // TierConfigurationPanel is always for tiered deals
+  });
+  
+  // Destructure for backward compatibility
+  const { addTier, removeTier, updateTier } = tierManager;
 
   return (
     <div className="space-y-6">
@@ -165,12 +142,11 @@ export function TierConfigurationPanel({
                       max="100"
                       step="0.1"
                       placeholder="Enter margin %"
-                      value={tier.annualGrossMarginPercent || ""}
+                      value={tier.annualGrossMargin || ""}
                       onChange={(e) => {
                         const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
                         updateTier(tier.tierNumber, { 
-                          annualGrossMarginPercent: value,
-                          annualGrossMargin: tier.annualRevenue ? (tier.annualRevenue * (value || 0)) / 100 : undefined
+                          annualGrossMargin: value
                         });
                       }}
                     />
@@ -187,9 +163,9 @@ export function TierConfigurationPanel({
                       Incentive Type
                     </label>
                     <Select
-                      value={tier.incentiveType || "rebate"}
+                      value={tier.incentiveOption || "Volume Discount"}
                       onValueChange={(value: "rebate" | "discount" | "bonus" | "other") => {
-                        updateTier(tier.tierNumber, { incentiveType: value });
+                        updateTier(tier.tierNumber, { incentiveOption: value });
                       }}
                     >
                       <SelectTrigger>
@@ -215,10 +191,10 @@ export function TierConfigurationPanel({
                       max="100"
                       step="0.1"
                       placeholder="Enter incentive %"
-                      value={tier.incentivePercentage || ""}
+                      value={tier.incentiveValue || ""}
                       onChange={(e) => {
                         const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                        updateTier(tier.tierNumber, { incentivePercentage: value });
+                        updateTier(tier.tierNumber, { incentiveValue: value });
                       }}
                     />
                   </div>

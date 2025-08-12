@@ -5,6 +5,7 @@ import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronDown, Info, Trash2 } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { useTierManagement } from "@/hooks/useTierManagement";
 import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { DEAL_CONSTANTS } from "@/config/businessConstants";
@@ -44,37 +45,15 @@ export function IncentiveStructureSection({
 }: IncentiveStructureSectionProps) {
   const { calculationService } = useDealCalculations();
 
-  // Add new tier
-  const addTier = () => {
-    const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTier = {
-      tierNumber: newTierNumber,
-      annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
-      annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-      categoryName: "Financial",
-      subCategoryName: "Discounts", 
-      incentiveOption: "Volume Discount",
-      incentiveValue: 0,
-      incentiveNotes: "",
-    };
-    setDealTiers([...dealTiers, newTier]);
-  };
-
-  const removeTier = (tierNumber: number) => {
-    if (dealTiers.length > 1) {
-      const updatedTiers = dealTiers
-        .filter((tier) => tier.tierNumber !== tierNumber)
-        .map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
-      setDealTiers(updatedTiers);
-    }
-  };
-
-  const updateTier = (tierNumber: number, updates: Partial<DealTier>) => {
-    const updatedTiers = dealTiers.map((tier) =>
-      tier.tierNumber === tierNumber ? { ...tier, ...updates } : tier
-    );
-    setDealTiers(updatedTiers);
-  };
+  // ✅ MIGRATED: Using centralized useTierManagement hook
+  const tierManager = useTierManagement({
+    dealTiers,
+    setDealTiers,
+    isFlat: dealStructureType === "flat_commit"
+  });
+  
+  // Destructure for backward compatibility
+  const { addTier, removeTier, updateTier } = tierManager;
 
   // Calculate incentive cost directly from DealTier
   const calculateTierIncentiveCost = (tierNumber: number): number => {
