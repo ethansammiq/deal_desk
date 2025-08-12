@@ -89,7 +89,7 @@ export function IncentiveStructureSection({
 
   return (
     <div className="space-y-8">
-      {/* ✅ Phase 2.5: Revenue & Profitability Section migrated from ValueStructureSection */}
+      {/* ✅ Phase 2.5: Single Revenue & Profitability Section */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -106,6 +106,12 @@ export function IncentiveStructureSection({
                 Add Tier
               </Button>
             )}
+          </div>
+          
+          <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+            <Info className="h-4 w-4 inline mr-2" />
+            This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include
+            Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance.
           </div>
           
           <FinancialTierTable
@@ -292,7 +298,164 @@ export function IncentiveStructureSection({
               </table>
             </div>
           </div>
+
+          {/* IncentiveSelector component for adding new incentives */}
+          {showAddIncentiveForm && (
+            <div className="mt-6">
+              <IncentiveSelector
+                selectedIncentives={selectedIncentives}
+                dealTiers={dealTiers}
+                onChange={setSelectedIncentives}
+                showAddForm={showAddIncentiveForm}
+              />
+            </div>
+          )}
+
+          {/* TierSpecificIncentives for managing per-tier incentives */}
+          <div className="mt-6">
+            <TierSpecificIncentives
+              dealTiers={dealTiers}
+              tierIncentives={tierIncentives}
+              onChange={setTierIncentives}
+            />
+          </div>
         </div>
+        </CardContent>
+      </Card>
+
+      {/* ✅ Financial Summary Section - Restored */}
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-medium mb-6">Financial Summary</h3>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <colgroup>
+                <col className="w-[40%]" />
+                <col className="w-[15%]" />
+                {dealTiers.map((tier) => (
+                  <col key={`summary-col-${tier.tierNumber}`} className="w-[15%]" />
+                ))}
+              </colgroup>
+              
+              <thead>
+                <tr>
+                  <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
+                  <th className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
+                    Last Year
+                  </th>
+                  {dealTiers.map((tier) => (
+                    <th key={`summary-th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
+                      Tier {tier.tierNumber}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {/* Adjusted Gross Margin */}
+                <tr>
+                  <td className="p-3 border border-slate-200 bg-slate-50">
+                    <div>
+                      <div className="font-medium text-slate-900">Adjusted Gross Margin</div>
+                      <div className="text-xs text-slate-500">Gross margin after incentives</div>
+                    </div>
+                  </td>
+                  <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                    35.0%
+                  </td>
+                  {dealTiers.map((tier) => {
+                    const adjustedMargin = tier.annualGrossMargin - (calculateTierIncentiveCost(tier.tierNumber) / (tier.annualRevenue || 1)) * 100;
+                    return (
+                      <td key={`adj-margin-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                        {adjustedMargin.toFixed(1)}%
+                      </td>
+                    );
+                  })}
+                </tr>
+
+                {/* Adjusted Gross Profit */}
+                <tr>
+                  <td className="p-3 border border-slate-200 bg-slate-50">
+                    <div>
+                      <div className="font-medium text-slate-900">Adjusted Gross Profit</div>
+                      <div className="text-xs text-slate-500">Gross profit after incentive costs</div>
+                    </div>
+                  </td>
+                  <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                    $297,500
+                  </td>
+                  {dealTiers.map((tier) => {
+                    const grossProfit = (tier.annualRevenue * tier.annualGrossMargin) / 100;
+                    const adjustedProfit = grossProfit - calculateTierIncentiveCost(tier.tierNumber);
+                    return (
+                      <td key={`adj-profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                        ${adjustedProfit.toLocaleString()}
+                      </td>
+                    );
+                  })}
+                </tr>
+
+                {/* Adjusted Gross Margin Growth Rate */}
+                <tr>
+                  <td className="p-3 border border-slate-200 bg-slate-50">
+                    <div>
+                      <div className="font-medium text-slate-900">Adjusted Gross Margin Growth Rate</div>
+                      <div className="text-xs text-slate-500">Percentage change in adjusted margin</div>
+                    </div>
+                  </td>
+                  <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                    —
+                  </td>
+                  {dealTiers.map((tier) => {
+                    const adjustedMargin = tier.annualGrossMargin - (calculateTierIncentiveCost(tier.tierNumber) / (tier.annualRevenue || 1)) * 100;
+                    const growthRate = ((adjustedMargin - 35.0) / 35.0) * 100;
+                    const isNegative = growthRate < 0;
+                    return (
+                      <td 
+                        key={`adj-margin-growth-${tier.tierNumber}`} 
+                        className={`p-3 border border-slate-200 text-center font-medium ${
+                          isNegative ? 'text-red-500' : 'text-green-600'
+                        }`}
+                      >
+                        {growthRate.toFixed(1)}%
+                      </td>
+                    );
+                  })}
+                </tr>
+
+                {/* Adjusted Gross Profit Growth Rate */}
+                <tr>
+                  <td className="p-3 border border-slate-200 bg-slate-50">
+                    <div>
+                      <div className="font-medium text-slate-900">Adjusted Gross Profit Growth Rate</div>
+                      <div className="text-xs text-slate-500">Percentage increase in adjusted profit vs last year</div>
+                    </div>
+                  </td>
+                  <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
+                    —
+                  </td>
+                  {dealTiers.map((tier) => {
+                    const grossProfit = (tier.annualRevenue * tier.annualGrossMargin) / 100;
+                    const adjustedProfit = grossProfit - calculateTierIncentiveCost(tier.tierNumber);
+                    const lastYearProfit = 297500; // $850k * 35% = $297,500
+                    const growthRate = lastYearProfit > 0 ? ((adjustedProfit - lastYearProfit) / lastYearProfit) * 100 : -100;
+                    const isNegative = growthRate < 0;
+                    return (
+                      <td 
+                        key={`adj-profit-growth-${tier.tierNumber}`} 
+                        className={`p-3 border border-slate-200 text-center font-medium ${
+                          isNegative ? 'text-red-500' : 'text-green-600'
+                        }`}
+                      >
+                        {growthRate.toFixed(1)}%
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
