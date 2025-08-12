@@ -132,29 +132,10 @@ export class DealCalculationService {
   /**
    * Calculate total incentive cost for a tier
    */
-  // ❌ ELIMINATED: calculateTierIncentiveCost - using DealTier.incentiveValue directly
+  // ✅ FIXED: Using DealTier.incentiveValue directly (Phase 5 consolidation)
   calculateTierIncentiveCost(tier: DealTier): number {
-    let totalCost = 0;
-
-    // Add costs from the selected hierarchical incentives
-    selectedIncentives.forEach((incentive) => {
-      if (
-        incentive.tierIds.includes(tierNumber) &&
-        incentive.tierValues &&
-        incentive.tierValues[tierNumber]
-      ) {
-        totalCost += incentive.tierValues[tierNumber];
-      }
-    });
-
-    // Add costs from tier-specific incentives
-    tierIncentives.forEach((incentive) => {
-      if (incentive.tierId === tierNumber) {
-        totalCost += incentive.value || 0;
-      }
-    });
-
-    return totalCost;
+    // Direct access to incentive value from DealTier (single source of truth)
+    return tier.incentiveValue || 0;
   }
 
   /**
@@ -162,7 +143,7 @@ export class DealCalculationService {
    */
   calculateGrossMarginGrowthRate(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const previousYearMargin = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
-    const currentMargin = tier.annualGrossMarginPercent || 0;
+    const currentMargin = (tier.annualGrossMargin || 0) * 100; // Convert decimal to percentage
     
     if (previousYearMargin === 0) return 0;
     
@@ -179,7 +160,7 @@ export class DealCalculationService {
     
     // Calculate previous year profit and current profit
     const previousYearProfit = previousYearRevenue * (previousYearMargin / 100);
-    const currentProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
+    const currentProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0); // Already decimal
 
     // Calculate growth rate
     if (previousYearProfit <= 0) return 0;
@@ -204,8 +185,6 @@ export class DealCalculationService {
    */
   calculateDealFinancialSummary(
     dealTiers: DealTier[],
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[],
     salesChannel: string,
     advertiserName?: string,
     agencyName?: string
@@ -214,11 +193,11 @@ export class DealCalculationService {
     let totalGrossMargin = 0;
     let totalIncentiveValue = 0;
 
-    // Calculate totals from all tiers
+    // Calculate totals from all tiers using DealTier as single source of truth
     dealTiers.forEach((tier) => {
       totalAnnualRevenue += tier.annualRevenue || 0;
-      totalGrossMargin += ((tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100));
-      totalIncentiveValue += this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+      totalGrossMargin += ((tier.annualRevenue || 0) * (tier.annualGrossMargin || 0)); // Already decimal
+      totalIncentiveValue += tier.incentiveValue || 0; // Direct from DealTier
     });
 
     const averageGrossMarginPercent = totalAnnualRevenue > 0 ? (totalGrossMargin / totalAnnualRevenue) * 100 : 0;
@@ -248,8 +227,6 @@ export class DealCalculationService {
    */
   generateDealAnalysis(
     dealTiers: DealTier[],
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[],
     salesChannel: string,
     advertiserName?: string,
     agencyName?: string
@@ -258,7 +235,7 @@ export class DealCalculationService {
       return "Unable to analyze deal structure with the current data. Please ensure all tier values are completed.";
     }
 
-    const summary = this.calculateDealFinancialSummary(dealTiers, selectedIncentives, tierIncentives, salesChannel, advertiserName, agencyName);
+    const summary = this.calculateDealFinancialSummary(dealTiers, salesChannel, advertiserName, agencyName);
     
     // Calculate growth rates for analysis
     let revenueGrowthRate = 0;
@@ -293,7 +270,7 @@ export class DealCalculationService {
     advertiserName?: string, 
     agencyName?: string
   ): number {
-    const currentProfit = (tier.annualRevenue || 0) * ((tier.annualGrossMarginPercent || 0) / 100);
+    const currentProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0); // Already decimal
     const previousProfit = this.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
 
     if (previousProfit === 0) return 0;
@@ -305,17 +282,14 @@ export class DealCalculationService {
    */
   calculateAdjustedGrossProfitGrowthRate(
     tier: DealTier,
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[],
     salesChannel: string,
     advertiserName?: string,
     agencyName?: string
   ): number {
     // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
     const currentAdjustedProfit = grossProfit - incentiveCost;
 
     // For last year's adjusted gross profit, we need to do the same calculation with last year's values
@@ -332,16 +306,11 @@ export class DealCalculationService {
   /**
    * Calculate adjusted gross margin for a tier
    */
-  calculateAdjustedGrossMargin(
-    tier: DealTier,
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[]
-  ): number {
+  calculateAdjustedGrossMargin(tier: DealTier): number {
     // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
     const adjustedGrossProfit = grossProfit - incentiveCost;
 
     if (revenue === 0) return 0;
@@ -351,15 +320,10 @@ export class DealCalculationService {
   /**
    * Calculate adjusted gross profit for a tier (gross profit after incentive costs)
    */
-  calculateAdjustedGrossProfit(
-    tier: DealTier,
-    selectedIncentives: any[] = [],
-    tierIncentives: any[] = []
-  ): number {
+  calculateAdjustedGrossProfit(tier: DealTier): number {
     const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
     return grossProfit - incentiveCost;
   }
 
@@ -368,17 +332,14 @@ export class DealCalculationService {
    */
   calculateAdjustedGrossMarginGrowthRate(
     tier: DealTier,
-    selectedIncentives: SelectedIncentive[],
-    tierIncentives: TierIncentive[],
     salesChannel: string,
     advertiserName?: string,
     agencyName?: string
   ): number {
-    // Calculate current tier's adjusted gross margin as a decimal (0.24 in your example)
+    // Calculate current tier's adjusted gross margin as a decimal
     const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
     const adjustedGrossProfit = grossProfit - incentiveCost;
     const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
 
