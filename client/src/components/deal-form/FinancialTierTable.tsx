@@ -7,6 +7,18 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
+import {
+  FinancialSection,
+  FinancialTable,
+  FinancialTableHeader,
+  FinancialHeaderCell,
+  FinancialTableBody,
+  FinancialDataCell,
+  FinancialMetricLabel,
+  GrowthIndicator,
+  FinancialTableColGroup,
+  formatCurrency
+} from "@/components/ui/financial-table";
 
 interface FinancialTierTableProps {
   dealTiers: DealTier[];
@@ -70,13 +82,11 @@ export function FinancialTierTable({
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-      {/* Revenue section header with collapsible control */}
+    <FinancialSection title="Revenue & Profitability">
+
+      {/* Header with collapsible control */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
-            Revenue & Profitability
-          </h3>
           <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
         </div>
         <Button
@@ -106,237 +116,207 @@ export function FinancialTierTable({
         }
       </div>
 
-      {/* Financial metrics table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <colgroup>
-            <col className="w-[30%]" />
-            <col className="w-[14%]" />
+      <FinancialTable>
+        <FinancialTableColGroup dealTiers={dealTiers} />
+        
+        <FinancialTableHeader>
+          <tr>
+            <FinancialHeaderCell isMetricName />
+            <FinancialHeaderCell>Last Year</FinancialHeaderCell>
             {dealTiers.map((tier) => (
-              <col key={`col-${tier.tierNumber}`} className="w-[14%]" />
+              <FinancialHeaderCell key={`th-${tier.tierNumber}`}>
+                <div className="flex justify-between items-center">
+                  <span className="flex-1">Tier {tier.tierNumber}</span>
+                  {dealTiers.length > 1 && (
+                    <Button
+                      type="button"
+                      onClick={() => removeTier(tier.tierNumber)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </FinancialHeaderCell>
             ))}
-          </colgroup>
-          
-          {/* Table header */}
-          <thead>
-            <tr>
-              <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-              <th className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                Last Year
-              </th>
-              {dealTiers.map((tier) => (
-                <th key={`th-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200">
-                  <div className="flex justify-between items-center">
-                    <span className="flex-1 font-medium text-slate-700">Tier {tier.tierNumber}</span>
-                    {dealTiers.length > 1 && (
-                      <Button
-                        type="button"
-                        onClick={() => removeTier(tier.tierNumber)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
+          </tr>
+        </FinancialTableHeader>
 
-          <tbody>
-            {/* Annual Revenue Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Annual Revenue</div>
-                  <div className="text-xs text-slate-500">Total revenue expected for the fiscal year</div>
+        <FinancialTableBody>
+          {/* Annual Revenue Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Annual Revenue"
+                description="Total revenue expected for the fiscal year"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              {formatCurrency(lastYearRevenue)}
+            </FinancialDataCell>
+            {dealTiers.map((tier) => (
+              <FinancialDataCell key={`revenue-${tier.tierNumber}`}>
+                <div className="flex items-center">
+                  <span className="text-sm text-slate-500 mr-1">$</span>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={tier.annualRevenue || ""}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                      updateTier(tier.tierNumber, { annualRevenue: value });
+                    }}
+                    className="text-center border-0 bg-transparent p-1 text-sm"
+                  />
                 </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                ${lastYearRevenue.toLocaleString()}
-              </td>
-              {dealTiers.map((tier) => (
-                <td key={`revenue-${tier.tierNumber}`} className="p-3 border border-slate-200">
-                  <div className="flex items-center">
-                    <span className="text-sm text-slate-500 mr-1">$</span>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={tier.annualRevenue || ""}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                        updateTier(tier.tierNumber, { annualRevenue: value });
-                      }}
-                      className="text-center border-0 bg-transparent p-1 text-sm"
-                    />
-                  </div>
-                </td>
-              ))}
-            </tr>
+              </FinancialDataCell>
+            ))}
+          </tr>
 
-            {/* Gross Margin Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Gross Margin</div>
-                  <div className="text-xs text-slate-500">Percentage of revenue retained after direct costs</div>
+          {/* Gross Margin Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Gross Margin"
+                description="Percentage of revenue retained after direct costs"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              {lastYearGrossMargin}%
+            </FinancialDataCell>
+            {dealTiers.map((tier) => (
+              <FinancialDataCell key={`margin-${tier.tierNumber}`}>
+                <div className="flex items-center">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    placeholder="0.00"
+                    value={((tier.annualGrossMargin || 0) * 100).toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? 0 : parseFloat(e.target.value) / 100;
+                      updateTier(tier.tierNumber, { annualGrossMargin: value });
+                    }}
+                    className="text-center border-0 bg-transparent p-1 text-sm"
+                  />
+                  <span className="text-sm text-slate-500 ml-1">%</span>
                 </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                {lastYearGrossMargin}%
-              </td>
-              {dealTiers.map((tier) => (
-                <td key={`margin-${tier.tierNumber}`} className="p-3 border border-slate-200">
-                  <div className="flex items-center">
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      placeholder="0.00"
-                      value={((tier.annualGrossMargin || 0) * 100).toString() || ""}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value) / 100; // Convert percentage to decimal
-                        updateTier(tier.tierNumber, { annualGrossMargin: value });
-                      }}
-                      className="text-center border-0 bg-transparent p-1 text-sm"
-                    />
-                    <span className="text-sm text-slate-500 ml-1">%</span>
-                  </div>
-                </td>
-              ))}
-            </tr>
+              </FinancialDataCell>
+            ))}
+          </tr>
 
-            {/* Gross Profit Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Gross Profit</div>
-                  <div className="text-xs text-slate-500">Actual dollar amount retained after direct costs</div>
-                </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                ${lastYearGrossProfit.toLocaleString()}
-              </td>
-              {dealTiers.map((tier) => {
-                const grossProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
-                return (
-                  <td key={`profit-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center text-slate-700">
-                    ${grossProfit.toLocaleString()}
-                  </td>
-                );
-              })}
-            </tr>
+          {/* Gross Profit Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Gross Profit"
+                description="Actual dollar amount retained after direct costs"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              {formatCurrency(lastYearGrossProfit)}
+            </FinancialDataCell>
+            {dealTiers.map((tier) => {
+              const grossProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
+              return (
+                <FinancialDataCell key={`profit-${tier.tierNumber}`}>
+                  {formatCurrency(grossProfit)}
+                </FinancialDataCell>
+              );
+            })}
+          </tr>
 
-            {/* Revenue Growth Rate Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Revenue Growth Rate</div>
-                  <div className="text-xs text-slate-500">Percentage increase compared to last year</div>
-                </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                -
-              </td>
-              {dealTiers.map((tier) => {
-                const serviceTier = {
-                  tierNumber: tier.tierNumber,
-                  annualRevenue: tier.annualRevenue,
-                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
-                };
-                const growthRate = calculationService.calculateRevenueGrowthRate(
-                  serviceTier,
-                  "independent_agency"
-                ) * 100; // Convert to percentage
-                const isNegative = growthRate < 0;
-                return (
-                  <td 
-                    key={`rev-growth-${tier.tierNumber}`} 
-                    className={`p-3 border border-slate-200 text-center font-medium ${
-                      isNegative ? 'text-red-500' : 'text-green-600'
-                    }`}
-                  >
-                    {growthRate.toFixed(1)}%
-                  </td>
-                );
-              })}
-            </tr>
+          {/* Revenue Growth Rate Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Revenue Growth Rate"
+                description="Percentage increase compared to last year"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              <span className="text-slate-500">—</span>
+            </FinancialDataCell>
+            {dealTiers.map((tier) => {
+              const serviceTier = {
+                tierNumber: tier.tierNumber,
+                annualRevenue: tier.annualRevenue,
+                annualGrossMargin: tier.annualGrossMargin
+              };
+              const growthRate = calculationService.calculateRevenueGrowthRate(
+                serviceTier,
+                "independent_agency"
+              );
+              return (
+                <FinancialDataCell key={`rev-growth-${tier.tierNumber}`}>
+                  <GrowthIndicator value={growthRate} />
+                </FinancialDataCell>
+              );
+            })}
+          </tr>
 
-            {/* Gross Margin Growth Rate Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Gross Margin Growth Rate</div>
-                  <div className="text-xs text-slate-500">Change in margin percentage vs last year</div>
-                </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                -
-              </td>
-              {dealTiers.map((tier) => {
-                const serviceTier = {
-                  tierNumber: tier.tierNumber,
-                  annualRevenue: tier.annualRevenue,
-                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
-                };
-                const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
-                  serviceTier,
-                  "independent_agency"
-                ) * 100; // Convert to percentage
-                const isNegative = marginGrowthRate < 0;
-                return (
-                  <td 
-                    key={`margin-growth-${tier.tierNumber}`} 
-                    className={`p-3 border border-slate-200 text-center font-medium ${
-                      isNegative ? 'text-red-500' : 'text-green-600'
-                    }`}
-                  >
-                    {marginGrowthRate.toFixed(1)}%
-                  </td>
-                );
-              })}
-            </tr>
+          {/* Gross Margin Growth Rate Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Gross Margin Growth Rate"
+                description="Change in margin percentage vs last year"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              <span className="text-slate-500">—</span>
+            </FinancialDataCell>
+            {dealTiers.map((tier) => {
+              const serviceTier = {
+                tierNumber: tier.tierNumber,
+                annualRevenue: tier.annualRevenue,
+                annualGrossMargin: tier.annualGrossMargin
+              };
+              const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
+                serviceTier,
+                "independent_agency"
+              );
+              return (
+                <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
+                  <GrowthIndicator value={marginGrowthRate} />
+                </FinancialDataCell>
+              );
+            })}
+          </tr>
 
-            {/* Gross Profit Growth Rate Row */}
-            <tr>
-              <td className="p-3 border border-slate-200 bg-slate-50">
-                <div>
-                  <div className="font-medium text-slate-900">Gross Profit Growth Rate</div>
-                  <div className="text-xs text-slate-500">Change in dollar profit amount vs last year</div>
-                </div>
-              </td>
-              <td className="p-3 border border-slate-200 text-center font-medium text-slate-700">
-                -
-              </td>
-              {dealTiers.map((tier) => {
-                const serviceTier = {
-                  tierNumber: tier.tierNumber,
-                  annualRevenue: tier.annualRevenue,
-                  annualGrossMargin: tier.annualGrossMargin // Fixed: Use correct field name
-                };
-                const profitGrowthRate = calculationService.calculateProfitGrowthRate(
-                  serviceTier,
-                  "independent_agency"
-                ) * 100; // Convert to percentage
-                const isNegative = profitGrowthRate < 0;
-                return (
-                  <td 
-                    key={`profit-growth-${tier.tierNumber}`} 
-                    className={`p-3 border border-slate-200 text-center font-medium ${
-                      isNegative ? 'text-red-500' : 'text-green-600'
-                    }`}
-                  >
-                    {profitGrowthRate.toFixed(1)}%
-                  </td>
-                );
-              })}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+          {/* Gross Profit Growth Rate Row */}
+          <tr>
+            <FinancialDataCell isMetricLabel>
+              <FinancialMetricLabel 
+                title="Gross Profit Growth Rate"
+                description="Change in dollar profit amount vs last year"
+              />
+            </FinancialDataCell>
+            <FinancialDataCell>
+              <span className="text-slate-500">—</span>
+            </FinancialDataCell>
+            {dealTiers.map((tier) => {
+              const serviceTier = {
+                tierNumber: tier.tierNumber,
+                annualRevenue: tier.annualRevenue,
+                annualGrossMargin: tier.annualGrossMargin
+              };
+              const profitGrowthRate = calculationService.calculateProfitGrowthRate(
+                serviceTier,
+                "independent_agency"
+              );
+              return (
+                <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
+                  <GrowthIndicator value={profitGrowthRate} />
+                </FinancialDataCell>
+              );
+            })}
+          </tr>
+        </FinancialTableBody>
+      </FinancialTable>
+    </FinancialSection>
   );
 }
