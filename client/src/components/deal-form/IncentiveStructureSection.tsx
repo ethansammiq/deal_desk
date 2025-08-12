@@ -112,9 +112,9 @@ export function IncentiveStructureSection({
               onClick={() => setShowAddIncentiveForm(true)}
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-1" />
               Add Incentive
             </Button>
           </div>
