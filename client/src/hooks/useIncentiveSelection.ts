@@ -1,54 +1,25 @@
 import { useState, useCallback } from 'react';
 import { INCENTIVE_CONSTANTS } from '@/config/businessConstants';
 
-// ✅ ALIGNED: SelectedIncentive now matches incentive-data.tsx structure
-export interface SelectedIncentive {
-  categoryId: string;        // Maps to incentiveCategory in DealTier
-  subCategoryId: string;     // Maps to incentiveSubCategory in DealTier  
-  option: string;            // Maps to specificIncentive in DealTier
-  tierValues: { [tierId: number]: number }; // Maps to incentiveValue in DealTier
-  notes: string;             // Maps to incentiveNotes in DealTier
-  tierIds: number[];         // Array of tier IDs this incentive applies to
-}
-
+// ❌ ELIMINATED: SelectedIncentive interface - using DealTier as single source of truth
 // ❌ ELIMINATED: TierIncentive interface - use DealTier directly
 
+import { DealTier } from '@/hooks/useDealTiers';
+
 export interface UseIncentiveSelectionOptions {
-  initialSelectedIncentives?: SelectedIncentive[];
+  initialDealTiers?: DealTier[];
 }
 
 export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}) {
   const { 
-    initialSelectedIncentives = []
+    initialDealTiers = []
   } = options;
 
-  // ✅ Phase 2.2: Simplified state management - TierIncentive eliminated
-  const [selectedIncentives, setSelectedIncentives] = useState<SelectedIncentive[]>(initialSelectedIncentives);
+  // ✅ Phase 5: Using DealTier as single source of truth - SelectedIncentive eliminated
   const [showAddIncentiveForm, setShowAddIncentiveForm] = useState<boolean>(false);
 
-  // Add selected incentive
-  const addSelectedIncentive = useCallback((incentive: SelectedIncentive) => {
-    setSelectedIncentives(prev => [...prev, incentive]);
-  }, []);
-
-  // Remove selected incentive
-  const removeSelectedIncentive = useCallback((index: number) => {
-    setSelectedIncentives(prev => prev.filter((_, i) => i !== index));
-  }, []);
-
-  // Update selected incentive
-  const updateSelectedIncentive = useCallback((index: number, updates: Partial<SelectedIncentive>) => {
-    setSelectedIncentives(prev => 
-      prev.map((incentive, i) => 
-        i === index ? { ...incentive, ...updates } : incentive
-      )
-    );
-  }, []);
-
-  // Clear all incentives
-  const clearAllIncentives = useCallback(() => {
-    setSelectedIncentives([]);
-  }, []);
+  // ✅ Phase 5: DealTier operations now handled by useTierManagement hook
+  // These functions are no longer needed as incentive data is managed directly in DealTier
 
   // Toggle add incentive form
   const toggleAddIncentiveForm = useCallback(() => {
@@ -56,25 +27,9 @@ export function useIncentiveSelection(options: UseIncentiveSelectionOptions = {}
   }, []);
 
   return {
-    // ✅ SIMPLIFIED: Hook state management - TierIncentive eliminated
-    selectedIncentives,
+    // ✅ Phase 5: Simplified to UI state only - data management moved to DealTier
     showAddIncentiveForm,
-    
-    // Setters for controlled components
-    setSelectedIncentives,
     setShowAddIncentiveForm,
-    
-    // CRUD operations for selected incentives
-    addSelectedIncentive,
-    removeSelectedIncentive,
-    updateSelectedIncentive,
-    
-    // Utility functions
-    clearAllIncentives,
     toggleAddIncentiveForm,
-    
-    // Derived state
-    totalIncentiveCount: selectedIncentives.length,
-    hasIncentives: selectedIncentives.length > 0,
   };
 }

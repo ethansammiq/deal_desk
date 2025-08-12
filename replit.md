@@ -42,6 +42,12 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Centralized Constants**: Business logic constants are centralized for easy management and consistency.
 
 ## Recent Changes
+- **✅ Phase 5: Data Structure Consolidation Complete** (Dec 2024): Eliminated redundant incentive interfaces
+  - Removed SelectedIncentive interface from useIncentiveSelection.ts and incentive-data.tsx  
+  - Cleaned up TierIncentive references in core components
+  - Fixed $50k/$75k display issue in Selected Incentives table 
+  - Established DealTier as single source of truth for all incentive data
+  - Created seamless data flow: IncentiveSelector → DealTier → Display components
 - **✅ Revenue & Profitability Migration Complete**: Successfully migrated from 85% to 95% shared component usage
   - Replaced custom container with FinancialSection
   - Removed redundant "Financial Details" title to eliminate double-header confusion
@@ -54,11 +60,6 @@ This project is a comprehensive deal desk application designed to streamline com
   - Eliminated 3 redundant "Incentive Structure" sections
   - Revenue & Profitability management migrated to IncentiveStructureSection
   - Tier management functions (add/remove/update) consolidated
-- **✅ Data Integrity Issues Identified**: Multiple overlapping incentive data structures
-  - SelectedIncentive (UI selection state)
-  - TierIncentive (calculation intermediary)
-  - DealTier (database schema - actual source of truth)
-  - **Problem**: $50k/$75k values stored in dealTiers but not displayed correctly in Selected Incentives table
 
 ## Migration Progress
 - **Phase 1**: Hook ecosystem foundation ✅ COMPLETE
@@ -67,11 +68,13 @@ This project is a comprehensive deal desk application designed to streamline com
   - Phase 2.5: UI consolidation ✅ COMPLETE
 - **Phase 3**: Error boundaries and loading states (NEXT)
 - **Phase 4**: Performance optimization and lazy loading (PENDING)
-- **Phase 5**: Incentive Data Structure Consolidation (IN PROGRESS)
+- **Phase 6**: Legacy code cleanup in dealCalculations.ts (OPTIONAL)
+- **Phase 5**: Incentive Data Structure Consolidation ✅ COMPLETE
+  - **✅ SelectedIncentive Eliminated**: Removed from useIncentiveSelection.ts and incentive-data.tsx
   - **✅ TierIncentive Eliminated**: Removed redundant percentage-based calculations
-  - **✅ DealTier Field Updates**: Updated to use display names (categoryName, subCategoryName, incentiveOption)
-  - **✅ Mapping Utilities**: Created incentive-mapping.ts for library integration
-  - **NEXT**: Eliminate SelectedIncentive and complete single source of truth architecture
+  - **✅ DealTier Single Source**: All components now use DealTier directly for incentive data
+  - **✅ $50k/$75k Display Fixed**: Selected Incentives table correctly shows DealTier values
+  - **✅ Data Flow Unified**: IncentiveSelector → DealTier → Display components
 
 ## External Dependencies
 - **Anthropic AI (Claude)**: Integrated for intelligent deal assessment, analysis, and recommendations.

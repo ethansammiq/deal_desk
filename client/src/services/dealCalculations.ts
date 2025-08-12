@@ -1,28 +1,11 @@
 // ❌ ELIMINATED: SelectedIncentive and TierIncentive imports - using DealTier only
 import { DealFinancialSummary } from "@/lib/utils";
 
-// Define DealTier interface locally for now
-interface DealTier {
-  tierNumber: number;
-  annualRevenue?: number;
-  annualGrossMarginPercent?: number;
-}
+// Import DealTier from the central hook
+import { DealTier } from "@/hooks/useDealTiers";
 
-// Legacy interface types (will be eliminated in Phase 5)
-interface SelectedIncentive {
-  tierNumber: number;
-  category: string;
-  subCategory: string;
-  option: string;
-  value: number;
-  notes?: string;
-}
-
-interface TierIncentive {
-  tierNumber: number;
-  percentage: number;
-  flatAmount: number;
-}
+// ❌ ELIMINATED: Legacy SelectedIncentive and TierIncentive interfaces  
+// Now using DealTier as single source of truth for all incentive data
 
 /**
  * Service class for all deal-related financial calculations
@@ -136,18 +119,21 @@ export class DealCalculationService {
   /**
    * Calculate tier gross profit (revenue * margin - incentive cost)
    */
-  calculateTierGrossProfit(tier: DealTier, selectedIncentives: SelectedIncentive[], tierIncentives: TierIncentive[]): number {
+  calculateTierGrossProfit(tier: DealTier): number {
     const revenue = tier.annualRevenue || 0;
-    const marginPercent = tier.annualGrossMarginPercent || 0;
-    const grossProfit = revenue * (marginPercent / 100);
-    const incentiveCost = this.calculateTierIncentiveCost(tier.tierNumber, selectedIncentives, tierIncentives);
+    const marginDecimal = tier.annualGrossMargin || 0;
+    const grossProfit = revenue * marginDecimal; // Already a decimal (0.355 for 35.5%)
+    
+    // Subtract incentive cost for this tier
+    const incentiveCost = tier.incentiveValue || 0;
     return grossProfit - incentiveCost;
   }
 
   /**
    * Calculate total incentive cost for a tier
    */
-  calculateTierIncentiveCost(tierNumber: number, selectedIncentives: SelectedIncentive[], tierIncentives: TierIncentive[]): number {
+  // ❌ ELIMINATED: calculateTierIncentiveCost - using DealTier.incentiveValue directly
+  calculateTierIncentiveCost(tier: DealTier): number {
     let totalCost = 0;
 
     // Add costs from the selected hierarchical incentives

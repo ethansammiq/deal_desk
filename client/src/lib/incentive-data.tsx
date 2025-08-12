@@ -15,14 +15,8 @@ export interface IncentiveCategory {
   subCategories: IncentiveSubCategory[];
 }
 
-export interface SelectedIncentive {
-  categoryId: string;
-  subCategoryId: string;
-  option: string;
-  tierValues: { [tierId: number]: number }; // Map of tier IDs to values
-  notes: string;
-  tierIds: number[]; // Array of tier IDs this incentive applies to
-}
+// ❌ ELIMINATED: SelectedIncentive interface - using DealTier as single source of truth
+// Data now flows directly through DealTier: categoryName, subCategoryName, incentiveOption, incentiveValue, incentiveNotes
 
 // Define all incentive categories available in the application
 export const incentiveCategories: IncentiveCategory[] = [
@@ -136,15 +130,5 @@ export const incentiveCategories: IncentiveCategory[] = [
   }
 ];
 
-// Helper function to get display information for an incentive
-export function getIncentiveInfo(incentive: SelectedIncentive) {
-  const category = incentiveCategories.find(c => c.id === incentive.categoryId);
-  const subCategory = category?.subCategories.find(s => s.id === incentive.subCategoryId);
-  
-  return {
-    categoryName: category?.name || '',
-    subCategoryName: subCategory?.name || '',
-    icon: category?.icon || null,
-    description: category?.description || ''
-  };
-}
+// ❌ ELIMINATED: getIncentiveInfo function - no longer needed since using DealTier directly
+// Helper functions now available in incentive-mapping.ts for DealTier integration
