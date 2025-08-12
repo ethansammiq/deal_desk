@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { useTierManagement } from "@/hooks/useTierManagement";
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
@@ -16,9 +18,9 @@ import {
   FinancialDataCell,
   FinancialMetricLabel,
   GrowthIndicator,
-  FinancialTableColGroup,
-  formatCurrency
+  FinancialTableColGroup
 } from "@/components/ui/financial-table";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
 
 interface FinancialTierTableProps {
   dealTiers: DealTier[];
@@ -35,99 +37,53 @@ export function FinancialTierTable({
   lastYearGrossMargin = 35.0,
   isFlat = false,
 }: FinancialTierTableProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const { 
     calculationService 
   } = useDealCalculations();
 
-  // Helper function to add a new tier
-  const addTier = () => {
-    console.log('Add Tier clicked', { currentTiers: dealTiers.length, isFlat }); // Debug log
-    if (isFlat) return; // Don't add tiers for flat commit
-    
-    const newTierNumber = dealTiers.length + 1;
-    const newTier: DealTier = {
-      tierNumber: newTierNumber,
-      annualRevenue: 0,
-      annualGrossMargin: 0.35, // 35% as decimal
-      categoryName: "Financial", // ✅ FIXED: Use consistent field names
-      subCategoryName: "Discounts", // ✅ FIXED: Use consistent field names
-      incentiveOption: "Volume Discount", // ✅ FIXED: Use consistent field names
-      incentiveValue: 0,
-      incentiveNotes: "",
-    };
-    const updatedTiers = [...dealTiers, newTier];
-    console.log('Setting new tiers:', updatedTiers); // Debug log
-    setDealTiers(updatedTiers);
-  };
-
-  // Helper function to remove a tier
-  const removeTier = (tierNumber: number) => {
-    if (dealTiers.length > 1) {
-      const updatedTiers = dealTiers
-        .filter((tier) => tier.tierNumber !== tierNumber)
-        .map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
-      setDealTiers(updatedTiers);
-    }
-  };
-
-  // Helper function to update a tier
-  const updateTier = (tierNumber: number, updates: Partial<DealTier>) => {
-    const updatedTiers = dealTiers.map((tier) =>
-      tier.tierNumber === tierNumber ? { ...tier, ...updates } : tier
-    );
-    setDealTiers(updatedTiers);
-  };
+  const { addTier, removeTier, updateTier } = useTierManagement({
+    dealTiers,
+    setDealTiers,
+    isFlat
+  });
 
   // Calculate last year's gross profit
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-      {/* Header with collapsible control and title */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
-            Revenue & Profitability
-          </h3>
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="ml-2 p-1 hover:bg-slate-100 rounded transition-colors"
-            aria-label={isCollapsed ? "Expand section" : "Collapse section"}
-          >
-            <ChevronDown className={`h-5 w-5 text-slate-500 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-        <Button
-          type="button"
-          onClick={addTier}
-          variant="outline"
-          size="sm"
-          disabled={isFlat}
-          className={`${
-            isFlat 
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
-              : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-          }`}
-          title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Tier
-        </Button>
-      </div>
-
-      {/* Collapsible content */}
-      {!isCollapsed && (
-        <>
-          {/* Info banner */}
-          <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
-            <Info className="h-4 w-4 inline mr-2" />
-            {isFlat 
-              ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
-              : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
-            }
+    <FinancialSection title="Revenue & Profitability">
+      <Accordion type="single" collapsible defaultValue="revenue">
+        <AccordionItem value="revenue">
+          <div className="flex items-center justify-between">
+            <AccordionTrigger>
+              Financial Details
+            </AccordionTrigger>
+            <Button
+              type="button"
+              onClick={addTier}
+              variant="outline"
+              size="sm"
+              disabled={isFlat}
+              className={`${
+                isFlat 
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300" 
+                  : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+              }`}
+              title={isFlat ? "Add Tier is disabled for Flat Commit deals" : "Add a new tier"}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Tier
+            </Button>
           </div>
+          <AccordionContent>
+            {/* Info banner */}
+            <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
+              <Info className="h-4 w-4 inline mr-2" />
+              {isFlat 
+                ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
+                : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
+              }
+            </div>
 
           <FinancialTable>
             <FinancialTableColGroup dealTiers={dealTiers} />
@@ -197,7 +153,7 @@ export function FinancialTierTable({
               />
             </FinancialDataCell>
             <FinancialDataCell>
-              {lastYearGrossMargin}%
+              {formatPercentage(lastYearGrossMargin / 100)}
             </FinancialDataCell>
             {dealTiers.map((tier) => (
               <FinancialDataCell key={`margin-${tier.tierNumber}`}>
@@ -330,8 +286,9 @@ export function FinancialTierTable({
           </tr>
             </FinancialTableBody>
           </FinancialTable>
-        </>
-      )}
-    </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </FinancialSection>
   );
 }
