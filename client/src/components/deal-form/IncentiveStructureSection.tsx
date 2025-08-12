@@ -9,6 +9,18 @@ import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { DEAL_CONSTANTS } from "@/config/businessConstants";
 import { DealTier } from "@/hooks/useDealTiers";
+import {
+  FinancialSection,
+  FinancialTable,
+  FinancialTableHeader,
+  FinancialHeaderCell,
+  FinancialTableBody,
+  FinancialDataCell,
+  FinancialMetricLabel,
+  GrowthIndicator,
+  FinancialTableColGroup,
+  formatCurrency
+} from "@/components/ui/financial-table";
 
 // Type this component to accept any valid form structure
 type IncentiveStructureFormValues = any;
@@ -215,125 +227,112 @@ export function IncentiveStructureSection({
           )}
 
           {/* Cost & Value Analysis Table */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Cost & Value Analysis</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <colgroup>
-                  <col className="w-[40%]" />
-                  <col className="w-[20%]" />
+          <FinancialSection title="Cost & Value Analysis">
+            <FinancialTable>
+              <FinancialTableColGroup dealTiers={dealTiers} />
+              
+              <FinancialTableHeader>
+                <tr>
+                  <FinancialHeaderCell isMetricName />
+                  <FinancialHeaderCell>Last Year</FinancialHeaderCell>
                   {dealTiers.map((tier) => (
-                    <col key={`col-${tier.tierNumber}`} className="w-[20%]" />
+                    <FinancialHeaderCell key={`cost-header-${tier.tierNumber}`}>
+                      Tier {tier.tierNumber}
+                    </FinancialHeaderCell>
                   ))}
-                </colgroup>
+                </tr>
+              </FinancialTableHeader>
+              
+              <FinancialTableBody>
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Total Incentive Cost"
+                      description="All incentives applied to this tier"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    {formatCurrency(lastYearIncentiveCost)}
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => (
+                    <FinancialDataCell key={`cost-${tier.tierNumber}`}>
+                      {formatCurrency(calculateTierIncentiveCost(tier.tierNumber))}
+                    </FinancialDataCell>
+                  ))}
+                </tr>
                 
-                <thead>
-                  <tr>
-                    <th className="text-left p-3 bg-slate-100 border border-slate-200"></th>
-                    <th className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                      Last Year
-                    </th>
-                    {dealTiers.map((tier) => (
-                      <th key={`cost-header-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                        Tier {tier.tierNumber}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Incentive Cost Growth Rate"
+                      description="Change vs. last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const currentCost = calculateTierIncentiveCost(tier.tierNumber);
+                    const growthRate = lastYearIncentiveCost > 0 
+                      ? ((currentCost - lastYearIncentiveCost) / lastYearIncentiveCost) 
+                      : 0;
+                    return (
+                      <FinancialDataCell key={`growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={growthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
                 
-                <tbody>
-                  <tr>
-                    <td className="p-3 border border-slate-200">
-                      <div>
-                        <div className="font-medium text-slate-900">Total Incentive Cost</div>
-                        <div className="text-sm text-slate-500">All incentives applied to this tier</div>
-                      </div>
-                    </td>
-                    <td className="p-3 border border-slate-200 text-center font-medium">
-                      ${lastYearIncentiveCost.toLocaleString()}
-                    </td>
-                    {dealTiers.map((tier) => (
-                      <td key={`cost-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
-                        ${calculateTierIncentiveCost(tier.tierNumber).toLocaleString()}
-                      </td>
-                    ))}
-                  </tr>
-                  
-                  <tr>
-                    <td className="p-3 border border-slate-200">
-                      <div>
-                        <div className="font-medium text-slate-900">Incentive Cost Growth Rate</div>
-                        <div className="text-sm text-slate-500">Change vs. last year</div>
-                      </div>
-                    </td>
-                    <td className="p-3 border border-slate-200 text-center font-medium text-slate-500">
-                      —
-                    </td>
-                    {dealTiers.map((tier) => {
-                      const currentCost = calculateTierIncentiveCost(tier.tierNumber);
-                      const growthRate = lastYearIncentiveCost > 0 
-                        ? ((currentCost - lastYearIncentiveCost) / lastYearIncentiveCost) * 100 
-                        : 0;
-                      const isPositive = growthRate > 0;
-                      return (
-                        <td key={`growth-${tier.tierNumber}`} className={`p-3 border border-slate-200 text-center font-medium ${isPositive ? 'text-red-600' : 'text-green-600'}`}>
-                          {growthRate.toFixed(1)}%
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  
-                  <tr>
-                    <td className="p-3 border border-slate-200">
-                      <div>
-                        <div className="font-medium text-slate-900">Total Client Value</div>
-                        <div className="text-sm text-slate-500">Expected business value from incentive</div>
-                      </div>
-                    </td>
-                    <td className="p-3 border border-slate-200 text-center font-medium">
-                      $340,000
-                    </td>
-                    {dealTiers.map((tier) => {
-                      // Calculate expected value (simple 12x multiplier)
-                      const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                      const expectedValue = incentiveCost * 12;
-                      return (
-                        <td key={`value-${tier.tierNumber}`} className="p-3 border border-slate-200 text-center font-medium">
-                          ${expectedValue.toLocaleString()}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  
-                  <tr>
-                    <td className="p-3 border border-slate-200">
-                      <div>
-                        <div className="font-medium text-slate-900">Client Value Growth Rate</div>
-                        <div className="text-sm text-slate-500">Change vs. last year</div>
-                      </div>
-                    </td>
-                    <td className="p-3 border border-slate-200 text-center font-medium text-slate-500">
-                      —
-                    </td>
-                    {dealTiers.map((tier) => {
-                      const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-                      const expectedValue = incentiveCost * 12;
-                      const lastYearValue = 340000;
-                      const valueGrowthRate = lastYearValue > 0 
-                        ? ((expectedValue - lastYearValue) / lastYearValue) * 100 
-                        : 0;
-                      const isPositive = valueGrowthRate > 0;
-                      return (
-                        <td key={`value-growth-${tier.tierNumber}`} className={`p-3 border border-slate-200 text-center font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                          {valueGrowthRate.toFixed(1)}%
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Total Client Value"
+                      description="Expected business value from incentive"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    {formatCurrency(340000)}
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    // Calculate expected value (simple 12x multiplier)
+                    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                    const expectedValue = incentiveCost * 12;
+                    return (
+                      <FinancialDataCell key={`value-${tier.tierNumber}`}>
+                        {formatCurrency(expectedValue)}
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+                
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Client Value Growth Rate"
+                      description="Change vs. last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
+                    const expectedValue = incentiveCost * 12;
+                    const lastYearValue = 340000;
+                    const valueGrowthRate = lastYearValue > 0 
+                      ? ((expectedValue - lastYearValue) / lastYearValue) 
+                      : 0;
+                    return (
+                      <FinancialDataCell key={`value-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={valueGrowthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+              </FinancialTableBody>
+            </FinancialTable>
+          </FinancialSection>
 
 
 
