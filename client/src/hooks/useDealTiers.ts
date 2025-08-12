@@ -72,9 +72,9 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         tierNumber: newTierNumber,
         annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
         annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-        incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
-        incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
-        specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
+        categoryName: "Financial", // ✅ FIXED: Use new field names consistently
+        subCategoryName: "Discounts", // ✅ FIXED: Use new field names consistently  
+        incentiveOption: "Volume Discount", // ✅ FIXED: Use new field names consistently
         incentiveValue: 0,
         incentiveNotes: "",
       };

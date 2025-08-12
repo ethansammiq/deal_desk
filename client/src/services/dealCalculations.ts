@@ -1,5 +1,4 @@
-import { SelectedIncentive } from "@/lib/incentive-data";
-import { TierIncentive } from "@/components/TierSpecificIncentives";
+// ❌ ELIMINATED: SelectedIncentive and TierIncentive imports - using DealTier only
 import { DealFinancialSummary } from "@/lib/utils";
 
 // Define DealTier interface locally for now
