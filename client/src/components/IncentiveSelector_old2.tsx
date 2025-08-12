@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { incentiveCategories } from "@/lib/incentive-data";
 import { DealTier } from "@/hooks/useDealTiers";
 import { incentiveSelectionToDealTier } from "@/lib/incentive-mapping";
@@ -25,7 +23,6 @@ export function IncentiveSelector({
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
   const [tierValues, setTierValues] = useState<{ [tierNumber: number]: number }>({});
-  const [notes, setNotes] = useState("");
 
   // Get available subcategories based on selected category
   const getSubCategories = () => {
@@ -65,8 +62,7 @@ export function IncentiveSelector({
         return {
           ...tier,
           ...incentiveFields,
-          incentiveValue: tierValue,
-          incentiveNotes: notes
+          incentiveValue: tierValue
         };
       }
       return tier;
@@ -82,36 +78,32 @@ export function IncentiveSelector({
     setSelectedSubCategory("");
     setSelectedOption("");
     setTierValues({});
-    setNotes("");
   };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Add Incentive</CardTitle>
-        <p className="text-sm text-gray-600">Select a category, sub-category, and specific incentive option</p>
+        <CardTitle>Select Incentive</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Step 1: Category Selection with Icons */}
+        {/* Step 1: Category Selection */}
         <div>
-          <Label className="text-sm font-medium">1. Select Incentive Category</Label>
-          <div className="grid grid-cols-3 gap-3 mt-2">
+          <Label className="text-sm font-medium">1. Select Category</Label>
+          <div className="grid grid-cols-2 gap-2 mt-2">
             {incentiveCategories.map((category) => (
               <Button
                 key={category.id}
                 type="button"
                 variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
                 onClick={() => {
                   setSelectedCategory(category.id);
                   setSelectedSubCategory("");
                   setSelectedOption("");
                 }}
-                className="justify-start h-auto p-3"
+                className="justify-start"
               >
-                <div className="flex items-center gap-2">
-                  {category.icon}
-                  <span>{category.name}</span>
-                </div>
+                {category.name}
               </Button>
             ))}
           </div>
@@ -121,12 +113,13 @@ export function IncentiveSelector({
         {selectedCategory && (
           <div>
             <Label className="text-sm font-medium">2. Select Sub-Category</Label>
-            <div className="grid grid-cols-2 gap-3 mt-2">
+            <div className="grid grid-cols-2 gap-2 mt-2">
               {getSubCategories().map((subCategory) => (
                 <Button
                   key={subCategory.id}
                   type="button"
                   variant={selectedSubCategory === subCategory.id ? "default" : "outline"}
+                  size="sm"
                   onClick={() => {
                     setSelectedSubCategory(subCategory.id);
                     setSelectedOption("");
@@ -144,73 +137,44 @@ export function IncentiveSelector({
         {selectedSubCategory && (
           <div>
             <Label className="text-sm font-medium">3. Select Specific Incentive</Label>
-            <Select value={selectedOption} onValueChange={setSelectedOption}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose an incentive option" />
-              </SelectTrigger>
-              <SelectContent>
-                {getOptions().map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Step 4: Configure Incentive by Tier - Table Format */}
-        {selectedOption && (
-          <div>
-            <Label className="text-sm font-medium">4. Configure Incentive by Tier</Label>
-            <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left p-3 font-medium text-gray-700">Value Details</th>
-                    {dealTiers.map((tier) => (
-                      <th key={tier.tierNumber} className="text-center p-3 font-medium text-gray-700">
-                        Tier {tier.tierNumber}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="p-3 border-r border-gray-200 font-medium">
-                      Incentive Value (USD)
-                    </td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="p-2 text-center">
-                        <div className="flex items-center justify-center">
-                          <span className="text-gray-500 mr-1">$</span>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            value={tierValues[tier.tierNumber] || ""}
-                            onChange={(e) => handleTierValueChange(tier.tierNumber, e.target.value)}
-                            className="w-20 text-center"
-                          />
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 gap-2 mt-2">
+              {getOptions().map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  variant={selectedOption === option ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedOption(option)}
+                  className="justify-start"
+                >
+                  {option}
+                </Button>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Notes Section */}
+        {/* Step 4: Tier Value Assignment */}
         {selectedOption && (
           <div>
-            <Label className="text-sm font-medium">Notes (Optional)</Label>
-            <Textarea
-              placeholder="Add any additional details about this incentive..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="mt-2"
-            />
+            <Label className="text-sm font-medium">4. Set Values for Each Tier</Label>
+            <div className="space-y-3 mt-2">
+              {dealTiers.map((tier) => (
+                <div key={tier.tierNumber} className="flex items-center gap-3">
+                  <Label className="min-w-[80px]">Tier {tier.tierNumber}:</Label>
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-sm">$</span>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={tierValues[tier.tierNumber] || ""}
+                      onChange={(e) => handleTierValueChange(tier.tierNumber, e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -227,9 +191,8 @@ export function IncentiveSelector({
               type="button" 
               onClick={handleSave}
               disabled={!selectedOption || Object.keys(tierValues).length === 0}
-              className="bg-purple-600 hover:bg-purple-700"
             >
-              Add Incentive
+              Apply Incentive
             </Button>
           </div>
         </div>

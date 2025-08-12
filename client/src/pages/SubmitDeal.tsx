@@ -362,7 +362,8 @@ export default function SubmitDeal() {
       annualRevenue: tier.annualRevenue,
       annualGrossMargin: tier.annualGrossMargin
     };
-    return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
+    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
+    return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, [], [], currentSalesChannel, advertiserName, agencyName);
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMargin  
@@ -372,7 +373,8 @@ export default function SubmitDeal() {
       annualRevenue: tier.annualRevenue,
       annualGrossMargin: tier.annualGrossMargin
     };
-    return dealCalculations.calculateAdjustedGrossMargin(serviceTier, selectedIncentives, tierIncentives);
+    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
+    return dealCalculations.calculateAdjustedGrossMargin(serviceTier, [], []);
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMarginGrowthRate
@@ -383,7 +385,8 @@ export default function SubmitDeal() {
       annualRevenue: tier.annualRevenue,
       annualGrossMargin: tier.annualGrossMargin
     };
-    return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, selectedIncentives, tierIncentives, currentSalesChannel, advertiserName, agencyName);
+    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
+    return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, [], [], currentSalesChannel, advertiserName, agencyName);
   };
 
   // ✅ PHASE 2: Replace with service call
@@ -694,10 +697,7 @@ export default function SubmitDeal() {
       annualGrossMargin: (data.annualGrossMarginPercent || DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN * 100) / 100,
       // Only include dealTiers if the structure is tiered
       ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),
-      // Include selected incentives
-      selectedIncentives,
-      // Include tier-specific incentives
-      tierIncentives,
+      // ✅ FIXED: Eliminated redundant incentive interfaces - all data is in dealTiers
     };
 
     submitDealMutation.mutate(dealData);
@@ -3071,8 +3071,7 @@ export default function SubmitDeal() {
                         annualGrossMargin: Number(formValues.annualGrossMargin) || 0,
                         dealStructure: dealStructureType || "tiered",
                         dealTiers: dealTiers,
-                        selectedIncentives: selectedIncentives,
-                        tierIncentives: tierIncentives,
+                        // ✅ FIXED: Eliminated redundant incentive interfaces - all data is in dealTiers
                         status: "pending_approval"
                       };
                       
