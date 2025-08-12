@@ -82,6 +82,7 @@ import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 
 import { IncentiveStructureSection } from "@/components/deal-form/IncentiveStructureSection";
+import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
@@ -1348,6 +1349,9 @@ export default function SubmitDeal() {
                     showAddIncentiveForm={showAddIncentiveForm}
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
                   />
+
+                  {/* Financial Summary Section - Separate from Incentive Structure */}
+                  <FinancialSummarySection dealTiers={dealTiers} />
 
                   {/* ✅ Phase 2.3: Legacy flat_commit code block removed */}
                   {false && (
