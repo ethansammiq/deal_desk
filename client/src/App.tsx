@@ -22,6 +22,7 @@ const HelpResources = lazy(() => import("@/pages/HelpResources"));
 const DealRequests = lazy(() => import("@/pages/DealRequests"));
 const Home = lazy(() => import("@/pages/Home"));
 const RoleDemo = lazy(() => import("@/pages/RoleDemo"));
+const RoleTestingPanel = lazy(() => import("@/components/testing/RoleTestingPanel"));
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -68,6 +69,7 @@ function Router() {
             <Route path="/deals" component={UnifiedDashboard} />
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/role-demo" component={RoleDemo} />
+            <Route path="/role-testing" component={RoleTestingPanel} />
             {/* Legacy routes for reference */}
             <Route path="/legacy-dashboard" component={Dashboard} />
             <Route path="/legacy-home" component={Home} />
