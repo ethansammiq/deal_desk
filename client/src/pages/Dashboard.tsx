@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { DataTable } from "@/components/ui/data-table";
-import { Deal } from "@shared/schema";
+import { Deal, type DealStatus } from "@shared/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +84,7 @@ export default function Dashboard() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status;
+        const status = row.original.status as DealStatus;
         return <DealStatusBadge status={status} />;
       },
       filterFn: (row, id, value) => {
