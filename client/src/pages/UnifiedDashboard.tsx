@@ -312,19 +312,6 @@ export default function UnifiedDashboard() {
       },
     },
     {
-      accessorKey: "dealStructure",
-      header: "Deal Type",
-      cell: ({ row }) => {
-        const structure = row.original.dealStructure;
-        const typeLabels = {
-          'tiered': 'Tiered',
-          'flat_commit': 'Flat Commit'
-        };
-        const label = typeLabels[structure as keyof typeof typeLabels] || structure;
-        return <div className="text-sm text-slate-700">{label}</div>;
-      },
-    },
-    {
       accessorKey: "salesChannel",
       header: "Sales Channel",
       cell: ({ row }) => {
@@ -335,6 +322,19 @@ export default function UnifiedDashboard() {
         };
         const channel = row.original.salesChannel;
         const label = channelLabels[channel as keyof typeof channelLabels] || channel;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
+      accessorKey: "dealStructure",
+      header: "Deal Type",
+      cell: ({ row }) => {
+        const structure = row.original.dealStructure;
+        const typeLabels = {
+          'tiered': 'Tiered',
+          'flat_commit': 'Flat Commit'
+        };
+        const label = typeLabels[structure as keyof typeof typeLabels] || structure;
         return <div className="text-sm text-slate-700">{label}</div>;
       },
     },
