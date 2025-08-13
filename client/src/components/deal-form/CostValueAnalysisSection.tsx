@@ -1,5 +1,5 @@
 import React from "react";
-import { DealTier } from "@/hooks/useDealTiers";
+import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
 import {
   FinancialSection,
   FinancialTable,
@@ -20,10 +20,10 @@ interface CostValueAnalysisSectionProps {
 export function CostValueAnalysisSection({
   dealTiers
 }: CostValueAnalysisSectionProps) {
-  // Calculate incentive cost directly from DealTier
+  // Calculate incentive cost using the new getTotalIncentiveValue function
   const calculateTierIncentiveCost = (tierNumber: number): number => {
     const tier = dealTiers.find(t => t.tierNumber === tierNumber);
-    return tier?.incentiveValue || 0;
+    return tier ? getTotalIncentiveValue(tier) : 0;
   };
 
   // Calculate last year incentive cost (using default)
