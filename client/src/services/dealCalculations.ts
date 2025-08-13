@@ -44,13 +44,15 @@ export class DealCalculationService {
   getPreviousYearMargin(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearMargin || 0.35; // Default value as fallback (0.35 = 35%)
+      // ✅ FIX: Convert percentage to decimal (25.7% → 0.257)
+      return advertiser?.previousYearMargin ? advertiser.previousYearMargin / 100 : 0.35;
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearMargin || 0.35; // Default value as fallback (0.35 = 35%)
+      // ✅ FIX: Convert percentage to decimal (31.5% → 0.315)
+      return agency?.previousYearMargin ? agency.previousYearMargin / 100 : 0.35;
     }
 
     return 0.35; // Default value as fallback (0.35 = 35%)
