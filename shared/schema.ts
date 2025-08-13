@@ -2,12 +2,23 @@ import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, da
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Users table (keep the existing one)
+// Phase 7B: User roles for role-based permissions
+export const userRoles = ["seller", "approver", "legal"] as const;
+export type UserRole = typeof userRoles[number];
+
+// Phase 7B: Enhanced users table with role-based permissions
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
+  role: text("role", { enum: userRoles }).notNull().default("seller"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  department: text("department"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
