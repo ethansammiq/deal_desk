@@ -267,7 +267,7 @@ export default function UnifiedDashboard() {
   };
 
   // Helper function to get deal value based on deal type and structure
-  const getDealValue = (deal: Deal): { amount: number; isMultiTier: boolean } => {
+  const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
     // For scoping deals, use growth ambition
     if (deal.status === 'scoping' && deal.growthAmbition) {
       return { amount: deal.growthAmbition, isMultiTier: false };
@@ -275,9 +275,10 @@ export default function UnifiedDashboard() {
     
     // For tiered deals, use Tier 1 revenue and indicate multi-tier with +
     if (deal.dealStructure === 'tiered') {
-      // Use annual revenue as Tier 1 for now (tier data fetched separately)
-      const amount = deal.annualRevenue || deal.growthAmbition || 0;
-      return { amount, isMultiTier: true };
+      // Use real tier data if available, otherwise fallback
+      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
+      const hasMultipleTiers = deal.tiers && deal.tiers.length > 1;
+      return { amount, isMultiTier: hasMultipleTiers || false };
     }
     
     // For flat commit deals, use annual revenue

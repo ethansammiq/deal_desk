@@ -42,7 +42,7 @@ export function useDealConversion() {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
 
       // Navigate to deal submission form with pre-filled data
-      navigate(`/submit-deal?from-scoping=${data.dealId}`);
+      navigate(`/submit-deal?from-scoping=${data.deal.id}`);
     },
     onError: (error: Error) => {
       toast({

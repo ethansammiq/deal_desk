@@ -44,7 +44,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const status = req.query.status as string | undefined;
       const filters = status ? { status } : undefined;
       const deals = await storage.getDeals(filters);
-      res.status(200).json(deals);
+      
+      // Enhance deals with tier data for accurate value calculation
+      const dealsWithTiers = await Promise.all(
+        deals.map(async (deal) => {
+          if (deal.dealStructure === 'tiered') {
+            const tiers = await storage.getDealTiers(deal.id);
+            return {
+              ...deal,
+              tiers: tiers,
+              // Calculate total tier revenue for display
+              totalTierRevenue: tiers.length > 0 
+                ? tiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)
+                : deal.annualRevenue || 0,
+              // Get Tier 1 revenue specifically
+              tier1Revenue: tiers.find(t => t.tierNumber === 1)?.annualRevenue || deal.annualRevenue || 0
+            };
+          }
+          return deal;
+        })
+      );
+      
+      res.status(200).json(dealsWithTiers);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch deals" });
     }
@@ -426,6 +447,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error stack:", error.stack);
       }
       res.status(500).json({ error: "Failed to create deal scoping request" });
+    }
+  });
+
+  // Conversion endpoint for scoping requests to deals
+  router.post("/deal-scoping-requests/:id/convert", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid scoping request ID" });
+      }
+
+      const scopingRequest = await storage.getDealScopingRequest(id);
+      if (!scopingRequest) {
+        return res.status(404).json({ message: "Scoping request not found" });
+      }
+
+      // Convert scoping request to deal
+      const dealData = {
+        dealName: scopingRequest.requestTitle || "Converted Deal",
+        dealType: scopingRequest.dealType || "grow",
+        salesChannel: scopingRequest.salesChannel,
+        region: scopingRequest.region,
+        advertiserName: scopingRequest.advertiserName,
+        agencyName: scopingRequest.agencyName,
+        dealStructure: scopingRequest.dealStructure || "flat_commit",
+        growthAmbition: scopingRequest.growthAmbition,
+        growthOpportunityMIQ: scopingRequest.growthOpportunityMIQ,
+        growthOpportunityClient: scopingRequest.growthOpportunityClient,
+        clientAsks: scopingRequest.clientAsks,
+        termStartDate: scopingRequest.termStartDate,
+        termEndDate: scopingRequest.termEndDate,
+        contractTermMonths: scopingRequest.contractTermMonths,
+        status: "submitted" as const,
+        email: scopingRequest.email
+      };
+
+      // Generate reference number
+      const year = new Date().getFullYear();
+      const allDeals = await storage.getDeals();
+      const nextSequence = allDeals.length + 1;
+      const referenceNumber = `DEAL-${year}-${String(nextSequence).padStart(3, '0')}`;
+
+      const newDeal = await storage.createDeal(dealData, referenceNumber);
+
+      res.status(201).json({ 
+        deal: newDeal,
+        dealId: newDeal.id,
+        message: "Scoping request converted to deal successfully" 
+      });
+    } catch (error) {
+      console.error("Error converting scoping request to deal:", error);
+      res.status(500).json({ message: "Failed to convert scoping request" });
     }
   });
 
