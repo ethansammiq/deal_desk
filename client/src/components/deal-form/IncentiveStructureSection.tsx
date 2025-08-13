@@ -1,9 +1,8 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
-import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown, Info, Trash2 } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Plus, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
 import { FinancialTierTable } from "./FinancialTierTable";
@@ -67,41 +66,30 @@ export function IncentiveStructureSection({
   const lastYearIncentiveCost = 50000;
 
   return (
-    <div className="space-y-8">
-      {/* Incentive Structure Section */}
-      <Card>
-        <CardContent className="p-6">
-          {/* Header with collapsible control */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <h3 className="text-lg font-medium text-slate-900 bg-gradient-to-r from-purple-700 to-indigo-500 bg-clip-text text-transparent">
-                Incentive Structure
-              </h3>
-              <ChevronDown className="ml-2 h-5 w-5 text-slate-500" />
-            </div>
-            <Button
-              type="button"
-              onClick={() => setShowAddIncentiveForm(true)}
-              variant="outline"
-              size="sm"
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Incentive
-            </Button>
-          </div>
+    <FinancialSection title="Incentive Structure">
+      {/* Info Banner - using Alert component for consistency */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Incentive Configuration</AlertTitle>
+        <AlertDescription>
+          Incentives are additional benefits provided to the client based on performance. 
+          Select appropriate incentive types and amounts for each tier of the deal.
+        </AlertDescription>
+      </Alert>
 
-          {/* Info banner */}
-          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
-            <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-700">
-              <p className="font-medium mb-1">Incentive Configuration</p>
-              <p>
-                Incentives are additional benefits provided to the client based on performance.
-                Select appropriate incentive types and amounts for each tier of the deal.
-              </p>
-            </div>
-          </div>
+      {/* Add Incentive Button */}
+      <div className="flex justify-end mb-4">
+        <Button
+          type="button"
+          onClick={() => setShowAddIncentiveForm(true)}
+          variant="outline"
+          size="sm"
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Incentive
+        </Button>
+      </div>
 
           {/* Add Incentive Form */}
           {showAddIncentiveForm && (
@@ -146,8 +134,6 @@ export function IncentiveStructureSection({
             </div>
           )}
 
-        </CardContent>
-      </Card>
-    </div>
+    </FinancialSection>
   );
 }
