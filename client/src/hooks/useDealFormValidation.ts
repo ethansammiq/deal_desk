@@ -101,22 +101,16 @@ const SUBMIT_DEAL_STEPS: FormStep[] = [
   }
 ];
 
-// REQUEST SUPPORT FORM STEPS (3 steps max)
+// REQUEST SUPPORT FORM STEPS (2 steps max) - Updated after consolidation
 const REQUEST_SUPPORT_STEPS: FormStep[] = [
   {
     id: 1,
-    title: 'Client Information', // Tab: sales-channel
+    title: 'Deal Overview', // Combined: Client Information + Deal Timeline
     fields: [
-      'salesChannel',    // ClientInfoSection
-      'advertiserName',  // ClientInfoSection (conditional)
-      'agencyName',      // ClientInfoSection (conditional)
-      'region'           // ClientInfoSection
-    ]
-  },
-  {
-    id: 2,
-    title: 'Deal Timeline', // Tab: deal-details
-    fields: [
+      'salesChannel',       // ClientInfoSection
+      'advertiserName',     // ClientInfoSection (conditional)
+      'agencyName',         // ClientInfoSection (conditional)
+      'region',             // ClientInfoSection
       'dealType',           // DealDetailsSection
       'dealStructure',      // DealDetailsSection
       'contractTermMonths', // DealDetailsSection
@@ -125,8 +119,8 @@ const REQUEST_SUPPORT_STEPS: FormStep[] = [
     ]
   },
   {
-    id: 3,
-    title: 'Growth Opportunity', // Tab: growth-opportunity
+    id: 2,
+    title: 'Business Context', // Tab: business-context
     fields: [
       'growthAmbition',         // BusinessContextSection
       'growthOpportunityMIQ',   // BusinessContextSection

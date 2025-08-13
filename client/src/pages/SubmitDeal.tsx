@@ -73,6 +73,7 @@ import {
 } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2 } from "lucide-react";
+import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 // ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
 import { incentiveCategories } from "@/lib/incentive-data";
@@ -819,34 +820,20 @@ export default function SubmitDeal() {
               console.log("Form submit event triggered");
               form.handleSubmit(onSubmit)(e);
             }}>
-            {/* Step 1: Deal Overview - Using clean direct component structure */}
+            {/* Step 1: Deal Overview - Using shared component */}
             {formStep === 0 && (
-              <>
-                {/* Client Information Section */}
-                <CardContent className="p-6 border-b">
-                  <FormSectionHeader
-                    title="Client Information"
-                    description="Select the client and sales channel for this deal"
-                  />
-                  <div className="mt-6">
-                    <ClientInfoSection
-                      form={form}
-                      agencies={agencies}
-                      advertisers={advertisers}
-                      salesChannel={String(salesChannel || "")}
-                      layout="grid"
-                    />
-                  </div>
-                </CardContent>
-
-                {/* Deal Details Section */}
-                <DealDetailsSection
-                  form={form}
-                  dealStructureType={dealStructureType}
-                  setDealStructure={setDealStructure}
-                  nextStep={nextStep}
-                />
-              </>
+              <DealOverviewStep
+                form={form}
+                agencies={agencies}
+                advertisers={advertisers}
+                salesChannel={String(salesChannel || "")}
+                dealStructureType={dealStructureType}
+                setDealStructure={setDealStructure}
+                nextStep={nextStep}
+                layout="cards"
+                includeEmail={true}
+                showNavigation={true}
+              />
             )}
 
             {/* ORIGINAL FORM STRUCTURE FOR REFERENCE - Using extracted component above */}

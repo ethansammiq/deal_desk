@@ -41,8 +41,7 @@ import {
 import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
-import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
-import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
+import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 
@@ -303,45 +302,20 @@ export default function RequestSupport() {
               className="w-full"
             >
               <TabsContent value="deal-overview" className="space-y-6 pt-4">
-                {/* Client Information Section */}
-                <div>
-                  <FormSectionHeader
-                    title="Client Information"
-                    description="Select the client and sales channel for this deal"
-                  />
-                  <div className="mt-6">
-                    <ClientInfoSection
-                      form={form}
-                      agencies={agencies}
-                      advertisers={advertisers}
-                      salesChannel={form.watch("salesChannel")}
-                      includeEmail={false}
-                      layout="stacked"
-                    />
-                  </div>
-                </div>
-                
-                {/* Deal Timeline Section */}
-                <div className="border-t pt-6 mt-8">
-                  <FormSectionHeader
-                    title="Deal Timeline"
-                    description="Configure the basic deal structure and timeline"
-                  />
-                  <div className="mt-6">
-                    <DealDetailsSection
-                      form={form as any}
-                      dealStructureType={dealStructureType}
-                      setDealStructure={(value) => {
-                        setDealStructureType(value);
-                        form.setValue("dealStructure", value as "tiered" | "flat_commit");
-                      }}
-                      showBusinessSummary={false}
-                      showNavigationButton={false}
-                      title=""
-                      description=""
-                    />
-                  </div>
-                </div>
+                <DealOverviewStep
+                  form={form}
+                  agencies={agencies}
+                  advertisers={advertisers}
+                  salesChannel={form.watch("salesChannel")}
+                  dealStructureType={dealStructureType}
+                  setDealStructure={(value) => {
+                    setDealStructureType(value);
+                    form.setValue("dealStructure", value as "tiered" | "flat_commit");
+                  }}
+                  layout="tabs"
+                  includeEmail={false}
+                  showNavigation={false}
+                />
               </TabsContent>
 
               <TabsContent
