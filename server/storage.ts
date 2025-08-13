@@ -319,7 +319,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 150000,
         analyticsTier: "gold",
         requiresCustomMarketing: false,
-        status: "submitted"
+        status: "submitted" // Phase 7A compatible
       },
       {
         dealName: "WPP Agency Partnership",
@@ -340,7 +340,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 320000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "in_review"
+        status: "under_review" // Phase 7A: updated status
       },
       {
         dealName: "GM Custom Data Solution",
@@ -361,7 +361,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 450000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "initial_approval"
+        status: "approved" // Phase 7A: updated status
       },
       {
         dealName: "Droga5 Client Portfolio",
@@ -382,7 +382,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 50000,
         analyticsTier: "silver",
         requiresCustomMarketing: false,
-        status: "client_feedback"
+        status: "negotiating" // Phase 7A: updated status
       },
       {
         dealName: "Nike Digital Transformation",
@@ -403,7 +403,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 275000,
         analyticsTier: "gold",
         requiresCustomMarketing: true,
-        status: "signed"
+        status: "signed" // Phase 7A compatible
       }
     ];
     
