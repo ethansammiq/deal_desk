@@ -171,14 +171,17 @@ export function FinancialSection({ title, children, className }: FinancialSectio
  * Column group helper for consistent table layout
  */
 export function FinancialTableColGroup({ 
-  dealTiers 
+  dealTiers,
+  hasActions = false
 }: { 
-  dealTiers: Array<{ tierNumber: number }> 
+  dealTiers: Array<{ tierNumber: number }>;
+  hasActions?: boolean;
 }) {
   return (
     <colgroup>
       <col className="w-[40%]" />
       <col className="w-[20%]" />
+      {hasActions && <col className="w-[10%]" />}
       {dealTiers.map((tier) => (
         <col key={`col-${tier.tierNumber}`} className="w-[20%]" />
       ))}

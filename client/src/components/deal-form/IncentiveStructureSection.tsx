@@ -8,6 +8,7 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
 import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
+import { IncentiveDisplayTable } from "@/components/ui/incentive-display-table";
 import { DEAL_CONSTANTS } from "@/config/businessConstants";
 import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
 import {
@@ -122,111 +123,26 @@ export function IncentiveStructureSection({
             </div>
           )}
 
-          {/* Current Incentive Display - reads directly from DealTier incentives array */}
+          {/* Current Incentive Display - using shared IncentiveDisplayTable */}
           {dealTiers.some(tier => getTotalIncentiveValue(tier) > 0) && (
             <div className="space-y-4 mb-6">
               <h4 className="text-lg font-semibold">Current Incentive Configuration</h4>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <colgroup>
-                    <col className="w-[40%]" />
-                    <col className="w-[20%]" />
-                    {dealTiers.map((tier) => (
-                      <col key={`col-${tier.tierNumber}`} className="w-[20%]" />
-                    ))}
-                  </colgroup>
-                  
-                  <thead>
-                    <tr>
-                      <th className="text-left p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                        Incentive Details
-                      </th>
-                      <th className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                        Actions
-                      </th>
-                      {dealTiers.map((tier) => (
-                        <th key={`header-${tier.tierNumber}`} className="text-center p-3 bg-slate-100 border border-slate-200 font-medium text-slate-700">
-                          Tier {tier.tierNumber}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  
-                  <tbody>
-                    {/* Display each unique incentive type across all tiers */}
-                    {(() => {
-                      // Collect all unique incentive types
-                      const allIncentiveTypes = new Map<string, { category: string; subCategory: string; option: string }>();
-                      dealTiers.forEach(tier => {
-                        if (tier.incentives) {
-                          tier.incentives.forEach(incentive => {
-                            const key = `${incentive.category}-${incentive.subCategory}-${incentive.option}`;
-                            allIncentiveTypes.set(key, {
-                              category: incentive.category,
-                              subCategory: incentive.subCategory,
-                              option: incentive.option
-                            });
-                          });
-                        }
-                      });
-
-                      return Array.from(allIncentiveTypes.entries()).map(([key, incentiveType]) => (
-                        <tr key={key} className="hover:bg-slate-50">
-                          <td className="p-3 border border-slate-200">
-                            <div className="space-y-1">
-                              <div className="font-medium text-purple-600 flex items-center">
-                                <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
-                                  $
-                                </span>
-                                {incentiveType.option}
-                              </div>
-                              <div className="text-xs text-slate-500">
-                                {incentiveType.category} → {incentiveType.subCategory}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 border border-slate-200 text-center">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                // Remove this specific incentive type from all tiers
-                                const updatedTiers = dealTiers.map(tier => ({
-                                  ...tier,
-                                  incentives: tier.incentives?.filter(inc => 
-                                    !(inc.category === incentiveType.category && 
-                                      inc.subCategory === incentiveType.subCategory && 
-                                      inc.option === incentiveType.option)
-                                  ) || []
-                                }));
-                                setDealTiers(updatedTiers);
-                              }}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </td>
-                          {dealTiers.map((tier) => {
-                            // Find the specific incentive value for this tier and incentive type
-                            const incentive = tier.incentives?.find(inc => 
-                              inc.category === incentiveType.category && 
-                              inc.subCategory === incentiveType.subCategory && 
-                              inc.option === incentiveType.option
-                            );
-                            const value = incentive?.value || 0;
-                            return (
-                              <td key={`incentive-${tier.tierNumber}-${key}`} className="p-3 border border-slate-200 text-center font-medium">
-                                {formatCurrency(value)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
-              </div>
+              <IncentiveDisplayTable
+                dealTiers={dealTiers}
+                onRemoveIncentive={(incentiveType) => {
+                  // Remove specific incentive type from all tiers
+                  const updatedTiers = dealTiers.map(tier => ({
+                    ...tier,
+                    incentives: tier.incentives?.filter(inc => 
+                      !(inc.category === incentiveType.category && 
+                        inc.subCategory === incentiveType.subCategory && 
+                        inc.option === incentiveType.option)
+                    ) || []
+                  }));
+                  setDealTiers(updatedTiers);
+                }}
+                showActions={true}
+              />
             </div>
           )}
 
