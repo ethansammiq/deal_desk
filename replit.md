@@ -42,6 +42,11 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Centralized Constants**: Business logic constants are centralized for easy management and consistency.
 
 ## Recent Changes
+- **✅ Growth Rate Calculations & Color Coding Fixed** (Aug 2025): Completed comprehensive calculation accuracy and UI consistency improvements
+  - Fixed all growth rate calculations (revenue, profit, margin) to use dynamic salesChannel/advertiser/agency parameters instead of hardcoded values
+  - Implemented correct color coding: cost increases show RED (bad), revenue/profit increases show GREEN (good) using invertColors prop
+  - Verified calculation accuracy: 1M@35% vs 620k@31.5% = +61.3% revenue growth, +79.2% profit growth (all displaying correctly)
+  - Enhanced FinancialTierTable with proper parameter passing for all calculation service methods
 - **✅ Hardcoded Values Eliminated & Dynamic Data Integration Complete** (Aug 2025): Successfully replaced all hardcoded fallback values with realistic defaults from mock data
   - Fixed CostValueAnalysisSection data flow by adding proper useQuery hooks to fetch advertisers/agencies data
   - Updated all calculation service fallback values to use authentic data from mock database (e.g., 72andSunny: $22k incentive cost, $77k client value)
@@ -114,9 +119,10 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Phase 6**: Gross Profit Calculation Consolidation ✅ COMPLETE 
   - **✅ 100% Shared Calculation Logic**: Added calculateBasicGrossProfit() to DealCalculationService
   - **✅ Custom Code Elimination**: Removed inline gross profit calculations from FinancialTierTable
-  - **✅ Service Integration**: Exposed method through useDealCalculations hook
-  - **✅ TypeScript Cleanup**: Fixed all LSP diagnostics and interface inconsistencies
-  - **✅ Architectural Balance**: Preserved valuable 5% custom input handling code
+  - **✅ Service Integration**: Exposed method through useDealCalculations hook  
+  - **✅ Parameter Standardization**: All 17 calculation method calls now use consistent salesChannel/advertiser/agency parameters
+  - **✅ Growth Rate Accuracy**: Fixed revenue, profit, and margin growth calculations with proper data source integration
+  - **✅ UI Color Consistency**: Implemented invertColors logic for cost vs revenue/profit growth indicators
 - **Phase 7**: Backend Integration for Previous Year Data (NEXT)
   - **🎯 Next Goal**: Connect advertiser/agency database tables to replace hardcoded values
   - **🔄 Data Flow**: Step 1 client selection → Step 3 previous year data population 
