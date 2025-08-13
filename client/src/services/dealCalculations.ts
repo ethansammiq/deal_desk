@@ -74,6 +74,8 @@ export class DealCalculationService {
     return 50000;
   }
 
+
+
   /**
    * Calculate previous year's adjusted gross profit
    */
@@ -101,11 +103,37 @@ export class DealCalculationService {
   }
 
   /**
-   * Get previous year client value
+   * Get previous year client value (using 3.5x of previous incentive cost for consistency)
    */
-  getPreviousYearClientValue(salesChannel: string, advertiserName?: string, agencyName?: string): number {
-    const previousRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    return previousRevenue * 0.4; // 40% of revenue as specified
+  getPreviousYearClientValue(): number {
+    const previousIncentiveCost = this.getPreviousYearIncentiveCost();
+    return previousIncentiveCost * 3.5; // Using same 3.5x multiplier logic
+  }
+
+  /**
+   * Calculate client value using 3.5x multiplier on incentive cost
+   */
+  calculateClientValueFromIncentives(tier: DealTier): number {
+    const incentiveCost = this.calculateTierIncentiveCost(tier);
+    return incentiveCost * 3.5; // 3.5x multiplier for realistic ROI
+  }
+
+  /**
+   * Calculate incentive cost growth rate compared to previous year
+   */
+  calculateIncentiveCostGrowthRate(tier: DealTier): number {
+    const currentCost = this.calculateTierIncentiveCost(tier);
+    const previousCost = this.getPreviousYearIncentiveCost();
+    return previousCost > 0 ? ((currentCost - previousCost) / previousCost) : 0;
+  }
+
+  /**
+   * Calculate client value growth rate compared to previous year  
+   */
+  calculateClientValueGrowthRateFromIncentives(tier: DealTier): number {
+    const currentValue = this.calculateClientValueFromIncentives(tier);
+    const previousValue = this.getPreviousYearClientValue();
+    return previousValue > 0 ? ((currentValue - previousValue) / previousValue) : 0;
   }
 
   /**

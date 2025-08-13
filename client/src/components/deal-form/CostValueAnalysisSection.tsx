@@ -1,5 +1,6 @@
 import React from "react";
-import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
+import { DealTier } from "@/hooks/useDealTiers";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
 import {
   FinancialSection,
   FinancialTable,
@@ -20,14 +21,12 @@ interface CostValueAnalysisSectionProps {
 export function CostValueAnalysisSection({
   dealTiers
 }: CostValueAnalysisSectionProps) {
-  // Calculate incentive cost using the new getTotalIncentiveValue function
-  const calculateTierIncentiveCost = (tierNumber: number): number => {
-    const tier = dealTiers.find(t => t.tierNumber === tierNumber);
-    return tier ? getTotalIncentiveValue(tier) : 0;
-  };
-
-  // Calculate last year incentive cost (using default)
-  const lastYearIncentiveCost = 50000;
+  // Use shared calculation service for all calculations
+  const { calculationService } = useDealCalculations();
+  
+  // Get consistent baseline values from shared service
+  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
+  const lastYearClientValue = calculationService.getPreviousYearClientValue();
 
   return (
     <FinancialSection title="Cost & Value Analysis">
@@ -59,7 +58,7 @@ export function CostValueAnalysisSection({
             </FinancialDataCell>
             {dealTiers.map((tier) => (
               <FinancialDataCell key={`cost-${tier.tierNumber}`}>
-                {formatCurrency(calculateTierIncentiveCost(tier.tierNumber))}
+                {formatCurrency(calculationService.calculateTierIncentiveCost(tier))}
               </FinancialDataCell>
             ))}
           </tr>
@@ -75,10 +74,7 @@ export function CostValueAnalysisSection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const currentCost = calculateTierIncentiveCost(tier.tierNumber);
-              const growthRate = lastYearIncentiveCost > 0 
-                ? ((currentCost - lastYearIncentiveCost) / lastYearIncentiveCost) 
-                : 0;
+              const growthRate = calculationService.calculateIncentiveCostGrowthRate(tier);
               return (
                 <FinancialDataCell key={`growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={growthRate} invertColors={true} />
@@ -95,12 +91,10 @@ export function CostValueAnalysisSection({
               />
             </FinancialDataCell>
             <FinancialDataCell>
-              {formatCurrency(340000)}
+              {formatCurrency(lastYearClientValue)}
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              // Calculate expected value (3.5x multiplier - more realistic ROI)
-              const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-              const expectedValue = incentiveCost * 3.5;
+              const expectedValue = calculationService.calculateClientValueFromIncentives(tier);
               return (
                 <FinancialDataCell key={`value-${tier.tierNumber}`}>
                   {formatCurrency(expectedValue)}
@@ -120,12 +114,7 @@ export function CostValueAnalysisSection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-              const expectedValue = incentiveCost * 3.5;
-              const lastYearValue = 340000;
-              const valueGrowthRate = lastYearValue > 0 
-                ? ((expectedValue - lastYearValue) / lastYearValue) 
-                : 0;
+              const valueGrowthRate = calculationService.calculateClientValueGrowthRateFromIncentives(tier);
               return (
                 <FinancialDataCell key={`value-growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={valueGrowthRate} />
