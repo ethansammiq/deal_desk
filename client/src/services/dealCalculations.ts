@@ -153,11 +153,26 @@ export class DealCalculationService {
     const previousYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
     const currentMarginDecimal = tier.annualGrossMargin || 0;
     
+    // Debug logging to check actual values
+    console.log('Debug - Gross Margin Growth Rate:', {
+      previousYearMarginDecimal,
+      currentMarginDecimal,
+      tierNumber: tier.tierNumber
+    });
+    
     if (previousYearMarginDecimal === 0) return 0;
     
     // Calculate as percentage growth rate: ((Current - Previous) / Previous) × 100
     const growthRate = (currentMarginDecimal - previousYearMarginDecimal) / previousYearMarginDecimal;
-    return growthRate * 100; // Return as percentage for UI display
+    const result = growthRate * 100; // Return as percentage for UI display
+    
+    console.log('Debug - Growth Rate Result:', {
+      growthRate,
+      result,
+      expected: `Should be ${((currentMarginDecimal - previousYearMarginDecimal) / previousYearMarginDecimal * 100).toFixed(2)}%`
+    });
+    
+    return result;
   }
 
   /**
