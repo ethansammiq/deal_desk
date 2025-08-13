@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { 
   BarChart3, 
   ClipboardList, 
@@ -12,70 +13,73 @@ import {
   FileText, 
   PlusCircle, 
   TrendingUp,
+  CheckCircle,
+  XCircle,
   type LucideIcon
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { Deal, type DealStatus } from "@shared/schema";
 
+// Phase 7A: Updated stats interface for 9-status workflow (matching Dashboard.tsx)
 interface DealStats {
   totalDeals: number;
-  pendingDeals: number;
-  approvedDeals: number;
-  rejectedDeals: number;
-  totalValue: number;
-}
-
-interface Deal {
-  id: number;
-  referenceNumber: string;
-  dealType: string;
-  advertiserName?: string;
-  agencyName?: string;
-  annualRevenue: number;
-  status: string;
+  activeDeals: number; // scoping through legal_review
+  completedDeals: number; // signed
+  lostDeals: number; // lost
+  successRate: number;
+  // Status breakdown
+  scopingCount: number;
+  submittedCount: number;
+  underReviewCount: number;
+  negotiatingCount: number;
+  approvedCount: number;
+  legalReviewCount: number;
+  contractSentCount: number;
 }
 
 
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("active");
   const userName = "Charlie";
 
-  // Fetch deal statistics with fallback mock data
-  const { data: dealStats = { 
-    totalDeals: 24, 
-    pendingDeals: 9, 
-    approvedDeals: 12, 
-    rejectedDeals: 3, 
-    totalValue: 8750000 
-  } } = useQuery<DealStats>({
+  // Fetch deal statistics using current API structure
+  const { data: dealStats, isLoading: statsLoading } = useQuery<DealStats>({
     queryKey: ['/api/stats'],
-    retry: false,
-    refetchOnWindowFocus: false,
+    retry: 3,
+    staleTime: 30000, // 30 seconds
   });
 
   // Fetch deals for the tables
-  const { data: deals = [] } = useQuery<Deal[]>({
+  const { data: deals = [], isLoading: dealsLoading } = useQuery<Deal[]>({
     queryKey: ['/api/deals'],
-    retry: false,
-    refetchOnWindowFocus: false,
+    retry: 3,
+    staleTime: 30000, // 30 seconds
   });
 
-  // Filter deals based on active tab
+  // Phase 7A: Updated filtering logic for 9-status workflow
   const filteredDeals = deals.filter((deal: Deal) => {
     if (activeTab === "all") return true;
-    if (activeTab === "pending") return deal.status === "submitted" || deal.status === "in_review";
-    if (activeTab === "approved") return deal.status === "approved";
-    if (activeTab === "rejected") return deal.status === "rejected";
+    if (activeTab === "active") {
+      // Active deals: scoping through legal_review
+      return ["scoping", "submitted", "under_review", "negotiating", "approved", "legal_review", "contract_sent"].includes(deal.status);
+    }
+    if (activeTab === "completed") return deal.status === "signed";
+    if (activeTab === "lost") return deal.status === "lost";
     return true;
   }).slice(0, 5); // Show only the 5 most recent deals
   
-  // Calculate percentage of deals by status for the stats cards
-  const pendingPercentage = dealStats.totalDeals 
-    ? Math.round((dealStats.pendingDeals / dealStats.totalDeals) * 100) 
+  // Calculate percentages using new stats structure
+  const activePercentage = dealStats?.totalDeals 
+    ? Math.round((dealStats.activeDeals / dealStats.totalDeals) * 100) 
     : 0;
   
-  const approvedPercentage = dealStats.totalDeals 
-    ? Math.round((dealStats.approvedDeals / dealStats.totalDeals) * 100) 
+  const completedPercentage = dealStats?.totalDeals 
+    ? Math.round((dealStats.completedDeals / dealStats.totalDeals) * 100) 
+    : 0;
+
+  const lostPercentage = dealStats?.totalDeals 
+    ? Math.round((dealStats.lostDeals / dealStats.totalDeals) * 100) 
     : 0;
 
   return (
@@ -94,22 +98,22 @@ export default function Home() {
         </Button>
       </div>
       
-      {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-3">
+      {/* Stats Overview - Updated for 9-status workflow */}
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Active Deals</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Total Deals</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{dealStats.totalDeals}</div>
+              <div className="text-3xl font-bold">{dealStats?.totalDeals || 0}</div>
               <div className="p-2 bg-slate-100 rounded-full">
                 <BarChart3 className="h-5 w-5 text-slate-600" />
               </div>
             </div>
             <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-slate-500">Total value</p>
-              <p className="text-xs font-semibold">{formatCurrency(dealStats.totalValue)}</p>
+              <p className="text-xs text-slate-500">All deals</p>
+              <p className="text-xs font-semibold">100%</p>
             </div>
             <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
               <div className="bg-slate-400 h-1 rounded-full" style={{ width: '100%' }}></div>
@@ -119,42 +123,63 @@ export default function Home() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Pending Approval</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Active Deals</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{dealStats.pendingDeals}</div>
+              <div className="text-3xl font-bold">{dealStats?.activeDeals || 0}</div>
               <div className="p-2 bg-amber-100 rounded-full">
                 <ClipboardList className="h-5 w-5 text-amber-600" />
               </div>
             </div>
             <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-slate-500">Of total deals</p>
-              <p className="text-xs font-semibold">{pendingPercentage}%</p>
+              <p className="text-xs text-slate-500">In progress</p>
+              <p className="text-xs font-semibold">{activePercentage}%</p>
             </div>
             <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
-              <div className="bg-amber-400 h-1 rounded-full" style={{ width: `${pendingPercentage}%` }}></div>
+              <div className="bg-amber-400 h-1 rounded-full" style={{ width: `${activePercentage}%` }}></div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Approved Deals</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{dealStats.approvedDeals}</div>
+              <div className="text-3xl font-bold">{dealStats?.completedDeals || 0}</div>
               <div className="p-2 bg-green-100 rounded-full">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
             </div>
             <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-slate-500">Of total deals</p>
-              <p className="text-xs font-semibold">{approvedPercentage}%</p>
+              <p className="text-xs text-slate-500">Signed deals</p>
+              <p className="text-xs font-semibold">{completedPercentage}%</p>
             </div>
             <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
-              <div className="bg-green-400 h-1 rounded-full" style={{ width: `${approvedPercentage}%` }}></div>
+              <div className="bg-green-400 h-1 rounded-full" style={{ width: `${completedPercentage}%` }}></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Lost Deals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold">{dealStats?.lostDeals || 0}</div>
+              <div className="p-2 bg-red-100 rounded-full">
+                <XCircle className="h-5 w-5 text-red-600" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-slate-500">Unsuccessful</p>
+              <p className="text-xs font-semibold">{lostPercentage}%</p>
+            </div>
+            <div className="w-full bg-slate-100 h-1 mt-2 rounded-full overflow-hidden">
+              <div className="bg-red-400 h-1 rounded-full" style={{ width: `${lostPercentage}%` }}></div>
             </div>
           </CardContent>
         </Card>
@@ -258,12 +283,12 @@ export default function Home() {
         
         <Card>
           <CardHeader className="pb-2 border-b">
-            <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-4 lg:w-auto">
                 <TabsTrigger value="all">All Deals</TabsTrigger>
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="completed">Completed</TabsTrigger>
+                <TabsTrigger value="lost">Lost</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
@@ -295,10 +320,10 @@ export default function Home() {
                           {deal.dealType.replace('_', ' ')}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          {formatCurrency(deal.annualRevenue)}
+                          {formatCurrency(deal.annualRevenue || 0)}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <Status status={deal.status} />
+                          <DealStatusBadge status={deal.status as DealStatus} />
                         </td>
                       </tr>
                     ))
