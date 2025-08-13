@@ -50,6 +50,7 @@ function FinancialSummarySection({
   const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
   const lastYearGrossProfit = calculationService.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
   const lastYearGrossMargin = calculationService.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+  const lastYearRevenue = calculationService.getPreviousYearValue(salesChannel, advertiserName, agencyName);
 
   // Show loading or error states for data dependencies
   if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
@@ -91,7 +92,11 @@ function FinancialSummarySection({
               />
             </FinancialDataCell>
             <FinancialDataCell>
-              {lastYearGrossMargin.toFixed(1)}%
+              {/* Display last year adjusted gross margin - not raw gross margin */}
+              {(() => {
+                const lastYearAdjustedMargin = calculationService.getPreviousYearAdjustedGrossMargin(salesChannel, advertiserName, agencyName);
+                return `${(lastYearAdjustedMargin * 100).toFixed(1)}%`;
+              })()}
             </FinancialDataCell>
             {dealTiers.map((tier) => {
               // Use new consolidated approach: calculate adjusted margin from tier data
@@ -158,7 +163,7 @@ function FinancialSummarySection({
               const adjustedMarginDecimal = revenue > 0 ? adjustedProfit / revenue : 0;
               
               // Compare to last year's adjusted margin (use shared service value)
-              const lastYearAdjustedMargin = calculationService.getPreviousYearAdjustedGrossMargin();
+              const lastYearAdjustedMargin = calculationService.getPreviousYearAdjustedGrossMargin(salesChannel, advertiserName, agencyName);
               const growthRate = lastYearAdjustedMargin > 0 ? 
                 ((adjustedMarginDecimal - lastYearAdjustedMargin) / lastYearAdjustedMargin) : 0;
               

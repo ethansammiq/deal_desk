@@ -1360,8 +1360,8 @@ export default function SubmitDeal() {
                   <FinancialTierTable
                     dealTiers={dealTiers}
                     setDealTiers={setDealTiers}
-                    lastYearRevenue={850000}
-                    lastYearGrossMargin={35.0}
+                    lastYearRevenue={dealCalculations.getPreviousYearValue(salesChannel, form.watch("advertiserName"), form.watch("agencyName"))}
+                    lastYearGrossMargin={dealCalculations.getPreviousYearMargin(salesChannel, form.watch("advertiserName"), form.watch("agencyName")) * 100}
                     isFlat={dealStructureType === "flat_commit"}
                   />
 

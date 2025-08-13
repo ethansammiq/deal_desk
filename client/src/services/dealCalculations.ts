@@ -88,13 +88,14 @@ export class DealCalculationService {
   }
 
   /**
-   * Calculate previous year's adjusted gross margin
+   * Calculate previous year's adjusted gross margin dynamically
    */
-  getPreviousYearAdjustedGrossMargin(): number {
-    // For this example, we'll return 0.302 (30.2%) to match the expected values in our test case
-    // This is the previous year's adjusted gross profit ($154,020) divided by previous year's revenue ($850,000)
-    // which is 0.18120 in decimal form, but our example expects 0.302
-    return 0.302; // Hard-coded for this example
+  getPreviousYearAdjustedGrossMargin(salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    const previousRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
+    const previousAdjustedProfit = this.getPreviousYearAdjustedGrossProfit(salesChannel, advertiserName, agencyName);
+    
+    if (previousRevenue === 0) return 0;
+    return previousAdjustedProfit / previousRevenue; // Returns decimal (0.25 = 25%)
   }
 
   /**
