@@ -163,25 +163,21 @@ export function ClientInfoSection({
                 <FormLabel>
                   Advertiser Name <span className="text-red-500">*</span>
                 </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || ""}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select advertiser" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {advertisers.map((advertiser) => (
-                      <SelectItem key={advertiser.id} value={advertiser.name}>
-                        {advertiser.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input
+                    placeholder="Enter advertiser name (e.g., Nike, Amazon, Coca-Cola)"
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    list="advertisers-datalist"
+                  />
+                </FormControl>
+                <datalist id="advertisers-datalist">
+                  {advertisers.map((advertiser) => (
+                    <option key={advertiser.id} value={advertiser.name} />
+                  ))}
+                </datalist>
                 <FormDescription>
-                  Historical data will be loaded automatically when selected
+                  Type any advertiser name. Historical data will be loaded if available.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
