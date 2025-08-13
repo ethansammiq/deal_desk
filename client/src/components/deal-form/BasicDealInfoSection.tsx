@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
+import { DealTypeCardSelector } from "@/components/shared/DealTypeCardSelector";
 
 // Interface definitions matching the original form structure
 interface BasicDealInfoFormValues {
@@ -93,88 +94,13 @@ export function BasicDealInfoSection({
           layout="grid"
         />
 
-        {/* Deal Type as card-style selection */}
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="dealType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Deal Type <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Deal Type Cards */}
-                    <Card
-                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "grow" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
-                      onClick={() => field.onChange("grow")}
-                    >
-                      <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-md flex items-center space-x-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
-                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                            <polyline points="17 6 23 6 23 12"></polyline>
-                          </svg>
-                          <span>Grow</span>
-                        </CardTitle>
-                        <CardDescription>20%+ YOY Growth</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <p className="text-sm text-slate-600">
-                          For existing clients with strong growth potential. Focuses on exceeding 20% year-over-year revenue growth through expanded product usage or new business units.
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card
-                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "protect" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
-                      onClick={() => field.onChange("protect")}
-                    >
-                      <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-md flex items-center space-x-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                          </svg>
-                          <span>Protect</span>
-                        </CardTitle>
-                        <CardDescription>Large Account Retention</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <p className="text-sm text-slate-600">
-                          Designed for strategic account retention, especially for large enterprise clients. Focuses on maintaining current revenue levels while ensuring long-term partnership stability.
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card
-                      className={`cursor-pointer transition-all hover:shadow-md ${field.value === "custom" ? "ring-2 ring-purple-600 shadow-md" : "border border-slate-200"}`}
-                      onClick={() => field.onChange("custom")}
-                    >
-                      <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-md flex items-center space-x-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                          </svg>
-                          <span>Custom</span>
-                        </CardTitle>
-                        <CardDescription>Special Requirements</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <p className="text-sm text-slate-600">
-                          For specialized deals requiring custom implementation, non-standard terms, or unique technical requirements. Typically used for strategic partnerships and innovative projects.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        {/* Deal Type - Using Shared Component */}
+        <DealTypeCardSelector
+          form={form}
+          name="dealType"
+          label="Deal Type"
+          required={true}
+        />
 
         {/* Deal Structure */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
