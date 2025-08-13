@@ -685,6 +685,66 @@ export class MemStorage implements IStorage {
         this.createDealTier(tier);
       });
     });
+
+    // Sample scoping requests for conversion testing
+    const sampleScopingRequests: InsertDealScopingRequest[] = [
+      {
+        requestTitle: "Amazon Prime Video Expansion",
+        dealType: "grow",
+        salesChannel: "client_direct",
+        region: "northeast",
+        advertiserName: "Amazon Prime Video",
+        dealStructure: "tiered",
+        growthAmbition: 2500000,
+        growthOpportunityMIQ: "Expand streaming analytics and audience insights",
+        growthOpportunityClient: "Scale Prime Video advertising across new demographics",
+        clientAsks: "Advanced audience segmentation and real-time performance optimization",
+        termStartDate: "2025-03-01",
+        termEndDate: "2026-02-28",
+        contractTermMonths: 12,
+        email: "partnerships@amazon.com",
+        status: "scoping"
+      },
+      {
+        requestTitle: "Netflix Growth Strategy", 
+        dealType: "grow",
+        salesChannel: "client_direct",
+        region: "west",
+        advertiserName: "Netflix",
+        dealStructure: "flat_commit",
+        growthAmbition: 1800000,
+        growthOpportunityMIQ: "International market expansion analytics",
+        growthOpportunityClient: "Global content performance insights",
+        clientAsks: "Multi-market campaign optimization and competitive intelligence",
+        termStartDate: "2025-04-01",
+        termEndDate: "2026-03-31",
+        contractTermMonths: 12,
+        email: "growth@netflix.com",
+        status: "scoping"
+      },
+      {
+        requestTitle: "Disney+ Custom Analytics",
+        dealType: "custom",
+        salesChannel: "client_direct", 
+        region: "west",
+        advertiserName: "Disney+",
+        dealStructure: "tiered",
+        growthAmbition: 3200000,
+        growthOpportunityMIQ: "Family audience insights and content optimization",
+        growthOpportunityClient: "Premium analytics for streaming content strategy",
+        clientAsks: "Custom dashboard for content performance and family viewing patterns",
+        termStartDate: "2025-05-01",
+        termEndDate: "2026-04-30", 
+        contractTermMonths: 12,
+        email: "analytics@disney.com",
+        status: "scoping"
+      }
+    ];
+
+    // Add sample scoping requests
+    sampleScopingRequests.forEach(request => {
+      this.createDealScopingRequest(request);
+    });
   }
 
   // User methods
