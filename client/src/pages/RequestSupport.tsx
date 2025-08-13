@@ -305,34 +305,42 @@ export default function RequestSupport() {
               <TabsContent value="deal-overview" className="space-y-6 pt-4">
                 {/* Client Information Section */}
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Client Information</h2>
-                  <p className="text-sm text-gray-600 mb-6">Select the client and sales channel for this deal</p>
-                  <ClientInfoSection
-                    form={form}
-                    agencies={agencies}
-                    advertisers={advertisers}
-                    salesChannel={form.watch("salesChannel")}
-                    includeEmail={false}
-                    layout="stacked"
+                  <FormSectionHeader
+                    title="Client Information"
+                    description="Select the client and sales channel for this deal"
                   />
+                  <div className="mt-6">
+                    <ClientInfoSection
+                      form={form}
+                      agencies={agencies}
+                      advertisers={advertisers}
+                      salesChannel={form.watch("salesChannel")}
+                      includeEmail={false}
+                      layout="stacked"
+                    />
+                  </div>
                 </div>
                 
                 {/* Deal Timeline Section */}
                 <div className="border-t pt-6 mt-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Deal Timeline</h2>
-                  <p className="text-sm text-gray-600 mb-6">Configure the basic deal structure and timeline</p>
-                  <DealDetailsSection
-                    form={form as any}
-                    dealStructureType={dealStructureType}
-                    setDealStructure={(value) => {
-                      setDealStructureType(value);
-                      form.setValue("dealStructure", value as "tiered" | "flat_commit");
-                    }}
-                    showBusinessSummary={false}
-                    showNavigationButton={false}
-                    title=""
-                    description=""
+                  <FormSectionHeader
+                    title="Deal Timeline"
+                    description="Configure the basic deal structure and timeline"
                   />
+                  <div className="mt-6">
+                    <DealDetailsSection
+                      form={form as any}
+                      dealStructureType={dealStructureType}
+                      setDealStructure={(value) => {
+                        setDealStructureType(value);
+                        form.setValue("dealStructure", value as "tiered" | "flat_commit");
+                      }}
+                      showBusinessSummary={false}
+                      showNavigationButton={false}
+                      title=""
+                      description=""
+                    />
+                  </div>
                 </div>
               </TabsContent>
 
