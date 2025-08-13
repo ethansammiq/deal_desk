@@ -74,7 +74,7 @@ interface AgencyData {
 export default function RequestSupport() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState("sales-channel");
+  const [activeTab, setActiveTab] = useState("deal-overview");
 
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
@@ -176,18 +176,14 @@ export default function RequestSupport() {
   }
 
   function goToNextTab() {
-    if (activeTab === "sales-channel") {
-      setActiveTab("deal-details");
-    } else if (activeTab === "deal-details") {
-      setActiveTab("growth-opportunity");
+    if (activeTab === "deal-overview") {
+      setActiveTab("business-context");
     }
   }
 
   function goToPrevTab() {
-    if (activeTab === "growth-opportunity") {
-      setActiveTab("deal-details");
-    } else if (activeTab === "deal-details") {
-      setActiveTab("sales-channel");
+    if (activeTab === "business-context") {
+      setActiveTab("deal-overview");
     }
   }
 
@@ -272,18 +268,16 @@ export default function RequestSupport() {
       {/* ✅ SYNCHRONIZED: Form Progress Tracker with validation-aware navigation */}
       <FormProgressTracker
         steps={[
-          { id: "sales-channel", label: "Client Information" },
-          { id: "deal-details", label: "Deal Timeline" },
-          { id: "growth-opportunity", label: "Growth Opportunity" }
+          { id: "deal-overview", label: "Deal Overview" },
+          { id: "business-context", label: "Business Context" }
         ]}
         currentStep={activeTab}
         onStepClick={(stepId) => {
           const targetStep = stepId.toString();
           // Map tab IDs to step numbers for validation
           const stepMap: Record<string, number> = {
-            'sales-channel': 1,
-            'deal-details': 2,
-            'growth-opportunity': 3
+            'deal-overview': 1,
+            'business-context': 2
           };
           
           const stepNumber = stepMap[targetStep];
@@ -308,8 +302,8 @@ export default function RequestSupport() {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsContent value="sales-channel" className="space-y-6 pt-4">
-                {/* Client Information Section - Shared Component */}
+              <TabsContent value="deal-overview" className="space-y-6 pt-4">
+                {/* Combined: Client Information + Deal Timeline */}
                 <ClientInfoSection
                   form={form}
                   agencies={agencies}
@@ -318,26 +312,25 @@ export default function RequestSupport() {
                   includeEmail={false}
                   layout="stacked"
                 />
-              </TabsContent>
-
-              <TabsContent value="deal-details" className="space-y-6 pt-4">
-                {/* Deal Details Section - Shared Component */}
-                <DealDetailsSection
-                  form={form as any}
-                  dealStructureType={dealStructureType}
-                  setDealStructure={(value) => {
-                    setDealStructureType(value);
-                    form.setValue("dealStructure", value as "tiered" | "flat_commit");
-                  }}
-                  showBusinessSummary={false}
-                  showNavigationButton={false}
-                  title="Deal Timeline"
-                  description="Configure the basic deal structure and timeline"
-                />
+                
+                <div className="border-t pt-6 mt-6">
+                  <DealDetailsSection
+                    form={form as any}
+                    dealStructureType={dealStructureType}
+                    setDealStructure={(value) => {
+                      setDealStructureType(value);
+                      form.setValue("dealStructure", value as "tiered" | "flat_commit");
+                    }}
+                    showBusinessSummary={false}
+                    showNavigationButton={false}
+                    title="Deal Timeline"
+                    description="Configure the basic deal structure and timeline"
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent
-                value="growth-opportunity"
+                value="business-context"
                 className="space-y-0"
               >
                 <BusinessContextSection form={form as any} variant="requestSupport" />
@@ -347,31 +340,20 @@ export default function RequestSupport() {
         </CardContent>
       </Card>
 
-      {/* Navigation Buttons - Completely moved outside card and form */}
+      {/* Navigation Buttons - Updated for consolidated steps */}
       <div className="mt-5">
-        {activeTab === "sales-channel" && (
+        {activeTab === "deal-overview" && (
           <div className="flex justify-end">
             <Button type="button" onClick={goToNextTab}>
-              Next: Deal Timeline
+              Next: Business Context
             </Button>
           </div>
         )}
 
-        {activeTab === "deal-details" && (
+        {activeTab === "business-context" && (
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={goToPrevTab}>
-              Previous: Client Information
-            </Button>
-            <Button type="button" onClick={goToNextTab}>
-              Next: Growth Opportunity
-            </Button>
-          </div>
-        )}
-
-        {activeTab === "growth-opportunity" && (
-          <div className="flex justify-between">
-            <Button type="button" variant="outline" onClick={goToPrevTab}>
-              Previous: Deal Timeline
+              Previous: Deal Overview
             </Button>
             <Button
               type="button"
