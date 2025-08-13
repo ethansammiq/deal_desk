@@ -135,7 +135,7 @@ export function GrowthIndicator({
   }
   
   const displayValue = showAsPercentage 
-    ? `${value.toFixed(1)}%`  // Value is already a percentage from calculation service
+    ? `${(value * 100).toFixed(1)}%`
     : value.toLocaleString();
   
   return (

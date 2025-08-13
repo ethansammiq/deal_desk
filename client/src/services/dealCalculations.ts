@@ -155,9 +155,9 @@ export class DealCalculationService {
     
     if (previousYearMarginDecimal === 0) return 0;
     
-    // Calculate as percentage growth rate: ((Current - Previous) / Previous) × 100
-    const growthRate = (currentMarginDecimal - previousYearMarginDecimal) / previousYearMarginDecimal;
-    return growthRate * 100; // Return as percentage for UI display
+    // Calculate as decimal growth rate: (Current - Previous) / Previous
+    // GrowthIndicator will multiply by 100 for display
+    return (currentMarginDecimal - previousYearMarginDecimal) / previousYearMarginDecimal;
   }
 
   /**
@@ -174,8 +174,8 @@ export class DealCalculationService {
     // Calculate growth rate
     if (previousYearProfit <= 0) return 0;
     
-    const growthRate = currentProfit / previousYearProfit - 1;
-    return growthRate * 100; // Return as percentage for UI display
+    // Return as decimal growth rate - GrowthIndicator will multiply by 100 for display
+    return currentProfit / previousYearProfit - 1;
   }
 
   /**
@@ -187,8 +187,8 @@ export class DealCalculationService {
     
     if (previousYearRevenue <= 0) return 0;
     
-    const growthRate = (currentRevenue - previousYearRevenue) / previousYearRevenue;
-    return growthRate * 100; // Return as percentage for UI display
+    // Return as decimal growth rate - GrowthIndicator will multiply by 100 for display
+    return (currentRevenue - previousYearRevenue) / previousYearRevenue;
   }
 
   /**
