@@ -27,6 +27,9 @@ interface FinancialTierTableProps {
   lastYearRevenue?: number;
   lastYearGrossMargin?: number;
   isFlat?: boolean;
+  salesChannel?: string;
+  advertiserName?: string;
+  agencyName?: string;
 }
 
 export function FinancialTierTable({
@@ -35,6 +38,9 @@ export function FinancialTierTable({
   lastYearRevenue = 850000,
   lastYearGrossMargin = 35.0,
   isFlat = false,
+  salesChannel = "independent_agency",
+  advertiserName,
+  agencyName,
 }: FinancialTierTableProps) {
   const { 
     calculationService 
@@ -206,7 +212,9 @@ export function FinancialTierTable({
             {dealTiers.map((tier) => {
               const growthRate = calculationService.calculateRevenueGrowthRate(
                 tier,
-                "independent_agency"
+                salesChannel,
+                advertiserName,
+                agencyName
               );
               return (
                 <FinancialDataCell key={`rev-growth-${tier.tierNumber}`}>
@@ -230,7 +238,9 @@ export function FinancialTierTable({
             {dealTiers.map((tier) => {
               const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
                 tier,
-                "independent_agency"
+                salesChannel,
+                advertiserName,
+                agencyName
               );
               return (
                 <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
@@ -254,7 +264,9 @@ export function FinancialTierTable({
             {dealTiers.map((tier) => {
               const profitGrowthRate = calculationService.calculateProfitGrowthRate(
                 tier,
-                "independent_agency"
+                salesChannel,
+                advertiserName,
+                agencyName
               );
               return (
                 <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>

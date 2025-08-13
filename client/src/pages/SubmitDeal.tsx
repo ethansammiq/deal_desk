@@ -1363,6 +1363,9 @@ export default function SubmitDeal() {
                     lastYearRevenue={dealCalculations.getPreviousYearValue(salesChannel, form.watch("advertiserName"), form.watch("agencyName"))}
                     lastYearGrossMargin={dealCalculations.getPreviousYearMargin(salesChannel, form.watch("advertiserName"), form.watch("agencyName")) * 100}
                     isFlat={dealStructureType === "flat_commit"}
+                    salesChannel={salesChannel}
+                    advertiserName={form.watch("advertiserName")}
+                    agencyName={form.watch("agencyName")}
                   />
 
                   {/* Incentive Structure Section - Focused only on incentives */}
