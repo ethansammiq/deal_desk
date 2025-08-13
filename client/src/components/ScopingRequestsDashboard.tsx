@@ -26,7 +26,8 @@ export function ScopingRequestsDashboard() {
   const scopingRequestsQuery = useQuery<ScopingRequest[]>({
     queryKey: ['/api/deal-scoping-requests'],
     retry: 3,
-    staleTime: 30000,
+    staleTime: 5000, // Reduced stale time for testing
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
   });
 
   const pendingRequests = scopingRequestsQuery.data?.filter(req => req.status === 'pending') || [];
@@ -66,13 +67,43 @@ export function ScopingRequestsDashboard() {
         </CardHeader>
         <CardContent>
           <p className="text-red-600">Failed to load scoping requests</p>
+          <Button onClick={() => scopingRequestsQuery.refetch()} className="mt-2">
+            Retry
+          </Button>
+          <div className="mt-2 text-xs text-gray-500">
+            Error: {scopingRequestsQuery.error?.message}
+          </div>
         </CardContent>
       </Card>
     );
   }
 
+  // Debug logging
+  console.log('ScopingRequestsDashboard render:', {
+    isLoading: scopingRequestsQuery.isLoading,
+    isError: scopingRequestsQuery.isError,
+    data: scopingRequestsQuery.data,
+    pendingCount: pendingRequests.length,
+    convertedCount: convertedRequests.length
+  });
+
   return (
     <div className="space-y-6">
+      {/* Debug Info & Refresh */}
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">
+          Status: {scopingRequestsQuery.isLoading ? 'Loading...' : scopingRequestsQuery.isError ? 'Error' : `${scopingRequestsQuery.data?.length || 0} requests found`}
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => scopingRequestsQuery.refetch()}
+          disabled={scopingRequestsQuery.isLoading}
+        >
+          {scopingRequestsQuery.isLoading ? 'Loading...' : 'Refresh'}
+        </Button>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
