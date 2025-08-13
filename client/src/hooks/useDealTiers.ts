@@ -28,6 +28,14 @@ export interface DealTier {
   updatedAt?: Date;
 }
 
+// Helper function to ensure a tier has proper incentives array structure  
+export function ensureTierIncentives(tier: DealTier): DealTier {
+  return {
+    ...tier,
+    incentives: Array.isArray(tier.incentives) ? tier.incentives : []
+  };
+}
+
 // Helper functions for computed properties
 export function getTotalIncentiveValue(tier: DealTier): number {
   if (!tier.incentives || !Array.isArray(tier.incentives)) {
@@ -132,8 +140,10 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
       // Auto-calculate incentive value from percentage (if needed)
       if (annualRevenue && updatedTier.annualRevenue) {
-        // Ensure incentives array exists
-        updatedTier.incentives = updatedTier.incentives || [];
+        // Ensure incentives array exists and is properly initialized
+        if (!Array.isArray(updatedTier.incentives)) {
+          updatedTier.incentives = [];
+        }
       }
 
       return updatedTier;
@@ -142,7 +152,12 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   // Bulk update tiers
   const updateAllTiers = useCallback((newTiers: DealTier[]) => {
-    setTiers(newTiers);
+    // ✅ MIGRATION: Ensure all tiers have incentives array initialized
+    const migratedTiers = newTiers.map(tier => ({
+      ...tier,
+      incentives: Array.isArray(tier.incentives) ? tier.incentives : []
+    }));
+    setTiers(migratedTiers);
   }, []);
 
   // Reset to initial state
