@@ -185,12 +185,7 @@ export default function UnifiedDashboard() {
     staleTime: 30000, // 30 seconds
   });
 
-  // Fetch scoping requests that can be converted to deals
-  const scopingRequestsQuery = useQuery({
-    queryKey: ['/api/deal-scoping-requests'],
-    retry: 3,
-    staleTime: 30000, // 30 seconds
-  });
+
 
   // Format relative date
   const formatRelativeDate = (dateString: string) => {
@@ -214,9 +209,7 @@ export default function UnifiedDashboard() {
     convertScopingToDeal.mutate(dealId);
   };
 
-  const handleConvertScoping = (scopingId: number) => {
-    convertScopingToDeal.mutate(scopingId);
-  };
+
 
   const handleNudge = (dealId: number, target: string) => {
     const nudgeMessages = {

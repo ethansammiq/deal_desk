@@ -546,7 +546,7 @@ export class MemStorage implements IStorage {
         status: "contract_sent" // Phase 7A: contract_sent status
       },
       {
-        dealName: "Tesla Lost Opportunity",
+        dealName: "Tesla Growth Scoping",
         dealType: "grow",
         businessSummary: "High-value growth opportunity that was lost due to pricing concerns and competitive pressure.",
         salesChannel: "client_direct",
@@ -564,7 +564,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 400000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "lost" // Phase 7A: lost status
+        status: "scoping" // Phase 7A: scoping status for conversion testing
       }
     ];
     
