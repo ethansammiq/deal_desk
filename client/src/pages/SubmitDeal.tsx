@@ -313,30 +313,29 @@ export default function SubmitDeal() {
     salesChannel: String(salesChannel || "")
   });
 
-  // ❌ ELIMINATED: Using DealTier directly for incentive cost calculation
+  // ✅ PHASE 5: Using DealTier incentives array for cost calculation
   const calculateTierIncentiveCost = (tierNumber: number): number => {
     const tier = dealTiers.find(t => t.tierNumber === tierNumber);
-    return tier?.incentiveValue || 0;
+    if (!tier) return 0;
+    return dealCalculations.calculateTierIncentiveCost(tier);
   };
 
   // ✅ PHASE 2: Replace duplicate logic with service calls
   const calculateTierGrossProfit = (tier: DealTier): number => {
     // Use DealTier directly with service
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
-    return dealCalculations.calculateTierGrossProfit(serviceTier, [], []); // ❌ ELIMINATED: selectedIncentives, tierIncentives
+    return dealCalculations.calculateTierGrossProfit(serviceTier);
   };
 
   // ✅ PHASE 2: Replace with service call  
   const calculateRevenueGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
     return dealCalculations.calculateRevenueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
@@ -347,10 +346,9 @@ export default function SubmitDeal() {
     const agencyName = String(form.watch("agencyName") || "");
     
     // Convert DealTier to DealTier format expected by service
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
     
     return dealCalculations.calculateGrossMarginGrowthRate(serviceTier, String(salesChannel || ""), advertiserName, agencyName);
@@ -359,10 +357,9 @@ export default function SubmitDeal() {
   // ✅ PHASE 3: Migrated to service - calculateGrossProfitGrowthRate
   const calculateGrossProfitGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
     return dealCalculations.calculateGrossProfitGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
@@ -370,44 +367,37 @@ export default function SubmitDeal() {
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossProfitGrowthRate
   const calculateAdjustedGrossProfitGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
-    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
-    return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, [], [], currentSalesChannel, advertiserName, agencyName);
+    return dealCalculations.calculateAdjustedGrossProfitGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMargin  
   const calculateAdjustedGrossMargin = (tier: DealTier): number => {
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
-    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
-    return dealCalculations.calculateAdjustedGrossMargin(serviceTier, [], []);
+    return dealCalculations.calculateAdjustedGrossMargin(serviceTier);
   };
 
   // ✅ PHASE 3: Migrated to service - calculateAdjustedGrossMarginGrowthRate
   const calculateAdjustedGrossMarginGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
-    // ✅ FIXED: Use DealTier data instead of eliminated interfaces
-    return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, [], [], currentSalesChannel, advertiserName, agencyName);
+    return dealCalculations.calculateAdjustedGrossMarginGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
   // ✅ PHASE 2: Replace with service call
   const calculateClientValue = (tier: DealTier): number => {
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
     return dealCalculations.calculateClientValue(serviceTier);
   };
@@ -415,10 +405,9 @@ export default function SubmitDeal() {
   // ✅ PHASE 3: Migrated to service - calculateClientValueGrowthRate
   const calculateClientValueGrowthRate = (tier: DealTier): number => {
     const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
     return dealCalculations.calculateClientValueGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
@@ -1563,11 +1552,10 @@ export default function SubmitDeal() {
                                       (a) => a.name === advertiserName,
                                     );
                                     if (
-                                      advertiser &&
-                                      advertiser.previousYearRevenue !== undefined
+                                      advertiser?.previousYearRevenue !== undefined
                                     ) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue;
+                                        advertiser.previousYearRevenue || 0;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1577,9 +1565,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearRevenue !== undefined) {
+                                    if (agency?.previousYearRevenue !== undefined) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue;
+                                        agency.previousYearRevenue || 0;
                                     }
                                   }
 
@@ -1647,11 +1635,10 @@ export default function SubmitDeal() {
                                       (a) => a.name === advertiserName,
                                     );
                                     if (
-                                      advertiser &&
-                                      advertiser.previousYearMargin !== undefined
+                                      advertiser?.previousYearMargin !== undefined
                                     ) {
                                       previousYearMargin =
-                                        advertiser.previousYearMargin;
+                                        (advertiser.previousYearMargin || 0) * 100;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1661,9 +1648,9 @@ export default function SubmitDeal() {
                                     const agency = agencies.find(
                                       (a) => a.name === agencyName,
                                     );
-                                    if (agency && agency.previousYearMargin !== undefined) {
+                                    if (agency?.previousYearMargin !== undefined) {
                                       previousYearMargin =
-                                        agency.previousYearMargin;
+                                        (agency.previousYearMargin || 0) * 100;
                                     }
                                   }
 
@@ -1743,8 +1730,7 @@ export default function SubmitDeal() {
                                         advertiser.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        advertiser.previousYearMargin ||
-                                        previousYearMargin;
+                                        (advertiser.previousYearMargin || 0) * 100 || previousYearMargin;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1759,8 +1745,7 @@ export default function SubmitDeal() {
                                         agency.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        agency.previousYearMargin ||
-                                        previousYearMargin;
+                                        (agency.previousYearMargin || 0) * 100 || previousYearMargin;
                                     }
                                   }
 
@@ -2537,7 +2522,7 @@ export default function SubmitDeal() {
                                   </td>
                                   <td className="p-2 border border-slate-200 text-center">
                                     {formatCurrency(
-                                      dealCalculations.getPreviousYearIncentiveCost(),
+                                      dealCalculations.getPreviousYearIncentiveCost(salesChannel, String(form.watch("advertiserName") || ""), String(form.watch("agencyName") || "")),
                                     )}
                                   </td>
                                   {dealTiers
@@ -2633,7 +2618,7 @@ export default function SubmitDeal() {
                                     .filter((tier) => tier.annualRevenue)
                                     .map((tier) => {
                                       // Get previous year incentive cost
-                                      const previousYearCost = dealCalculations.getPreviousYearIncentiveCost();
+                                      const previousYearCost = dealCalculations.getPreviousYearIncentiveCost(salesChannel, String(form.watch("advertiserName") || ""), String(form.watch("agencyName") || ""));
                                       // Calculate current tier incentive cost
                                       const currentCost = calculateTierIncentiveCost(tier.tierNumber);
                                       // Calculate growth rate
