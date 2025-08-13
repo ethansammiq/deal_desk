@@ -46,22 +46,26 @@ interface DealDetailsFormValues {
 }
 
 interface AgencyData {
-  id: string | number;
+  id: number;  // Always numeric from database serial
   name: string;
   type: string;
   tier?: string;
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AdvertiserData {
-  id: string | number;
+  id: number;  // Always numeric from database serial
   name: string;
   tier?: string;
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface DealDetailsSectionProps {
