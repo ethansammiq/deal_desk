@@ -47,7 +47,7 @@ function FinancialSummarySection({
   // Use shared service for all calculations (no duplicate logic)
 
   // Get consistent baseline values from shared service
-  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
+  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
   const lastYearGrossProfit = calculationService.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
   const lastYearGrossMargin = calculationService.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
   const lastYearRevenue = calculationService.getPreviousYearValue(salesChannel, advertiserName, agencyName);

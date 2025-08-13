@@ -121,49 +121,73 @@ export class MemStorage implements IStorage {
       { 
         name: "Coca-Cola", 
         previousYearRevenue: 2500000, 
-        previousYearMargin: 18.5, 
+        previousYearMargin: 0.185, // ✅ FIXED: 18.5% as decimal
+        previousYearProfit: 462500, // revenue * margin
+        previousYearIncentiveCost: 45000,
+        previousYearClientValue: 157500, // incentive * 3.5x
         region: "south" 
       },
       { 
         name: "Pepsi", 
         previousYearRevenue: 2100000, 
-        previousYearMargin: 17.8, 
+        previousYearMargin: 0.178, // ✅ FIXED: 17.8% as decimal
+        previousYearProfit: 373800,
+        previousYearIncentiveCost: 38000,
+        previousYearClientValue: 133000,
         region: "northeast" 
       },
       { 
         name: "General Motors", 
         previousYearRevenue: 4200000, 
-        previousYearMargin: 12.3, 
+        previousYearMargin: 0.123, // ✅ FIXED: 12.3% as decimal
+        previousYearProfit: 516600,
+        previousYearIncentiveCost: 65000,
+        previousYearClientValue: 227500,
         region: "midwest" 
       },
       { 
         name: "Ford", 
         previousYearRevenue: 3700000, 
-        previousYearMargin: 11.5, 
+        previousYearMargin: 0.115, // ✅ FIXED: 11.5% as decimal
+        previousYearProfit: 425500,
+        previousYearIncentiveCost: 58000,
+        previousYearClientValue: 203000,
         region: "midwest" 
       },
       { 
         name: "Nike", 
         previousYearRevenue: 1800000, 
-        previousYearMargin: 22.4, 
+        previousYearMargin: 0.224, // ✅ FIXED: 22.4% as decimal
+        previousYearProfit: 403200,
+        previousYearIncentiveCost: 35000,
+        previousYearClientValue: 122500,
         region: "west" 
       },
       { 
         name: "Amazon", 
         previousYearRevenue: 5500000, 
-        previousYearMargin: 25.7, 
+        previousYearMargin: 0.257, // ✅ FIXED: 25.7% as decimal
+        previousYearProfit: 1413500,
+        previousYearIncentiveCost: 85000,
+        previousYearClientValue: 297500,
         region: "west" 
       },
       { 
         name: "Microsoft", 
         previousYearRevenue: 4800000, 
-        previousYearMargin: 31.2, 
+        previousYearMargin: 0.312, // ✅ FIXED: 31.2% as decimal
+        previousYearProfit: 1497600,
+        previousYearIncentiveCost: 75000,
+        previousYearClientValue: 262500,
         region: "west" 
       },
       { 
         name: "Target", 
         previousYearRevenue: 3200000, 
-        previousYearMargin: 15.8, 
+        previousYearMargin: 0.158, // ✅ FIXED: 15.8% as decimal
+        previousYearProfit: 505600,
+        previousYearIncentiveCost: 52000,
+        previousYearClientValue: 182000,
         region: "midwest" 
       }
     ];
@@ -174,56 +198,80 @@ export class MemStorage implements IStorage {
         name: "WPP", 
         type: "holding_company", 
         previousYearRevenue: 8500000, 
-        previousYearMargin: 28.5, 
+        previousYearMargin: 0.285, // ✅ FIXED: 28.5% as decimal
+        previousYearProfit: 2422500,
+        previousYearIncentiveCost: 120000,
+        previousYearClientValue: 420000,
         region: "northeast" 
       },
       { 
         name: "Omnicom", 
         type: "holding_company", 
         previousYearRevenue: 7800000, 
-        previousYearMargin: 27.2, 
+        previousYearMargin: 0.272, // ✅ FIXED: 27.2% as decimal
+        previousYearProfit: 2121600,
+        previousYearIncentiveCost: 110000,
+        previousYearClientValue: 385000,
         region: "northeast" 
       },
       { 
         name: "Publicis", 
         type: "holding_company", 
         previousYearRevenue: 7200000, 
-        previousYearMargin: 26.8, 
+        previousYearMargin: 0.268, // ✅ FIXED: 26.8% as decimal
+        previousYearProfit: 1929600,
+        previousYearIncentiveCost: 105000,
+        previousYearClientValue: 367500,
         region: "midatlantic" 
       },
       { 
         name: "IPG", 
         type: "holding_company", 
         previousYearRevenue: 6900000, 
-        previousYearMargin: 25.5, 
+        previousYearMargin: 0.255, // ✅ FIXED: 25.5% as decimal
+        previousYearProfit: 1759500,
+        previousYearIncentiveCost: 95000,
+        previousYearClientValue: 332500,
         region: "northeast" 
       },
       { 
         name: "Droga5", 
         type: "independent", 
         previousYearRevenue: 950000, 
-        previousYearMargin: 32.8, 
+        previousYearMargin: 0.328, // ✅ FIXED: 32.8% as decimal
+        previousYearProfit: 311600,
+        previousYearIncentiveCost: 28000,
+        previousYearClientValue: 98000,
         region: "northeast" 
       },
       { 
         name: "72andSunny", 
         type: "independent", 
         previousYearRevenue: 620000, 
-        previousYearMargin: 31.5, 
+        previousYearMargin: 0.315, // ✅ FIXED: 31.5% as decimal
+        previousYearProfit: 195300,
+        previousYearIncentiveCost: 22000,
+        previousYearClientValue: 77000,
         region: "west" 
       },
       { 
         name: "Wieden+Kennedy", 
         type: "independent", 
         previousYearRevenue: 780000, 
-        previousYearMargin: 33.2, 
+        previousYearMargin: 0.332, // ✅ FIXED: 33.2% as decimal
+        previousYearProfit: 258960,
+        previousYearIncentiveCost: 25000,
+        previousYearClientValue: 87500,
         region: "west" 
       },
       { 
         name: "The Richards Group", 
         type: "independent", 
         previousYearRevenue: 510000, 
-        previousYearMargin: 30.2, 
+        previousYearMargin: 0.302, // ✅ FIXED: 30.2% as decimal
+        previousYearProfit: 154020,
+        previousYearIncentiveCost: 20000,
+        previousYearClientValue: 70000,
         region: "south" 
       }
     ];

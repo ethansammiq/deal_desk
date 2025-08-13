@@ -21,7 +21,10 @@ export const advertisers = pgTable("advertisers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
-  previousYearMargin: doublePrecision("previous_year_margin").default(0),
+  previousYearMargin: doublePrecision("previous_year_margin").default(0), // stored as decimal (0.257 = 25.7%)
+  previousYearProfit: doublePrecision("previous_year_profit").default(0),
+  previousYearIncentiveCost: doublePrecision("previous_year_incentive_cost").default(0),
+  previousYearClientValue: doublePrecision("previous_year_client_value").default(0),
   region: text("region"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -36,7 +39,10 @@ export const agencies = pgTable("agencies", {
   name: text("name").notNull().unique(),
   type: text("type").notNull().default("independent"), // holding_company, independent
   previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
-  previousYearMargin: doublePrecision("previous_year_margin").default(0),
+  previousYearMargin: doublePrecision("previous_year_margin").default(0), // stored as decimal (0.285 = 28.5%)
+  previousYearProfit: doublePrecision("previous_year_profit").default(0),
+  previousYearIncentiveCost: doublePrecision("previous_year_incentive_cost").default(0),
+  previousYearClientValue: doublePrecision("previous_year_client_value").default(0),
   region: text("region"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

@@ -44,15 +44,15 @@ export class DealCalculationService {
   getPreviousYearMargin(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      // ✅ FIX: Convert percentage to decimal (25.7% → 0.257)
-      return advertiser?.previousYearMargin ? advertiser.previousYearMargin / 100 : 0.35;
+      // ✅ FIXED: Data now stored as decimal, no conversion needed
+      return advertiser?.previousYearMargin || 0.35;
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      // ✅ FIX: Convert percentage to decimal (31.5% → 0.315)
-      return agency?.previousYearMargin ? agency.previousYearMargin / 100 : 0.35;
+      // ✅ FIXED: Data now stored as decimal, no conversion needed
+      return agency?.previousYearMargin || 0.35;
     }
 
     return 0.35; // Default value as fallback (0.35 = 35%)
@@ -68,12 +68,21 @@ export class DealCalculationService {
   }
 
   /**
-   * Get previous year's incentive cost
+   * Get previous year's incentive cost from actual data
    */
-  getPreviousYearIncentiveCost(): number {
-    // Using a default value of 50,000 for last year's incentive cost
-    // This will allow the Cost Growth Rate to be properly calculated
-    return 50000;
+  getPreviousYearIncentiveCost(salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    if (salesChannel === "client_direct" && advertiserName) {
+      const advertiser = this.advertisers.find((a) => a.name === advertiserName);
+      return advertiser?.previousYearIncentiveCost || 50000;
+    } else if (
+      (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
+      agencyName
+    ) {
+      const agency = this.agencies.find((a) => a.name === agencyName);
+      return agency?.previousYearIncentiveCost || 50000;
+    }
+
+    return 50000; // Default fallback
   }
 
 
@@ -83,7 +92,7 @@ export class DealCalculationService {
    */
   getPreviousYearAdjustedGrossProfit(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const previousGrossProfit = this.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
-    const previousIncentiveCost = this.getPreviousYearIncentiveCost();
+    const previousIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
     return previousGrossProfit - previousIncentiveCost;
   }
 
@@ -106,11 +115,21 @@ export class DealCalculationService {
   }
 
   /**
-   * Get previous year client value (using 3.5x of previous incentive cost for consistency)
+   * Get previous year client value from actual data
    */
-  getPreviousYearClientValue(): number {
-    const previousIncentiveCost = this.getPreviousYearIncentiveCost();
-    return previousIncentiveCost * 3.5; // Using same 3.5x multiplier logic
+  getPreviousYearClientValue(salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    if (salesChannel === "client_direct" && advertiserName) {
+      const advertiser = this.advertisers.find((a) => a.name === advertiserName);
+      return advertiser?.previousYearClientValue || 175000;
+    } else if (
+      (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
+      agencyName
+    ) {
+      const agency = this.agencies.find((a) => a.name === agencyName);
+      return agency?.previousYearClientValue || 175000;
+    }
+
+    return 175000; // Default fallback (50k * 3.5x)
   }
 
   /**
@@ -124,18 +143,18 @@ export class DealCalculationService {
   /**
    * Calculate incentive cost growth rate compared to previous year
    */
-  calculateIncentiveCostGrowthRate(tier: DealTier): number {
+  calculateIncentiveCostGrowthRate(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const currentCost = this.calculateTierIncentiveCost(tier);
-    const previousCost = this.getPreviousYearIncentiveCost();
+    const previousCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
     return previousCost > 0 ? ((currentCost - previousCost) / previousCost) : 0;
   }
 
   /**
    * Calculate client value growth rate compared to previous year  
    */
-  calculateClientValueGrowthRateFromIncentives(tier: DealTier): number {
+  calculateClientValueGrowthRateFromIncentives(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const currentValue = this.calculateClientValueFromIncentives(tier);
-    const previousValue = this.getPreviousYearClientValue();
+    const previousValue = this.getPreviousYearClientValue(salesChannel, advertiserName, agencyName);
     return previousValue > 0 ? ((currentValue - previousValue) / previousValue) : 0;
   }
 
