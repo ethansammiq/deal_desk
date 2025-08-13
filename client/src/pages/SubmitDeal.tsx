@@ -75,7 +75,14 @@ import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2 } from "lucide-react";
 import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
-import { processDealSubmissionData } from "@/utils/form-data-processing";
+import { 
+  processDealSubmissionData, 
+  calculateContractTerm, 
+  getRegionFromSelection, 
+  createPreFillMapping,
+  type AdvertiserData,
+  type AgencyData 
+} from "@/utils/form-data-processing";
 // ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
 import { incentiveCategories } from "@/lib/incentive-data";
 
@@ -172,27 +179,7 @@ export default function SubmitDeal() {
   // Initialize calculation service with current advertiser/agency data
   const dealCalculations = useDealCalculations(advertisers, agencies);
 
-  // Type definitions for advertisers and agencies (simplified)
-  interface AdvertiserData {
-    id: number;
-    name: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
-
-  interface AgencyData {
-    id: number;
-    name: string;
-    type: string;
-    region: string;
-    // Historical fields - maintained in interface for API compatibility
-    // but not used in the simplified UI implementation
-    previousYearRevenue?: number;
-    previousYearMargin?: number;
-  }
+  // ✅ MIGRATED: Using shared type definitions from form-data-processing utility
 
   // ✅ PHASE 2.3: Legacy interface removal target
   // This DealTier interface should be removed once all references are migrated to DealTier
@@ -480,17 +467,8 @@ export default function SubmitDeal() {
           try {
             const scopingData = await apiRequest(`/api/deal-scoping-requests/${fromScopingId}`);
             
-            // Pre-fill form with scoping request data
-            const preFillData = {
-              salesChannel: scopingData.salesChannel,
-              advertiserName: scopingData.advertiserName || "",
-              agencyName: scopingData.agencyName || "",
-              growthOpportunityClient: scopingData.growthOpportunityClient || "",
-              clientAsks: scopingData.clientAsks || "",
-              growthAmbition: scopingData.growthAmbition || 0,
-              businessSummary: scopingData.description || "",
-              dealName: `Deal from ${scopingData.requestTitle}`,
-            };
+            // ✅ REFACTORED: Using shared pre-fill mapping utility
+            const preFillData = createPreFillMapping(scopingData);
 
             // Update form values
             Object.entries(preFillData).forEach(([key, value]) => {
@@ -538,49 +516,24 @@ export default function SubmitDeal() {
     }
   }, [dealStructureValue]);
 
-  // Auto-populate region when selecting advertiser or agency
+  // ✅ REFACTORED: Auto-populate region using shared utility
   useEffect(() => {
-    const updateRegionData = async () => {
-      const advertiserName = form.getValues("advertiserName");
-      const agencyName = form.getValues("agencyName");
-
-      if (salesChannel === "client_direct" && advertiserName) {
-        const advertiser = advertisers.find(
-          (a: AdvertiserData) => a.name === advertiserName,
-        );
-        if (advertiser) {
-          // Only set the region value
-          const regionValue =
-            (advertiser?.region as
-              | "northeast"
-              | "midwest"
-              | "midatlantic"
-              | "west"
-              | "south") || "northeast";
-          form.setValue("region", regionValue);
-        }
-      } else if (
-        (salesChannel === "holding_company" ||
-          salesChannel === "independent_agency") &&
-        agencyName
-      ) {
-        const agency = agencies.find((a: AgencyData) => a.name === agencyName);
-        if (agency) {
-          // Only set the region value
-          const regionValue =
-            (agency?.region as
-              | "northeast"
-              | "midwest"
-              | "midatlantic"
-              | "west"
-              | "south") || "northeast";
-          form.setValue("region", regionValue);
-        }
-      }
-    };
-
-    updateRegionData();
-  }, [salesChannel, agencies, advertisers]);
+    const advertiserName = form.getValues("advertiserName");
+    const agencyName = form.getValues("agencyName");
+    
+    const region = getRegionFromSelection(
+      salesChannel,
+      advertiserName,
+      agencyName,
+      advertisers,
+      agencies
+    );
+    
+    if (region) {
+      const regionValue = region as "northeast" | "midwest" | "midatlantic" | "west" | "south";
+      form.setValue("region", regionValue);
+    }
+  }, [salesChannel, form, advertisers, agencies]);
 
   // Calculate real-time financial impact using dealTiers
   useEffect(() => {
