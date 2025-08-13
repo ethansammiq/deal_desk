@@ -143,7 +143,8 @@ export default function SubmitDeal() {
   // Check for pre-fill from scoping request
   const urlParams = new URLSearchParams(window.location.search);
   const fromScopingId = urlParams.get('from-scoping');
-  const [isPreFilling, setIsPreFilling] = useState(false);
+  const [isPreFilling, setIsPreFilling] = useState(!!fromScopingId);
+  const [scopingDealData, setScopingDealData] = useState<any>(null);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
     null,
   );
@@ -256,6 +257,83 @@ export default function SubmitDeal() {
   
   // ✅ MIGRATED: Use hook-managed form step instead of local state
   const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
+  
+  // Fetch and pre-fill scoping deal data if coming from conversion
+  useEffect(() => {
+    if (fromScopingId && !scopingDealData) {
+      setIsPreFilling(true);
+      
+      fetch(`/api/deals/${fromScopingId}`)
+        .then(response => response.json())
+        .then(dealData => {
+          setScopingDealData(dealData);
+          
+          // Pre-fill the form with scoping data
+          form.reset({
+            // Basic deal information - keep existing dealType or use from scoping
+            dealType: dealData.dealType || "grow",
+            dealName: dealData.dealName || "",
+
+            // Business information
+            businessSummary: dealData.businessSummary || "",
+
+            // Growth opportunity fields from scoping
+            growthOpportunityMIQ: dealData.growthOpportunityMIQ || "",
+            growthOpportunityClient: dealData.growthOpportunityClient || "",
+            clientAsks: dealData.clientAsks || "",
+            
+            // Optional RequestSupport fields
+            growthAmbition: dealData.growthAmbition || 0,
+            contractTermMonths: dealData.contractTermMonths || 12,
+
+            // Client/Agency information
+            salesChannel: dealData.salesChannel,
+            region: dealData.region,
+            advertiserName: dealData.advertiserName || "",
+            agencyName: dealData.agencyName || "",
+
+            // Deal structure
+            dealStructure: dealData.dealStructure,
+
+            // Timeframe from scoping
+            termStartDate: dealData.termStartDate || new Date().toISOString().split('T')[0],
+            termEndDate: dealData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+
+            // Financial data (if available from scoping)
+            annualRevenue: dealData.annualRevenue || 0,
+            annualGrossMargin: dealData.annualGrossMargin || 0,
+
+            // Contact information
+            email: dealData.email || "",
+
+            // Status - change from scoping to submitted
+            status: "submitted",
+            referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
+          });
+          
+          // Set deal structure for tier management
+          if (dealData.dealStructure) {
+            setDealStructure(dealData.dealStructure);
+          }
+          
+          setIsPreFilling(false);
+          
+          toast({
+            title: "Scoping Data Loaded",
+            description: "Form has been pre-filled with scoping request data. Please review and complete the remaining fields.",
+          });
+        })
+        .catch(error => {
+          console.error('Failed to fetch scoping deal data:', error);
+          setIsPreFilling(false);
+          toast({
+            title: "Pre-fill Failed", 
+            description: "Could not load scoping data. Please fill out the form manually.",
+            variant: "destructive",
+          });
+        });
+    }
+  }, [fromScopingId, scopingDealData, form, toast]);
   
   // Removed complex tier manager - using simple state management
   

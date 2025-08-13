@@ -15,38 +15,23 @@ export function useDealConversion() {
   const queryClient = useQueryClient();
 
   const convertScopingToDeal = useMutation({
-    mutationFn: async (scopingRequestId: number): Promise<ConversionResponse> => {
-      const response = await fetch(`/api/deal-scoping-requests/${scopingRequestId}/convert`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to convert scoping request');
-      }
-
-      return response.json();
+    mutationFn: async (dealId: number): Promise<{ dealId: number }> => {
+      // Since scoping requests are deals with "scoping" status,
+      // we just need to redirect to the form with the deal ID
+      return { dealId };
     },
     onSuccess: (data) => {
       toast({
-        title: "Conversion Successful",
-        description: `Scoping request converted to deal submission. Ready to complete the deal details.`,
+        title: "Redirecting to Deal Form",
+        description: `Opening deal submission form with pre-filled scoping data.`,
       });
 
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/deal-scoping-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-
-      // Navigate to deal submission form with pre-filled data
-      navigate(`/submit-deal?from-scoping=${data.deal.id}`);
+      // Navigate to deal submission form with pre-filled data from the scoping deal
+      navigate(`/submit-deal?from-scoping=${data.dealId}`);
     },
     onError: (error: Error) => {
       toast({
-        title: "Conversion Failed",
+        title: "Navigation Failed",
         description: error.message,
         variant: "destructive",
       });
