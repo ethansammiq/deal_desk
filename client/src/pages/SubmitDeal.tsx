@@ -82,7 +82,7 @@ import {
   createPreFillMapping
 } from "@/utils/form-data-processing";
 import { AdvertiserData, AgencyData } from "@shared/types";
-// ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
+// ✅ PHASE 3: All incentive UI state now managed locally within components
 import { incentiveCategories } from "@/lib/incentive-data";
 
 import { ApprovalMatrixDisplay } from "@/components/deal-form/ApprovalMatrixDisplay";
@@ -186,9 +186,7 @@ export default function SubmitDeal() {
   // ✅ NEW: Using tierManager hook instead of manual state
   // dealTiers replaced by tierManager.tiers
 
-  // ✅ Phase 2.2: Migrated incentive state to useIncentiveSelection hook
-  // ❌ ELIMINATED: useIncentiveSelection - using DealTier as single source of truth
-  const [showAddIncentiveForm, setShowAddIncentiveForm] = useState(false);
+  // ✅ PHASE 3: Removed showAddIncentiveForm state - now managed internally by IncentiveStructureSection
 
   // Initialize the form
   const form = useForm<DealFormValues>({
@@ -1352,8 +1350,6 @@ export default function SubmitDeal() {
                     dealStructureType={dealStructureType}
                     dealTiers={dealTiers}
                     setDealTiers={setDealTiers}
-                    showAddIncentiveForm={showAddIncentiveForm}
-                    setShowAddIncentiveForm={setShowAddIncentiveForm}
                     salesChannel={salesChannel}
                     advertiserName={form.watch("advertiserName")}
                     agencyName={form.watch("agencyName")}

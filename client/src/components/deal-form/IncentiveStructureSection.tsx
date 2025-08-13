@@ -27,13 +27,12 @@ import {
 // Type this component to accept any valid form structure
 type IncentiveStructureFormValues = any;
 
+// ✅ PHASE 3: Simplified interface - showAddIncentiveForm state now internal
 interface IncentiveStructureSectionProps {
   form: UseFormReturn<IncentiveStructureFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
   dealTiers: DealTier[];
   setDealTiers: (tiers: DealTier[]) => void;
-  showAddIncentiveForm: boolean;
-  setShowAddIncentiveForm: (show: boolean) => void;
   salesChannel?: string;
   advertiserName?: string;
   agencyName?: string;
@@ -44,12 +43,12 @@ export function IncentiveStructureSection({
   dealStructureType,
   dealTiers,
   setDealTiers,
-  showAddIncentiveForm,
-  setShowAddIncentiveForm,
   salesChannel = "independent_agency",
   advertiserName,
   agencyName,
 }: IncentiveStructureSectionProps) {
+  // ✅ PHASE 3: Internal state management for incentive form visibility
+  const [showAddIncentiveForm, setShowAddIncentiveForm] = React.useState(false);
   // ✅ MIGRATED: Use shared financial data hook
   const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
   
