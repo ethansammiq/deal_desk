@@ -21,6 +21,7 @@ export interface GrowthIndicatorProps {
   value: number;
   className?: string;
   showAsPercentage?: boolean;
+  invertColors?: boolean; // When true, increases show as red (bad) and decreases show as green (good)
 }
 
 /**
@@ -124,14 +125,21 @@ export function FinancialMetricLabel({
 export function GrowthIndicator({ 
   value, 
   className, 
-  showAsPercentage = true 
+  showAsPercentage = true,
+  invertColors = false
 }: GrowthIndicatorProps) {
   const isNegative = value < 0;
   const isZero = value === 0;
   
   let colorClass = "text-slate-600";
   if (!isZero) {
-    colorClass = isNegative ? "text-red-600" : "text-green-600";
+    if (invertColors) {
+      // For costs: increases are bad (red), decreases are good (green)
+      colorClass = isNegative ? "text-green-600" : "text-red-600";
+    } else {
+      // For revenue/profit: increases are good (green), decreases are bad (red)
+      colorClass = isNegative ? "text-red-600" : "text-green-600";
+    }
   }
   
   const displayValue = showAsPercentage 

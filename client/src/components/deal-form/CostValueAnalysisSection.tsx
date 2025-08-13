@@ -81,7 +81,7 @@ export function CostValueAnalysisSection({
                 : 0;
               return (
                 <FinancialDataCell key={`growth-${tier.tierNumber}`}>
-                  <GrowthIndicator value={growthRate} />
+                  <GrowthIndicator value={growthRate} invertColors={true} />
                 </FinancialDataCell>
               );
             })}
