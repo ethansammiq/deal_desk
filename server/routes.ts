@@ -594,9 +594,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   router.get("/users/current", async (req: Request, res: Response) => {
     try {
-      // Phase 7B: Mock current user (server-side version)
-      // Note: localStorage is not available on server side, so we'll use a default
-      const defaultRole = "seller"; // Default for demo
+      // Phase 7B: Mock current user with role switching support
+      // Check for role override in query params (for demo role switching)
+      const demoRole = req.query.role as string || "seller";
       
       const roleConfigs = {
         seller: {
@@ -637,9 +637,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
-      // For now, return the seller role as default
-      // In a real app, this would check session/auth
-      res.status(200).json(roleConfigs[defaultRole]);
+      // Return the requested role or default to seller
+      const selectedRole = ["seller", "approver", "legal", "admin"].includes(demoRole) ? demoRole : "seller";
+      res.status(200).json(roleConfigs[selectedRole as keyof typeof roleConfigs]);
     } catch (error) {
       console.error("Error fetching current user:", error);
       res.status(500).json({ message: "Failed to fetch current user" });

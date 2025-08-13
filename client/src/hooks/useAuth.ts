@@ -8,7 +8,14 @@ import type { CurrentUser } from "@shared/auth";
 export function useCurrentUser() {
   return useQuery({
     queryKey: ["/api/users/current"],
-    queryFn: () => apiRequest("/api/users/current") as Promise<CurrentUser>,
+    queryFn: () => {
+      // Check localStorage for demo role switching
+      const demoRole = typeof window !== 'undefined' && window.localStorage 
+        ? localStorage.getItem('demo_user_role') || 'seller'
+        : 'seller';
+      
+      return apiRequest(`/api/users/current?role=${demoRole}`) as Promise<CurrentUser>;
+    },
   });
 }
 
