@@ -9,6 +9,7 @@ import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealConversion } from "@/hooks/useDealConversion";
+import { useDealActions } from "@/hooks/useDealActions";
 import { 
   BarChart3, 
   CheckCircle,
@@ -159,6 +160,14 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
 export default function UnifiedDashboard() {
   const { data: user } = useCurrentUser();
   const { convertScopingToDeal } = useDealConversion();
+  const { 
+    sendNudge, 
+    approveDeal, 
+    legalApproveDeal, 
+    sendContract,
+    isUpdatingStatus,
+    isSendingNudge 
+  } = useDealActions();
   const userName = user?.firstName || user?.username || "User";
   const userRole = (user?.role as UserRole) || 'seller';
 
@@ -199,23 +208,40 @@ export default function UnifiedDashboard() {
   };
 
   const handleNudge = (dealId: number, target: string) => {
-    // TODO: Implement nudge functionality
-    console.log(`Nudging ${target} for deal ${dealId}`);
+    const nudgeMessages = {
+      approver: "Please review this deal for approval. It has been waiting for your attention.",
+      legal: "This deal is ready for legal review. Please review the contract terms.",
+      seller: "Please follow up on this deal or provide additional information."
+    };
+    
+    const message = nudgeMessages[target as keyof typeof nudgeMessages] || "Please check on this deal.";
+    
+    sendNudge.mutate({
+      dealId,
+      targetRole: target,
+      message
+    });
   };
 
   const handleApprove = (dealId: number) => {
-    // TODO: Implement approval functionality
-    console.log(`Approving deal ${dealId}`);
+    approveDeal.mutate({
+      dealId,
+      comments: "Deal approved via dashboard action"
+    });
   };
 
   const handleLegalApprove = (dealId: number) => {
-    // TODO: Implement legal approval functionality
-    console.log(`Legal approving deal ${dealId}`);
+    legalApproveDeal.mutate({
+      dealId,
+      comments: "Legal review completed via dashboard action"
+    });
   };
 
   const handleSendContract = (dealId: number) => {
-    // TODO: Implement contract sending functionality
-    console.log(`Sending contract for deal ${dealId}`);
+    sendContract.mutate({
+      dealId,
+      comments: "Contract sent via dashboard action"
+    });
   };
 
   const handleView = (dealId: number) => {
@@ -293,6 +319,7 @@ export default function UnifiedDashboard() {
               size="sm"
               onClick={() => action.onClick(row.original.id)}
               className="gap-1"
+              disabled={isUpdatingStatus || isSendingNudge}
             >
               {Icon && <Icon className="h-3 w-3" />}
               {action.label}

@@ -124,6 +124,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Phase 7B: Nudge endpoint for sending reminders/notifications
+  router.post("/deals/:id/nudge", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const { targetRole, message, sender } = req.body;
+      
+      // Validate required fields
+      if (!targetRole || !message || !sender) {
+        return res.status(400).json({ 
+          message: "targetRole, message, and sender are required" 
+        });
+      }
+      
+      // Verify deal exists
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      // Create a status history entry for the nudge
+      const nudgeComment = `NUDGE from ${sender} to ${targetRole}: ${message}`;
+      await storage.createDealStatusHistory({
+        dealId: id,
+        status: deal.status, // Keep current status
+        previousStatus: deal.status,
+        changedBy: sender,
+        comments: nudgeComment
+      });
+      
+      // In a real system, this would also trigger notifications
+      // For now, we'll just log and return success
+      console.log(`Nudge sent: Deal ${id}, From: ${sender}, To: ${targetRole}, Message: ${message}`);
+      
+      res.status(200).json({ 
+        message: "Nudge sent successfully",
+        targetRole,
+        dealId: id
+      });
+    } catch (error) {
+      console.error("Error sending nudge:", error);
+      res.status(500).json({ message: "Failed to send nudge" });
+    }
+  });
+
   // Phase 7A: Status constants endpoint
   router.get("/deal-statuses", async (req: Request, res: Response) => {
     try {
