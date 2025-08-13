@@ -44,6 +44,7 @@ import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components
 import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
+import { processDealScopingData } from "@/utils/form-data-processing";
 
 // Schema for deal scoping requests
 // Simplified schema - fields now handled by shared components
@@ -115,16 +116,8 @@ export default function RequestSupport() {
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
 
-      // Type conversion and field preparation for backend compatibility
-      const formData = {
-        ...data,
-        // Convert string numbers to actual numbers
-        contractTermMonths: data.contractTermMonths ? Number(data.contractTermMonths) : undefined,
-        growthAmbition: Number(data.growthAmbition || 1000000),
-        // Add required backend fields
-        requestTitle: "Deal Scoping Request",
-        description: "Growth opportunity assessment request",
-      };
+      // ✅ REFACTORED: Using shared data processing utility
+      const formData = processDealScopingData(data);
 
       const res = await fetch("/api/deal-scoping-requests", {
         method: "POST",

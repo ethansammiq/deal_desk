@@ -75,6 +75,7 @@ import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2 } from "lucide-react";
 import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
+import { processDealSubmissionData } from "@/utils/form-data-processing";
 // ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
 import { incentiveCategories } from "@/lib/incentive-data";
 
@@ -728,20 +729,15 @@ export default function SubmitDeal() {
       termEndDate: data.termEndDate
     });
 
-    // Include generated deal name, deal tiers data for tiered structure, and selected incentives
-    const dealData = {
-      ...data,
-      dealName: dealName,
-      // ✅ CRITICAL: Convert string numbers to actual numbers for backend validation
-      contractTermMonths: data.contractTermMonths ? Number(data.contractTermMonths) : 12,
-      growthAmbition: data.growthAmbition ? Number(data.growthAmbition) : undefined,
-      // Add missing required fields for API compatibility
-      annualRevenue: data.annualRevenue || DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
-      annualGrossMargin: (data.annualGrossMarginPercent || DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN * 100) / 100,
-      // Only include dealTiers if the structure is tiered
-      ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),
-      // ✅ FIXED: Eliminated redundant incentive interfaces - all data is in dealTiers
-    };
+    // ✅ REFACTORED: Using shared data processing utility
+    const dealData = processDealSubmissionData(
+      data,
+      dealName,
+      dealStructureType,
+      dealTiers,
+      DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+      DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN
+    );
 
     submitDealMutation.mutate(dealData);
   }
