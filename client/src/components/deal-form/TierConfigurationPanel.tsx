@@ -23,36 +23,52 @@ import {
 } from "@/lib/utils";
 
 // Import unified interface from hook
-import { DealTier } from "@/hooks/useDealTiers";
+import { DealTier, useDealTiers } from "@/hooks/useDealTiers";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
-import { useTierManagement } from "@/hooks/useTierManagement";
+// ✅ PHASE 2: Removed useTierManagement - functionality absorbed into useDealTiers
 
+// ✅ PHASE 2: Simplified interface - no more external state management
 interface TierConfigurationPanelProps {
-  dealTiers: DealTier[];
-  setDealTiers: React.Dispatch<React.SetStateAction<DealTier[]>>;
+  initialTiers?: DealTier[];                      // Optional initial tiers
+  maxTiers?: number;                              // Maximum tier limit
+  minTiers?: number;                              // Minimum tier limit
+  dealStructure?: "tiered" | "flat_commit" | ""; // For flat deal support
   calculateTierIncentiveCost: (tierNumber: number) => number;
   calculateGrossMarginGrowthRate: (tier: DealTier) => number;
   calculateTierGrossProfit: (tier: DealTier) => number;
   calculateTierNetValue: (tier: DealTier) => number;
+  onTiersChange?: (tiers: DealTier[]) => void;    // Optional callback for tier changes
 }
 
 export function TierConfigurationPanel({
-  dealTiers,
-  setDealTiers,
+  initialTiers = [],
+  maxTiers = 5,
+  minTiers = 1,
+  dealStructure = "tiered",
   calculateTierIncentiveCost,
   calculateGrossMarginGrowthRate,
   calculateTierGrossProfit,
   calculateTierNetValue,
+  onTiersChange
 }: TierConfigurationPanelProps) {
-  // ✅ MIGRATED: Using centralized useTierManagement hook
-  const tierManager = useTierManagement({
-    dealTiers,
-    setDealTiers,
-    isFlat: false // TierConfigurationPanel is always for tiered deals
+  // ✅ PHASE 2: Self-contained tier management using enhanced useDealTiers
+  const tierManager = useDealTiers({
+    initialTiers,
+    maxTiers,
+    minTiers,
+    supportFlatDeals: true,
+    dealStructure
   });
   
-  // Destructure for backward compatibility
+  // Notify parent of tier changes if callback provided
+  React.useEffect(() => {
+    if (onTiersChange) {
+      onTiersChange(tierManager.tiers);
+    }
+  }, [tierManager.tiers, onTiersChange]);
+  
   const { addTier, removeTier, updateTier } = tierManager;
+  const dealTiers = tierManager.tiers;
 
   return (
     <div className="space-y-6">

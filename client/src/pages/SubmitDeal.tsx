@@ -100,7 +100,7 @@ import { DataMappingService } from "@/services/dataMappingService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { AIAnalysisCard } from "@/components/ai/AIAnalysisCard";
 import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
-import { useTierManagement } from "@/hooks/useTierManagement";
+// ✅ PHASE 2: Removed useTierManagement - functionality absorbed into useDealTiers
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
@@ -238,22 +238,17 @@ export default function SubmitDeal() {
   // AI Analysis Integration
   const aiAnalysis = useAIAnalysis();
   
-  // Unified tier management using useDealTiers hook
+  // ✅ PHASE 2: Enhanced tier management using consolidated useDealTiers hook
   const tierManager = useDealTiers({
     maxTiers: 5,
-    minTiers: 1
+    minTiers: 1,
+    supportFlatDeals: true,
+    dealStructure: dealStructureType
   });
   
-  // Use tierManager.tiers as dealTiers for backward compatibility
+  // Direct access to tiers and operations (no more redundant wrapper)
   const dealTiers = tierManager.tiers;
-  const setDealTiers = (tiers: DealTier[]) => tierManager.updateAllTiers(tiers);
-  
-  // ✅ ADDED: useTierManagement for consistent CRUD operations
-  const tierManagement = useTierManagement({
-    dealTiers,
-    setDealTiers,
-    isFlat: dealStructureType === "flat_commit"
-  });
+  const setDealTiers = tierManager.setTiers;
   
   const formValidation = useDealFormValidation(form, {
     enableAutoAdvance: false,
@@ -1441,7 +1436,7 @@ export default function SubmitDeal() {
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 hover:from-purple-700 hover:to-indigo-700"
                         onClick={() => {
                           try {
-                            tierManagement.addTier();
+                            tierManager.addTier();
                           } catch (error: any) {
                             toast({
                               title: "Cannot Add Tier",
@@ -1595,7 +1590,7 @@ export default function SubmitDeal() {
                                         const value = e.target.value
                                           ? parseFloat(e.target.value)
                                           : 0;
-                                        tierManagement.updateTier(tier.tierNumber, { 
+                                        tierManager.updateTier(tier.tierNumber, { 
                                           annualRevenue: value 
                                         });
                                       }}
@@ -1680,7 +1675,7 @@ export default function SubmitDeal() {
                                         const percent = e.target.value
                                           ? parseFloat(e.target.value) / 100
                                           : 0;
-                                        tierManagement.updateTier(tier.tierNumber, { 
+                                        tierManager.updateTier(tier.tierNumber, { 
                                           annualGrossMargin: percent 
                                         });
                                       }}
