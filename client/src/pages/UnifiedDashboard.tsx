@@ -249,6 +249,26 @@ export default function UnifiedDashboard() {
     window.location.href = `/deals/${dealId}`;
   };
 
+  // Helper function to get deal value based on deal type and structure
+  const getDealValue = (deal: Deal): number => {
+    // For scoping deals, use growth ambition
+    if (deal.status === 'scoping' && deal.growthAmbition) {
+      return deal.growthAmbition;
+    }
+    
+    // For flat commit deals, use annual revenue
+    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
+      return deal.annualRevenue;
+    }
+    
+    // For tiered deals, we would need to fetch tier data separately
+    // For now, use annual revenue if available, otherwise growth ambition
+    // TODO: Consider adding tier revenue aggregation via separate API call
+    
+    // Fallback to any available revenue value
+    return deal.annualRevenue || deal.growthAmbition || 0;
+  };
+
   // Define columns for the deals table with action column
   const columns: ColumnDef<Deal>[] = [
     {
@@ -267,13 +287,30 @@ export default function UnifiedDashboard() {
       cell: ({ row }) => {
         const deal = row.original;
         const clientName = deal.advertiserName || deal.agencyName || "N/A";
-        return <div>{clientName}</div>;
+        return <div className="font-medium text-slate-900">{clientName}</div>;
       },
     },
     {
-      accessorKey: "annualRevenue",
-      header: "Value",
-      cell: ({ row }) => <div className="font-medium">{formatCurrency(row.original.annualRevenue || 0)}</div>,
+      accessorKey: "salesChannel",
+      header: "Sales Channel",
+      cell: ({ row }) => {
+        const channelLabels = {
+          'holding_company': 'Holding Company',
+          'independent_agency': 'Independent Agency', 
+          'client_direct': 'Client Direct'
+        };
+        const channel = row.original.salesChannel;
+        const label = channelLabels[channel as keyof typeof channelLabels] || channel;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
+      id: "dealValue", 
+      header: "Deal Value",
+      cell: ({ row }) => {
+        const value = getDealValue(row.original);
+        return <div className="font-medium">{formatCurrency(value)}</div>;
+      },
     },
     {
       accessorKey: "status",
