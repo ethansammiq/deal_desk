@@ -57,9 +57,9 @@ export function FinancialTierTable({
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
   return (
-    <FinancialSection title="Revenue & Profitability">
-      <div className="flex items-center justify-between mb-4">
-        <span></span> {/* Empty span for flexbox alignment */}
+    <FinancialSection 
+      title="Revenue & Profitability"
+      headerAction={
         <Button
           type="button"
           onClick={addTier}
@@ -76,7 +76,8 @@ export function FinancialTierTable({
           <Plus className="h-4 w-4 mr-1" />
           Add Tier
         </Button>
-      </div>
+      }
+    >
             {/* Info banner - using Alert component for consistency */}
             <Alert>
               <Info className="h-4 w-4" />

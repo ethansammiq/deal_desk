@@ -15,6 +15,7 @@ export interface FinancialSectionProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  headerAction?: React.ReactNode;
 }
 
 export interface GrowthIndicatorProps {
@@ -156,11 +157,15 @@ export function GrowthIndicator({
 /**
  * Section container with consistent card styling
  */
-export function FinancialSection({ title, children, className }: FinancialSectionProps) {
+
+export function FinancialSection({ title, children, className, headerAction }: FinancialSectionProps) {
   return (
     <div className={cn("bg-white p-6 rounded-lg border border-slate-200 shadow-sm", className)}>
       <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-purple-600">{title}</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-lg font-semibold text-purple-600">{title}</h4>
+          {headerAction}
+        </div>
         {children}
       </div>
     </div>

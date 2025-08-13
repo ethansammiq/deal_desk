@@ -66,19 +66,9 @@ export function IncentiveStructureSection({
   const lastYearIncentiveCost = 50000;
 
   return (
-    <FinancialSection title="Incentive Structure">
-      {/* Info Banner - using Alert component for consistency */}
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Incentive Configuration</AlertTitle>
-        <AlertDescription>
-          Incentives are additional benefits provided to the client based on performance. 
-          Select appropriate incentive types and amounts for each tier of the deal.
-        </AlertDescription>
-      </Alert>
-
-      {/* Add Incentive Button */}
-      <div className="flex justify-end mb-4">
+    <FinancialSection 
+      title="Incentive Structure"
+      headerAction={
         <Button
           type="button"
           onClick={() => setShowAddIncentiveForm(true)}
@@ -89,7 +79,17 @@ export function IncentiveStructureSection({
           <Plus className="h-4 w-4 mr-1" />
           Add Incentive
         </Button>
-      </div>
+      }
+    >
+      {/* Info Banner - using Alert component for consistency */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Incentive Configuration</AlertTitle>
+        <AlertDescription>
+          Incentives are additional benefits provided to the client based on performance. 
+          Select appropriate incentive types and amounts for each tier of the deal.
+        </AlertDescription>
+      </Alert>
 
           {/* Add Incentive Form */}
           {showAddIncentiveForm && (
