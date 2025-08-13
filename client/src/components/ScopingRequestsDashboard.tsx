@@ -230,8 +230,8 @@ export function ScopingRequestsDashboard() {
         </Card>
       )}
 
-      {/* Empty State */}
-      {(!scopingRequestsQuery.data || scopingRequestsQuery.data.length === 0) && (
+      {/* Empty State - Only show when truly no data */}
+      {scopingRequestsQuery.data && scopingRequestsQuery.data.length === 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
