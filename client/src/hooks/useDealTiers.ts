@@ -61,13 +61,18 @@ export interface UseDealTiersOptions {
   initialTiers?: DealTier[];
   maxTiers?: number;
   minTiers?: number;
+  // ✅ PHASE 1: Absorb useTierManagement functionality
+  supportFlatDeals?: boolean;     // Enable flat deal logic (prevents tier operations)
+  dealStructure?: "tiered" | "flat_commit" | "";  // Current deal structure for flat deal detection
 }
 
 export function useDealTiers(options: UseDealTiersOptions = {}) {
   const { 
     initialTiers = [], 
     maxTiers = DEAL_CONSTANTS.MAX_TIERS, 
-    minTiers = DEAL_CONSTANTS.MIN_TIERS 
+    minTiers = DEAL_CONSTANTS.MIN_TIERS,
+    supportFlatDeals = true,
+    dealStructure = ""
   } = options;
 
   const [tiers, setTiers] = useState<DealTier[]>(() => {
@@ -87,8 +92,14 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     }];
   });
 
-  // Add new tier
+  // Add new tier - Enhanced with flat deal support
   const addTier = useCallback(() => {
+    // ✅ PHASE 1: Flat deal support absorbed from useTierManagement
+    if (supportFlatDeals && dealStructure === "flat_commit") {
+      console.warn("Cannot add tiers for flat commit deals");
+      return; // Don't add tiers for flat commit
+    }
+
     setTiers(prev => {
       if (prev.length >= maxTiers) {
         throw new Error(`Maximum of ${maxTiers} tiers allowed`);
@@ -104,10 +115,16 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
       return [...prev, newTier];
     });
-  }, [maxTiers]);
+  }, [maxTiers, supportFlatDeals, dealStructure]);
 
-  // Remove tier
+  // Remove tier - Enhanced with flat deal support
   const removeTier = useCallback((tierNumber: number) => {
+    // ✅ PHASE 1: Flat deal support absorbed from useTierManagement
+    if (supportFlatDeals && dealStructure === "flat_commit") {
+      console.warn("Cannot remove tiers for flat commit deals");
+      return; // Don't remove tiers for flat commit
+    }
+
     setTiers(prev => {
       if (prev.length <= minTiers) {
         throw new Error(`Minimum of ${minTiers} tier(s) required`);
@@ -116,7 +133,7 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
       const filtered = prev.filter(tier => tier.tierNumber !== tierNumber);
       return filtered.map((tier, index) => ({ ...tier, tierNumber: index + 1 }));
     });
-  }, [minTiers]);
+  }, [minTiers, supportFlatDeals, dealStructure]);
 
   // Update specific tier
   const updateTier = useCallback((tierNumber: number, updates: Partial<DealTier>) => {
@@ -256,13 +273,15 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     return tiers.reduce((sum, tier) => sum + (tier.annualRevenue * tier.annualGrossMargin), 0);
   }, [tiers]);
 
+  // ✅ PHASE 1: Enhanced validation with flat deal support
   const isValid = validationErrors.length === 0;
-  const canAddTier = tiers.length < maxTiers;
-  const canRemoveTier = tiers.length > minTiers;
+  const canAddTier = supportFlatDeals && dealStructure === "flat_commit" ? false : tiers.length < maxTiers;
+  const canRemoveTier = supportFlatDeals && dealStructure === "flat_commit" ? false : tiers.length > minTiers;
 
   return {
     // State
     tiers,
+    setTiers,  // ✅ PHASE 1: Expose setter for backward compatibility
     validationErrors,
     
     // Actions
@@ -281,6 +300,10 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     isValid,
     canAddTier,
     canRemoveTier,
-    tierCount: tiers.length
+    tierCount: tiers.length,
+    
+    // ✅ PHASE 1: Enhanced flat deal support
+    isFlat: supportFlatDeals && dealStructure === "flat_commit",
+    supportsFlatDeals: supportFlatDeals
   };
 }
