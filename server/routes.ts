@@ -625,6 +625,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: "Mike",
           lastName: "Johnson",
           department: "Legal"
+        },
+        admin: {
+          id: 4,
+          username: "demo_admin",
+          email: "admin@company.com",
+          role: "admin",
+          firstName: "Alex",
+          lastName: "Administrator",
+          department: "IT & Operations"
         }
       };
       
@@ -646,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user ID" });
       }
       
-      if (!role || !["seller", "approver", "legal"].includes(role)) {
+      if (!role || !["seller", "approver", "legal", "admin"].includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
       

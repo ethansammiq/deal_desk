@@ -25,12 +25,14 @@ export function RoleTestingPanel() {
 
   const testStatuses: DealStatus[] = ["scoping", "submitted", "under_review", "negotiating", "approved"];
   
-  // Always call hooks before any early returns
-  const testTransitions = testStatuses.map(status => {
-    // This ensures hooks are called consistently
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useAllowedTransitions(1, status);
-  });
+  // Always call hooks before any early returns - fixed approach
+  const testTransitions = [
+    useAllowedTransitions(1, "scoping"),
+    useAllowedTransitions(1, "submitted"), 
+    useAllowedTransitions(1, "under_review"),
+    useAllowedTransitions(1, "negotiating"),
+    useAllowedTransitions(1, "approved")
+  ];
   
   if (!currentUser) {
     return <div>Loading...</div>;

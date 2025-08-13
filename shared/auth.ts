@@ -78,6 +78,15 @@ export function getCurrentUser(): CurrentUser {
       firstName: "Mike",
       lastName: "Johnson",
       department: "Legal"
+    },
+    admin: {
+      id: 4,
+      username: "demo_admin",
+      email: "admin@company.com",
+      role: "admin" as UserRole,
+      firstName: "Alex",
+      lastName: "Administrator", 
+      department: "IT & Operations"
     }
   };
   
@@ -97,7 +106,8 @@ export function getRoleDisplayName(role: UserRole): string {
   const roleNames = {
     seller: "Sales Representative",
     approver: "Deal Approver",
-    legal: "Legal Team"
+    legal: "Legal Team",
+    admin: "System Administrator"
   };
   return roleNames[role];
 }

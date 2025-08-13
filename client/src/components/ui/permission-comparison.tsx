@@ -10,7 +10,7 @@ interface PermissionComparisonProps {
 }
 
 export function PermissionComparison({ className }: PermissionComparisonProps) {
-  const roles: UserRole[] = ["seller", "approver", "legal"];
+  const roles: UserRole[] = ["seller", "approver", "legal", "admin"];
   
   const permissionLabels = {
     canViewDeals: "View Deals",
@@ -27,6 +27,7 @@ export function PermissionComparison({ className }: PermissionComparisonProps) {
     seller: ["scoping", "submitted"],
     approver: ["under_review", "negotiating", "approved", "lost"],
     legal: ["legal_review", "contract_sent", "signed"],
+    admin: ["scoping", "submitted", "under_review", "negotiating", "approved", "legal_review", "contract_sent", "signed", "lost"],
   };
 
   return (

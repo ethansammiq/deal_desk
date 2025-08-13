@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Phase 7B: User roles for role-based permissions
-export const userRoles = ["seller", "approver", "legal"] as const;
+export const userRoles = ["seller", "approver", "legal", "admin"] as const;
 export type UserRole = typeof userRoles[number];
 
 // Phase 7B: Enhanced users table with role-based permissions
@@ -415,6 +415,18 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canAccessLegalReview: true,
     canManageContracts: true,
     dashboardSections: ["legal-queue", "contracts", "compliance"]
+  },
+  admin: {
+    canViewDeals: true,
+    canCreateDeals: true,
+    canEditDeals: true,
+    canDeleteDeals: true,
+    canChangeStatus: ["scoping", "submitted", "under_review", "negotiating", "approved", "legal_review", "contract_sent", "signed", "lost"], // All status transitions
+    canViewAllDeals: true,
+    canApproveDeals: true,
+    canAccessLegalReview: true,
+    canManageContracts: true,
+    dashboardSections: ["admin-panel", "deals", "scoping", "approvals", "legal-queue", "contracts", "analytics", "reports", "compliance", "performance", "user-management", "system-metrics", "audit-logs", "technical-support"]
   }
 };
 

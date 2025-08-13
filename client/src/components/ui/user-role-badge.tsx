@@ -29,6 +29,12 @@ export function UserRoleBadge({ role, className }: UserRoleBadgeProps) {
           variant: "outline" as const,
           className: "bg-purple-100 text-purple-800 hover:bg-purple-200",
         };
+      case "admin":
+        return {
+          label: "Admin",
+          variant: "destructive" as const,
+          className: "bg-red-100 text-red-800 hover:bg-red-200",
+        };
       default:
         return {
           label: role,

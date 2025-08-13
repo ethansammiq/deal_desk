@@ -42,6 +42,11 @@ export function RoleSwitcher({ currentRole, onRoleChange, className }: RoleSwitc
       value: "legal",
       label: "Legal Team",
       description: "Can manage legal review and contracts"
+    },
+    {
+      value: "admin",
+      label: "System Administrator", 
+      description: "Full system access, technical support, and user management"
     }
   ];
 
