@@ -58,7 +58,13 @@ export const dealScopingRequests = pgTable("deal_scoping_requests", {
   salesChannel: text("sales_channel").notNull(),
   advertiserName: text("advertiser_name"),
   agencyName: text("agency_name"),
-  growthOpportunityCommercial: text("growth_opportunity_commercial").notNull(),
+  region: text("region"),
+  dealType: text("deal_type"),
+  dealStructure: text("deal_structure"),
+  contractTermMonths: integer("contract_term_months"),
+  termStartDate: text("term_start_date"),
+  termEndDate: text("term_end_date"),
+  growthOpportunityMIQ: text("growth_opportunity_miq").notNull(),
   growthAmbition: doublePrecision("growth_ambition").notNull(),
   growthOpportunityClient: text("growth_opportunity_client").notNull(),
   clientAsks: text("client_asks"),
@@ -73,9 +79,15 @@ export const dealScopingRequests = pgTable("deal_scoping_requests", {
 });
 
 export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequests)
-  .omit({ id: true, createdAt: true, updatedAt: true, status: true })
+  .omit({ id: true, createdAt: true, updatedAt: true, status: true, convertedDealId: true, convertedAt: true })
   .extend({
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M"),
+    region: z.string().optional(),
+    dealType: z.string().optional(),
+    dealStructure: z.string().optional(),
+    contractTermMonths: z.number().optional(),
+    termStartDate: z.string().optional(),
+    termEndDate: z.string().optional(),
   }).passthrough(); // Allow additional fields from shared components
 
 // Tier configuration for tiered deals - Updated unified schema
