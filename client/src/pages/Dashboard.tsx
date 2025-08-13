@@ -6,6 +6,7 @@ import { Deal } from "@shared/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { PlusIcon, Users, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -13,14 +14,7 @@ import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/l
 import { ScopingRequestsDashboard } from "@/components/ScopingRequestsDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Status badge mapping
-const statusVariantMap: Record<string, any> = {
-  pending: "pending",
-  approved: "approved",
-  rejected: "rejected",
-  in_progress: "inProgress",
-  completed: "completed",
-};
+// Phase 7A: Status mapping removed - now using DealStatusBadge component
 
 // Type for stats API response
 interface DealStats {
@@ -91,11 +85,7 @@ export default function Dashboard() {
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status;
-        return (
-          <Badge variant={statusVariantMap[status] || "default"}>
-            {status.replace("_", " ").replace(/\b\w/g, char => char.toUpperCase())}
-          </Badge>
-        );
+        return <DealStatusBadge status={status} />;
       },
       filterFn: (row, id, value) => {
         return value === row.getValue(id);

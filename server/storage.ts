@@ -6,6 +6,7 @@ import {
   agencies,
   dealTiers,
   incentiveValues,
+  dealStatusHistory,
   type User, 
   type InsertUser, 
   type Deal, 
@@ -19,7 +20,11 @@ import {
   type DealTier,
   type InsertDealTier,
   type IncentiveValue,
-  type InsertIncentiveValue
+  type InsertIncentiveValue,
+  type DealStatusHistory,
+  type InsertDealStatusHistory,
+  DEAL_STATUSES,
+  type DealStatus
 } from "@shared/schema";
 import { AirtableStorage } from "./airtableStorage";
 
@@ -47,7 +52,11 @@ export interface IStorage {
   getDealByReference(referenceNumber: string): Promise<Deal | undefined>;
   getDeals(filters?: { status?: string, dealType?: string, salesChannel?: string }): Promise<Deal[]>;
   createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
-  updateDealStatus(id: number, status: string): Promise<Deal | undefined>;
+  updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined>;
+  
+  // Phase 7A: Deal Status History methods
+  getDealStatusHistory(dealId: number): Promise<DealStatusHistory[]>;
+  createDealStatusHistory(statusHistory: InsertDealStatusHistory): Promise<DealStatusHistory>;
   
   // Deal tier methods
   getDealTiers(dealId: number): Promise<DealTier[]>;
@@ -84,6 +93,7 @@ export class MemStorage implements IStorage {
   private dealTiers: Map<number, DealTier>;
   private dealScopingRequests: Map<number, DealScopingRequest>;
   private incentiveValues: Map<number, IncentiveValue>;
+  private dealStatusHistories: Map<number, DealStatusHistory>; // Phase 7A
   
   private userCurrentId: number;
   private advertiserCurrentId: number;
@@ -92,6 +102,7 @@ export class MemStorage implements IStorage {
   private dealTierCurrentId: number;
   private dealScopingRequestCurrentId: number;
   private incentiveValueCurrentId: number;
+  private dealStatusHistoryCurrentId: number; // Phase 7A
 
   constructor() {
     this.users = new Map();
@@ -101,6 +112,7 @@ export class MemStorage implements IStorage {
     this.dealTiers = new Map();
     this.dealScopingRequests = new Map();
     this.incentiveValues = new Map();
+    this.dealStatusHistories = new Map(); // Phase 7A
     
     this.userCurrentId = 1;
     this.advertiserCurrentId = 1;
@@ -109,6 +121,7 @@ export class MemStorage implements IStorage {
     this.dealTierCurrentId = 1;
     this.dealScopingRequestCurrentId = 1;
     this.incentiveValueCurrentId = 1;
+    this.dealStatusHistoryCurrentId = 1; // Phase 7A
     
     // Initialize with some sample data
     this.initSampleData();
@@ -691,7 +704,9 @@ export class MemStorage implements IStorage {
     const deal: Deal = {
       ...insertDeal,
       id,
-      status: "submitted",
+      status: insertDeal.status || "submitted", // Phase 7A: Use provided status or default
+      lastStatusChange: now, // Phase 7A: Track status change time
+      priority: insertDeal.priority || "medium", // Phase 7A: Default priority
       createdAt: now,
       updatedAt: now,
       referenceNumber: dealReferenceNumber,
@@ -713,18 +728,57 @@ export class MemStorage implements IStorage {
     return deal;
   }
   
-  async updateDealStatus(id: number, status: string): Promise<Deal | undefined> {
+  // Phase 7A: Enhanced updateDealStatus with status history tracking
+  async updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined> {
     const deal = this.deals.get(id);
     if (!deal) return undefined;
     
+    const previousStatus = deal.status;
+    const now = new Date();
+    
+    // Update the deal
     const updatedDeal: Deal = {
       ...deal,
       status,
-      updatedAt: new Date(),
+      lastStatusChange: now,
+      updatedAt: now,
     };
     
     this.deals.set(id, updatedDeal);
+    
+    // Create status history entry
+    await this.createDealStatusHistory({
+      dealId: id,
+      status,
+      previousStatus,
+      changedBy,
+      comments: comments || null,
+    });
+    
     return updatedDeal;
+  }
+  
+  // Phase 7A: Deal Status History methods
+  async getDealStatusHistory(dealId: number): Promise<DealStatusHistory[]> {
+    return Array.from(this.dealStatusHistories.values())
+      .filter(history => history.dealId === dealId)
+      .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime());
+  }
+  
+  async createDealStatusHistory(insertStatusHistory: InsertDealStatusHistory): Promise<DealStatusHistory> {
+    const id = this.dealStatusHistoryCurrentId++;
+    const now = new Date();
+    
+    const statusHistory: DealStatusHistory = {
+      ...insertStatusHistory,
+      id,
+      changedAt: now,
+      comments: insertStatusHistory.comments || null,
+      previousStatus: insertStatusHistory.previousStatus || null,
+    };
+    
+    this.dealStatusHistories.set(id, statusHistory);
+    return statusHistory;
   }
   
   // Deal scoping request methods

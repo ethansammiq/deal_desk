@@ -1,7 +1,13 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDealSchema, insertDealScopingRequestSchema } from "@shared/schema";
+import { 
+  insertDealSchema, 
+  insertDealScopingRequestSchema,
+  DEAL_STATUSES,
+  DEAL_STATUS_LABELS,
+  type DealStatus
+} from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
@@ -61,6 +67,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(200).json(deal);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch deal" });
+    }
+  });
+  
+  // Phase 7A: Deal status management routes
+  router.put("/deals/:id/status", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const { status, changedBy, comments } = req.body;
+      
+      // Validate status
+      if (!status || !Object.values(DEAL_STATUSES).includes(status)) {
+        return res.status(400).json({ 
+          message: "Invalid status", 
+          validStatuses: Object.values(DEAL_STATUSES) 
+        });
+      }
+      
+      // Validate changedBy
+      if (!changedBy || typeof changedBy !== 'string') {
+        return res.status(400).json({ message: "changedBy is required" });
+      }
+      
+      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, changedBy, comments);
+      
+      if (!updatedDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      res.status(200).json(updatedDeal);
+    } catch (error) {
+      console.error("Error updating deal status:", error);
+      res.status(500).json({ message: "Failed to update deal status" });
+    }
+  });
+  
+  router.get("/deals/:id/history", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      // Verify deal exists
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      const history = await storage.getDealStatusHistory(id);
+      res.status(200).json(history);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deal status history" });
+    }
+  });
+  
+  // Phase 7A: Status constants endpoint
+  router.get("/deal-statuses", async (req: Request, res: Response) => {
+    try {
+      res.status(200).json({
+        statuses: DEAL_STATUSES,
+        labels: DEAL_STATUS_LABELS,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deal statuses" });
     }
   });
   

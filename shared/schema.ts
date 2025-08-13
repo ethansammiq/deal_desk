@@ -106,6 +106,10 @@ export const dealTiers = pgTable("deal_tiers", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Phase 7A: Export new types
+export type DealStatusHistory = typeof dealStatusHistory.$inferSelect;
+export type InsertDealStatusHistory = z.infer<typeof insertDealStatusHistorySchema>;
+
 export const insertDealTierSchema = createInsertSchema(dealTiers)
   .omit({ id: true, createdAt: true, updatedAt: true })
   .extend({
@@ -117,6 +121,37 @@ export const insertDealTierSchema = createInsertSchema(dealTiers)
     subCategoryName: z.string().min(1, "Subcategory name is required"),
     incentiveOption: z.string().min(1, "Incentive option is required"),
     incentiveNotes: z.string().optional(),
+  });
+
+// Phase 7A: Deal Status History table
+export const dealStatusHistory = pgTable("deal_status_history", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  status: text("status").notNull(),
+  previousStatus: text("previous_status"),
+  changedBy: text("changed_by"), // User email/identifier who made the change
+  comments: text("comments"), // Optional comments about the status change
+  changedAt: timestamp("changed_at").defaultNow(),
+});
+
+export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistory)
+  .omit({ id: true, changedAt: true })
+  .extend({
+    dealId: z.number().positive("Deal ID must be positive"),
+    status: z.enum([
+      "scoping", 
+      "submitted", 
+      "under_review", 
+      "negotiating", 
+      "approved", 
+      "legal_review", 
+      "contract_sent", 
+      "signed", 
+      "lost"
+    ]),
+    previousStatus: z.string().optional(),
+    changedBy: z.string().min(1, "Changed by is required"),
+    comments: z.string().optional(),
   });
 
 // Deals table - updated with new fields
@@ -153,7 +188,7 @@ export const deals = pgTable("deals", {
   // Contract term input field (months)
   contractTermMonths: integer("contract_term_months"),
   
-  status: text("status").notNull().default("submitted"), // "submitted", "in_review", "initial_approval", "client_feedback", "legal_review", "signed"
+  status: text("status").notNull().default("submitted"), // Phase 7A: 9-status workflow
   
   // Timeframe - using ISO 8601 date strings
   termStartDate: text("term_start_date"), // ISO 8601: "2025-01-15"
@@ -175,6 +210,10 @@ export const deals = pgTable("deals", {
   analyticsTier: text("analytics_tier").default("silver"),
   requiresCustomMarketing: boolean("requires_custom_marketing").default(false),
   
+  // Phase 7A: Workflow fields
+  lastStatusChange: timestamp("last_status_change").defaultNow(),
+  priority: text("priority").default("medium"), // "low", "medium", "high"
+  
   // System fields
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -183,8 +222,46 @@ export const deals = pgTable("deals", {
   referenceNumber: text("reference_number").notNull().unique(),
 });
 
+// Phase 7A: Deal Status Constants
+export const DEAL_STATUSES = {
+  SCOPING: "scoping",
+  SUBMITTED: "submitted", 
+  UNDER_REVIEW: "under_review",
+  NEGOTIATING: "negotiating",
+  APPROVED: "approved",
+  LEGAL_REVIEW: "legal_review",
+  CONTRACT_SENT: "contract_sent",
+  SIGNED: "signed",
+  LOST: "lost"
+} as const;
+
+export const DEAL_STATUS_LABELS = {
+  scoping: "Scoping",
+  submitted: "Submitted",
+  under_review: "Under Review", 
+  negotiating: "Negotiating",
+  approved: "Approved",
+  legal_review: "Legal Review",
+  contract_sent: "Contract Sent",
+  signed: "Signed",
+  lost: "Lost"
+} as const;
+
+export const DEAL_STATUS_FLOW = [
+  "scoping",
+  "submitted", 
+  "under_review",
+  "negotiating",
+  "approved",
+  "legal_review", 
+  "contract_sent",
+  "signed"
+] as const;
+
+export type DealStatus = keyof typeof DEAL_STATUS_LABELS;
+
 export const insertDealSchema = createInsertSchema(deals)
-  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true, contractTerm: true })
+  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true, contractTerm: true, lastStatusChange: true })
   .extend({
     // Region validation
     region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"]),
@@ -223,6 +300,20 @@ export const insertDealSchema = createInsertSchema(deals)
     yearlyMarginGrowthRate: z.number().default(0),
     addedValueBenefitsCost: z.number().min(0).default(0),
     analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
+    
+    // Phase 7A: Status and priority validation
+    status: z.enum([
+      "scoping", 
+      "submitted", 
+      "under_review", 
+      "negotiating", 
+      "approved", 
+      "legal_review", 
+      "contract_sent", 
+      "signed", 
+      "lost"
+    ]).default("submitted"),
+    priority: z.enum(["low", "medium", "high"]).default("medium").optional(),
     requiresCustomMarketing: z.boolean().default(false),
   });
 
