@@ -1,6 +1,6 @@
 import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "../../hooks/useDealCalculations";
-import { useQuery } from "@tanstack/react-query";
+import { useFinancialData } from "@/hooks/useFinancialData";
 import { memo } from "react";
 import {
   FinancialSection,
@@ -29,23 +29,11 @@ function FinancialSummarySection({
   advertiserName,
   agencyName 
 }: FinancialSummarySectionProps) {
-  // Fetch agencies and advertisers for calculation service with error handling
-  const agenciesQuery = useQuery({ 
-    queryKey: ["/api/agencies"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
-  const advertisersQuery = useQuery({ 
-    queryKey: ["/api/advertisers"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
+  // ✅ MIGRATED: Use shared financial data hook
+  const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
   
-  // Use shared calculation service with query data
-  const { calculationService } = useDealCalculations(
-    Array.isArray(advertisersQuery.data) ? advertisersQuery.data : [], 
-    Array.isArray(agenciesQuery.data) ? agenciesQuery.data : []
-  );
+  // Use shared calculation service with clean data arrays
+  const { calculationService } = useDealCalculations(advertisersData, agenciesData);
 
   // Use shared service for all calculations (no duplicate logic)
 
@@ -55,12 +43,12 @@ function FinancialSummarySection({
   const lastYearGrossMargin = calculationService.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
   const lastYearRevenue = calculationService.getPreviousYearValue(salesChannel, advertiserName, agencyName);
 
-  // Show loading or error states for data dependencies
-  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+  // ✅ SIMPLIFIED: Use shared loading/error states  
+  if (isLoading) {
     return <SectionLoading title="Loading Financial Data..." rows={5} />;
   }
 
-  if (agenciesQuery.error || advertisersQuery.error) {
+  if (hasError) {
     return (
       <div className="text-center py-8">
         <p className="text-red-600">Error loading financial data. Please try again.</p>

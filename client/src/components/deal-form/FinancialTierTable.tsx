@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
-import { useQuery } from "@tanstack/react-query";
+import { useFinancialData } from "@/hooks/useFinancialData";
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
@@ -44,22 +44,13 @@ export function FinancialTierTable({
   advertiserName,
   agencyName,
 }: FinancialTierTableProps) {
-  // Fetch agencies and advertisers for calculation service
-  const agenciesQuery = useQuery<any[]>({ 
-    queryKey: ["/api/agencies"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
-  const advertisersQuery = useQuery<any[]>({ 
-    queryKey: ["/api/advertisers"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
+  // ✅ MIGRATED: Use shared financial data hook
+  const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
   
-  // Use shared calculation service with actual data
+  // Use shared calculation service with clean data arrays
   const { 
     calculationService 
-  } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
+  } = useDealCalculations(advertisersData, agenciesData);
 
   const { addTier, removeTier, updateTier } = useTierManagement({
     dealTiers,
@@ -70,8 +61,8 @@ export function FinancialTierTable({
   // Calculate last year's gross profit
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
 
-  // Show loading state while data is being fetched
-  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+  // ✅ SIMPLIFIED: Use shared loading/error states
+  if (isLoading) {
     return (
       <FinancialSection title="Revenue & Profitability">
         <div className="text-center py-8">
@@ -81,8 +72,7 @@ export function FinancialTierTable({
     );
   }
 
-  // Show error state if data fetch fails
-  if (agenciesQuery.error || advertisersQuery.error) {
+  if (hasError) {
     return (
       <FinancialSection title="Revenue & Profitability">
         <div className="text-center py-8">

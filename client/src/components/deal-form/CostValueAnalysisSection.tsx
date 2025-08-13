@@ -1,7 +1,7 @@
 import React from "react";
 import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { useQuery } from "@tanstack/react-query";
+import { useFinancialData } from "@/hooks/useFinancialData";
 import {
   FinancialSection,
   FinancialTable,
@@ -28,27 +28,18 @@ export function CostValueAnalysisSection({
   advertiserName,
   agencyName
 }: CostValueAnalysisSectionProps) {
-  // Fetch agencies and advertisers for calculation service
-  const agenciesQuery = useQuery<any[]>({ 
-    queryKey: ["/api/agencies"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
-  const advertisersQuery = useQuery<any[]>({ 
-    queryKey: ["/api/advertisers"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
+  // ✅ MIGRATED: Use shared financial data hook
+  const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
   
   // Use shared calculation service with actual data
-  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
+  const { calculationService } = useDealCalculations(advertisersData, agenciesData);
   
   // Get consistent baseline values from shared service with dynamic data
   const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
   const lastYearClientValue = calculationService.getPreviousYearClientValue(salesChannel, advertiserName, agencyName);
   
-  // Show loading state while data is being fetched
-  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+  // ✅ SIMPLIFIED: Use shared loading/error states
+  if (isLoading) {
     return (
       <FinancialSection title="Cost & Value Analysis">
         <div className="text-center py-8">
@@ -58,8 +49,7 @@ export function CostValueAnalysisSection({
     );
   }
   
-  // Show error state if data fetch fails
-  if (agenciesQuery.error || advertisersQuery.error) {
+  if (hasError) {
     return (
       <FinancialSection title="Cost & Value Analysis">
         <div className="text-center py-8">

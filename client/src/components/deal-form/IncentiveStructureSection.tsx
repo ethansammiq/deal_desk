@@ -5,7 +5,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Plus, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
-import { useQuery } from "@tanstack/react-query";
+import { useFinancialData } from "@/hooks/useFinancialData";
 import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { IncentiveDisplayTable } from "@/components/ui/incentive-display-table";
@@ -50,20 +50,11 @@ export function IncentiveStructureSection({
   advertiserName,
   agencyName,
 }: IncentiveStructureSectionProps) {
-  // Fetch agencies and advertisers for calculation service
-  const agenciesQuery = useQuery<any[]>({ 
-    queryKey: ["/api/agencies"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
-  const advertisersQuery = useQuery<any[]>({ 
-    queryKey: ["/api/advertisers"],
-    retry: 3,
-    staleTime: 60000, // 1 minute
-  });
+  // ✅ MIGRATED: Use shared financial data hook
+  const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
   
-  // Use shared calculation service with actual data
-  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
+  // Use shared calculation service with clean data arrays
+  const { calculationService } = useDealCalculations(advertisersData, agenciesData);
 
   // ✅ MIGRATED: Using centralized useTierManagement hook
   const tierManager = useTierManagement({
@@ -85,8 +76,8 @@ export function IncentiveStructureSection({
   // ✅ FIXED: Use dynamic data from calculation service instead of hardcoded value
   const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
 
-  // Show loading state while data is being fetched
-  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+  // ✅ SIMPLIFIED: Use shared loading/error states
+  if (isLoading) {
     return (
       <FinancialSection title="Incentive Structure">
         <div className="text-center py-8">
@@ -96,8 +87,7 @@ export function IncentiveStructureSection({
     );
   }
 
-  // Show error state if data fetch fails
-  if (agenciesQuery.error || advertisersQuery.error) {
+  if (hasError) {
     return (
       <FinancialSection title="Incentive Structure">
         <div className="text-center py-8">
