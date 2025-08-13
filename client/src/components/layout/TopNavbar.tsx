@@ -48,10 +48,10 @@ export function TopNavbar() {
             {/* Navigation Links - Each with fixed width */}
             <nav className="hidden md:flex md:space-x-2 flex-1 justify-center">
               {/* Each nav item has fixed width to prevent shifting */}
-              <Link href="/">
+              <Link href="/dashboard">
                 <div className={cn(
                   "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/" 
+                  (location === "/" || location === "/dashboard" || location === "/deals")
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
@@ -134,10 +134,10 @@ export function TopNavbar() {
               Commercial Deal Desk
             </h2>
           </div>
-          <Link href="/">
+          <Link href="/dashboard">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              location === "/" 
+              (location === "/" || location === "/dashboard" || location === "/deals")
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
