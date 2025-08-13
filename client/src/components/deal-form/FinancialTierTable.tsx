@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
@@ -76,14 +77,16 @@ export function FinancialTierTable({
           Add Tier
         </Button>
       </div>
-            {/* Info banner */}
-            <div className="p-3 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800 mb-4">
-              <Info className="h-4 w-4 inline mr-2" />
-              {isFlat 
-                ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
-                : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
-              }
-            </div>
+            {/* Info banner - using Alert component for consistency */}
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                {isFlat 
+                  ? "This section shows revenue targets and profitability metrics for your flat commit deal. Add Tier is disabled for flat commit structures."
+                  : "This section details revenue targets, gross margin percentages, and calculated profitability metrics for each tier. Key metrics include Revenue Growth Rate and Gross Margin Growth Rate compared to last year's performance."
+                }
+              </AlertDescription>
+            </Alert>
 
           <FinancialTable>
             <FinancialTableColGroup dealTiers={dealTiers} />
