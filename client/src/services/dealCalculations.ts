@@ -44,16 +44,16 @@ export class DealCalculationService {
   getPreviousYearMargin(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearMargin || 35; // Default value as fallback (35%)
+      return advertiser?.previousYearMargin || 0.35; // Default value as fallback (0.35 = 35%)
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearMargin || 35; // Default value as fallback (35%)
+      return agency?.previousYearMargin || 0.35; // Default value as fallback (0.35 = 35%)
     }
 
-    return 35; // Default value as fallback (35%)
+    return 0.35; // Default value as fallback (0.35 = 35%)
   }
 
   /**
@@ -61,8 +61,8 @@ export class DealCalculationService {
    */
   getPreviousYearGrossProfit(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const previousValue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    const previousMarginPercent = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
-    return previousValue * (previousMarginPercent / 100);
+    const previousMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+    return previousValue * previousMarginDecimal; // Now using decimal format directly
   }
 
   /**
@@ -150,13 +150,14 @@ export class DealCalculationService {
    * Calculate gross margin growth rate for a tier
    */
   calculateGrossMarginGrowthRate(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
-    const previousYearMargin = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
-    const currentMargin = (tier.annualGrossMargin || 0) * 100; // Convert decimal to percentage
+    const previousYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+    const currentMarginDecimal = tier.annualGrossMargin || 0;
     
-    if (previousYearMargin === 0) return 0;
+    if (previousYearMarginDecimal === 0) return 0;
     
-    // Calculate as percentage change
-    return (currentMargin - previousYearMargin) / previousYearMargin;
+    // Calculate as percentage growth rate: ((Current - Previous) / Previous) × 100
+    const growthRate = (currentMarginDecimal - previousYearMarginDecimal) / previousYearMarginDecimal;
+    return growthRate * 100; // Return as percentage for UI display
   }
 
   /**
@@ -164,16 +165,17 @@ export class DealCalculationService {
    */
   calculateProfitGrowthRate(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const previousYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    const previousYearMargin = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+    const previousYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
     
-    // Calculate previous year profit and current profit
-    const previousYearProfit = previousYearRevenue * (previousYearMargin / 100);
-    const currentProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0); // Already decimal
+    // Calculate previous year profit and current profit (both using decimal margins)
+    const previousYearProfit = previousYearRevenue * previousYearMarginDecimal;
+    const currentProfit = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
 
     // Calculate growth rate
     if (previousYearProfit <= 0) return 0;
     
-    return currentProfit / previousYearProfit - 1;
+    const growthRate = currentProfit / previousYearProfit - 1;
+    return growthRate * 100; // Return as percentage for UI display
   }
 
   /**
@@ -185,7 +187,8 @@ export class DealCalculationService {
     
     if (previousYearRevenue <= 0) return 0;
     
-    return (currentRevenue - previousYearRevenue) / previousYearRevenue;
+    const growthRate = (currentRevenue - previousYearRevenue) / previousYearRevenue;
+    return growthRate * 100; // Return as percentage for UI display
   }
 
   /**
@@ -302,8 +305,8 @@ export class DealCalculationService {
 
     // For last year's adjusted gross profit, we need to do the same calculation with last year's values
     const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
-    const lastYearMarginPercent = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 35%
-    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
+    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
     const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
 
@@ -353,8 +356,8 @@ export class DealCalculationService {
 
     // Calculate last year's adjusted gross margin as a decimal (0.35 in your example)
     const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
-    const lastYearMarginPercent = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 35%
-    const lastYearGrossProfit = lastYearRevenue * (lastYearMarginPercent / 100); // 297,500
+    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
+    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
     const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
     const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;

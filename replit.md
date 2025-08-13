@@ -42,6 +42,12 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Centralized Constants**: Business logic constants are centralized for easy management and consistency.
 
 ## Recent Changes
+- **✅ Unit Consistency & Calculation Fixes Complete** (Aug 2025): Fixed critical calculation errors and standardized data formats
+  - Fixed gross margin growth rate formula to use correct percentage calculation: ((Current - Previous) / Previous) × 100
+  - Standardized all previous year margins to decimal format (0.35 = 35%) for consistency
+  - Updated all growth rate calculations to return percentages for proper UI display
+  - Fixed unit inconsistencies in gross profit calculations throughout the service
+  - Prepared backend integration structure for advertiser/agency data tables
 - **✅ Phase 3: Error Boundaries & Loading States Complete** (Aug 2025): Comprehensive error handling implemented
   - Created production-ready error boundary components (ErrorBoundary, LoadingStates, QueryStateHandler)
   - Built robust loading components (PageLoading, SectionLoading, FormLoading, ErrorState, EmptyState)
@@ -99,7 +105,13 @@ This project is a comprehensive deal desk application designed to streamline com
   - **✅ Service Integration**: Exposed method through useDealCalculations hook
   - **✅ TypeScript Cleanup**: Fixed all LSP diagnostics and interface inconsistencies
   - **✅ Architectural Balance**: Preserved valuable 5% custom input handling code
-- **Phase 7**: Legacy code cleanup in dealCalculations.ts (NEXT)
+- **Phase 7**: Backend Integration for Previous Year Data (NEXT)
+  - **🎯 Next Goal**: Connect advertiser/agency database tables to replace hardcoded values
+  - **🔄 Data Flow**: Step 1 client selection → Step 3 previous year data population 
+  - **📊 Structure**: Two backend tables (advertiser, agency) with previousYearRevenue, previousYearMargin, previousYearProfit
+- **Phase 8**: Tier 0 Architecture Evaluation (FUTURE)
+  - **🤔 Concept**: Treat previous year as "tier 0" for unified data structure
+  - **⚖️ Trade-offs**: Elegant unified interface vs increased architectural complexity
 - **Phase 5**: Incentive Data Structure Consolidation ✅ COMPLETE
   - **✅ SelectedIncentive Eliminated**: Removed from useIncentiveSelection.ts and incentive-data.tsx
   - **✅ TierIncentive Eliminated**: Removed redundant percentage-based calculations
