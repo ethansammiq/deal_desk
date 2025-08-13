@@ -783,7 +783,7 @@ export default function SubmitDeal() {
                 setDealStructure={setDealStructure}
                 nextStep={nextStep}
                 layout="cards"
-                includeEmail={true}
+                includeEmail={false}
                 showNavigation={true}
               />
             )}
