@@ -24,6 +24,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DealTypeCardSelector } from "@/components/shared/DealTypeCardSelector";
 import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
+import { AdvertiserData, AgencyData } from "@shared/types";
 
 // Enhanced interface to support all form contexts (BasicDealInfo + DealDetails)
 interface DealDetailsFormValues {
@@ -43,36 +44,6 @@ interface DealDetailsFormValues {
   
   // Allow additional fields for different form types
   [key: string]: any;
-}
-
-// Production-ready interfaces - name-based lookups only
-interface AgencyData {
-  name: string;  // Primary identifier for lookups
-  type: string;  // "holding_company" | "independent"
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface AdvertiserData {
-  name: string;  // Primary identifier for lookups
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 interface DealDetailsSectionProps {
@@ -186,7 +157,7 @@ export function DealDetailsSection({
                   const start = new Date(startDate);
                   const end = new Date(endDate);
                   const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-                  if (monthsDiff !== parseInt(field.value || "0")) {
+                  if (monthsDiff !== parseInt(String(field.value) || "0")) {
                     field.onChange(monthsDiff.toString());
                   }
                 }
@@ -239,13 +210,13 @@ export function DealDetailsSection({
                 <FormControl>
                   <Input
                     type="date"
-                    value={field.value || ""}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value || "")}
                     onChange={(e) => {
                       const dateString = e.target.value;
                       field.onChange(dateString);
                       
                       // Auto-update end date if contract term is set
-                      const contractTermMonths = parseInt(form.getValues("contractTermMonths") || "0");
+                      const contractTermMonths = parseInt(String(form.getValues("contractTermMonths")) || "0");
                       if (dateString && contractTermMonths > 0) {
                         const startDate = new Date(dateString);
                         startDate.setMonth(startDate.getMonth() + contractTermMonths);
@@ -273,7 +244,7 @@ export function DealDetailsSection({
                 <FormControl>
                   <Input
                     type="date"
-                    value={field.value || ""}
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value || "")}
                     onChange={(e) => {
                       const dateString = e.target.value;
                       field.onChange(dateString);

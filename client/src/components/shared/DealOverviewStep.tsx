@@ -5,24 +5,8 @@ import { ClientInfoSection } from "@/components/shared/ClientInfoSection";
 import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { CardContent } from "@/components/ui/card";
 
-interface AgencyData {
-  id: string | number;
-  name: string;
-  type: string;
-  tier?: string;
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-}
-
-interface AdvertiserData {
-  id: string | number;
-  name: string;
-  tier?: string;
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-}
+// Import shared type definitions - name-based primary identifiers
+import { AdvertiserData, AgencyData } from "@shared/types";
 
 interface DealOverviewStepProps {
   form: UseFormReturn<any>;

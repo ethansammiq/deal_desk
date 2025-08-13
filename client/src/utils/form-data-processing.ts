@@ -3,41 +3,8 @@
  * Handles type conversions, data transformations, and business logic consistently across forms
  */
 
-export interface FormDataWithNumbers {
-  contractTermMonths?: string | number;
-  growthAmbition?: string | number;
-  [key: string]: any;
-}
-
-// Production-ready interfaces - name-based lookups only
-export interface AdvertiserData {
-  name: string;  // Primary identifier for lookups
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface AgencyData {
-  name: string;  // Primary identifier for lookups
-  type: string;  // "holding_company" | "independent"
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Import shared type definitions
+import { AdvertiserData, AgencyData, FormDataWithNumbers } from "@shared/types";
 
 /**
  * Converts string fields to numbers for backend compatibility

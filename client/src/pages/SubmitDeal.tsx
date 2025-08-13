@@ -79,10 +79,9 @@ import {
   processDealSubmissionData, 
   calculateContractTerm, 
   getRegionFromSelection, 
-  createPreFillMapping,
-  type AdvertiserData,
-  type AgencyData 
+  createPreFillMapping
 } from "@/utils/form-data-processing";
+import { AdvertiserData, AgencyData } from "@shared/types";
 // ❌ ELIMINATED: SelectedIncentive, TierIncentive, useIncentiveSelection - using DealTier only
 import { incentiveCategories } from "@/lib/incentive-data";
 

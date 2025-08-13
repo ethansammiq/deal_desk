@@ -45,6 +45,7 @@ import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { processDealScopingData } from "@/utils/form-data-processing";
+import { AdvertiserData, AgencyData } from "@shared/types";
 
 // Schema for deal scoping requests
 // Simplified schema - fields now handled by shared components
@@ -53,23 +54,6 @@ const dealScopingSchema = z.object({
 }).passthrough();
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
-
-interface AdvertiserData {
-  id: number;
-  name: string;
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-}
-
-interface AgencyData {
-  id: number;
-  name: string;
-  type: string;
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-}
 
 export default function RequestSupport() {
   const { toast } = useToast();

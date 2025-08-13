@@ -17,35 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
-// Production-ready interfaces - name-based lookups only  
-interface AgencyData {
-  name: string;  // Primary identifier for lookups
-  type: string;  // "holding_company" | "independent"
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface AdvertiserData {
-  name: string;  // Primary identifier for lookups
-  region: string;
-  previousYearRevenue?: number;
-  previousYearMargin?: number;
-  previousYearProfit?: number;
-  previousYearIncentiveCost?: number;
-  previousYearClientValue?: number;
-  // Optional fields for development/testing (not relied upon in production)
-  id?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Import shared type definitions
+import { AdvertiserData, AgencyData } from "@shared/types";
 
 interface ClientInfoSectionProps {
   form: UseFormReturn<any>;
