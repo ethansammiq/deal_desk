@@ -44,5 +44,14 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Performance Optimization**: Includes TanStack Query optimization, component memoization, hook optimization, and lazy loading for improved performance.
 - **Data Structure Consolidation**: Unified data structures across the application, particularly for incentives and financial calculations, ensuring a single source of truth.
 
+## Current Development Priority
+- **Phase 7**: Deal Flow & Status Management Implementation (CURRENT PRIORITY)
+  - **Critical Need**: Implement 9-status workflow (Scoping → Submitted → Under Review → Negotiating → Approved → Legal Review → Contract Sent → Signed → Lost)
+  - **User Roles**: Seller, Approver, Legal Team with role-based permissions and dashboard views
+  - **Form Connection**: Direct conversion from deal scoping request to deal submission with pre-filled data
+  - **Action Centers**: Role-specific dashboards with workflow management capabilities
+  - **Lost Deal Tracking**: Granular categorization (Commercial, Product, Timing, No Response, Internal, Others)
+  - **Future Integration**: Linksquare contract management integration for Legal Review and Contract Sent statuses
+
 ## External Dependencies
 - **Anthropic AI (Claude)**: Integrated for intelligent deal assessment, analysis, and recommendations.
