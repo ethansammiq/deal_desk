@@ -893,7 +893,7 @@ export default function SubmitDeal() {
                               <SelectContent>
                                 {advertisers.map((advertiser) => (
                                   <SelectItem
-                                    key={advertiser?.id}
+                                    key={advertiser?.name}
                                     value={advertiser?.name}
                                   >
                                     {advertiser?.name}
@@ -940,7 +940,7 @@ export default function SubmitDeal() {
                                   )
                                   .map((agency) => (
                                     <SelectItem
-                                      key={agency?.id}
+                                      key={agency?.name}
                                       value={agency?.name}
                                     >
                                       {agency?.name}
