@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
@@ -21,6 +20,7 @@ import {
   GrowthIndicator,
   FinancialTableColGroup
 } from "@/components/ui/financial-table";
+import { FinancialInputField } from "@/components/ui/financial-input-field";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 
 interface FinancialTierTableProps {
@@ -157,19 +157,12 @@ export function FinancialTierTable({
             </FinancialDataCell>
             {dealTiers.map((tier) => (
               <FinancialDataCell key={`revenue-${tier.tierNumber}`}>
-                <div className="flex items-center">
-                  <span className="text-sm text-slate-500 mr-1">$</span>
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={tier.annualRevenue || ""}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                      updateTier(tier.tierNumber, { annualRevenue: value });
-                    }}
-                    className="text-center border-0 bg-transparent p-1 text-sm"
-                  />
-                </div>
+                <FinancialInputField
+                  type="currency"
+                  value={tier.annualRevenue}
+                  onChange={(value) => updateTier(tier.tierNumber, { annualRevenue: value })}
+                  placeholder="0.00"
+                />
               </FinancialDataCell>
             ))}
           </tr>
@@ -187,22 +180,14 @@ export function FinancialTierTable({
             </FinancialDataCell>
             {dealTiers.map((tier) => (
               <FinancialDataCell key={`margin-${tier.tierNumber}`}>
-                <div className="flex items-center">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    placeholder="0.00"
-                    value={((tier.annualGrossMargin || 0) * 100).toString() || ""}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? 0 : parseFloat(e.target.value) / 100;
-                      updateTier(tier.tierNumber, { annualGrossMargin: value });
-                    }}
-                    className="text-center border-0 bg-transparent p-1 text-sm"
-                  />
-                  <span className="text-sm text-slate-500 ml-1">%</span>
-                </div>
+                <FinancialInputField
+                  type="percentage"
+                  value={tier.annualGrossMargin}
+                  onChange={(value) => updateTier(tier.tierNumber, { annualGrossMargin: value })}
+                  placeholder="0.00"
+                  min={0}
+                  max={100}
+                />
               </FinancialDataCell>
             ))}
           </tr>
