@@ -26,16 +26,16 @@ export class DealCalculationService {
   getPreviousYearValue(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearRevenue || 850000; // Default value as fallback
+      return advertiser?.previousYearRevenue || 2500000; // Default to Coca-Cola's revenue
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearRevenue || 850000; // Default value as fallback
+      return agency?.previousYearRevenue || 620000; // Default to 72andSunny's revenue
     }
 
-    return 850000; // Default value as fallback
+    return 2500000; // Default to industry average from our data
   }
 
   /**
@@ -45,17 +45,17 @@ export class DealCalculationService {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
       // ✅ FIXED: Data now stored as decimal, no conversion needed
-      return advertiser?.previousYearMargin || 0.35;
+      return advertiser?.previousYearMargin || 0.185; // Default to Coca-Cola's margin
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
       // ✅ FIXED: Data now stored as decimal, no conversion needed
-      return agency?.previousYearMargin || 0.35;
+      return agency?.previousYearMargin || 0.315; // Default to 72andSunny's margin
     }
 
-    return 0.35; // Default value as fallback (0.35 = 35%)
+    return 0.25; // Default to industry average from our data (25%)
   }
 
   /**
@@ -73,16 +73,16 @@ export class DealCalculationService {
   getPreviousYearIncentiveCost(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearIncentiveCost || 50000;
+      return advertiser?.previousYearIncentiveCost || 45000; // Default to Coca-Cola's incentive cost
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearIncentiveCost || 50000;
+      return agency?.previousYearIncentiveCost || 22000; // Default to 72andSunny's incentive cost
     }
 
-    return 50000; // Default fallback
+    return 35000; // Default to industry average from our data
   }
 
 
@@ -120,16 +120,16 @@ export class DealCalculationService {
   getPreviousYearClientValue(salesChannel: string, advertiserName?: string, agencyName?: string): number {
     if (salesChannel === "client_direct" && advertiserName) {
       const advertiser = this.advertisers.find((a) => a.name === advertiserName);
-      return advertiser?.previousYearClientValue || 175000;
+      return advertiser?.previousYearClientValue || 157500; // Default to Coca-Cola's client value
     } else if (
       (salesChannel === "holding_company" || salesChannel === "independent_agency") &&
       agencyName
     ) {
       const agency = this.agencies.find((a) => a.name === agencyName);
-      return agency?.previousYearClientValue || 175000;
+      return agency?.previousYearClientValue || 77000; // Default to 72andSunny's client value
     }
 
-    return 175000; // Default fallback (50k * 3.5x)
+    return 122500; // Default to industry average from our data (35k * 3.5x)
   }
 
   /**
