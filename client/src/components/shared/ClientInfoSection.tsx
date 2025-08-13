@@ -17,23 +17,34 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
+// Production-ready interfaces - name-based lookups only  
 interface AgencyData {
-  id: string | number;
-  name: string;
-  type: string;
-  tier?: string;
+  name: string;  // Primary identifier for lookups
+  type: string;  // "holding_company" | "independent"
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AdvertiserData {
-  id: string | number;
-  name: string;
-  tier?: string;
+  name: string;  // Primary identifier for lookups
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface ClientInfoSectionProps {
@@ -163,21 +174,25 @@ export function ClientInfoSection({
                 <FormLabel>
                   Advertiser Name <span className="text-red-500">*</span>
                 </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter advertiser name (e.g., Nike, Amazon, Coca-Cola)"
-                    value={field.value || ""}
-                    onChange={field.onChange}
-                    list="advertisers-datalist"
-                  />
-                </FormControl>
-                <datalist id="advertisers-datalist">
-                  {advertisers.map((advertiser) => (
-                    <option key={advertiser.id} value={advertiser.name} />
-                  ))}
-                </datalist>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select advertiser" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {advertisers.map((advertiser) => (
+                      <SelectItem key={advertiser.name} value={advertiser.name}>
+                        {advertiser.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormDescription>
-                  Type any advertiser name. Historical data will be loaded if available.
+                  Historical data will be loaded automatically when selected
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -216,14 +231,14 @@ export function ClientInfoSection({
                         return false;
                       })
                       .map((agency) => (
-                        <SelectItem key={agency.id} value={agency.name}>
+                        <SelectItem key={agency.name} value={agency.name}>
                           {agency.name}
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  The agency for this deal
+                  Historical data will be loaded automatically when selected
                 </FormDescription>
                 <FormMessage />
               </FormItem>

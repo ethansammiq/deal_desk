@@ -45,25 +45,32 @@ interface DealDetailsFormValues {
   [key: string]: any;
 }
 
+// Production-ready interfaces - name-based lookups only
 interface AgencyData {
-  id: number;  // Always numeric from database serial
-  name: string;
-  type: string;
-  tier?: string;
+  name: string;  // Primary identifier for lookups
+  type: string;  // "holding_company" | "independent"
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
 interface AdvertiserData {
-  id: number;  // Always numeric from database serial
-  name: string;
-  tier?: string;
+  name: string;  // Primary identifier for lookups
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
   createdAt?: string;
   updatedAt?: string;
 }

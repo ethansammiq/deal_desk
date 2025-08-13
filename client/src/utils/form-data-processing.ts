@@ -9,21 +9,34 @@ export interface FormDataWithNumbers {
   [key: string]: any;
 }
 
+// Production-ready interfaces - name-based lookups only
 export interface AdvertiserData {
-  id: string | number;
-  name: string;
+  name: string;  // Primary identifier for lookups
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AgencyData {
-  id: string | number;
-  name: string;
-  type: string;
+  name: string;  // Primary identifier for lookups
+  type: string;  // "holding_company" | "independent"
   region: string;
   previousYearRevenue?: number;
   previousYearMargin?: number;
+  previousYearProfit?: number;
+  previousYearIncentiveCost?: number;
+  previousYearClientValue?: number;
+  // Optional fields for development/testing (not relied upon in production)
+  id?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
