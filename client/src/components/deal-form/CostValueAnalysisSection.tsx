@@ -16,17 +16,23 @@ import {
 
 interface CostValueAnalysisSectionProps {
   dealTiers: DealTier[];
+  salesChannel?: string;
+  advertiserName?: string;
+  agencyName?: string;
 }
 
 export function CostValueAnalysisSection({
-  dealTiers
+  dealTiers,
+  salesChannel = "independent_agency",
+  advertiserName,
+  agencyName
 }: CostValueAnalysisSectionProps) {
   // Use shared calculation service for all calculations
   const { calculationService } = useDealCalculations();
   
-  // Get consistent baseline values from shared service
-  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost();
-  const lastYearClientValue = calculationService.getPreviousYearClientValue();
+  // Get consistent baseline values from shared service with dynamic data
+  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
+  const lastYearClientValue = calculationService.getPreviousYearClientValue(salesChannel, advertiserName, agencyName);
 
   return (
     <FinancialSection title="Cost & Value Analysis">
@@ -74,7 +80,7 @@ export function CostValueAnalysisSection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const growthRate = calculationService.calculateIncentiveCostGrowthRate(tier);
+              const growthRate = calculationService.calculateIncentiveCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
               return (
                 <FinancialDataCell key={`growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={growthRate} invertColors={true} />
@@ -114,7 +120,7 @@ export function CostValueAnalysisSection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const valueGrowthRate = calculationService.calculateClientValueGrowthRateFromIncentives(tier);
+              const valueGrowthRate = calculationService.calculateClientValueGrowthRateFromIncentives(tier, salesChannel, advertiserName, agencyName);
               return (
                 <FinancialDataCell key={`value-growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={valueGrowthRate} />

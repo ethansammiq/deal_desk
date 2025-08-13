@@ -124,7 +124,7 @@ function FinancialSummarySection({
               />
             </FinancialDataCell>
             <FinancialDataCell>
-              {formatCurrency(lastYearGrossProfit)}
+              {formatCurrency(calculationService.getPreviousYearAdjustedGrossProfit(salesChannel, advertiserName, agencyName))}
             </FinancialDataCell>
             {dealTiers.map((tier) => {
               // Use new consolidated approach: calculate adjusted profit directly from tier data

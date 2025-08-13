@@ -1378,6 +1378,9 @@ export default function SubmitDeal() {
                   {/* Cost & Value Analysis Section */}
                   <CostValueAnalysisSection
                     dealTiers={dealTiers}
+                    salesChannel={form.watch("salesChannel") || "independent_agency"}
+                    advertiserName={form.watch("advertiserName")}
+                    agencyName={form.watch("agencyName")}
                   />
 
                   {/* Financial Summary Section */}
