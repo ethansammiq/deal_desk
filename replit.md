@@ -42,6 +42,12 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Centralized Constants**: Business logic constants are centralized for easy management and consistency.
 
 ## Recent Changes
+- **✅ Variable Naming Consistency Complete** (Aug 2025): Systematically updated all shared components, hooks, and services for consistent variable naming
+  - Fixed all LSP diagnostics by updating advertiser/agency variable access with proper null safety guards
+  - Updated useTierManagement hook to use correct DealTier interface with incentives array
+  - Fixed FinancialSummarySection to import DealTier from correct source (@/hooks/useDealTiers instead of @shared/schema)
+  - Ensured type safety with proper array type checks for advertisersQuery.data and agenciesQuery.data
+  - All components now consistently use advertiserName and agencyName throughout the codebase
 - **✅ Growth Rate Calculations & Color Coding Fixed** (Aug 2025): Completed comprehensive calculation accuracy and UI consistency improvements
   - Fixed all growth rate calculations (revenue, profit, margin) to use dynamic salesChannel/advertiser/agency parameters instead of hardcoded values
   - Implemented correct color coding: cost increases show RED (bad), revenue/profit increases show GREEN (good) using invertColors prop

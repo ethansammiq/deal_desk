@@ -1,4 +1,4 @@
-import { DealTier } from "@shared/schema";
+import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "../../hooks/useDealCalculations";
 import { useQuery } from "@tanstack/react-query";
 import { memo } from "react";
@@ -42,7 +42,10 @@ function FinancialSummarySection({
   });
   
   // Use shared calculation service with query data
-  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
+  const { calculationService } = useDealCalculations(
+    Array.isArray(advertisersQuery.data) ? advertisersQuery.data : [], 
+    Array.isArray(agenciesQuery.data) ? agenciesQuery.data : []
+  );
 
   // Use shared service for all calculations (no duplicate logic)
 

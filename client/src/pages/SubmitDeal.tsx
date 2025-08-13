@@ -1555,7 +1555,7 @@ export default function SubmitDeal() {
                                       advertiser?.previousYearRevenue !== undefined
                                     ) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue || 0;
+                                        advertiser?.previousYearRevenue || 0;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1567,7 +1567,7 @@ export default function SubmitDeal() {
                                     );
                                     if (agency?.previousYearRevenue !== undefined) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue || 0;
+                                        agency?.previousYearRevenue || 0;
                                     }
                                   }
 
@@ -1638,7 +1638,7 @@ export default function SubmitDeal() {
                                       advertiser?.previousYearMargin !== undefined
                                     ) {
                                       previousYearMargin =
-                                        (advertiser.previousYearMargin || 0) * 100;
+                                        (advertiser?.previousYearMargin || 0) * 100;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1650,7 +1650,7 @@ export default function SubmitDeal() {
                                     );
                                     if (agency?.previousYearMargin !== undefined) {
                                       previousYearMargin =
-                                        (agency.previousYearMargin || 0) * 100;
+                                        (agency?.previousYearMargin || 0) * 100;
                                     }
                                   }
 
@@ -1727,10 +1727,10 @@ export default function SubmitDeal() {
                                     );
                                     if (advertiser) {
                                       previousYearRevenue =
-                                        advertiser.previousYearRevenue ||
+                                        advertiser?.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        (advertiser.previousYearMargin || 0) * 100 || previousYearMargin;
+                                        (advertiser?.previousYearMargin || 0) * 100 || previousYearMargin;
                                     }
                                   } else if (
                                     (salesChannel === "holding_company" ||
@@ -1742,10 +1742,10 @@ export default function SubmitDeal() {
                                     );
                                     if (agency) {
                                       previousYearRevenue =
-                                        agency.previousYearRevenue ||
+                                        agency?.previousYearRevenue ||
                                         previousYearRevenue;
                                       previousYearMargin =
-                                        (agency.previousYearMargin || 0) * 100 || previousYearMargin;
+                                        (agency?.previousYearMargin || 0) * 100 || previousYearMargin;
                                     }
                                   }
 

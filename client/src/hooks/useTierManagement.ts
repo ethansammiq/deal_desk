@@ -23,11 +23,7 @@ export function useTierManagement({
       tierNumber: newTierNumber,
       annualRevenue: 0,
       annualGrossMargin: 0.35, // 35% as decimal
-      categoryName: "Financial",
-      subCategoryName: "Discounts", 
-      incentiveOption: "Volume Discount",
-      incentiveValue: 0,
-      incentiveNotes: ""
+      incentives: []
     };
     const updatedTiers = [...dealTiers, newTier];
     setDealTiers(updatedTiers);
