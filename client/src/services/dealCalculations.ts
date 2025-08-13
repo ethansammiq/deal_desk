@@ -2,7 +2,7 @@
 import { DealFinancialSummary } from "@/lib/utils";
 
 // Import DealTier from the central hook
-import { DealTier } from "@/hooks/useDealTiers";
+import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
 
 // ❌ ELIMINATED: Legacy SelectedIncentive and TierIncentive interfaces  
 // Now using DealTier as single source of truth for all incentive data
@@ -133,17 +133,17 @@ export class DealCalculationService {
     const grossProfit = revenue * marginDecimal; // Already a decimal (0.355 for 35.5%)
     
     // Subtract incentive cost for this tier
-    const incentiveCost = tier.incentiveValue || 0;
+    const incentiveCost = getTotalIncentiveValue(tier);
     return grossProfit - incentiveCost;
   }
 
   /**
    * Calculate total incentive cost for a tier
    */
-  // ✅ FIXED: Using DealTier.incentiveValue directly (Phase 5 consolidation)
+  // ✅ FIXED: Using getTotalIncentiveValue for array-based incentives
   calculateTierIncentiveCost(tier: DealTier): number {
-    // Direct access to incentive value from DealTier (single source of truth)
-    return tier.incentiveValue || 0;
+    // Sum all incentive values from the incentives array
+    return getTotalIncentiveValue(tier);
   }
 
   /**
@@ -208,7 +208,7 @@ export class DealCalculationService {
     dealTiers.forEach((tier) => {
       totalAnnualRevenue += tier.annualRevenue || 0;
       totalGrossMargin += ((tier.annualRevenue || 0) * (tier.annualGrossMargin || 0)); // Already decimal
-      totalIncentiveValue += tier.incentiveValue || 0; // Direct from DealTier
+      totalIncentiveValue += getTotalIncentiveValue(tier); // Sum from incentives array
     });
 
     const averageGrossMarginPercent = totalAnnualRevenue > 0 ? (totalGrossMargin / totalAnnualRevenue) * 100 : 0;
@@ -300,7 +300,7 @@ export class DealCalculationService {
     // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
-    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     const currentAdjustedProfit = grossProfit - incentiveCost;
 
     // For last year's adjusted gross profit, we need to do the same calculation with last year's values
@@ -321,7 +321,7 @@ export class DealCalculationService {
     // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
-    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     const adjustedGrossProfit = grossProfit - incentiveCost;
 
     if (revenue === 0) return 0;
@@ -334,7 +334,7 @@ export class DealCalculationService {
   calculateAdjustedGrossProfit(tier: DealTier): number {
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
-    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     return grossProfit - incentiveCost;
   }
 
@@ -350,7 +350,7 @@ export class DealCalculationService {
     // Calculate current tier's adjusted gross margin as a decimal
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
-    const incentiveCost = tier.incentiveValue || 0; // Direct from DealTier
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     const adjustedGrossProfit = grossProfit - incentiveCost;
     const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
 

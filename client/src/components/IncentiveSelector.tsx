@@ -6,8 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { incentiveCategories } from "@/lib/incentive-data";
-import { DealTier } from "@/hooks/useDealTiers";
-import { incentiveSelectionToDealTier } from "@/lib/incentive-mapping";
+import { DealTier, TierIncentive } from "@/hooks/useDealTiers";
 
 interface IncentiveSelectorProps {
   dealTiers: DealTier[];
@@ -55,22 +54,24 @@ export function IncentiveSelector({
       return; // Basic validation
     }
 
-    // Convert selection to DealTier field updates
-    const incentiveFields = incentiveSelectionToDealTier(selectedCategory, selectedSubCategory, selectedOption);
-    
-    // Update all selected tiers with the incentive and their respective values
+    // Update all selected tiers with the new incentive added to their incentives array
     const updatedTiers = dealTiers.map(tier => {
       const tierValue = tierValues[tier.tierNumber] || 0;
       if (tierValue > 0) {
+        // Create new incentive object
+        const newIncentive: TierIncentive = {
+          id: `${Date.now()}-${tier.tierNumber}`, // Simple unique ID
+          category: selectedCategory,
+          subCategory: selectedSubCategory,
+          option: selectedOption,
+          value: tierValue,
+          notes: notes || undefined
+        };
+
+        // Add to incentives array instead of overwriting
         return {
           ...tier,
-          ...incentiveFields,
-          // ACCUMULATE incentive values instead of overwriting
-          incentiveValue: (tier.incentiveValue || 0) + tierValue,
-          // CONCATENATE notes if there are existing notes
-          incentiveNotes: tier.incentiveNotes 
-            ? `${tier.incentiveNotes}; ${notes}` 
-            : notes
+          incentives: [...tier.incentives, newIncentive]
         };
       }
       return tier;

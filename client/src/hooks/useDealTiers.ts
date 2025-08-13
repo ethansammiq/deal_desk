@@ -1,7 +1,17 @@
 import { useState, useCallback, useMemo, memo } from 'react';
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from '@/config/businessConstants';
 
-// Unified tier interface - matches database schema exactly
+// Individual incentive within a tier
+export interface TierIncentive {
+  id?: string;                              // Unique ID for React keys (UUID)
+  category: string;                         // "Financial", "Resources", etc.
+  subCategory: string;                      // "Discounts", "Bonuses", etc.
+  option: string;                          // "Volume Discount", "Growth Bonus", etc.
+  value: number;                           // USD amount
+  notes?: string;                          // Optional notes
+}
+
+// Unified tier interface - now supports multiple incentives
 export interface DealTier {
   // Database fields (optional for new tiers)
   id?: number;
@@ -11,17 +21,20 @@ export interface DealTier {
   tierNumber: number;
   annualRevenue: number;                    // USD
   annualGrossMargin: number;                // Decimal (0.355 for 35.5%)
-  categoryName: string;                     // Display name: "Financial", "Resources", etc.
-  subCategoryName: string;                  // Display name: "Discounts", "Bonuses", etc.
-  incentiveOption: string;                  // Selected option: "Volume Discount", "Growth Bonus", etc.
-  incentiveValue: number;                   // USD amount
-  
-  // Optional field
-  incentiveNotes?: string;
+  incentives: TierIncentive[];              // ✅ Array of incentives per tier
   
   // System fields
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+// Helper functions for computed properties
+export function getTotalIncentiveValue(tier: DealTier): number {
+  return tier.incentives.reduce((sum, incentive) => sum + incentive.value, 0);
+}
+
+export function getIncentiveNotes(tier: DealTier): string {
+  return tier.incentives.map(i => i.notes).filter(Boolean).join('; ');
 }
 
 export interface TierValidationError {
@@ -47,16 +60,12 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
     if (initialTiers.length > 0) {
       return initialTiers;
     }
-    // Create default first tier with required fields
+    // Create default first tier with empty incentives array
     return [{
       tierNumber: 1,
       annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
       annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-      categoryName: "Financial", // Display name from incentive library
-      subCategoryName: "Discounts", // Display name from incentive library
-      incentiveOption: "Volume Discount", // Selected option from incentive library
-      incentiveValue: 0,
-      incentiveNotes: "",
+      incentives: [] // ✅ Start with empty incentives array
     }];
   });
 
@@ -72,11 +81,7 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         tierNumber: newTierNumber,
         annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
         annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-        categoryName: "Financial", // ✅ FIXED: Use new field names consistently
-        subCategoryName: "Discounts", // ✅ FIXED: Use new field names consistently  
-        incentiveOption: "Volume Discount", // ✅ FIXED: Use new field names consistently
-        incentiveValue: 0,
-        incentiveNotes: "",
+        incentives: [] // ✅ Start with empty incentives array
       };
 
       return [...prev, newTier];
@@ -115,10 +120,10 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
       const updatedTier = { ...tier, ...updates };
 
-      // Auto-calculate incentive value from percentage (if legacy fields provided)
+      // Auto-calculate incentive value from percentage (if needed)
       if (annualRevenue && updatedTier.annualRevenue) {
-        // Ensure consistency between value and any legacy calculations
-        updatedTier.incentiveValue = updatedTier.incentiveValue || 0;
+        // Ensure incentives array exists
+        updatedTier.incentives = updatedTier.incentives || [];
       }
 
       return updatedTier;
@@ -139,11 +144,7 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         tierNumber: 1,
         annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
         annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
-        incentiveCategory: INCENTIVE_CONSTANTS.DEFAULT_CATEGORY,
-        incentiveSubCategory: INCENTIVE_CONSTANTS.DEFAULT_SUB_CATEGORY,
-        specificIncentive: INCENTIVE_CONSTANTS.DEFAULT_SPECIFIC_INCENTIVE,
-        incentiveValue: 0,
-        incentiveNotes: "",
+        incentives: []
       }]);
     }
   }, [initialTiers]);
@@ -171,37 +172,40 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
         });
       }
 
-      // Validate incentive value
-      if (tier.incentiveValue < 0) {
-        errors.push({
-          tierNumber: tier.tierNumber,
-          field: 'incentiveValue',
-          message: 'Incentive value cannot be negative'
-        });
-      }
+      // Validate incentives array
+      if (tier.incentives) {
+        tier.incentives.forEach((incentive, index) => {
+          if (incentive.value < 0) {
+            errors.push({
+              tierNumber: tier.tierNumber,
+              field: `incentives[${index}].value`,
+              message: 'Incentive value cannot be negative'
+            });
+          }
 
-      // Validate required incentive fields
-      if (!tier.incentiveCategory) {
-        errors.push({
-          tierNumber: tier.tierNumber,
-          field: 'incentiveCategory',
-          message: 'Incentive category is required'
-        });
-      }
+          if (!incentive.category) {
+            errors.push({
+              tierNumber: tier.tierNumber,
+              field: `incentives[${index}].category`,
+              message: 'Incentive category is required'
+            });
+          }
 
-      if (!tier.incentiveSubCategory) {
-        errors.push({
-          tierNumber: tier.tierNumber,
-          field: 'incentiveSubCategory',
-          message: 'Incentive subcategory is required'
-        });
-      }
+          if (!incentive.subCategory) {
+            errors.push({
+              tierNumber: tier.tierNumber,
+              field: `incentives[${index}].subCategory`,
+              message: 'Incentive subcategory is required'
+            });
+          }
 
-      if (!tier.specificIncentive) {
-        errors.push({
-          tierNumber: tier.tierNumber,
-          field: 'specificIncentive',
-          message: 'Specific incentive is required'
+          if (!incentive.option) {
+            errors.push({
+              tierNumber: tier.tierNumber,
+              field: `incentives[${index}].option`,
+              message: 'Incentive option is required'
+            });
+          }
         });
       }
     });
@@ -211,7 +215,7 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   // Computed values
   const totalIncentiveValue = useMemo(() => {
-    return tiers.reduce((sum, tier) => sum + tier.incentiveValue, 0);
+    return tiers.reduce((sum, tier) => sum + getTotalIncentiveValue(tier), 0);
   }, [tiers]);
 
   const totalAnnualRevenue = useMemo(() => {
