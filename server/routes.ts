@@ -235,24 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Conversion endpoint - convert scoping request to deal
-  router.post("/deal-scoping-requests/:id/convert", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid scoping request ID" });
-      }
 
-      // For Phase 7B, implement conversion logic here (placeholder for now)
-      // This functionality will be implemented in a future phase
-      return res.status(501).json({ 
-        message: "Conversion functionality not yet implemented in Phase 7B" 
-      });
-    } catch (error) {
-      console.error("Error converting scoping request:", error);
-      res.status(500).json({ message: "Failed to convert scoping request to deal" });
-    }
-  });
   
   router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
     try {
