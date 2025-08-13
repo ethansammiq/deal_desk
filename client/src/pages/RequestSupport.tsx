@@ -91,7 +91,7 @@ export default function RequestSupport() {
       agencyName: "",
       dealType: undefined,
       dealStructure: undefined,
-      contractTermMonths: "",
+      contractTermMonths: 12,
       termStartDate: undefined,
       termEndDate: undefined,
       growthAmbition: 1000000,
@@ -115,9 +115,13 @@ export default function RequestSupport() {
     mutationFn: async (data: DealScopingFormValues) => {
       console.log("Submitting deal scoping request:", data);
 
-      // Add default title for backend compatibility
+      // Type conversion and field preparation for backend compatibility
       const formData = {
         ...data,
+        // Convert string numbers to actual numbers
+        contractTermMonths: data.contractTermMonths ? Number(data.contractTermMonths) : undefined,
+        growthAmbition: Number(data.growthAmbition || 1000000),
+        // Add required backend fields
         requestTitle: "Deal Scoping Request",
         description: "Growth opportunity assessment request",
       };
