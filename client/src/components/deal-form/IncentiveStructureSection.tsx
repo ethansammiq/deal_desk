@@ -55,10 +55,11 @@ export function IncentiveStructureSection({
   // Destructure for backward compatibility
   const { addTier, removeTier, updateTier } = tierManager;
 
-  // Calculate incentive cost directly from DealTier
+  // Calculate incentive cost using the new getTotalIncentiveValue function
   const calculateTierIncentiveCost = (tierNumber: number): number => {
     const tier = dealTiers.find(t => t.tierNumber === tierNumber);
-    return tier?.incentiveValue || 0;
+    if (!tier) return 0;
+    return calculationService.calculateTierIncentiveCost(tier);
   };
 
   // Calculate last year incentive cost (using default)

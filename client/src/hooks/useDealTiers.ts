@@ -30,10 +30,16 @@ export interface DealTier {
 
 // Helper functions for computed properties
 export function getTotalIncentiveValue(tier: DealTier): number {
+  if (!tier.incentives || !Array.isArray(tier.incentives)) {
+    return 0;
+  }
   return tier.incentives.reduce((sum, incentive) => sum + incentive.value, 0);
 }
 
 export function getIncentiveNotes(tier: DealTier): string {
+  if (!tier.incentives || !Array.isArray(tier.incentives)) {
+    return '';
+  }
   return tier.incentives.map(i => i.notes).filter(Boolean).join('; ');
 }
 
@@ -58,7 +64,11 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
 
   const [tiers, setTiers] = useState<DealTier[]>(() => {
     if (initialTiers.length > 0) {
-      return initialTiers;
+      // ✅ MIGRATION: Ensure existing tiers have incentives array initialized
+      return initialTiers.map(tier => ({
+        ...tier,
+        incentives: tier.incentives || [] // Initialize if missing
+      }));
     }
     // Create default first tier with empty incentives array
     return [{
