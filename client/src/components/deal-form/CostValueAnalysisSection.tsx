@@ -1,6 +1,7 @@
 import React from "react";
 import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { useQuery } from "@tanstack/react-query";
 import {
   FinancialSection,
   FinancialTable,
@@ -27,12 +28,46 @@ export function CostValueAnalysisSection({
   advertiserName,
   agencyName
 }: CostValueAnalysisSectionProps) {
-  // Use shared calculation service for all calculations
-  const { calculationService } = useDealCalculations();
+  // Fetch agencies and advertisers for calculation service
+  const agenciesQuery = useQuery({ 
+    queryKey: ["/api/agencies"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  const advertisersQuery = useQuery({ 
+    queryKey: ["/api/advertisers"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  
+  // Use shared calculation service with actual data
+  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
   
   // Get consistent baseline values from shared service with dynamic data
   const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
   const lastYearClientValue = calculationService.getPreviousYearClientValue(salesChannel, advertiserName, agencyName);
+  
+  // Show loading state while data is being fetched
+  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+    return (
+      <FinancialSection title="Cost & Value Analysis">
+        <div className="text-center py-8">
+          <p className="text-slate-500">Loading financial data...</p>
+        </div>
+      </FinancialSection>
+    );
+  }
+  
+  // Show error state if data fetch fails
+  if (agenciesQuery.error || advertisersQuery.error) {
+    return (
+      <FinancialSection title="Cost & Value Analysis">
+        <div className="text-center py-8">
+          <p className="text-red-600">Error loading financial data. Please try again.</p>
+        </div>
+      </FinancialSection>
+    );
+  }
 
   return (
     <FinancialSection title="Cost & Value Analysis">
