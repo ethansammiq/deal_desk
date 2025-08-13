@@ -14,15 +14,15 @@ import { SmartSearch } from "@/components/SmartSearch";
 
 // Lazy load pages for better performance
 const NotFound = lazy(() => import("@/pages/not-found"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
 const HelpResources = lazy(() => import("@/pages/HelpResources"));
 const DealRequests = lazy(() => import("@/pages/DealRequests"));
-const Home = lazy(() => import("@/pages/Home"));
 const RoleDemo = lazy(() => import("@/pages/RoleDemo"));
 const RoleTestingPanel = lazy(() => import("@/components/testing/RoleTestingPanel"));
+
+// Legacy routes disabled - components archived as .legacy files
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -70,9 +70,7 @@ function Router() {
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/role-demo" component={RoleDemo} />
             <Route path="/role-testing" component={RoleTestingPanel} />
-            {/* Legacy routes for reference */}
-            <Route path="/legacy-dashboard" component={Dashboard} />
-            <Route path="/legacy-home" component={Home} />
+            {/* Legacy routes archived - components moved to .legacy files */}
             {/* Fallback to 404 */}
             <Route component={NotFound} />
           </Switch>
