@@ -779,6 +779,61 @@ export class MemStorage implements IStorage {
     this.dealScopingRequests.set(id, updatedRequest);
     return updatedRequest;
   }
+
+  // Deal scoping request conversion methods
+  async convertScopingRequestToDeal(scopingId: number): Promise<{ scopingRequest: DealScopingRequest; deal: Deal } | undefined> {
+    const scopingRequest = this.dealScopingRequests.get(scopingId);
+    if (!scopingRequest) return undefined;
+    
+    // If already converted, return the existing conversion
+    if (scopingRequest.convertedDealId) {
+      const existingDeal = this.deals.get(scopingRequest.convertedDealId);
+      if (existingDeal) {
+        return { scopingRequest, deal: existingDeal };
+      }
+    }
+    
+    // Map scoping request data to deal format with required fields
+    const dealData = {
+      email: scopingRequest.email,
+      dealName: `Deal from ${scopingRequest.requestTitle}`,
+      dealType: "grow" as const,
+      salesChannel: scopingRequest.salesChannel as "holding_company" | "independent_agency" | "client_direct",
+      region: "northeast" as const, // Default region, can be changed in submission form
+      advertiserName: scopingRequest.advertiserName,
+      agencyName: scopingRequest.agencyName,
+      dealStructure: "tiered" as const,
+      businessSummary: scopingRequest.description,
+      growthOpportunityClient: scopingRequest.growthOpportunityClient,
+      clientAsks: scopingRequest.clientAsks,
+      growthAmbition: scopingRequest.growthAmbition,
+      // Required default values
+      hasTradeAMImplications: false,
+      yearlyRevenueGrowthRate: 0,
+      forecastedMargin: 0,
+      yearlyMarginGrowthRate: 0,
+      addedValueBenefitsCost: 0,
+      analyticsTier: "silver" as const,
+      requiresCustomMarketing: false,
+    };
+    
+    // Create the deal
+    const deal = await this.createDeal(dealData);
+    
+    // Update scoping request with conversion info
+    const now = new Date();
+    const updatedScopingRequest: DealScopingRequest = {
+      ...scopingRequest,
+      convertedDealId: deal.id,
+      convertedAt: now,
+      status: "converted",
+      updatedAt: now,
+    };
+    
+    this.dealScopingRequests.set(scopingId, updatedScopingRequest);
+    
+    return { scopingRequest: updatedScopingRequest, deal };
+  }
   
   // Incentive Value methods
   async getIncentiveValues(dealId: number): Promise<IncentiveValue[]> {

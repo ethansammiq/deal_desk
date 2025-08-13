@@ -137,11 +137,19 @@ export default function RequestSupport() {
 
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (scopingRequest) => {
       toast({
         title: "Request Submitted",
-        description:
-          "Your deal scoping request has been submitted successfully. The partnership team will contact you shortly.",
+        description: "Your deal scoping request has been submitted successfully. Would you like to convert it to a full deal submission?",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/submit-deal?from-scoping=${scopingRequest.id}`)}
+          >
+            Convert to Deal
+          </Button>
+        ),
       });
 
       // Reset form and return to dashboard

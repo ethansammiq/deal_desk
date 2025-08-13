@@ -6,10 +6,12 @@ import { Deal } from "@shared/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { PlusIcon, Users, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
+import { ScopingRequestsDashboard } from "@/components/ScopingRequestsDashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Status badge mapping
 const statusVariantMap: Record<string, any> = {
@@ -174,11 +176,25 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Deals Table */}
-      <div className="mt-2 overflow-hidden bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-slate-900">Recent Deals</h3>
-        </div>
+      {/* Dashboard Tabs */}
+      <Tabs defaultValue="deals" className="mt-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="deals" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Deals
+          </TabsTrigger>
+          <TabsTrigger value="scoping" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Scoping Requests
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="deals" className="mt-6">
+          {/* Recent Deals Table */}
+          <div className="overflow-hidden bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 border-b border-slate-200 sm:px-6">
+              <h3 className="text-lg font-medium leading-6 text-slate-900">Recent Deals</h3>
+            </div>
         <QueryStateHandler
           query={dealsQuery}
           loadingComponent={<SectionLoading title="Loading deals..." rows={5} />}
@@ -209,7 +225,13 @@ export default function Dashboard() {
             />
           )}
         </QueryStateHandler>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="scoping" className="mt-6">
+          <ScopingRequestsDashboard />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -64,7 +64,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Deal scoping requests endpoint  
+  // Deal scoping requests endpoints
+  router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const filters = status ? { status } : undefined;
+      const requests = await storage.getDealScopingRequests(filters);
+      res.status(200).json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch scoping requests" });
+    }
+  });
+
+  router.get("/deal-scoping-requests/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid scoping request ID" });
+      }
+      
+      const request = await storage.getDealScopingRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Scoping request not found" });
+      }
+      
+      res.status(200).json(request);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch scoping request" });
+    }
+  });
+
+  // Conversion endpoint - convert scoping request to deal
+  router.post("/deal-scoping-requests/:id/convert", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid scoping request ID" });
+      }
+
+      const result = await storage.convertScopingRequestToDeal(id);
+      if (!result) {
+        return res.status(404).json({ message: "Scoping request not found" });
+      }
+
+      res.status(200).json({
+        message: "Successfully converted scoping request to deal",
+        dealId: result.deal.id,
+        scopingRequestId: result.scopingRequest.id,
+        deal: result.deal
+      });
+    } catch (error) {
+      console.error("Error converting scoping request:", error);
+      res.status(500).json({ message: "Failed to convert scoping request to deal" });
+    }
+  });
+  
   router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
     try {
       console.log("Creating deal scoping request with data:", req.body);

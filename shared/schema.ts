@@ -65,6 +65,9 @@ export const dealScopingRequests = pgTable("deal_scoping_requests", {
   requestTitle: text("request_title").notNull(),
   description: text("description"),
   status: text("status").notNull().default("pending"),
+  // Conversion tracking fields
+  convertedDealId: integer("converted_deal_id"),
+  convertedAt: timestamp("converted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

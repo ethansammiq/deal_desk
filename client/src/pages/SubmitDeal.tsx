@@ -131,6 +131,11 @@ export default function SubmitDeal() {
   // const [formStep, setFormStep] = useState(0); // REPLACED
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  
+  // Check for pre-fill from scoping request
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromScopingId = urlParams.get('from-scoping');
+  const [isPreFilling, setIsPreFilling] = useState(false);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
     null,
   );
@@ -456,37 +461,69 @@ export default function SubmitDeal() {
 
   // Fetch agencies and advertisers for dropdowns
   useEffect(() => {
-    const fetchAgencies = async () => {
+    const fetchData = async () => {
       try {
-        const data = await apiRequest("/api/agencies");
-        setAgencies(data);
+        // Fetch agencies and advertisers in parallel
+        const [agenciesData, advertisersData] = await Promise.all([
+          apiRequest("/api/agencies"),
+          apiRequest("/api/advertisers")
+        ]);
+        
+        setAgencies(agenciesData);
+        setAdvertisers(advertisersData);
+
+        // If coming from scoping request, fetch and pre-fill data
+        if (fromScopingId) {
+          setIsPreFilling(true);
+          try {
+            const scopingData = await apiRequest(`/api/deal-scoping-requests/${fromScopingId}`);
+            
+            // Pre-fill form with scoping request data
+            const preFillData = {
+              salesChannel: scopingData.salesChannel,
+              advertiserName: scopingData.advertiserName || "",
+              agencyName: scopingData.agencyName || "",
+              growthOpportunityClient: scopingData.growthOpportunityClient || "",
+              clientAsks: scopingData.clientAsks || "",
+              growthAmbition: scopingData.growthAmbition || 0,
+              businessSummary: scopingData.description || "",
+              dealName: `Deal from ${scopingData.requestTitle}`,
+            };
+
+            // Update form values
+            Object.entries(preFillData).forEach(([key, value]) => {
+              if (value !== undefined && value !== null && value !== "") {
+                form.setValue(key as any, value);
+              }
+            });
+
+            toast({
+              title: "Data Pre-filled",
+              description: "Form has been pre-filled with data from your scoping request.",
+            });
+          } catch (error) {
+            console.error("Failed to fetch scoping request data:", error);
+            toast({
+              title: "Pre-fill Failed", 
+              description: "Could not load scoping request data, but you can still submit a deal manually.",
+              variant: "destructive",
+            });
+          } finally {
+            setIsPreFilling(false);
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch agencies:", error);
+        console.error("Failed to fetch initial data:", error);
         toast({
           title: "Error",
-          description: "Failed to load agencies data",
+          description: "Failed to load form data",
           variant: "destructive",
         });
       }
     };
 
-    const fetchAdvertisers = async () => {
-      try {
-        const data = await apiRequest("/api/advertisers");
-        setAdvertisers(data);
-      } catch (error) {
-        console.error("Failed to fetch advertisers:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load advertisers data",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchAgencies();
-    fetchAdvertisers();
-  }, [toast]);
+    fetchData();
+  }, [fromScopingId, form, toast]);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");
@@ -709,7 +746,12 @@ export default function SubmitDeal() {
     <div className="p-6">
       <FormSectionHeader
         title="Deal Submission"
-        description="Complete the form below to submit a new commercial deal for approval"
+        description={fromScopingId && isPreFilling 
+          ? "Pre-filling form data from your scoping request..." 
+          : fromScopingId 
+          ? "Form pre-filled with data from your scoping request - Complete and submit below"
+          : "Complete the form below to submit a new commercial deal for approval"
+        }
         badge="Step 2 of 2"
         helpTitle="About Deal Submission"
         helpContent={
@@ -729,6 +771,20 @@ export default function SubmitDeal() {
           </>
         }
       />
+
+      {/* Pre-fill loading indicator */}
+      {fromScopingId && isPreFilling && (
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span className="text-sm text-muted-foreground">
+                Loading data from scoping request...
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Form Progress - Using standardized component */}
       <FormProgressTracker
