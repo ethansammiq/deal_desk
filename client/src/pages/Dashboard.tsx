@@ -16,12 +16,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Phase 7A: Status mapping removed - now using DealStatusBadge component
 
-// Type for stats API response
+// Phase 7A: Updated stats interface for 9-status workflow
 interface DealStats {
-  activeDeals: number;
-  pendingApproval: number;
-  completedDeals: number;
+  totalDeals: number;
+  activeDeals: number; // scoping through legal_review
+  completedDeals: number; // signed
+  lostDeals: number; // lost
   successRate: number;
+  // Status breakdown
+  scopingCount: number;
+  submittedCount: number;
+  underReviewCount: number;
+  negotiatingCount: number;
+  approvedCount: number;
+  legalReviewCount: number;
+  contractSentCount: number;
 }
 
 export default function Dashboard() {
@@ -125,28 +134,31 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
-          title="Active Deals" 
-          value={statsQuery.isLoading ? "..." : statsQuery.data?.activeDeals || 0}
-          change={"+12%"}
+          title="Total Deals" 
+          value={statsQuery.isLoading ? "..." : statsQuery.data?.totalDeals || 0}
+          change="+4 new"
+          changeLabel="this week"
           trend="up"
         />
         <StatCard 
-          title="Pending Approval" 
-          value={statsQuery.isLoading ? "..." : statsQuery.data?.pendingApproval || 0}
-          change={"+3"}
-          changeLabel="new this week"
+          title="Active Deals" 
+          value={statsQuery.isLoading ? "..." : statsQuery.data?.activeDeals || 0}
+          change={`${statsQuery.data?.scopingCount || 0} scoping`}
+          changeLabel="awaiting progress"
           trend="warning"
         />
         <StatCard 
-          title="Completed Deals" 
+          title="Completed" 
           value={statsQuery.isLoading ? "..." : statsQuery.data?.completedDeals || 0}
-          change={"+8%"}
+          change={`${statsQuery.data?.contractSentCount || 0} pending signature`}
+          changeLabel="contracts out"
           trend="up"
         />
         <StatCard 
-          title="Deal Success Rate" 
+          title="Success Rate" 
           value={statsQuery.isLoading ? "..." : `${statsQuery.data?.successRate || 0}%`}
-          change={"+4%"}
+          change={`${statsQuery.data?.lostDeals || 0} lost`}
+          changeLabel="total lost deals"
           trend="up"
         />
       </div>

@@ -1024,31 +1024,57 @@ export class MemStorage implements IStorage {
   }
   
   // Stats methods
+  // Phase 7A: Updated getDealStats for 9-status workflow
   async getDealStats(): Promise<{
+    totalDeals: number;
     activeDeals: number;
-    pendingApproval: number;
     completedDeals: number;
+    lostDeals: number;
     successRate: number;
+    scopingCount: number;
+    submittedCount: number;
+    underReviewCount: number;
+    negotiatingCount: number;
+    approvedCount: number;
+    legalReviewCount: number;
+    contractSentCount: number;
   }> {
     const deals = Array.from(this.deals.values());
-    const activeDealStatuses = ["submitted", "in_review", "initial_approval", "client_feedback"];
-    const pendingStatuses = ["submitted", "in_review"];
-    const completedStatuses = ["signed", "approved"];
-    const allCompletedStatuses = [...completedStatuses, "rejected"];
     
-    const activeDeals = deals.filter(deal => activeDealStatuses.includes(deal.status)).length;
-    const pendingApproval = deals.filter(deal => pendingStatuses.includes(deal.status)).length;
-    const completedDeals = deals.filter(deal => completedStatuses.includes(deal.status)).length;
-    const totalClosedDeals = deals.filter(deal => allCompletedStatuses.includes(deal.status)).length;
+    // Status counts
+    const scopingCount = deals.filter(deal => deal.status === "scoping").length;
+    const submittedCount = deals.filter(deal => deal.status === "submitted").length;
+    const underReviewCount = deals.filter(deal => deal.status === "under_review").length;
+    const negotiatingCount = deals.filter(deal => deal.status === "negotiating").length;
+    const approvedCount = deals.filter(deal => deal.status === "approved").length;
+    const legalReviewCount = deals.filter(deal => deal.status === "legal_review").length;
+    const contractSentCount = deals.filter(deal => deal.status === "contract_sent").length;
+    const completedDeals = deals.filter(deal => deal.status === "signed").length;
+    const lostDeals = deals.filter(deal => deal.status === "lost").length;
     
-    // Calculate success rate (approved/signed vs all closed deals)
-    const successRate = totalClosedDeals > 0 ? (completedDeals / totalClosedDeals) * 100 : 0;
+    // Active deals = all statuses except signed and lost
+    const activeDeals = scopingCount + submittedCount + underReviewCount + 
+                       negotiatingCount + approvedCount + legalReviewCount + contractSentCount;
+    
+    const totalDeals = deals.length;
+    
+    // Success rate = signed / (signed + lost)
+    const totalConcludedDeals = completedDeals + lostDeals;
+    const successRate = totalConcludedDeals > 0 ? (completedDeals / totalConcludedDeals) * 100 : 0;
     
     return {
+      totalDeals,
       activeDeals,
-      pendingApproval,
       completedDeals,
-      successRate: Math.round(successRate * 10) / 10 // Round to 1 decimal place
+      lostDeals,
+      successRate: Math.round(successRate * 10) / 10,
+      scopingCount,
+      submittedCount,
+      underReviewCount,
+      negotiatingCount,
+      approvedCount,
+      legalReviewCount,
+      contractSentCount
     };
   }
 }

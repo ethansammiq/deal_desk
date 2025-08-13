@@ -24,18 +24,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", router);
   
   // Stats endpoint
+  // Phase 7A: Updated stats endpoint for 9-status workflow
   router.get("/stats", async (req: Request, res: Response) => {
     try {
-      // Get real stats from storage
       const realStats = await storage.getDealStats();
-      const stats = {
-        activeDeals: realStats.activeDeals,
-        pendingApproval: realStats.pendingApproval, 
-        completedDeals: realStats.completedDeals,
-        successRate: realStats.successRate
-      };
-      res.status(200).json(stats);
+      res.status(200).json(realStats);
     } catch (error) {
+      console.error("Error fetching deal stats:", error);
       res.status(500).json({ message: "Failed to fetch stats" });
     }
   });
