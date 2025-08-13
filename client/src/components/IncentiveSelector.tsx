@@ -65,8 +65,12 @@ export function IncentiveSelector({
         return {
           ...tier,
           ...incentiveFields,
-          incentiveValue: tierValue,
-          incentiveNotes: notes
+          // ACCUMULATE incentive values instead of overwriting
+          incentiveValue: (tier.incentiveValue || 0) + tierValue,
+          // CONCATENATE notes if there are existing notes
+          incentiveNotes: tier.incentiveNotes 
+            ? `${tier.incentiveNotes}; ${notes}` 
+            : notes
         };
       }
       return tier;
