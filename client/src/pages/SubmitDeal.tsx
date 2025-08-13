@@ -732,6 +732,9 @@ export default function SubmitDeal() {
     const dealData = {
       ...data,
       dealName: dealName,
+      // ✅ CRITICAL: Convert string numbers to actual numbers for backend validation
+      contractTermMonths: data.contractTermMonths ? Number(data.contractTermMonths) : 12,
+      growthAmbition: data.growthAmbition ? Number(data.growthAmbition) : undefined,
       // Add missing required fields for API compatibility
       annualRevenue: data.annualRevenue || DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
       annualGrossMargin: (data.annualGrossMarginPercent || DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN * 100) / 100,
