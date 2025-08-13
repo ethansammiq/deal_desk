@@ -249,24 +249,45 @@ export default function UnifiedDashboard() {
     window.location.href = `/deals/${dealId}`;
   };
 
+  // Helper function to format currency in shortened format
+  const formatShortCurrency = (amount: number, isMultiTier: boolean = false): string => {
+    if (amount === 0) return "$0";
+    
+    const suffix = isMultiTier ? "+" : "";
+    
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(amount % 1000000000 === 0 ? 0 : 1)}B${suffix}`;
+    } else if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1)}M${suffix}`;
+    } else if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}k${suffix}`;
+    } else {
+      return `$${amount.toFixed(0)}${suffix}`;
+    }
+  };
+
   // Helper function to get deal value based on deal type and structure
-  const getDealValue = (deal: Deal): number => {
+  const getDealValue = (deal: Deal): { amount: number; isMultiTier: boolean } => {
     // For scoping deals, use growth ambition
     if (deal.status === 'scoping' && deal.growthAmbition) {
-      return deal.growthAmbition;
+      return { amount: deal.growthAmbition, isMultiTier: false };
+    }
+    
+    // For tiered deals, use Tier 1 revenue and indicate multi-tier with +
+    if (deal.dealStructure === 'tiered') {
+      // Use annual revenue as Tier 1 for now (tier data fetched separately)
+      const amount = deal.annualRevenue || deal.growthAmbition || 0;
+      return { amount, isMultiTier: true };
     }
     
     // For flat commit deals, use annual revenue
     if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
-      return deal.annualRevenue;
+      return { amount: deal.annualRevenue, isMultiTier: false };
     }
     
-    // For tiered deals, we would need to fetch tier data separately
-    // For now, use annual revenue if available, otherwise growth ambition
-    // TODO: Consider adding tier revenue aggregation via separate API call
-    
     // Fallback to any available revenue value
-    return deal.annualRevenue || deal.growthAmbition || 0;
+    const amount = deal.annualRevenue || deal.growthAmbition || 0;
+    return { amount, isMultiTier: false };
   };
 
   // Define columns for the deals table with action column
@@ -291,6 +312,19 @@ export default function UnifiedDashboard() {
       },
     },
     {
+      accessorKey: "dealStructure",
+      header: "Deal Type",
+      cell: ({ row }) => {
+        const structure = row.original.dealStructure;
+        const typeLabels = {
+          'tiered': 'Tiered',
+          'flat_commit': 'Flat Commit'
+        };
+        const label = typeLabels[structure as keyof typeof typeLabels] || structure;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
       accessorKey: "salesChannel",
       header: "Sales Channel",
       cell: ({ row }) => {
@@ -308,8 +342,8 @@ export default function UnifiedDashboard() {
       id: "dealValue", 
       header: "Deal Value",
       cell: ({ row }) => {
-        const value = getDealValue(row.original);
-        return <div className="font-medium">{formatCurrency(value)}</div>;
+        const { amount, isMultiTier } = getDealValue(row.original);
+        return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
       },
     },
     {
