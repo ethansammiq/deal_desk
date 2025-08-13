@@ -84,13 +84,13 @@ export interface IStorage {
   updateIncentiveValue(id: number, incentive: Partial<InsertIncentiveValue>): Promise<IncentiveValue | undefined>;
   deleteIncentiveValue(id: number): Promise<boolean>;
   
-  // Phase 7B: Updated stats methods for 9-status workflow
+  // Phase 7B: Updated stats methods for 9-status workflow with Close Rate
   getDealStats(): Promise<{
     totalDeals: number;
     activeDeals: number;
     completedDeals: number;
     lostDeals: number;
-    successRate: number;
+    closeRate: number;
     scopingCount: number;
     submittedCount: number;
     underReviewCount: number;
@@ -1127,7 +1127,7 @@ export class MemStorage implements IStorage {
     activeDeals: number;
     completedDeals: number;
     lostDeals: number;
-    successRate: number;
+    closeRate: number;
     scopingCount: number;
     submittedCount: number;
     underReviewCount: number;
@@ -1155,16 +1155,16 @@ export class MemStorage implements IStorage {
     
     const totalDeals = deals.length;
     
-    // Success rate = signed / (signed + lost)
+    // Close rate = signed / (signed + lost) * 100
     const totalConcludedDeals = completedDeals + lostDeals;
-    const successRate = totalConcludedDeals > 0 ? (completedDeals / totalConcludedDeals) * 100 : 0;
+    const closeRate = totalConcludedDeals > 0 ? (completedDeals / totalConcludedDeals) * 100 : 0;
     
     return {
       totalDeals,
       activeDeals,
       completedDeals,
       lostDeals,
-      successRate: Math.round(successRate * 10) / 10,
+      closeRate: Math.round(closeRate * 10) / 10,
       scopingCount,
       submittedCount,
       underReviewCount,

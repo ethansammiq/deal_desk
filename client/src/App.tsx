@@ -15,6 +15,7 @@ import { SmartSearch } from "@/components/SmartSearch";
 // Lazy load pages for better performance
 const NotFound = lazy(() => import("@/pages/not-found"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
 const HelpResources = lazy(() => import("@/pages/HelpResources"));
@@ -58,15 +59,18 @@ function Router() {
       <AppLayout>
         <Suspense fallback={<PageLoading title="Loading page..." />}>
           <Switch>
-            <Route path="/" component={Home} />
+            <Route path="/" component={UnifiedDashboard} />
             <Route path="/support" component={RequestSupport} />
             <Route path="/request-support" component={RequestSupport} />
             <Route path="/submit-deal" component={SubmitDeal} />
-            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/dashboard" component={UnifiedDashboard} />
             <Route path="/help" component={HelpResources} />
-            <Route path="/deals" component={Dashboard} />
+            <Route path="/deals" component={UnifiedDashboard} />
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/role-demo" component={RoleDemo} />
+            {/* Legacy routes for reference */}
+            <Route path="/legacy-dashboard" component={Dashboard} />
+            <Route path="/legacy-home" component={Home} />
             {/* Fallback to 404 */}
             <Route component={NotFound} />
           </Switch>
