@@ -84,6 +84,10 @@ export function DealOverviewStep({
               form={form}
               dealStructureType={dealStructureType}
               setDealStructure={setDealStructure}
+              agencies={[]} // Not needed for tabs layout
+              advertisers={[]} // Not needed for tabs layout
+              salesChannel={salesChannel}
+              showClientInfo={false} // Client info shown separately above
               nextStep={nextStep}
               showBusinessSummary={false}
               showNavigationButton={showNavigation}
@@ -122,6 +126,10 @@ export function DealOverviewStep({
         form={form}
         dealStructureType={dealStructureType}
         setDealStructure={setDealStructure}
+        agencies={agencies}
+        advertisers={advertisers}
+        salesChannel={salesChannel}
+        showClientInfo={false} // Client info shown separately above
         nextStep={nextStep}
         showBusinessSummary={true}
         showNavigationButton={showNavigation}
