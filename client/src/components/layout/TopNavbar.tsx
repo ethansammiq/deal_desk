@@ -56,7 +56,7 @@ export function TopNavbar() {
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
                   <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Home</span>
+                  <span className="whitespace-nowrap">Insights</span>
                 </div>
               </Link>
               <Link href="/help">
@@ -143,7 +143,7 @@ export function TopNavbar() {
             )}>
               <div className="flex items-center">
                 <LayoutDashboardIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Home</span>
+                <span>Insights</span>
               </div>
             </div>
           </Link>
