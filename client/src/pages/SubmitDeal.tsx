@@ -425,12 +425,12 @@ export default function SubmitDeal() {
 
   // ✅ PHASE 3: Migrated to service - calculateCostGrowthRate
   const calculateCostGrowthRate = (tier: DealTier): number => {
-    const serviceTier = {
-      tierNumber: tier.tierNumber,
-      annualRevenue: tier.annualRevenue,
-      annualGrossMargin: tier.annualGrossMargin
+    const { advertiserName, agencyName, salesChannel: currentSalesChannel } = getClientNames();
+    const serviceTier: DealTier = {
+      ...tier,
+      incentives: tier.incentives || []
     };
-    return dealCalculations.calculateCostGrowthRate(serviceTier, selectedIncentives, tierIncentives);
+    return dealCalculations.calculateCostGrowthRate(serviceTier, currentSalesChannel, advertiserName, agencyName);
   };
 
   // Watch for dealStructure changes to handle conditional fields

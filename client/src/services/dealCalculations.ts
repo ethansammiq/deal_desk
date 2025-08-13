@@ -357,7 +357,7 @@ export class DealCalculationService {
     const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
     const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
     const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
-    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName); // Dynamic based on selection
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
 
     if (lastYearAdjustedProfit === 0) return 0;
@@ -408,7 +408,7 @@ export class DealCalculationService {
     const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
     const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
     const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
-    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(); // 50,000
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName); // Dynamic based on selection
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
     const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
 
@@ -436,9 +436,9 @@ export class DealCalculationService {
   /**
    * Calculate cost growth rate for a tier
    */
-  calculateCostGrowthRate(tier: DealTier): number {
+  calculateCostGrowthRate(tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string): number {
     const currentIncentiveCost = this.calculateTierIncentiveCost(tier);
-    const previousIncentiveCost = this.getPreviousYearIncentiveCost(); // Now using 50,000
+    const previousIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName); // Dynamic based on selection
 
     // With the new incentive cost of 50,000, this condition will no longer be triggered
     if (previousIncentiveCost === 0) return 0;

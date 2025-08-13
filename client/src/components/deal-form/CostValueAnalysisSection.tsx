@@ -29,12 +29,12 @@ export function CostValueAnalysisSection({
   agencyName
 }: CostValueAnalysisSectionProps) {
   // Fetch agencies and advertisers for calculation service
-  const agenciesQuery = useQuery({ 
+  const agenciesQuery = useQuery<any[]>({ 
     queryKey: ["/api/agencies"],
     retry: 3,
     staleTime: 60000, // 1 minute
   });
-  const advertisersQuery = useQuery({ 
+  const advertisersQuery = useQuery<any[]>({ 
     queryKey: ["/api/advertisers"],
     retry: 3,
     staleTime: 60000, // 1 minute

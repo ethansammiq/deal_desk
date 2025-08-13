@@ -79,6 +79,6 @@ export function useDealCalculations(
     calculateAdjustedGrossMarginGrowthRate: calculationService.calculateAdjustedGrossMarginGrowthRate.bind(calculationService),
     calculateClientValue: calculationService.calculateClientValue.bind(calculationService),
     calculateClientValueGrowthRate: calculationService.calculateClientValueGrowthRate.bind(calculationService),
-    calculateCostGrowthRate: calculationService.calculateCostGrowthRate.bind(calculationService),
+    calculateCostGrowthRate: (tier: DealTier, salesChannel: string, advertiserName?: string, agencyName?: string) => calculationService.calculateCostGrowthRate(tier, salesChannel, advertiserName, agencyName),
   };
 }
