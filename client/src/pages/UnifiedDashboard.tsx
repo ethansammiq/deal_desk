@@ -409,12 +409,6 @@ export default function UnifiedDashboard() {
           <h1 className="text-3xl font-bold text-slate-900">Welcome back, {userName}</h1>
           <p className="mt-1 text-slate-500">Here's what's happening with your commercial deals</p>
         </div>
-        <Button asChild>
-          <Link to="/submit-deal">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Deal
-          </Link>
-        </Button>
       </div>
       
       {/* Stats Overview - Updated with Close Rate */}
