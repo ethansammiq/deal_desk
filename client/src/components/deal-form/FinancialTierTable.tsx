@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
+import { useQuery } from "@tanstack/react-query";
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
@@ -25,8 +26,8 @@ import { formatCurrency, formatPercentage } from "@/lib/utils";
 interface FinancialTierTableProps {
   dealTiers: DealTier[];
   setDealTiers: (tiers: DealTier[]) => void;
-  lastYearRevenue?: number;
-  lastYearGrossMargin?: number;
+  lastYearRevenue: number;
+  lastYearGrossMargin: number;
   isFlat?: boolean;
   salesChannel?: string;
   advertiserName?: string;
@@ -36,16 +37,29 @@ interface FinancialTierTableProps {
 export function FinancialTierTable({
   dealTiers,
   setDealTiers,
-  lastYearRevenue = 850000,
-  lastYearGrossMargin = 35.0,
+  lastYearRevenue,
+  lastYearGrossMargin,
   isFlat = false,
   salesChannel = "independent_agency",
   advertiserName,
   agencyName,
 }: FinancialTierTableProps) {
+  // Fetch agencies and advertisers for calculation service
+  const agenciesQuery = useQuery<any[]>({ 
+    queryKey: ["/api/agencies"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  const advertisersQuery = useQuery<any[]>({ 
+    queryKey: ["/api/advertisers"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  
+  // Use shared calculation service with actual data
   const { 
     calculationService 
-  } = useDealCalculations();
+  } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
 
   const { addTier, removeTier, updateTier } = useTierManagement({
     dealTiers,
@@ -55,6 +69,28 @@ export function FinancialTierTable({
 
   // Calculate last year's gross profit
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);
+
+  // Show loading state while data is being fetched
+  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+    return (
+      <FinancialSection title="Revenue & Profitability">
+        <div className="text-center py-8">
+          <p className="text-slate-500">Loading financial data...</p>
+        </div>
+      </FinancialSection>
+    );
+  }
+
+  // Show error state if data fetch fails
+  if (agenciesQuery.error || advertisersQuery.error) {
+    return (
+      <FinancialSection title="Revenue & Profitability">
+        <div className="text-center py-8">
+          <p className="text-red-600">Error loading financial data. Please try again.</p>
+        </div>
+      </FinancialSection>
+    );
+  }
 
   return (
     <FinancialSection 

@@ -5,6 +5,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Plus, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useTierManagement } from "@/hooks/useTierManagement";
+import { useQuery } from "@tanstack/react-query";
 import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { IncentiveDisplayTable } from "@/components/ui/incentive-display-table";
@@ -33,6 +34,9 @@ interface IncentiveStructureSectionProps {
   setDealTiers: (tiers: DealTier[]) => void;
   showAddIncentiveForm: boolean;
   setShowAddIncentiveForm: (show: boolean) => void;
+  salesChannel?: string;
+  advertiserName?: string;
+  agencyName?: string;
 }
 
 export function IncentiveStructureSection({
@@ -42,8 +46,24 @@ export function IncentiveStructureSection({
   setDealTiers,
   showAddIncentiveForm,
   setShowAddIncentiveForm,
+  salesChannel = "independent_agency",
+  advertiserName,
+  agencyName,
 }: IncentiveStructureSectionProps) {
-  const { calculationService } = useDealCalculations();
+  // Fetch agencies and advertisers for calculation service
+  const agenciesQuery = useQuery<any[]>({ 
+    queryKey: ["/api/agencies"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  const advertisersQuery = useQuery<any[]>({ 
+    queryKey: ["/api/advertisers"],
+    retry: 3,
+    staleTime: 60000, // 1 minute
+  });
+  
+  // Use shared calculation service with actual data
+  const { calculationService } = useDealCalculations(advertisersQuery.data || [], agenciesQuery.data || []);
 
   // ✅ MIGRATED: Using centralized useTierManagement hook
   const tierManager = useTierManagement({
@@ -62,8 +82,30 @@ export function IncentiveStructureSection({
     return calculationService.calculateTierIncentiveCost(tier);
   };
 
-  // Calculate last year incentive cost (using default)
-  const lastYearIncentiveCost = 50000;
+  // ✅ FIXED: Use dynamic data from calculation service instead of hardcoded value
+  const lastYearIncentiveCost = calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
+
+  // Show loading state while data is being fetched
+  if (agenciesQuery.isLoading || advertisersQuery.isLoading) {
+    return (
+      <FinancialSection title="Incentive Structure">
+        <div className="text-center py-8">
+          <p className="text-slate-500">Loading incentive data...</p>
+        </div>
+      </FinancialSection>
+    );
+  }
+
+  // Show error state if data fetch fails
+  if (agenciesQuery.error || advertisersQuery.error) {
+    return (
+      <FinancialSection title="Incentive Structure">
+        <div className="text-center py-8">
+          <p className="text-red-600">Error loading incentive data. Please try again.</p>
+        </div>
+      </FinancialSection>
+    );
+  }
 
   return (
     <FinancialSection 

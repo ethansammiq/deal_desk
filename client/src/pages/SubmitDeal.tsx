@@ -1365,6 +1365,9 @@ export default function SubmitDeal() {
                     setDealTiers={setDealTiers}
                     showAddIncentiveForm={showAddIncentiveForm}
                     setShowAddIncentiveForm={setShowAddIncentiveForm}
+                    salesChannel={salesChannel}
+                    advertiserName={form.watch("advertiserName")}
+                    agencyName={form.watch("agencyName")}
                   />
 
                   {/* Cost & Value Analysis Section */}
