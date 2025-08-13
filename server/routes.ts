@@ -6,8 +6,11 @@ import {
   insertDealScopingRequestSchema,
   DEAL_STATUSES,
   DEAL_STATUS_LABELS,
-  type DealStatus
+  type DealStatus,
+  type UserRole,
+  insertUserSchema
 } from "@shared/schema";
+import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
@@ -171,16 +174,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid scoping request ID" });
       }
 
-      const result = await storage.convertScopingRequestToDeal(id);
-      if (!result) {
-        return res.status(404).json({ message: "Scoping request not found" });
-      }
-
-      res.status(200).json({
-        message: "Successfully converted scoping request to deal",
-        dealId: result.deal.id,
-        scopingRequestId: result.scopingRequest.id,
-        deal: result.deal
+      // For Phase 7B, implement conversion logic here (placeholder for now)
+      // This functionality will be implemented in a future phase
+      return res.status(501).json({ 
+        message: "Conversion functionality not yet implemented in Phase 7B" 
       });
     } catch (error) {
       console.error("Error converting scoping request:", error);
@@ -297,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { status } = validatedData.data;
       
-      const updatedDeal = await storage.updateDealStatus(id, status);
+      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, "system");
       if (!updatedDeal) {
         return res.status(404).json({ message: "Deal not found" });
       }
@@ -572,6 +569,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to query Claude", 
         error: error instanceof Error ? error.message : String(error)
       });
+    }
+  });
+
+  // Phase 7B: User management and role-based routes
+  router.get("/users", async (req: Request, res: Response) => {
+    try {
+      const role = req.query.role as string | undefined;
+      let users: any[] = [];
+      
+      if (role) {
+        users = await storage.getUsersByRole(role);
+      } else {
+        // For now, return all users (in production, add proper auth check)
+        users = [];
+      }
+      
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  router.get("/users/current", async (req: Request, res: Response) => {
+    try {
+      // Phase 7B: Mock current user (will be replaced with real auth)
+      const currentUser = getCurrentUser();
+      res.status(200).json(currentUser);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      res.status(500).json({ message: "Failed to fetch current user" });
+    }
+  });
+
+  router.put("/users/:id/role", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      if (!role || !["seller", "approver", "legal"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const user = await storage.updateUserRole(id, role);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(200).json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Phase 7B: Enhanced deal status route with role-based permissions
+  router.get("/deals/:id/allowed-transitions", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      // Get current user role (mock for now)
+      const currentUser = getCurrentUser();
+      const allowedTransitions = getAllowedTransitions(currentUser.role, deal.status as DealStatus);
+      
+      res.status(200).json({ allowedTransitions });
+    } catch (error) {
+      console.error("Error fetching allowed transitions:", error);
+      res.status(500).json({ message: "Failed to fetch allowed transitions" });
     }
   });
 

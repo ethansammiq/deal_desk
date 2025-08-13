@@ -30,10 +30,12 @@ import { AirtableStorage } from "./airtableStorage";
 
 // Interface for storage operations
 export interface IStorage {
-  // User methods
+  // Phase 7B: Enhanced user methods with role support
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUsersByRole(role: string): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserRole(id: number, role: string): Promise<User | undefined>;
   
   // Advertiser methods
   getAdvertiser(id: number): Promise<Advertiser | undefined>;
@@ -50,7 +52,14 @@ export interface IStorage {
   // Deal methods
   getDeal(id: number): Promise<Deal | undefined>;
   getDealByReference(referenceNumber: string): Promise<Deal | undefined>;
-  getDeals(filters?: { status?: string, dealType?: string, salesChannel?: string }): Promise<Deal[]>;
+  // Phase 7B: Enhanced deal filtering with user access control
+  getDeals(filters?: { 
+    status?: string, 
+    dealType?: string, 
+    salesChannel?: string,
+    createdBy?: number, // For role-based access
+    assignedTo?: number 
+  }): Promise<Deal[]>;
   createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
   updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined>;
   
@@ -75,12 +84,20 @@ export interface IStorage {
   updateIncentiveValue(id: number, incentive: Partial<InsertIncentiveValue>): Promise<IncentiveValue | undefined>;
   deleteIncentiveValue(id: number): Promise<boolean>;
   
-  // Stats methods
+  // Phase 7B: Updated stats methods for 9-status workflow
   getDealStats(): Promise<{
+    totalDeals: number;
     activeDeals: number;
-    pendingApproval: number;
     completedDeals: number;
+    lostDeals: number;
     successRate: number;
+    scopingCount: number;
+    submittedCount: number;
+    underReviewCount: number;
+    negotiatingCount: number;
+    approvedCount: number;
+    legalReviewCount: number;
+    contractSentCount: number;
   }>;
 }
 
@@ -129,6 +146,65 @@ export class MemStorage implements IStorage {
   
   // Initialize with sample data for demo purposes
   private initSampleData() {
+    // Phase 7B: Sample users with different roles
+    const sampleUsers: InsertUser[] = [
+      {
+        username: "john_seller",
+        password: "password123",
+        email: "john.seller@company.com",
+        role: "seller",
+        firstName: "John",
+        lastName: "Seller",
+        department: "Sales",
+        isActive: true
+      },
+      {
+        username: "sarah_approver",
+        password: "password123", 
+        email: "sarah.approver@company.com",
+        role: "approver",
+        firstName: "Sarah",
+        lastName: "Chen",
+        department: "Revenue Operations",
+        isActive: true
+      },
+      {
+        username: "mike_legal",
+        password: "password123",
+        email: "mike.legal@company.com", 
+        role: "legal",
+        firstName: "Mike",
+        lastName: "Johnson",
+        department: "Legal",
+        isActive: true
+      },
+      {
+        username: "lisa_seller",
+        password: "password123",
+        email: "lisa.seller@company.com",
+        role: "seller",
+        firstName: "Lisa",
+        lastName: "Rodriguez",
+        department: "Sales",
+        isActive: true
+      },
+      {
+        username: "david_approver",
+        password: "password123",
+        email: "david.approver@company.com",
+        role: "approver", 
+        firstName: "David",
+        lastName: "Wilson",
+        department: "Finance",
+        isActive: true
+      }
+    ];
+
+    // Add sample users
+    sampleUsers.forEach(user => {
+      this.createUser(user);
+    });
+
     // Sample advertisers
     const sampleAdvertisers: InsertAdvertiser[] = [
       { 
@@ -624,9 +700,30 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const now = new Date();
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  // Phase 7B: Role-based user methods
+  async getUsersByRole(role: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter(user => user.role === role);
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (user) {
+      const updatedUser = { ...user, role: role as any, updatedAt: new Date() };
+      this.users.set(id, updatedUser);
+      return updatedUser;
+    }
+    return undefined;
   }
   
   // Advertiser methods

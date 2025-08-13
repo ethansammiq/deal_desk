@@ -21,11 +21,9 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  email: true,
-});
+// Phase 7B: Enhanced user schema with role information
+export const insertUserSchema = createInsertSchema(users)
+  .omit({ id: true, createdAt: true, updatedAt: true });
 
 // Advertisers lookup table
 export const advertisers = pgTable("advertisers", {
@@ -365,3 +363,70 @@ export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSc
 
 export type IncentiveValue = typeof incentiveValues.$inferSelect;
 export type InsertIncentiveValue = z.infer<typeof insertIncentiveValueSchema>;
+
+// Phase 7B: Role-based permissions system
+export interface RolePermissions {
+  canViewDeals: boolean;
+  canCreateDeals: boolean;
+  canEditDeals: boolean;
+  canDeleteDeals: boolean;
+  canChangeStatus: string[]; // Array of statuses this role can transition TO
+  canViewAllDeals: boolean; // If false, only sees deals they created/are assigned to
+  canApproveDeals: boolean;
+  canAccessLegalReview: boolean;
+  canManageContracts: boolean;
+  dashboardSections: string[]; // Which dashboard sections they see
+}
+
+// Phase 7B: Permission definitions for each role
+export const rolePermissions: Record<UserRole, RolePermissions> = {
+  seller: {
+    canViewDeals: true,
+    canCreateDeals: true,
+    canEditDeals: true, // Only their own deals
+    canDeleteDeals: false,
+    canChangeStatus: ["scoping", "submitted"], // Can only submit deals for review
+    canViewAllDeals: false, // Only their deals
+    canApproveDeals: false,
+    canAccessLegalReview: false,
+    canManageContracts: false,
+    dashboardSections: ["deals", "scoping", "performance"]
+  },
+  approver: {
+    canViewDeals: true,
+    canCreateDeals: false,
+    canEditDeals: true,
+    canDeleteDeals: false,
+    canChangeStatus: ["under_review", "negotiating", "approved", "lost"], // Review and approval flow
+    canViewAllDeals: true,
+    canApproveDeals: true,
+    canAccessLegalReview: false,
+    canManageContracts: false,
+    dashboardSections: ["deals", "approvals", "analytics", "reports"]
+  },
+  legal: {
+    canViewDeals: true,
+    canCreateDeals: false,
+    canEditDeals: false, // Read-only for deals, but can manage contracts
+    canDeleteDeals: false,
+    canChangeStatus: ["legal_review", "contract_sent", "signed"], // Legal and contract flow
+    canViewAllDeals: true,
+    canApproveDeals: false,
+    canAccessLegalReview: true,
+    canManageContracts: true,
+    dashboardSections: ["legal-queue", "contracts", "compliance"]
+  }
+};
+
+// Phase 7B: Status transition validation
+export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
+  scoping: ["submitted", "lost"],
+  submitted: ["under_review", "lost"],
+  under_review: ["negotiating", "approved", "lost"],
+  negotiating: ["approved", "under_review", "lost"],
+  approved: ["legal_review", "lost"],
+  legal_review: ["contract_sent", "negotiating", "lost"],
+  contract_sent: ["signed", "legal_review", "lost"],
+  signed: [], // Terminal state
+  lost: [] // Terminal state
+};

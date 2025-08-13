@@ -20,6 +20,7 @@ const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
 const HelpResources = lazy(() => import("@/pages/HelpResources"));
 const DealRequests = lazy(() => import("@/pages/DealRequests"));
 const Home = lazy(() => import("@/pages/Home"));
+const RoleDemo = lazy(() => import("@/pages/RoleDemo"));
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -65,6 +66,7 @@ function Router() {
             <Route path="/help" component={HelpResources} />
             <Route path="/deals" component={Dashboard} />
             <Route path="/deal-requests" component={DealRequests} />
+            <Route path="/role-demo" component={RoleDemo} />
             {/* Fallback to 404 */}
             <Route component={NotFound} />
           </Switch>
