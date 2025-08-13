@@ -98,9 +98,9 @@ export function CostValueAnalysisSection({
               {formatCurrency(340000)}
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              // Calculate expected value (simple 12x multiplier)
+              // Calculate expected value (3.5x multiplier - more realistic ROI)
               const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-              const expectedValue = incentiveCost * 12;
+              const expectedValue = incentiveCost * 3.5;
               return (
                 <FinancialDataCell key={`value-${tier.tierNumber}`}>
                   {formatCurrency(expectedValue)}
@@ -121,7 +121,7 @@ export function CostValueAnalysisSection({
             </FinancialDataCell>
             {dealTiers.map((tier) => {
               const incentiveCost = calculateTierIncentiveCost(tier.tierNumber);
-              const expectedValue = incentiveCost * 12;
+              const expectedValue = incentiveCost * 3.5;
               const lastYearValue = 340000;
               const valueGrowthRate = lastYearValue > 0 
                 ? ((expectedValue - lastYearValue) / lastYearValue) 
