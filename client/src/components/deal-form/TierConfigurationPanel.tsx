@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, TrendingUp, DollarSign } from "lucide-react";
+import { Plus, Trash2, TrendingUp, DollarSign, Info } from "lucide-react";
 import {
   FormFieldWithTooltip,
   FinancialInputGroup,
@@ -172,63 +172,16 @@ export function TierConfigurationPanel({
                   </div>
                 </div>
 
-                {/* Incentive Configuration */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Incentive Type
-                    </label>
-                    <Select
-                      value={tier.incentiveOption || "Volume Discount"}
-                      onValueChange={(value: "rebate" | "discount" | "bonus" | "other") => {
-                        updateTier(tier.tierNumber, { incentiveOption: value });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INCENTIVE_TYPE_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* ✅ PHASE 2: Incentive configuration removed - now handled by IncentiveSelector */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <Info className="h-4 w-4" />
+                    <span className="text-sm font-medium">Incentive Management</span>
                   </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Incentive Percentage
-                    </label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      placeholder="Enter incentive %"
-                      value={tier.incentiveValue || ""}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                        updateTier(tier.tierNumber, { incentiveValue: value });
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Tier Notes */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Tier Notes
-                  </label>
-                  <Textarea
-                    placeholder="Notes about this tier's structure, targets, or special conditions..."
-                    value={tier.incentiveNotes || ""}
-                    onChange={(e) => {
-                      updateTier(tier.tierNumber, { incentiveNotes: e.target.value });
-                    }}
-                    className="min-h-[80px]"
-                  />
+                  <p className="text-sm text-blue-700 mt-1">
+                    Incentives for this tier are managed through the Incentive Structure section. 
+                    Current incentives: {tier.incentives?.length || 0} configured.
+                  </p>
                 </div>
 
                 {/* Calculated Metrics */}

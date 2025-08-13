@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { useTierManagement } from "@/hooks/useTierManagement";
+// ✅ PHASE 2: Removed useTierManagement - functionality absorbed into useDealTiers
 import { useFinancialData } from "@/hooks/useFinancialData";
 
 // Import unified interface from hook
-import { DealTier } from "@/hooks/useDealTiers";
+import { DealTier, useDealTiers } from "@/hooks/useDealTiers";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS } from "@/config/businessConstants";
 import {
   FinancialSection,
@@ -52,11 +52,19 @@ export function FinancialTierTable({
     calculationService 
   } = useDealCalculations(advertisersData, agenciesData);
 
-  const { addTier, removeTier, updateTier } = useTierManagement({
-    dealTiers,
-    setDealTiers,
-    isFlat
+  // ✅ PHASE 2: Using enhanced useDealTiers for tier operations
+  const tierManager = useDealTiers({
+    initialTiers: dealTiers,
+    supportFlatDeals: true,
+    dealStructure: isFlat ? "flat_commit" : "tiered"
   });
+  
+  // Sync tier changes back to parent
+  React.useEffect(() => {
+    setDealTiers(tierManager.tiers);
+  }, [tierManager.tiers, setDealTiers]);
+  
+  const { addTier, removeTier, updateTier } = tierManager;
 
   // Calculate last year's gross profit
   const lastYearGrossProfit = lastYearRevenue * (lastYearGrossMargin / 100);

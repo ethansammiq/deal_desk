@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Plus, Info } from "lucide-react";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { useTierManagement } from "@/hooks/useTierManagement";
+// ✅ PHASE 2: Removed useTierManagement - functionality absorbed into useDealTiers
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { FinancialTierTable } from "./FinancialTierTable";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { IncentiveDisplayTable } from "@/components/ui/incentive-display-table";
 import { DEAL_CONSTANTS } from "@/config/businessConstants";
-import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
+import { DealTier, getTotalIncentiveValue, useDealTiers } from "@/hooks/useDealTiers";
 import {
   FinancialSection,
   FinancialTable,
@@ -56,14 +56,18 @@ export function IncentiveStructureSection({
   // Use shared calculation service with clean data arrays
   const { calculationService } = useDealCalculations(advertisersData, agenciesData);
 
-  // ✅ MIGRATED: Using centralized useTierManagement hook
-  const tierManager = useTierManagement({
-    dealTiers,
-    setDealTiers,
-    isFlat: dealStructureType === "flat_commit"
+  // ✅ PHASE 2: Using enhanced useDealTiers for tier operations
+  const tierManager = useDealTiers({
+    initialTiers: dealTiers,
+    supportFlatDeals: true,
+    dealStructure: dealStructureType
   });
   
-  // Destructure for backward compatibility
+  // Sync tier changes back to parent
+  React.useEffect(() => {
+    setDealTiers(tierManager.tiers);
+  }, [tierManager.tiers, setDealTiers]);
+  
   const { addTier, removeTier, updateTier } = tierManager;
 
   // Calculate incentive cost using the new getTotalIncentiveValue function
