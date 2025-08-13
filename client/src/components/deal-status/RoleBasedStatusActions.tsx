@@ -42,13 +42,13 @@ export function RoleBasedStatusActions({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: allowedTransitions = [] } = useAllowedTransitions(dealId, currentStatus);
-  const updateStatus = useDealStatus().updateDealStatus;
+  const { updateStatus } = useDealStatus();
   const { currentUser } = useUserPermissions();
 
   const handleStatusChange = () => {
     if (!selectedStatus) return;
     
-    updateStatus.mutate(
+    updateStatus(
       {
         dealId,
         status: selectedStatus,
@@ -163,9 +163,9 @@ export function RoleBasedStatusActions({
             </Button>
             <Button
               onClick={handleStatusChange}
-              disabled={!selectedStatus || updateStatus?.isPending}
+              disabled={!selectedStatus}
             >
-              {updateStatus?.isPending ? "Updating..." : "Update Status"}
+              Update Status
             </Button>
           </DialogFooter>
         </DialogContent>

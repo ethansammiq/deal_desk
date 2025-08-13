@@ -43,18 +43,45 @@ export interface CurrentUser {
   department?: string;
 }
 
-// Phase 7B: Mock current user for development (will be replaced with real session management)
+// Phase 7B: Mock current user for development with role switching support
 export function getCurrentUser(): CurrentUser {
-  // This will be replaced with real authentication
-  return {
-    id: 1,
-    username: "demo_seller",
-    email: "seller@company.com",
-    role: "seller",
-    firstName: "Demo",
-    lastName: "Seller",
-    department: "Sales"
+  // Check if we're in browser environment for localStorage
+  let demoRole: UserRole = "seller";
+  if (typeof window !== 'undefined' && window.localStorage) {
+    demoRole = (localStorage.getItem('demo_user_role') as UserRole) || "seller";
+  }
+  
+  const roleConfigs = {
+    seller: {
+      id: 1,
+      username: "demo_seller",
+      email: "seller@company.com",
+      role: "seller" as UserRole,
+      firstName: "John",
+      lastName: "Seller",
+      department: "Sales"
+    },
+    approver: {
+      id: 2,
+      username: "demo_approver", 
+      email: "approver@company.com",
+      role: "approver" as UserRole,
+      firstName: "Sarah",
+      lastName: "Chen",
+      department: "Revenue Operations"
+    },
+    legal: {
+      id: 3,
+      username: "demo_legal",
+      email: "legal@company.com",
+      role: "legal" as UserRole,
+      firstName: "Mike",
+      lastName: "Johnson",
+      department: "Legal"
+    }
   };
+  
+  return roleConfigs[demoRole];
 }
 
 // Phase 7B: Get user display name
