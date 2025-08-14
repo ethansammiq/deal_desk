@@ -907,8 +907,7 @@ export default function SubmitDeal() {
   }
 
   return (
-    <div className="bg-gray-50">
-      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div>
         <div className="flex items-center justify-between mb-6">
         <div>
           <FormSectionHeader
@@ -3374,7 +3373,6 @@ export default function SubmitDeal() {
           </form>
         </Form>
       </FormErrorBoundary>
-      </div>
     </div>
   );
 }
