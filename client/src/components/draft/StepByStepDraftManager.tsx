@@ -73,6 +73,14 @@ export function StepByStepDraftManager({
       // Remove fields that don't belong to SubmitDeal form
       delete cleanFormData.growthAmbition; // This field only exists in scoping form, not submit form
       
+      // Remove validation-problematic fields for drafts (allow empty/zero values in drafts)
+      if (cleanFormData.annualRevenue === 0) {
+        delete cleanFormData.annualRevenue; // Remove zero values that fail positive validation
+      }
+      if (cleanFormData.annualGrossMargin === 0) {
+        delete cleanFormData.annualGrossMargin; // Remove zero values that fail validation
+      }
+      
       const requestPayload = {
         name: autoName,
         description: `Auto-saved draft at step ${step}`,

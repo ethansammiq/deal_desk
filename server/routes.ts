@@ -317,8 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         advertiserName: formData.advertiserName || "Draft Client",
         termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
         termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        annualRevenue: Number(formData.annualRevenue) || 0,
-        annualGrossMargin: Number(formData.annualGrossMargin) || 0,
+        // Only include financial fields if they have valid values (avoid validation errors for drafts)
+        ...(formData.annualRevenue && Number(formData.annualRevenue) > 0 && { annualRevenue: Number(formData.annualRevenue) }),
+        ...(formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 && { annualGrossMargin: Number(formData.annualGrossMargin) }),
         status: "draft" as const,
         isDraft: true,
         draftType: "submission_draft"
