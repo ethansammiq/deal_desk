@@ -45,15 +45,16 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Data Structure Consolidation**: Unified data structures across the application, particularly for incentives and financial calculations, ensuring a single source of truth.
 
 ## Current Development Priority
-- **Phase 8**: Enhanced Deal Workflow with Draft Support ✅ **PHASE 1 COMPLETE**
+- **Phase 8**: Enhanced Deal Workflow with Manual Draft Support ✅ **PHASE 1-3 COMPLETE**
   - **✅ ACHIEVEMENT**: 11-status workflow implemented (Draft → Scoping → Submitted → Under Review → Revision Requested → Negotiating → Approved → Contract Drafting → Client Review → Signed → Lost)
-  - **✅ ACHIEVEMENT**: Draft type differentiation (scoping_draft vs submission_draft) preventing form confusion
+  - **✅ ACHIEVEMENT**: Manual draft management system with step-by-step saving (auto-save removed per user request)
+  - **✅ ACHIEVEMENT**: Priority Actions integration with proper client/agency name display (no "Draft Client" fallbacks)
+  - **✅ ACHIEVEMENT**: Draft field separation (growthAmbition excluded from SubmitDeal form)
   - **✅ ACHIEVEMENT**: Role-based draft visibility (Seller & Admin only) with automatic filtering
   - **✅ ACHIEVEMENT**: Enhanced status badges with revision counters and draft type indicators
   - **✅ ACHIEVEMENT**: Database schema enhanced with 8 new fields for revision management
-  - **✅ ACHIEVEMENT**: Status renaming completed (Legal Review → Contract Drafting, Contract Sent → Client Review)
-  - **✅ ACHIEVEMENT**: Updated permission matrix with proper role-based status transitions
-  - **Architecture**: Foundation ready for Phase 2 revision request system and enhanced collaboration features
+  - **✅ ACHIEVEMENT**: Resume Draft functionality with proper form pre-loading
+  - **Architecture**: Complete manual draft system ready for comprehensive testing
 
 - **Phase 8 - Phase 2**: Revision Request System ✅ **COMPLETE**
   - **✅ ACHIEVEMENT**: RevisionRequestModal component with form validation and reason collection
