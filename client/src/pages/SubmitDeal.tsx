@@ -1485,8 +1485,29 @@ export default function SubmitDeal() {
                     )}
                   />
 
-                  {/* Navigation */}
-                  <div className="flex justify-end pt-4">
+                  {/* Navigation with Save Draft */}
+                  <div className="flex justify-between items-center pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
+                        const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
+                        await saveDraftMutation.mutateAsync({
+                          name: autoName,
+                          description: `Draft saved from Deal Overview step`,
+                          formData: form.getValues(),
+                          step: formStep
+                        });
+                      }}
+                      disabled={saveDraftMutation.isPending}
+                      className="flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
+                    </Button>
                     <Button
                       type="button"
                       onClick={nextStep}
@@ -1508,9 +1529,32 @@ export default function SubmitDeal() {
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Overview
                     </Button>
-                    <Button type="button" onClick={nextStep}>
-                      Next: Financial Structure
-                    </Button>
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
+                          const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
+                          await saveDraftMutation.mutateAsync({
+                            name: autoName,
+                            description: `Draft saved from Business Context step`,
+                            formData: form.getValues(),
+                            step: formStep
+                          });
+                        }}
+                        disabled={saveDraftMutation.isPending}
+                        className="flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
+                      </Button>
+                      <Button type="button" onClick={nextStep}>
+                        Next: Financial Structure
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </div>
