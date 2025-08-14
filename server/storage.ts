@@ -63,6 +63,7 @@ export interface IStorage {
   createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
   updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined>;
   updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined>;
+  deleteDeal(id: number): Promise<boolean>;
   
   // Phase 7A: Deal Status History methods
   getDealStatusHistory(dealId: number): Promise<DealStatusHistory[]>;
@@ -1307,6 +1308,37 @@ export class MemStorage implements IStorage {
     };
     this.dealComments.push(newComment);
     return newComment;
+  }
+
+  async deleteDeal(id: number): Promise<boolean> {
+    const existingDeal = this.deals.get(id);
+    if (!existingDeal) {
+      return false;
+    }
+    
+    // Remove deal and related data
+    this.deals.delete(id);
+    
+    // Remove related tiers
+    for (const [tierId, tier] of this.dealTiers.entries()) {
+      if (tier.dealId === id) {
+        this.dealTiers.delete(tierId);
+      }
+    }
+    
+    // Remove related comments
+    if (this.dealComments) {
+      this.dealComments = this.dealComments.filter(comment => comment.dealId !== id);
+    }
+    
+    // Remove status history
+    for (const [historyId, history] of this.dealStatusHistories.entries()) {
+      if (history.dealId === id) {
+        this.dealStatusHistories.delete(historyId);
+      }
+    }
+    
+    return true;
   }
 }
 

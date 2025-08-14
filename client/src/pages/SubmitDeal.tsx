@@ -105,6 +105,7 @@ import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormVal
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
 import { useAutoSave } from "@/hooks/useAutoSave";
+import { DraftManager } from "@/components/draft/DraftManager";
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
@@ -272,22 +273,59 @@ export default function SubmitDeal() {
     delay: 2000 // Save after 2 seconds of inactivity
   });
 
-  // Load saved data on mount
+  // Load saved data on mount - simplified since we now have proper draft management
   useEffect(() => {
     const savedData = autoSave.loadSavedData();
     if (savedData && !fromScopingId) {
-      // Show confirmation dialog for loading saved data
-      const shouldLoad = confirm('We found a saved draft of your deal submission. Would you like to continue where you left off?');
-      if (shouldLoad) {
-        form.reset(savedData);
-        toast({
-          title: "Draft Loaded",
-          description: "Your previously saved progress has been restored.",
-          duration: 3000,
-        });
-      }
+      // Auto-load the auto-saved data without confirmation since it's just temporary backup
+      form.reset(savedData);
     }
   }, []);
+
+  // Draft management handlers
+  const handleSaveDraft = async (draftName: string, description?: string) => {
+    try {
+      const formData = form.getValues();
+      
+      // Save to server as proper draft deal
+      await apiRequest('/api/deals/drafts', {
+        method: 'POST',
+        body: {
+          name: draftName,
+          description,
+          formData
+        }
+      });
+
+      // Clear auto-save since we have a proper draft now
+      autoSave.clearSavedData();
+
+      toast({
+        title: "Draft Saved",
+        description: `"${draftName}" has been saved and will appear in the deals table.`,
+        duration: 4000,
+      });
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      toast({
+        title: "Save Failed",
+        description: "Unable to save draft. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLoadDraft = (draftData: any) => {
+    form.reset(draftData);
+    
+    // Clear auto-save data since we're loading a specific draft
+    autoSave.clearSavedData();
+    
+    // If the draft has a deal structure, update our state
+    if (draftData.dealStructure) {
+      setDealStructure(draftData.dealStructure);
+    }
+  };
   
   // ✅ MIGRATED: Use hook-managed form step instead of local state
   const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
@@ -3137,9 +3175,19 @@ export default function SubmitDeal() {
                 </div>
 
                 <div className="mt-8 flex justify-between">
-                  <Button type="button" variant="outline" onClick={prevStep}>
-                    Previous: Deal Structure
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <Button type="button" variant="outline" onClick={prevStep}>
+                      Previous: Deal Structure
+                    </Button>
+                    
+                    {/* Draft Management */}
+                    <DraftManager
+                      currentFormData={form.getValues()}
+                      onLoadDraft={handleLoadDraft}
+                      onSaveDraft={handleSaveDraft}
+                    />
+                  </div>
+                  
                   <Button 
                     type="button" 
                     disabled={submitDealMutation.isPending}

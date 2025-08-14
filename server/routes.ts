@@ -291,6 +291,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create comment" });
     }
   });
+
+  // Draft management endpoints  
+  router.post("/deals/drafts", async (req: Request, res: Response) => {
+    try {
+      const { name, description, formData } = req.body;
+      
+      if (!name?.trim()) {
+        return res.status(400).json({ message: "Draft name is required" });
+      }
+      
+      if (!formData) {
+        return res.status(400).json({ message: "Form data is required" });
+      }
+
+      // Create a deal with draft status
+      const draftDeal = {
+        ...formData,
+        dealName: name,
+        businessSummary: description || formData.businessSummary || "",
+        dealStructure: formData.dealStructure || "tiered",
+        dealType: formData.dealType || "grow",
+        region: formData.region || "west",
+        salesChannel: formData.salesChannel || "client_direct",
+        advertiserName: formData.advertiserName || "Draft Client",
+        termStartDate: formData.termStartDate || new Date(),
+        termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        annualRevenue: Number(formData.annualRevenue) || 0,
+        annualGrossMargin: Number(formData.annualGrossMargin) || 0,
+        status: "draft" as DealStatus,
+        isDraft: true,
+        draftType: "submission_draft"
+      };
+
+      const validatedData = insertDealSchema.safeParse(draftDeal);
+      if (!validatedData.success) {
+        const errorMessage = fromZodError(validatedData.error);
+        return res.status(400).json({ 
+          message: "Draft validation failed", 
+          errors: errorMessage.message 
+        });
+      }
+
+      const savedDraft = await storage.createDeal(validatedData.data);
+      res.status(201).json(savedDraft);
+    } catch (error) {
+      console.error("Error creating draft:", error);
+      res.status(500).json({ message: "Failed to create draft" });
+    }
+  });
+
+  router.get("/deals/drafts", async (req: Request, res: Response) => {
+    try {
+      // Get all deals with draft status
+      const allDeals = await storage.getDeals();
+      const drafts = allDeals.filter(deal => deal.status === 'draft');
+      res.status(200).json(drafts);
+    } catch (error) {
+      console.error("Error fetching drafts:", error);
+      res.status(500).json({ message: "Failed to fetch drafts" });
+    }
+  });
+
+  router.delete("/deals/drafts/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid draft ID" });
+      }
+
+      const draft = await storage.getDeal(id);
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+
+      if (draft.status !== "draft") {
+        return res.status(400).json({ message: "Only drafts can be deleted via this endpoint" });
+      }
+
+      await storage.deleteDeal(id);
+      res.status(200).json({ message: "Draft deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting draft:", error);
+      res.status(500).json({ message: "Failed to delete draft" });
+    }
+  });
   
   // Deal scoping requests endpoints
   router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
