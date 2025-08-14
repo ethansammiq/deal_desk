@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info, InfoIcon } from "lucide-react";
 import { useLocation } from "wouter";
-import { FormSectionHeader, FormProgressTracker, FormStyles } from "@/components/ui/form-style-guide";
+import { FormSectionHeader, FormProgressTracker, FormStyles, FormNavigation } from "@/components/ui/form-style-guide";
 import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
@@ -310,33 +310,18 @@ export default function RequestSupport() {
         </CardContent>
       </Card>
 
-      {/* Navigation Buttons - Updated for consolidated steps */}
-      <div className="mt-5">
-        {activeTab === "deal-overview" && (
-          <div className="flex justify-end">
-            <Button type="button" onClick={goToNextTab}>
-              Next: Business Context
-            </Button>
-          </div>
-        )}
-
-        {activeTab === "business-context" && (
-          <div className="flex justify-between">
-            <Button type="button" variant="outline" onClick={goToPrevTab}>
-              Previous: Deal Overview
-            </Button>
-            <Button
-              type="button"
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={createDealScopingRequest.isPending}
-            >
-              {createDealScopingRequest.isPending
-                ? "Submitting..."
-                : "Submit Request"}
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Navigation - Using shared FormNavigation component */}
+      <FormNavigation
+        variant={activeTab === "business-context" ? "submit" : "next"}
+        onPrevious={activeTab === "business-context" ? goToPrevTab : undefined}
+        onNext={activeTab === "deal-overview" ? goToNextTab : undefined}
+        onSubmit={activeTab === "business-context" ? form.handleSubmit(onSubmit) : undefined}
+        previousLabel="Previous: Deal Overview"
+        nextLabel="Next: Business Context"
+        submitLabel="Submit Request"
+        isSubmitting={createDealScopingRequest.isPending}
+        showBorder={false}
+      />
     </div>
   );
 }
