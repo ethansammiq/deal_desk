@@ -907,8 +907,8 @@ export default function SubmitDeal() {
   }
 
   return (
-    <div>
-        <div className="flex items-center justify-between mb-6">
+    <div className="p-6 rounded-lg bg-white shadow-md">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <FormSectionHeader
             title="Deal Submission"
