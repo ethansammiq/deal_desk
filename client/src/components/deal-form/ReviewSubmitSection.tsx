@@ -508,7 +508,7 @@ export function ReviewSubmitSection({
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
-                        {formatCurrency(dealCalculations.calculateClientValue(tier))}
+                        {formatCurrency(dealCalculations.calculationService.calculateClientValueFromIncentives(tier))}
                       </td>
                     ))}
                   </tr>
@@ -518,7 +518,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 font-medium">Client Value Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
-                      const growthRate = dealCalculations.calculateClientValueGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const growthRate = dealCalculations.calculationService.calculateClientValueGrowthRateFromIncentives(tier, salesChannel, advertiserName, agencyName);
                       const isNegative = growthRate < 0;
                       const colorClass = isNegative ? "text-red-600" : "text-green-600";
                       return (
