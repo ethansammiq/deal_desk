@@ -104,6 +104,7 @@ import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
+import { useAutoSave } from "@/hooks/useAutoSave";
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
@@ -258,6 +259,35 @@ export default function SubmitDeal() {
     validateOnChange: true,
     formType: 'submitDeal' // ✅ SYNCHRONIZED: Use SubmitDeal form steps
   });
+
+  // Auto-save functionality
+  const autoSave = useAutoSave({
+    data: form.getValues(),
+    save: async (data) => {
+      // Optional: save to server as draft
+      // await apiRequest('/api/deals/draft', { method: 'POST', body: data });
+    },
+    storageKey: 'deal-submission-draft',
+    enabled: true,
+    delay: 2000 // Save after 2 seconds of inactivity
+  });
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = autoSave.loadSavedData();
+    if (savedData && !fromScopingId) {
+      // Show confirmation dialog for loading saved data
+      const shouldLoad = confirm('We found a saved draft of your deal submission. Would you like to continue where you left off?');
+      if (shouldLoad) {
+        form.reset(savedData);
+        toast({
+          title: "Draft Loaded",
+          description: "Your previously saved progress has been restored.",
+          duration: 3000,
+        });
+      }
+    }
+  }, []);
   
   // ✅ MIGRATED: Use hook-managed form step instead of local state
   const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
