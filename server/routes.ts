@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Form data is required" });
       }
 
-      // Create a deal with draft status
+      // Create a deal with draft status - use minimal validation for drafts
       const draftDeal = {
         ...formData,
         dealName: name,
@@ -317,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         advertiserName: formData.advertiserName || "",
         termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
         termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        // Only include financial fields if they have valid values (avoid validation errors for drafts)
-        ...(formData.annualRevenue && Number(formData.annualRevenue) > 0 && { annualRevenue: Number(formData.annualRevenue) }),
-        ...(formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 && { annualGrossMargin: Number(formData.annualGrossMargin) }),
+        // For drafts, provide default values for required fields to avoid validation errors
+        annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1, // Default to 1 to pass positive validation
+        annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0, // Allow 0 for margins
         status: "draft" as const,
         isDraft: true,
         draftType: "submission_draft"
