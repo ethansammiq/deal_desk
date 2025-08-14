@@ -287,11 +287,21 @@ export default function UnifiedDashboard() {
     navigate(`/deals/${dealId}`);
   };
 
+  // Handle draft resumption
+  const handleResumeDraft = (dealId: number) => {
+    // Navigate to Submit Deal form and load draft data
+    navigate(`/submit-deal?draft=${dealId}`);
+  };
+
   // Handle priority banner actions
   const handlePriorityAction = (dealId: number, actionType: any) => {
     switch (actionType) {
       case 'convert':
         handleConvert(dealId);
+        break;
+      case 'resume_draft':
+      case 'draft':
+        handleResumeDraft(dealId);
         break;
       case 'approve':
         handleApprove(dealId);

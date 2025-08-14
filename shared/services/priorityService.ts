@@ -7,7 +7,7 @@ export interface PriorityItem {
   description: string;
   urgencyLevel: 'high' | 'medium' | 'low';
   actionLabel: string;
-  actionType: 'convert' | 'review' | 'approve' | 'legal_review' | 'contract' | 'nudge' | 'draft';
+  actionType: 'convert' | 'review' | 'approve' | 'legal_review' | 'contract' | 'nudge' | 'draft' | 'resume_draft';
   daysOverdue: number;
 }
 
@@ -38,6 +38,7 @@ export const needsAttention = (deal: Deal, userRole: UserRole): boolean => {
   switch (userRole) {
     case 'seller':
       return deal.status === 'scoping' || 
+             deal.status === 'draft' ||  // Include drafts for sellers
              ['under_review', 'contract_drafting', 'negotiating'].includes(deal.status);
     
     case 'approver':
@@ -47,7 +48,7 @@ export const needsAttention = (deal: Deal, userRole: UserRole): boolean => {
       return deal.status === 'contract_drafting' || deal.status === 'approved';
     
     case 'admin':
-      return deal.status !== 'draft'; // Admin can see all except drafts
+      return deal.status === 'draft' || deal.status !== 'draft'; // Admin can see all including drafts
     
     default:
       return false;
@@ -75,6 +76,9 @@ export const calculateUrgency = (deal: Deal, daysInStatus: number): 'high' | 'me
 export const getActionTypeAndLabel = (deal: Deal, userRole: UserRole): { actionType: PriorityItem['actionType'], actionLabel: string } => {
   // Seller actions
   if (userRole === 'seller') {
+    if (deal.status === 'draft') {
+      return { actionType: 'resume_draft', actionLabel: 'Resume Draft' };
+    }
     if (deal.status === 'scoping') {
       return { actionType: 'convert', actionLabel: 'Convert to Deal' };
     }
@@ -100,6 +104,13 @@ export const getActionTypeAndLabel = (deal: Deal, userRole: UserRole): { actionT
     }
     if (deal.status === 'approved') {
       return { actionType: 'contract', actionLabel: 'Send Contract' };
+    }
+  }
+  
+  // Admin actions
+  if (userRole === 'admin') {
+    if (deal.status === 'draft') {
+      return { actionType: 'resume_draft', actionLabel: 'Resume Draft' };
     }
   }
   

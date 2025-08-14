@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         annualRevenue: Number(formData.annualRevenue) || 0,
         annualGrossMargin: Number(formData.annualGrossMargin) || 0,
-        status: "draft" as DealStatus,
+        status: "draft" as const,
         isDraft: true,
         draftType: "submission_draft"
       };

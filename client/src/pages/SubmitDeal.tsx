@@ -73,6 +73,7 @@ import {
 } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 import { Plus, Trash2 } from "lucide-react";
+import { StepByStepDraftManager } from "@/components/draft/StepByStepDraftManager";
 import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { IncentiveSelector } from "@/components/IncentiveSelector";
 import { 
@@ -142,10 +143,11 @@ export default function SubmitDeal() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  // Check for pre-fill from scoping request
+  // Check for pre-fill from scoping request or draft loading
   const urlParams = new URLSearchParams(window.location.search);
   const fromScopingId = urlParams.get('from-scoping');
-  const [isPreFilling, setIsPreFilling] = useState(!!fromScopingId);
+  const draftId = urlParams.get('draft');
+  const [isPreFilling, setIsPreFilling] = useState(!!fromScopingId || !!draftId);
   const [scopingDealData, setScopingDealData] = useState<any>(null);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
     null,
@@ -330,7 +332,7 @@ export default function SubmitDeal() {
   // ✅ MIGRATED: Use hook-managed form step instead of local state
   const formStep = formValidation.currentStep - 1; // Convert from 1-based to 0-based indexing
   
-  // Fetch and pre-fill scoping deal data if coming from conversion
+  // Fetch and pre-fill scoping deal data or draft data
   useEffect(() => {
     if (fromScopingId && !scopingDealData) {
       setIsPreFilling(true);
@@ -404,8 +406,46 @@ export default function SubmitDeal() {
             variant: "destructive",
           });
         });
+    } else if (draftId && !scopingDealData) {
+      setIsPreFilling(true);
+      
+      fetch(`/api/deals/${draftId}`)
+        .then(response => response.json())
+        .then(draftData => {
+          setScopingDealData(draftData);
+          
+          // Pre-fill the form with draft data - handle both stored form data and complete deal
+          const formData = draftData.formData || draftData;
+          form.reset(formData);
+          
+          // Set deal structure type if available
+          if (formData.dealStructure) {
+            setDealStructure(formData.dealStructure);
+          }
+          
+          // Set form step if available
+          if (draftData.currentStep) {
+            formValidation.setStep(draftData.currentStep);
+          }
+          
+          setIsPreFilling(false);
+          
+          toast({
+            title: "Draft Loaded",
+            description: `Draft "${draftData.dealName}" has been loaded successfully.`,
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching draft:', error);
+          setIsPreFilling(false);
+          toast({
+            title: "Error",
+            description: "Failed to load draft data",
+            variant: "destructive",
+          });
+        });
     }
-  }, [fromScopingId, scopingDealData]);
+  }, [fromScopingId, draftId, scopingDealData]);
   
   // Removed complex tier manager - using simple state management
   
@@ -588,6 +628,40 @@ export default function SubmitDeal() {
         variant: "destructive",
       });
     },
+  });
+
+  // Draft saving mutation with business rules
+  const saveDraftMutation = useMutation({
+    mutationFn: async ({ name, description, formData, step }: { 
+      name: string; 
+      description?: string; 
+      formData: any;
+      step: number;
+    }) => {
+      // Business Rule: One draft per advertiser/agency per seller account
+      const requestData = {
+        name,
+        description,
+        formData,
+        currentStep: step,
+        advertiserName: formData.advertiserName,
+        agencyName: formData.agencyName,
+        salesChannel: formData.salesChannel
+      };
+
+      return apiRequest("/api/deals/drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/deals/drafts'] });
+    },
+    onError: (error: any) => {
+      console.error("Draft save error:", error);
+    }
   });
 
   // Fetch agencies and advertisers for dropdowns
@@ -886,18 +960,26 @@ export default function SubmitDeal() {
             }}>
             {/* Step 1: Deal Overview - Using shared component */}
             {formStep === 0 && (
-              <DealOverviewStep
-                form={form}
-                agencies={agencies}
-                advertisers={advertisers}
-                salesChannel={String(salesChannel || "")}
-                dealStructureType={dealStructureType}
-                setDealStructure={setDealStructure}
-                nextStep={nextStep}
-                layout="cards"
-                includeEmail={false}
-                showNavigation={true}
-              />
+              <div className="space-y-6">
+                <StepByStepDraftManager 
+                  formData={form.getValues()}
+                  currentStep={1}
+                  totalSteps={4}
+                  isValid={!formValidation.hasErrors(1)}
+                />
+                <DealOverviewStep
+                  form={form}
+                  agencies={agencies}
+                  advertisers={advertisers}
+                  salesChannel={String(salesChannel || "")}
+                  dealStructureType={dealStructureType}
+                  setDealStructure={setDealStructure}
+                  nextStep={nextStep}
+                  layout="cards"
+                  includeEmail={false}
+                  showNavigation={true}
+                />
+              </div>
             )}
 
             {/* ORIGINAL FORM STRUCTURE FOR REFERENCE - Using extracted component above */}
@@ -1391,14 +1473,32 @@ export default function SubmitDeal() {
                     )}
                   />
 
-                  {/* Navigation Button */}
-                  <div className="flex justify-end pt-4">
+                  {/* Navigation and Draft Management */}
+                  <div className="flex justify-between items-center pt-4">
+                    <StepByStepDraftManager
+                      currentFormData={form.getValues()}
+                      currentStep={formStep}
+                      onLoadDraft={(formData, step) => {
+                        Object.entries(formData).forEach(([key, value]) => {
+                          form.setValue(key as any, value);
+                        });
+                        setFormStep(step);
+                      }}
+                      onSaveDraft={async (name, description) => {
+                        await saveDraftMutation.mutateAsync({
+                          name,
+                          description,
+                          formData: form.getValues(),
+                          step: formStep
+                        });
+                      }}
+                    />
                     <Button
                       type="button"
                       onClick={nextStep}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
-                      Next: Value Structure
+                      Next: Business Context
                     </Button>
                   </div>
                 </div>
@@ -1407,10 +1507,16 @@ export default function SubmitDeal() {
 
             {/* Step 1: Business Context */}
             {formStep === 1 && (
-              <>
+              <div className="space-y-6">
+                <StepByStepDraftManager 
+                  formData={form.getValues()}
+                  currentStep={2}
+                  totalSteps={4}
+                  isValid={!formValidation.hasErrors(2)}
+                />
                 <BusinessContextSection form={form} variant="submitDeal" />
                 <CardContent className="p-6 border-t">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Overview
                     </Button>
@@ -1419,16 +1525,23 @@ export default function SubmitDeal() {
                     </Button>
                   </div>
                 </CardContent>
-              </>
+              </div>
             )}
 
             {/* Step 2: Value Structure */}
             {formStep === 2 && (
-              <CardContent className="p-6">
-                <FormSectionHeader
-                  title="Value Structure"
-                  description="Define the financial structure and value proposition for this deal"
+              <div className="space-y-6">
+                <StepByStepDraftManager 
+                  formData={form.getValues()}
+                  currentStep={3}
+                  totalSteps={4}
+                  isValid={!formValidation.hasErrors(3)}
                 />
+                <CardContent className="p-6">
+                  <FormSectionHeader
+                    title="Value Structure"
+                    description="Define the financial structure and value proposition for this deal"
+                  />
                 <div className="space-y-6">
                   {/* Simplified approval alert based on basic deal parameters */}
                   {form.watch("annualRevenue") !== undefined &&
@@ -2060,24 +2173,32 @@ export default function SubmitDeal() {
                 )}
                 {/* ✅ Phase 2.5: Legacy inline incentive section removed - consolidated into IncentiveStructureSection */}
                 
-                <div className="mt-8 flex justify-between">
-                  <Button type="button" variant="outline" onClick={prevStep}>
-                    Previous: Business Context
-                  </Button>
-                  <Button type="button" onClick={nextStep}>
-                    Next: Review & Submit
-                  </Button>
-                </div>
-                </div>
-              </CardContent>
+                  <div className="mt-8 flex justify-between items-center">
+                    <Button type="button" variant="outline" onClick={prevStep}>
+                      Previous: Business Context
+                    </Button>
+                    <Button type="button" onClick={nextStep}>
+                      Next: Review & Submit
+                    </Button>
+                  </div>
+                  </div>
+                </CardContent>
+              </div>
             )}
 
             {/* Step 3: Review & Submit */}
             {formStep === 3 && (
-              <CardContent className="p-6">
-                <FormSectionHeader
-                  title="Review & Submit"
+              <div className="space-y-6">
+                <StepByStepDraftManager 
+                  formData={form.getValues()}
+                  currentStep={4}
+                  totalSteps={4}
+                  isValid={!formValidation.hasErrors(4)}
                 />
+                <CardContent className="p-6">
+                  <FormSectionHeader
+                    title="Review & Submit"
+                  />
 
                 <div className="bg-slate-50 p-4 rounded-lg mb-6">
                   <div className="text-sm text-slate-500 italic">
@@ -3179,12 +3300,23 @@ export default function SubmitDeal() {
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Structure
                     </Button>
-                    
-                    {/* Draft Management */}
-                    <DraftManager
+                    <StepByStepDraftManager
                       currentFormData={form.getValues()}
-                      onLoadDraft={handleLoadDraft}
-                      onSaveDraft={handleSaveDraft}
+                      currentStep={formStep}
+                      onLoadDraft={(formData, step) => {
+                        Object.entries(formData).forEach(([key, value]) => {
+                          form.setValue(key as any, value);
+                        });
+                        setFormStep(step);
+                      }}
+                      onSaveDraft={async (name, description) => {
+                        await saveDraftMutation.mutateAsync({
+                          name,
+                          description,
+                          formData: form.getValues(),
+                          step: formStep
+                        });
+                      }}
                     />
                   </div>
                   
@@ -3247,6 +3379,7 @@ export default function SubmitDeal() {
                   </Button>
                 </div>
               </CardContent>
+              </div>
             )}
           </form>
         </Form>

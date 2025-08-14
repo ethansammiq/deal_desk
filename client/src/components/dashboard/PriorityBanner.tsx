@@ -44,6 +44,7 @@ const getActionIcon = (actionType: PriorityItem['actionType']) => {
     case 'contract':
       return ArrowUpRight;
     case 'draft':
+    case 'resume_draft':
       return FileEdit;
     default:
       return FileCheck;
