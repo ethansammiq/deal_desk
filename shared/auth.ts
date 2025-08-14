@@ -19,9 +19,9 @@ export function isValidStatusTransition(currentStatus: DealStatus, targetStatus:
 }
 
 // Phase 7B: Get all statuses user can transition to from current status
-export function getAllowedTransitions(userRole: UserRole, currentStatus: DealStatus): DealStatus[] {
+export function getAllowedTransitions(currentStatus: DealStatus, userRole: UserRole): DealStatus[] {
   const workflowAllowed = statusTransitionRules[currentStatus] || [];
-  const roleAllowed = rolePermissions[userRole].canChangeStatus;
+  const roleAllowed = rolePermissions[userRole]?.canChangeStatus || [];
   
   // Return intersection of workflow rules and role permissions
   return workflowAllowed.filter(status => roleAllowed.includes(status)) as DealStatus[];

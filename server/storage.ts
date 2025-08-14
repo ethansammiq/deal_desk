@@ -1289,6 +1289,25 @@ export class MemStorage implements IStorage {
       contractSentCount
     };
   }
+
+  // Phase 3: Deal Comments methods
+  private dealComments: any[] = [];
+
+  async getDealComments(dealId: number): Promise<any[]> {
+    return this.dealComments
+      .filter(comment => comment.dealId === dealId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  async createDealComment(commentData: any): Promise<any> {
+    const newComment = {
+      id: Date.now() + Math.random(),
+      ...commentData,
+      createdAt: commentData.createdAt || new Date()
+    };
+    this.dealComments.push(newComment);
+    return newComment;
+  }
 }
 
 // Function to get the appropriate storage implementation based on environment
