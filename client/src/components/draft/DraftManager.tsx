@@ -58,10 +58,18 @@ export function DraftManager({ currentFormData, onLoadDraft, onSaveDraft }: Draf
       return;
     }
 
+    // Ensure form data has required fields
+    const enhancedFormData = {
+      ...currentFormData,
+      dealName: currentFormData.dealName || draftName.trim(),
+      termStartDate: currentFormData.termStartDate || new Date().toISOString().split('T')[0],
+      termEndDate: currentFormData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+
     const newDraft: DraftData = {
       id: `draft-${Date.now()}`,
       name: draftName.trim(),
-      formData: currentFormData,
+      formData: enhancedFormData,
       createdAt: new Date(),
       updatedAt: new Date(),
       description: draftDescription.trim() || undefined,
