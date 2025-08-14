@@ -156,7 +156,7 @@ export function ReviewSubmitSection({
         variant="submit"
         onPrevious={onPrevStep}
         onSubmit={onSubmit}
-        previousLabel="Back to Value Structure"
+        previousLabel="Back to Financial Structure"
         submitLabel="Submit Deal"
         isSubmitting={isSubmitting}
         showBorder={true}
