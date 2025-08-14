@@ -1008,7 +1008,7 @@ export default function SubmitDeal() {
             }}>
             {/* Step 1: Deal Overview - Using shared component */}
             {formStep === 0 && (
-              <div className="space-y-6">
+              <div className="space-y-6 p-6">
 
                 <DealOverviewStep
                   form={form}
@@ -1018,7 +1018,7 @@ export default function SubmitDeal() {
                   dealStructureType={dealStructureType}
                   setDealStructure={setDealStructure}
                   nextStep={nextStep}
-                  layout="cards"
+                  layout="tabs"
                   includeEmail={false}
                   showNavigation={true}
                 />
