@@ -1059,7 +1059,6 @@ export default function SubmitDeal() {
                       dealTiers={dealTiers}
                       setDealTiers={setDealTiers}
                       salesChannel={salesChannel}
-                      variant="submitDeal"
                     />
 
                     {/* Cost & Value Analysis Section */}
@@ -1091,35 +1090,18 @@ export default function SubmitDeal() {
                 </TabsContent>
 
                 <TabsContent value="review-submit" className="space-y-6 pt-4">
-                  <FormSectionHeader
-                    title="Review & Submit"
-                    description="Review your deal details and submit for approval"
+                  <ReviewSubmitSection
+                    form={form}
+                    dealStructureType={dealStructureType}
+                    dealTiers={dealTiers}
+                    selectedIncentives={[]} // Placeholder - incentives are embedded in dealTiers
+                    tierIncentives={[]} // Placeholder - tier-specific incentives 
+                    financialSummary={financialSummary}
+                    currentApprover={currentApprover}
+                    isSubmitting={submitDealMutation.isPending}
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    onPrevStep={goToPrevTab}
                   />
-                  <div className="space-y-6">
-                    {/* Deal Summary */}
-                    <DealSummary 
-                      form={form}
-                      dealStructureType={dealStructureType}
-                      dealTiers={dealTiers}
-                    />
-
-                    {/* Submit Actions */}
-                    <div className="mt-8 flex justify-between">
-                      <Button type="button" variant="outline" onClick={goToPrevTab}>
-                        Previous: Deal Structure
-                      </Button>
-                      
-                      <Button 
-                        type="submit"
-                        disabled={submitDealMutation.isPending}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        {submitDealMutation.isPending
-                          ? "Submitting..."
-                          : "Submit Deal for Approval"}
-                      </Button>
-                    </div>
-                  </div>
                 </TabsContent>
                 </Tabs>
               </form>

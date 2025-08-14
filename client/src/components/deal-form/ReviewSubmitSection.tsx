@@ -7,8 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
-import { type SelectedIncentive } from "@/lib/incentive-data";
-import { type TierIncentive } from "@/components/TierSpecificIncentives";
+// Legacy interfaces - simplified for current architecture
+interface SelectedIncentive {
+  id: string;
+  type: string;
+  value: number;
+  option?: string;
+  tierIds?: number[];
+  notes?: string;
+}
+
+interface TierIncentive {
+  tierNumber: number;
+  incentives: SelectedIncentive[];
+}
 import {
   formatCurrency,
   formatPercentage,
@@ -365,9 +377,9 @@ export function ReviewSubmitSection({
                       </span>
                     </div>
                   </div>
-                  {tier.incentiveValue && (
+                  {tier.incentives && tier.incentives.length > 0 && (
                     <Badge variant="secondary">
-                      {tier.incentiveValue}% {tier.incentiveCategory}
+                      {tier.incentives.length} Incentive{tier.incentives.length !== 1 ? 's' : ''}
                     </Badge>
                   )}
                 </div>
@@ -377,28 +389,33 @@ export function ReviewSubmitSection({
         </Card>
       )}
 
-      {/* Selected Incentives */}
-      {selectedIncentives.length > 0 && (
+      {/* Selected Incentives - Show tier-embedded incentives */}
+      {dealTiers.some(tier => tier.incentives && tier.incentives.length > 0) && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Selected Incentives</CardTitle>
+            <CardTitle className="text-lg">Deal Incentives</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {selectedIncentives.map((incentive, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                  <span className="font-medium">{incentive.option}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
-                      Tiers: {incentive.tierIds.join(", ")}
-                    </span>
-                    {incentive.notes && (
-                      <Badge variant="outline" className="text-xs">
-                        {incentive.notes}
-                      </Badge>
-                    )}
+            <div className="space-y-3">
+              {dealTiers.map((tier) => (
+                tier.incentives && tier.incentives.length > 0 && (
+                  <div key={tier.tierNumber} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">Tier {tier.tierNumber}</Badge>
+                      <span className="text-sm text-gray-600">
+                        {formatCurrency(tier.annualRevenue || 0)} Revenue Target
+                      </span>
+                    </div>
+                    <div className="ml-4 space-y-1">
+                      {tier.incentives.map((incentive, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm">
+                          <span className="font-medium">{incentive.type}</span>
+                          <span className="text-gray-700">{incentive.value}%</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
           </CardContent>
