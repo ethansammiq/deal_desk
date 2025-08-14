@@ -995,7 +995,7 @@ export default function SubmitDeal() {
       />
 
       {/* Form Container */}
-      <Card>
+      <div className="bg-white rounded-lg shadow-sm">
         <FormErrorBoundary
           fallbackTitle="Deal Form Error"
           fallbackMessage="An error occurred while processing the deal form. Please try refreshing the page or contact support if the issue persists."
@@ -1534,7 +1534,7 @@ export default function SubmitDeal() {
             {formStep === 1 && (
               <div className="space-y-6">
                 <BusinessContextSection form={form} variant="submitDeal" />
-                <CardContent className="p-6 border-t">
+                <div className="p-6 border-t bg-gray-50">
                   <div className="flex justify-between items-center">
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Overview
@@ -1543,14 +1543,14 @@ export default function SubmitDeal() {
                       Next: Financial Structure
                     </Button>
                   </div>
-                </CardContent>
+                </div>
               </div>
             )}
 
             {/* Step 2: Financial Structure */}
             {formStep === 2 && (
               <div className="space-y-6">
-                <CardContent className="p-6">
+                <div className="p-6">
                   <FormSectionHeader
                     title="Financial Structure"
                     description="Define the financial structure and value proposition for this deal"
@@ -2195,7 +2195,7 @@ export default function SubmitDeal() {
                     </Button>
                   </div>
                   </div>
-                </CardContent>
+                </div>
               </div>
             )}
 
@@ -2203,7 +2203,7 @@ export default function SubmitDeal() {
             {formStep === 3 && (
               <div className="space-y-6">
 
-                <CardContent className="p-6">
+                <div className="p-6">
                   <FormSectionHeader
                     title="Review & Submit"
                   />
@@ -3366,13 +3366,13 @@ export default function SubmitDeal() {
                       : "Submit Deal for Approval"}
                   </Button>
                 </div>
-              </CardContent>
+              </div>
               </div>
             )}
           </form>
         </Form>
       </FormErrorBoundary>
-      </Card>
+      </div>
       </div>
     </div>
   );
