@@ -44,6 +44,107 @@ interface ReviewSubmitSectionProps {
   onPrevStep: () => void;
 }
 
+// Standalone DealSummary component for use in tab architecture
+interface DealSummaryProps {
+  form: UseFormReturn<ReviewSubmitFormValues>;
+  dealStructureType: "tiered" | "flat_commit" | "";
+  dealTiers: DealTier[];
+}
+
+export function DealSummary({ form, dealStructureType, dealTiers }: DealSummaryProps) {
+  const formValues = form.getValues();
+
+  // Calculate contract term from dates
+  const startDate = formValues.termStartDate;
+  const endDate = formValues.termEndDate;
+  const contractTerm = startDate && endDate ?
+    Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
+
+  return (
+    <div className="space-y-6">
+      {/* Deal Summary Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Deal Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Deal Type</label>
+              <p className="text-base capitalize">{formValues.dealType}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Sales Channel</label>
+              <p className="text-base">
+                {formValues.salesChannel === "client_direct" ? "Client Direct" :
+                 formValues.salesChannel === "holding_company" ? "Holding Company" :
+                 "Independent Agency"}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Region</label>
+              <p className="text-base capitalize">{formValues.region}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Structure</label>
+              <p className="text-base">
+                {dealStructureType === "tiered" ? "Tiered Revenue" : "Flat Commit"}
+              </p>
+            </div>
+          </div>
+
+          {formValues.advertiserName && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Advertiser</label>
+              <p className="text-base">{formValues.advertiserName}</p>
+            </div>
+          )}
+
+          {formValues.agencyName && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Agency</label>
+              <p className="text-base">{formValues.agencyName}</p>
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium text-gray-700">Contract Term</label>
+            <p className="text-base">{contractTerm} months</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Deal Structure Details */}
+      {dealStructureType === "tiered" && dealTiers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Tier Structure</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {dealTiers.map((tier) => (
+                <div key={tier.tierNumber} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <Badge variant="outline">Tier {tier.tierNumber}</Badge>
+                    <div>
+                      <span className="font-medium">
+                        {formatCurrency(tier.annualRevenue || 0)}
+                      </span>
+                      <span className="text-gray-600 ml-2">
+                        ({((tier.annualGrossMargin || 0) * 100) || 0}% margin)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export function ReviewSubmitSection({
   form,
   dealStructureType,
