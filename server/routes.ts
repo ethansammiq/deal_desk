@@ -264,6 +264,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 8: Revision Request API endpoint
+  router.post("/deals/:id/request-revision", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const { revisionReason } = req.body;
+      
+      if (!revisionReason || typeof revisionReason !== 'string' || !revisionReason.trim()) {
+        return res.status(400).json({ message: "Revision reason is required" });
+      }
+
+      // Get the current deal
+      const currentDeal = await storage.getDeal(id);
+      if (!currentDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Validate that deal can be moved to revision_requested status
+      if (!["under_review", "negotiating"].includes(currentDeal.status)) {
+        return res.status(400).json({ 
+          message: "Deal must be in 'under_review' or 'negotiating' status to request revision",
+          currentStatus: currentDeal.status
+        });
+      }
+
+      // Update deal status to revision_requested with revision data
+      const updatedDeal = await storage.updateDealWithRevision(id, {
+        status: "revision_requested" as DealStatus,
+        revisionReason: revisionReason.trim(),
+        revisionCount: (currentDeal.revisionCount || 0) + 1,
+        isRevision: true,
+        lastRevisedAt: new Date(),
+        canEdit: true // Allow seller to edit when revision is requested
+      });
+
+      if (!updatedDeal) {
+        return res.status(500).json({ message: "Failed to update deal with revision request" });
+      }
+
+      res.status(200).json({
+        message: "Revision requested successfully",
+        deal: updatedDeal
+      });
+    } catch (error) {
+      console.error("Error requesting revision:", error);
+      res.status(500).json({ message: "Failed to request revision" });
+    }
+  });
+
   router.post("/deals", async (req: Request, res: Response) => {
     try {
       // Extract dealTiers from request body if present

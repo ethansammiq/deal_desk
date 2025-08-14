@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
+import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealConversion } from "@/hooks/useDealConversion";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -21,7 +22,8 @@ import {
   ArrowUpRight,
   MessageSquare,
   FileCheck,
-  Clock
+  Clock,
+  AlertTriangle
 } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Deal, type DealStatus, type UserRole } from "@shared/schema";
@@ -47,7 +49,7 @@ interface DealStats {
 
 // Action type definition for role-based actions
 interface DealAction {
-  type: 'convert' | 'nudge' | 'approve' | 'legal_approve' | 'contract' | 'view' | 'override';
+  type: 'convert' | 'nudge' | 'approve' | 'legal_approve' | 'contract' | 'view' | 'override' | 'request_revision';
   label: string;
   variant: 'default' | 'outline' | 'secondary' | 'destructive';
   icon?: React.ComponentType<{ className?: string }>;
@@ -62,9 +64,10 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
   onApprove: (dealId: number) => void;
   onLegalApprove: (dealId: number) => void;
   onSendContract: (dealId: number) => void;
+  onRequestRevision: (dealId: number) => void;
   onView: (dealId: number) => void;
 }): DealAction => {
-  const { onConvert, onNudge, onApprove, onLegalApprove, onSendContract, onView } = handlers;
+  const { onConvert, onNudge, onApprove, onLegalApprove, onSendContract, onRequestRevision, onView } = handlers;
 
   // Seller actions
   if (userRole === 'seller') {
@@ -102,7 +105,17 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
         visible: true
       };
     }
-    if (deal.status === 'legal_review') {
+    if (deal.status === 'negotiating') {
+      return {
+        type: 'request_revision',
+        label: 'Request Revision',
+        variant: 'outline',
+        icon: AlertTriangle,
+        onClick: onRequestRevision,
+        visible: true
+      };
+    }
+    if (deal.status === 'contract_drafting') {
       return {
         type: 'nudge',
         label: 'Nudge Legal',
@@ -161,6 +174,8 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
 
 export default function UnifiedDashboard() {
   const { data: user } = useCurrentUser();
+  const [revisionModalOpen, setRevisionModalOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const { convertScopingToDeal } = useDealConversion();
   const { 
     sendNudge, 
@@ -257,6 +272,14 @@ export default function UnifiedDashboard() {
     });
   };
 
+  const handleRequestRevision = (dealId: number) => {
+    const deal = dealsQuery.data?.find(d => d.id === dealId);
+    if (deal) {
+      setSelectedDeal(deal);
+      setRevisionModalOpen(true);
+    }
+  };
+
   const [, navigate] = useLocation();
   
   const handleView = (dealId: number) => {
@@ -278,6 +301,9 @@ export default function UnifiedDashboard() {
         break;
       case 'contract':
         handleSendContract(dealId);
+        break;
+      case 'request_revision':
+        handleRequestRevision(dealId);
         break;
       case 'nudge':
         // Default nudge logic based on user role
@@ -428,6 +454,40 @@ export default function UnifiedDashboard() {
         const updatedAt = row.original.updatedAt;
         const dateString = updatedAt ? updatedAt.toString() : "";
         return <div className="text-sm text-slate-500">{formatRelativeDate(dateString)}</div>;
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const deal = row.original;
+        const action = getActionForDeal(deal, userRole, {
+          onConvert: handleConvert,
+          onNudge: handleNudge,
+          onApprove: handleApprove,
+          onLegalApprove: handleLegalApprove,
+          onSendContract: handleSendContract,
+          onRequestRevision: handleRequestRevision,
+          onView: handleView,
+        });
+
+        if (!action.visible) return null;
+
+        return (
+          <Button
+            variant={action.variant}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick(deal.id);
+            }}
+            disabled={isUpdatingStatus || isSendingNudge}
+            className="h-8"
+          >
+            {action.icon && <action.icon className="h-3 w-3 mr-1" />}
+            {action.label}
+          </Button>
+        );
       },
     },
 
@@ -609,6 +669,18 @@ export default function UnifiedDashboard() {
           </QueryStateHandler>
         </div>
       </div>
+
+      {/* Phase 8: Revision Request Modal */}
+      {selectedDeal && (
+        <RevisionRequestModal
+          isOpen={revisionModalOpen}
+          onClose={() => {
+            setRevisionModalOpen(false);
+            setSelectedDeal(null);
+          }}
+          deal={selectedDeal}
+        />
+      )}
     </div>
   );
 }

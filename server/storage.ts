@@ -62,6 +62,7 @@ export interface IStorage {
   }): Promise<Deal[]>;
   createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
   updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined>;
+  updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined>;
   
   // Phase 7A: Deal Status History methods
   getDealStatusHistory(dealId: number): Promise<DealStatusHistory[]>;
@@ -1016,6 +1017,36 @@ export class MemStorage implements IStorage {
       changedBy,
       comments: comments || null,
     });
+    
+    return updatedDeal;
+  }
+
+  async updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined> {
+    const deal = this.deals.get(id);
+    if (!deal) return undefined;
+    
+    const now = new Date();
+    
+    // Update the deal with revision data
+    const updatedDeal: Deal = {
+      ...deal,
+      ...revisionData,
+      lastStatusChange: now,
+      updatedAt: now,
+    };
+    
+    this.deals.set(id, updatedDeal);
+    
+    // Create status history entry if status changed
+    if (revisionData.status && revisionData.status !== deal.status) {
+      await this.createDealStatusHistory({
+        dealId: id,
+        status: revisionData.status,
+        previousStatus: deal.status,
+        changedBy: "system", // Revision requests are system-generated
+        comments: revisionData.revisionReason || "Revision requested",
+      });
+    }
     
     return updatedDeal;
   }
