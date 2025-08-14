@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   ChevronDown, 
@@ -48,7 +47,7 @@ const getActionIcon = (actionType: PriorityItem['actionType']) => {
   }
 };
 
-// Get urgency styling
+// Get urgency styling - flatter design without heavy shadows
 const getUrgencyStyle = (urgencyLevel: PriorityItem['urgencyLevel']) => {
   switch (urgencyLevel) {
     case 'high':
@@ -89,31 +88,29 @@ export function PriorityBanner({
     return null;
   }
 
-  // Loading state
+  // Loading state - flat design
   if (isLoading) {
     return (
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
-            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
-            <div className="ml-auto h-6 w-16 bg-slate-200 rounded animate-pulse" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mb-6 bg-white border border-slate-200 rounded-md p-4">
+        <div className="flex items-center gap-3">
+          <div className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+          <div className="ml-auto h-6 w-16 bg-slate-200 rounded animate-pulse" />
+        </div>
+      </div>
     );
   }
 
   const displayItems = isExpanded ? priorityItems : priorityItems.slice(0, 3);
 
   return (
-    <Card className={cn(
-      "mb-6 border-l-4",
-      priorityStats.hasUrgentItems ? "border-l-red-500" : "border-l-amber-500"
+    <div className={cn(
+      "mb-6 bg-white border-l-4 border rounded-md",
+      priorityStats.hasUrgentItems ? "border-l-red-500 border-red-100" : "border-l-amber-500 border-amber-100"
     )}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
-          <CardContent className="p-4 cursor-pointer hover:bg-slate-50 transition-colors">
+          <div className="p-4 cursor-pointer hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {priorityStats.hasUrgentItems ? (
@@ -156,11 +153,11 @@ export function PriorityBanner({
                 )}
               </div>
             </div>
-          </CardContent>
+          </div>
         </CollapsibleTrigger>
         
         <CollapsibleContent>
-          <div className="px-4 pb-4 space-y-3">
+          <div className="px-4 pb-4 space-y-2 border-t border-slate-100">
             {displayItems.map((item) => {
               const urgencyStyle = getUrgencyStyle(item.urgencyLevel);
               const ActionIcon = getActionIcon(item.actionType);
@@ -170,7 +167,7 @@ export function PriorityBanner({
                 <div
                   key={item.dealId}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border",
+                    "flex items-center justify-between p-3 rounded border",
                     urgencyStyle.cardBorder
                   )}
                 >
@@ -222,6 +219,6 @@ export function PriorityBanner({
           </div>
         </CollapsibleContent>
       </Collapsible>
-    </Card>
+    </div>
   );
 }
