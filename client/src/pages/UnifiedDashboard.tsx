@@ -399,8 +399,23 @@ export default function UnifiedDashboard() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status as DealStatus;
-        return <DealStatusBadge status={status} />;
+        const deal = row.original;
+        const status = deal.status as DealStatus;
+        return (
+          <div className="flex items-center gap-2">
+            <DealStatusBadge status={status} />
+            {deal.revisionCount > 0 && (
+              <Badge variant="outline" className="text-xs px-1 py-0">
+                Rev {deal.revisionCount}
+              </Badge>
+            )}
+            {deal.draftType && status === 'draft' && (
+              <Badge variant="secondary" className="text-xs px-1 py-0">
+                {deal.draftType === 'scoping_draft' ? 'Scoping' : 'Submission'}
+              </Badge>
+            )}
+          </div>
+        );
       },
       filterFn: (row, id, value) => {
         return value === row.getValue(id);
@@ -571,16 +586,26 @@ export default function UnifiedDashboard() {
             }
             emptyCheck={(data) => data.length === 0}
           >
-            {(deals) => (
-              <DataTable 
-                columns={columns} 
-                data={deals} 
-                searchKey="client"
-                placeholder="Search by client name..."
-                statusFilter={true}
-                onRowClick={(deal) => handleView(deal.id)}
-              />
-            )}
+            {(deals) => {
+              // Phase 8: Filter drafts based on role visibility - only seller and admin can see drafts
+              const filteredDeals = deals.filter(deal => {
+                if (deal.status === 'draft') {
+                  return userRole === 'seller' || userRole === 'admin';
+                }
+                return true;
+              });
+              
+              return (
+                <DataTable 
+                  columns={columns} 
+                  data={filteredDeals} 
+                  searchKey="client"
+                  placeholder="Search by client name..."
+                  statusFilter={true}
+                  onRowClick={(deal) => handleView(deal.id)}
+                />
+              );
+            }}
           </QueryStateHandler>
         </div>
       </div>

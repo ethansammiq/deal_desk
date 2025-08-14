@@ -148,13 +148,15 @@ export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistor
   .extend({
     dealId: z.number().positive("Deal ID must be positive"),
     status: z.enum([
+      "draft",
       "scoping", 
       "submitted", 
-      "under_review", 
+      "under_review",
+      "revision_requested", 
       "negotiating", 
       "approved", 
-      "legal_review", 
-      "contract_sent", 
+      "contract_drafting", 
+      "client_review", 
       "signed", 
       "lost"
     ]),
@@ -197,7 +199,17 @@ export const deals = pgTable("deals", {
   // Contract term input field (months)
   contractTermMonths: integer("contract_term_months"),
   
-  status: text("status").notNull().default("submitted"), // Phase 7A: 9-status workflow
+  status: text("status").notNull().default("submitted"), // Phase 8: Enhanced workflow with draft support
+  
+  // Phase 8: Draft and Revision Management
+  draftType: text("draft_type"), // "scoping_draft" or "submission_draft" - only set when status is "draft"
+  revisionCount: integer("revision_count").notNull().default(0),
+  isRevision: boolean("is_revision").notNull().default(false),
+  parentSubmissionId: integer("parent_submission_id"), // References deals.id for revision tracking
+  revisionReason: text("revision_reason"), // Why revision was requested
+  lastRevisedAt: timestamp("last_revised_at"),
+  canEdit: boolean("can_edit").notNull().default(true), // Computed based on status + role
+  draftExpiresAt: timestamp("draft_expires_at"), // Auto-cleanup after 30 days
   
   // Timeframe - using ISO 8601 date strings
   termStartDate: text("term_start_date"), // ISO 8601: "2025-01-15"
@@ -231,46 +243,71 @@ export const deals = pgTable("deals", {
   referenceNumber: text("reference_number").notNull().unique(),
 });
 
-// Phase 7A: Deal Status Constants
+// Phase 8: Enhanced Deal Status Constants with Draft Support
 export const DEAL_STATUSES = {
+  DRAFT: "draft",
   SCOPING: "scoping",
   SUBMITTED: "submitted", 
   UNDER_REVIEW: "under_review",
+  REVISION_REQUESTED: "revision_requested",
   NEGOTIATING: "negotiating",
   APPROVED: "approved",
-  LEGAL_REVIEW: "legal_review",
-  CONTRACT_SENT: "contract_sent",
+  CONTRACT_DRAFTING: "contract_drafting", // Renamed from legal_review
+  CLIENT_REVIEW: "client_review", // Renamed from contract_sent
   SIGNED: "signed",
   LOST: "lost"
 } as const;
 
 export const DEAL_STATUS_LABELS = {
+  draft: "Draft",
   scoping: "Scoping",
   submitted: "Submitted",
   under_review: "Under Review", 
+  revision_requested: "Revision Requested",
   negotiating: "Negotiating",
   approved: "Approved",
-  legal_review: "Legal Review",
-  contract_sent: "Contract Sent",
+  contract_drafting: "Contract Drafting", // Updated label
+  client_review: "Client Review", // Updated label
   signed: "Signed",
   lost: "Lost"
 } as const;
 
+// Phase 8: Enhanced Deal Status Flow with Draft Support
 export const DEAL_STATUS_FLOW = [
+  "draft",
   "scoping",
   "submitted", 
   "under_review",
+  "revision_requested",
   "negotiating",
   "approved",
-  "legal_review", 
-  "contract_sent",
+  "contract_drafting", 
+  "client_review",
   "signed"
 ] as const;
+
+// Phase 8: Draft Type Constants for differentiation
+export const DRAFT_TYPES = {
+  SCOPING: "scoping_draft",
+  SUBMISSION: "submission_draft"
+} as const;
+
+export type DraftType = typeof DRAFT_TYPES[keyof typeof DRAFT_TYPES];
 
 export type DealStatus = keyof typeof DEAL_STATUS_LABELS;
 
 export const insertDealSchema = createInsertSchema(deals)
-  .omit({ id: true, createdAt: true, updatedAt: true, referenceNumber: true, contractTerm: true, lastStatusChange: true })
+  .omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true, 
+    referenceNumber: true, 
+    contractTerm: true, 
+    lastStatusChange: true,
+    revisionCount: true, // Auto-managed
+    canEdit: true, // Computed field
+    draftExpiresAt: true // Auto-set
+  })
   .extend({
     // Region validation
     region: z.enum(["northeast", "midwest", "midatlantic", "west", "south"]),
@@ -310,19 +347,29 @@ export const insertDealSchema = createInsertSchema(deals)
     addedValueBenefitsCost: z.number().min(0).default(0),
     analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
     
-    // Phase 7A: Status and priority validation
+    // Phase 8: Enhanced status and draft validation
     status: z.enum([
+      "draft",
       "scoping", 
       "submitted", 
-      "under_review", 
+      "under_review",
+      "revision_requested", 
       "negotiating", 
       "approved", 
-      "legal_review", 
-      "contract_sent", 
+      "contract_drafting", 
+      "client_review", 
       "signed", 
       "lost"
-    ]).default("submitted"),
+    ]).default("draft"),
+    draftType: z.enum(["scoping_draft", "submission_draft"]).optional(),
     priority: z.enum(["low", "medium", "high"]).default("medium").optional(),
+    
+    // Phase 8: Revision management validation
+    isRevision: z.boolean().default(false),
+    parentSubmissionId: z.number().positive().optional(),
+    revisionReason: z.string().optional(),
+    lastRevisedAt: z.string().optional(), // ISO timestamp string
+    
     requiresCustomMarketing: z.boolean().default(false),
   });
 
@@ -409,7 +456,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: false,
     canEditDeals: false, // Read-only for deals, but can manage contracts
     canDeleteDeals: false,
-    canChangeStatus: ["legal_review", "contract_sent", "signed"], // Legal and contract flow
+    canChangeStatus: ["contract_drafting", "client_review", "signed"], // Legal and contract flow
     canViewAllDeals: true,
     canApproveDeals: false,
     canAccessLegalReview: true,
@@ -421,7 +468,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: true,
     canEditDeals: true,
     canDeleteDeals: true,
-    canChangeStatus: ["scoping", "submitted", "under_review", "negotiating", "approved", "legal_review", "contract_sent", "signed", "lost"], // All status transitions
+    canChangeStatus: ["draft", "scoping", "submitted", "under_review", "revision_requested", "negotiating", "approved", "contract_drafting", "client_review", "signed", "lost"], // All status transitions
     canViewAllDeals: true,
     canApproveDeals: true,
     canAccessLegalReview: true,
@@ -430,15 +477,17 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
   }
 };
 
-// Phase 7B: Status transition validation
+// Phase 8: Enhanced status transition validation with draft support
 export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
+  draft: ["scoping", "submitted", "lost"],
   scoping: ["submitted", "lost"],
   submitted: ["under_review", "lost"],
-  under_review: ["negotiating", "approved", "lost"],
-  negotiating: ["approved", "under_review", "lost"],
-  approved: ["legal_review", "lost"],
-  legal_review: ["contract_sent", "negotiating", "lost"],
-  contract_sent: ["signed", "legal_review", "lost"],
+  under_review: ["negotiating", "revision_requested", "approved", "lost"],
+  revision_requested: ["under_review", "lost"], // After seller responds to revision
+  negotiating: ["approved", "revision_requested", "lost"],
+  approved: ["contract_drafting", "lost"],
+  contract_drafting: ["client_review", "negotiating", "lost"],
+  client_review: ["signed", "contract_drafting", "lost"],
   signed: [], // Terminal state
   lost: [] // Terminal state
 };
