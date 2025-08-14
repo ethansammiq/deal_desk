@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -257,9 +257,11 @@ export default function UnifiedDashboard() {
     });
   };
 
+  const [, navigate] = useLocation();
+  
   const handleView = (dealId: number) => {
-    // Navigate to deal details
-    window.location.href = `/deals/${dealId}`;
+    // Navigate to deal details page
+    navigate(`/deals/${dealId}`);
   };
 
   // Handle priority banner actions
@@ -314,15 +316,14 @@ export default function UnifiedDashboard() {
       return { amount: deal.growthAmbition, isMultiTier: false };
     }
     
-    // For tiered deals, use Tier 1 revenue and indicate multi-tier with +
+    // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
     if (deal.dealStructure === 'tiered') {
-      // Use real tier data if available, otherwise fallback
+      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
       const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
-      const hasMultipleTiers = deal.tiers && deal.tiers.length > 1;
-      return { amount, isMultiTier: hasMultipleTiers || false };
+      return { amount, isMultiTier: true }; // Always true for tiered deals
     }
     
-    // For flat commit deals, use annual revenue
+    // For flat commit deals, use annual revenue (no + sign)
     if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
       return { amount: deal.annualRevenue, isMultiTier: false };
     }
@@ -334,16 +335,6 @@ export default function UnifiedDashboard() {
 
   // Define columns for the deals table with action column
   const columns: ColumnDef<Deal>[] = [
-    {
-      accessorKey: "dealName",
-      header: "Deal Name",
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium text-slate-900">{row.original.dealName}</div>
-          <div className="text-xs text-slate-500">#{row.original.referenceNumber}</div>
-        </div>
-      ),
-    },
     {
       id: "client",
       header: "Client",
@@ -364,6 +355,22 @@ export default function UnifiedDashboard() {
         };
         const channel = row.original.salesChannel;
         const label = channelLabels[channel as keyof typeof channelLabels] || channel;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
+      accessorKey: "region",
+      header: "Region",
+      cell: ({ row }) => {
+        const regionLabels = {
+          'northeast': 'Northeast',
+          'midwest': 'Midwest',
+          'midatlantic': 'Mid-Atlantic',
+          'west': 'West',
+          'south': 'South'
+        };
+        const region = row.original.region;
+        const label = regionLabels[region as keyof typeof regionLabels] || region || "N/A";
         return <div className="text-sm text-slate-700">{label}</div>;
       },
     },
