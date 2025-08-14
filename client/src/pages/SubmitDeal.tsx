@@ -965,7 +965,7 @@ export default function SubmitDeal() {
                   formData={form.getValues()}
                   currentStep={1}
                   totalSteps={4}
-                  isValid={!formValidation.hasErrors(1)}
+                  isValid={formValidation.validateStep(1).isValid}
                 />
                 <DealOverviewStep
                   form={form}
@@ -1512,7 +1512,7 @@ export default function SubmitDeal() {
                   formData={form.getValues()}
                   currentStep={2}
                   totalSteps={4}
-                  isValid={!formValidation.hasErrors(2)}
+                  isValid={formValidation.validateStep(2).isValid}
                 />
                 <BusinessContextSection form={form} variant="submitDeal" />
                 <CardContent className="p-6 border-t">
@@ -1535,7 +1535,7 @@ export default function SubmitDeal() {
                   formData={form.getValues()}
                   currentStep={3}
                   totalSteps={4}
-                  isValid={!formValidation.hasErrors(3)}
+                  isValid={formValidation.validateStep(3).isValid}
                 />
                 <CardContent className="p-6">
                   <FormSectionHeader
@@ -2193,7 +2193,7 @@ export default function SubmitDeal() {
                   formData={form.getValues()}
                   currentStep={4}
                   totalSteps={4}
-                  isValid={!formValidation.hasErrors(4)}
+                  isValid={formValidation.validateStep(4).isValid}
                 />
                 <CardContent className="p-6">
                   <FormSectionHeader
