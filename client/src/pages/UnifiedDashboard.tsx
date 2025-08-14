@@ -10,6 +10,8 @@ import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/l
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealConversion } from "@/hooks/useDealConversion";
 import { useDealActions } from "@/hooks/useDealActions";
+import { usePriorityItems } from "@/hooks/usePriorityItems";
+import { PriorityBanner } from "@/components/dashboard/PriorityBanner";
 import { 
   BarChart3, 
   CheckCircle,
@@ -171,6 +173,13 @@ export default function UnifiedDashboard() {
   const userName = user?.firstName || user?.username || "User";
   const userRole = (user?.role as UserRole) || 'seller';
 
+  // Get priority items for the current user
+  const { 
+    priorityItems, 
+    priorityStats, 
+    isLoading: priorityLoading 
+  } = usePriorityItems(userRole);
+
   // Fetch deal statistics
   const { data: dealStats, isLoading: statsLoading } = useQuery<DealStats>({
     queryKey: ['/api/stats'],
@@ -251,6 +260,34 @@ export default function UnifiedDashboard() {
   const handleView = (dealId: number) => {
     // Navigate to deal details
     window.location.href = `/deals/${dealId}`;
+  };
+
+  // Handle priority banner actions
+  const handlePriorityAction = (dealId: number, actionType: any) => {
+    switch (actionType) {
+      case 'convert':
+        handleConvert(dealId);
+        break;
+      case 'approve':
+        handleApprove(dealId);
+        break;
+      case 'legal_review':
+        handleLegalApprove(dealId);
+        break;
+      case 'contract':
+        handleSendContract(dealId);
+        break;
+      case 'nudge':
+        // Default nudge logic based on user role
+        if (userRole === 'seller') {
+          handleNudge(dealId, 'approver');
+        } else if (userRole === 'approver') {
+          handleNudge(dealId, 'legal');
+        }
+        break;
+      default:
+        handleView(dealId);
+    }
   };
 
   // Helper function to format currency in shortened format
@@ -371,39 +408,7 @@ export default function UnifiedDashboard() {
         return <div className="text-sm text-slate-500">{formatRelativeDate(dateString)}</div>;
       },
     },
-    {
-      id: "actions",
-      header: () => <div className="text-right">Action</div>,
-      cell: ({ row }) => {
-        const action = getActionForDeal(row.original, userRole as UserRole, {
-          onConvert: handleConvert,
-          onNudge: handleNudge,
-          onApprove: handleApprove,
-          onLegalApprove: handleLegalApprove,
-          onSendContract: handleSendContract,
-          onView: handleView,
-        });
 
-        if (!action.visible) return null;
-
-        const Icon = action.icon;
-
-        return (
-          <div className="text-right">
-            <Button 
-              variant={action.variant}
-              size="sm"
-              onClick={() => action.onClick(row.original.id)}
-              className="gap-1"
-              disabled={isUpdatingStatus || isSendingNudge}
-            >
-              {Icon && <Icon className="h-3 w-3" />}
-              {action.label}
-            </Button>
-          </div>
-        );
-      },
-    },
   ];
 
   return (
@@ -416,6 +421,15 @@ export default function UnifiedDashboard() {
         </div>
       </div>
       
+      {/* Priority Banner */}
+      <PriorityBanner
+        priorityItems={priorityItems}
+        priorityStats={priorityStats}
+        userRole={userRole}
+        onAction={handlePriorityAction}
+        isLoading={priorityLoading}
+      />
+
       {/* Stats Overview - Updated with Close Rate */}
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
@@ -557,6 +571,7 @@ export default function UnifiedDashboard() {
                 searchKey="dealName"
                 placeholder="Search deals..."
                 statusFilter={true}
+                onRowClick={(deal) => handleView(deal.id)}
               />
             )}
           </QueryStateHandler>
