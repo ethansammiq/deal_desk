@@ -93,7 +93,7 @@ import { DealDetailsSection } from "@/components/deal-form/DealDetailsSection";
 import { FinancialTierTable } from "@/components/deal-form/FinancialTierTable";
 import { IncentiveStructureSection } from "@/components/deal-form/IncentiveStructureSection";
 import { CostValueAnalysisSection } from "@/components/deal-form/CostValueAnalysisSection";
-import FinancialSummarySection from "@/components/deal-form/FinancialSummarySection";
+import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
 import { ReviewSubmitSection } from "@/components/deal-form/ReviewSubmitSection";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
@@ -999,13 +999,6 @@ export default function SubmitDeal() {
                     includeEmail={false}
                     showNavigation={true}
                   />
-                  
-                  {/* Tab Navigation */}
-                  <div className="flex justify-end pt-4 border-t mt-6">
-                    <Button type="button" onClick={goToNextTab}>
-                      Next: Business Context
-                    </Button>
-                  </div>
                 </TabsContent>
 
                 <TabsContent value="business-context" className="space-y-0">
@@ -1067,6 +1060,22 @@ export default function SubmitDeal() {
                       setDealTiers={setDealTiers}
                       salesChannel={salesChannel}
                       variant="submitDeal"
+                    />
+
+                    {/* Cost & Value Analysis Section */}
+                    <CostValueAnalysisSection
+                      dealTiers={dealTiers}
+                      salesChannel={salesChannel}
+                      advertiserName={form.watch("advertiserName")}
+                      agencyName={form.watch("agencyName")}
+                    />
+
+                    {/* Financial Summary Section */}
+                    <FinancialSummarySection
+                      dealTiers={dealTiers}
+                      salesChannel={salesChannel}
+                      advertiserName={form.watch("advertiserName")}
+                      agencyName={form.watch("agencyName")}
                     />
 
                     {/* Navigation */}
