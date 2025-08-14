@@ -909,38 +909,24 @@ export default function SubmitDeal() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
-      {/* ✅ OPTIMIZED: Form-level header with clear visual hierarchy */}
-      <FormPageHeader
-        title="Deal Submission"
-        description={fromScopingId && isPreFilling 
-          ? "Pre-filling form data from your scoping request..." 
-          : fromScopingId 
-          ? "Form pre-filled with data from your scoping request - Complete and submit below"
-          : "Complete the form below to submit a new commercial deal for approval"
-        }
-        badge="Step 2 of 2"
-        helpTitle="About Deal Submission"
-        helpContent={
-          <>
-            <p className="text-sm text-slate-700">
-              The deal submission process involves 4 steps:
-            </p>
-            <ol className={FormStyles.help.list}>
-              <li>Complete deal overview with client and basic deal information</li>
-              <li>Provide business context and growth opportunity details</li>
-              <li>Configure deal structure, pricing tiers, and incentives</li>
-              <li>Review all information and submit for approval</li>
-            </ol>
-            <p className="text-sm text-slate-700 mt-2">
-              Required approvals will be automatically determined based on
-              deal size, structure, and non-standard terms.
-            </p>
-          </>
-        }
-      />
-
-      {/* Save Draft Button - Positioned below header */}
-      <div className="flex justify-end mb-6">
+      {/* Header with integrated Save Draft button - matching RequestSupport layout */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-gray-900">Deal Submission</h1>
+            <span className="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+              Step 2 of 2
+            </span>
+          </div>
+          <p className="text-gray-600 text-base">
+            {fromScopingId && isPreFilling 
+              ? "Pre-filling form data from your scoping request..." 
+              : fromScopingId 
+              ? "Form pre-filled with data from your scoping request - Complete and submit below"
+              : "Complete the form below to submit a new commercial deal for approval"
+            }
+          </p>
+        </div>
         <Button
           type="button"
           variant="outline"
@@ -956,7 +942,7 @@ export default function SubmitDeal() {
             });
           }}
           disabled={saveDraftMutation.isPending}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 ml-4"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
@@ -1011,12 +997,29 @@ export default function SubmitDeal() {
                     nextStep={goToNextTab}
                     layout="tabs"
                     includeEmail={false}
-                    showNavigation={false}
+                    showNavigation={true}
                   />
+                  
+                  {/* Tab Navigation */}
+                  <div className="flex justify-end pt-4 border-t mt-6">
+                    <Button type="button" onClick={goToNextTab}>
+                      Next: Business Context
+                    </Button>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="business-context" className="space-y-0">
                   <BusinessContextSection form={form as any} variant="submitDeal" />
+                  
+                  {/* Tab Navigation */}
+                  <div className="flex justify-between items-center pt-4 border-t mt-6">
+                    <Button type="button" variant="outline" onClick={goToPrevTab}>
+                      Previous: Deal Overview
+                    </Button>
+                    <Button type="button" onClick={goToNextTab}>
+                      Next: Financial Structure
+                    </Button>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="financial-structure" className="space-y-6 pt-4">
