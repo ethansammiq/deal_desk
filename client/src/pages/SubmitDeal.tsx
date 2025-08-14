@@ -895,33 +895,58 @@ export default function SubmitDeal() {
 
   return (
     <div className="p-6">
-      <FormSectionHeader
-        title="Deal Submission"
-        description={fromScopingId && isPreFilling 
-          ? "Pre-filling form data from your scoping request..." 
-          : fromScopingId 
-          ? "Form pre-filled with data from your scoping request - Complete and submit below"
-          : "Complete the form below to submit a new commercial deal for approval"
-        }
-        badge="Step 2 of 2"
-        helpTitle="About Deal Submission"
-        helpContent={
-          <>
-            <p className="text-sm text-slate-700">
-              The deal submission process involves 3 steps:
-            </p>
-            <ol className={FormStyles.help.list}>
-              <li>Complete deal details and basic client information</li>
-              <li>Configure deal structure, pricing tiers, and incentives</li>
-              <li>Review and submit for approval based on approval matrix</li>
-            </ol>
-            <p className="text-sm text-slate-700 mt-2">
-              Required approvals will be automatically determined based on
-              deal size, structure, and non-standard terms.
-            </p>
-          </>
-        }
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <FormSectionHeader
+            title="Deal Submission"
+            description={fromScopingId && isPreFilling 
+              ? "Pre-filling form data from your scoping request..." 
+              : fromScopingId 
+              ? "Form pre-filled with data from your scoping request - Complete and submit below"
+              : "Complete the form below to submit a new commercial deal for approval"
+            }
+            badge="Step 2 of 2"
+            helpTitle="About Deal Submission"
+            helpContent={
+              <>
+                <p className="text-sm text-slate-700">
+                  The deal submission process involves 3 steps:
+                </p>
+                <ol className={FormStyles.help.list}>
+                  <li>Complete deal details and basic client information</li>
+                  <li>Configure deal structure, pricing tiers, and incentives</li>
+                  <li>Review and submit for approval based on approval matrix</li>
+                </ol>
+                <p className="text-sm text-slate-700 mt-2">
+                  Required approvals will be automatically determined based on
+                  deal size, structure, and non-standard terms.
+                </p>
+              </>
+            }
+          />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={async () => {
+            const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
+            const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
+            await saveDraftMutation.mutateAsync({
+              name: autoName,
+              description: `Draft saved from step ${formStep + 1}`,
+              formData: form.getValues(),
+              step: formStep
+            });
+          }}
+          disabled={saveDraftMutation.isPending}
+          className="flex items-center space-x-2 ml-4"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
+        </Button>
+      </div>
 
       {/* Pre-fill loading indicator */}
       {fromScopingId && isPreFilling && (
@@ -1480,29 +1505,8 @@ export default function SubmitDeal() {
                     )}
                   />
 
-                  {/* Navigation with Save Draft */}
-                  <div className="flex justify-between items-center pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={async () => {
-                        const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
-                        const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
-                        await saveDraftMutation.mutateAsync({
-                          name: autoName,
-                          description: `Draft saved from Deal Overview step`,
-                          formData: form.getValues(),
-                          step: formStep
-                        });
-                      }}
-                      disabled={saveDraftMutation.isPending}
-                      className="flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
-                    </Button>
+                  {/* Navigation */}
+                  <div className="flex justify-end pt-4">
                     <Button
                       type="button"
                       onClick={nextStep}
@@ -1524,32 +1528,9 @@ export default function SubmitDeal() {
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Overview
                     </Button>
-                    <div className="flex items-center space-x-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={async () => {
-                          const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
-                          const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
-                          await saveDraftMutation.mutateAsync({
-                            name: autoName,
-                            description: `Draft saved from Business Context step`,
-                            formData: form.getValues(),
-                            step: formStep
-                          });
-                        }}
-                        disabled={saveDraftMutation.isPending}
-                        className="flex items-center space-x-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
-                      </Button>
-                      <Button type="button" onClick={nextStep}>
-                        Next: Financial Structure
-                      </Button>
-                    </div>
+                    <Button type="button" onClick={nextStep}>
+                      Next: Financial Structure
+                    </Button>
                   </div>
                 </CardContent>
               </div>
@@ -3312,32 +3293,9 @@ export default function SubmitDeal() {
                 </div>
 
                 <div className="mt-8 flex justify-between">
-                  <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" onClick={prevStep}>
-                      Previous: Deal Structure
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={async () => {
-                        const clientName = form.getValues().advertiserName || form.getValues().agencyName || "Draft";
-                        const autoName = `${clientName} - ${form.getValues().dealType || 'Deal'} Draft`;
-                        await saveDraftMutation.mutateAsync({
-                          name: autoName,
-                          description: `Draft saved from Review & Submit step`,
-                          formData: form.getValues(),
-                          step: formStep
-                        });
-                      }}
-                      disabled={saveDraftMutation.isPending}
-                      className="flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <span>{saveDraftMutation.isPending ? "Saving..." : "Save Draft"}</span>
-                    </Button>
-                  </div>
+                  <Button type="button" variant="outline" onClick={prevStep}>
+                    Previous: Deal Structure
+                  </Button>
                   
                   <Button 
                     type="button" 
