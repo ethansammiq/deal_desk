@@ -942,7 +942,7 @@ export default function SubmitDeal() {
         steps={[
           { id: 0, label: "Deal Overview" },
           { id: 1, label: "Business Context" },
-          { id: 2, label: "Value Structure" },
+          { id: 2, label: "Financial Structure" },
           { id: 3, label: "Review & Submit" },
         ]}
         currentStep={formStep}
@@ -1533,14 +1533,14 @@ export default function SubmitDeal() {
                       Previous: Deal Overview
                     </Button>
                     <Button type="button" onClick={nextStep}>
-                      Next: Value Structure
+                      Next: Financial Structure
                     </Button>
                   </div>
                 </CardContent>
               </div>
             )}
 
-            {/* Step 2: Value Structure */}
+            {/* Step 2: Financial Structure */}
             {formStep === 2 && (
               <div className="space-y-6">
                 <StepByStepDraftManager 
@@ -1551,7 +1551,7 @@ export default function SubmitDeal() {
                 />
                 <CardContent className="p-6">
                   <FormSectionHeader
-                    title="Value Structure"
+                    title="Financial Structure"
                     description="Define the financial structure and value proposition for this deal"
                   />
                 <div className="space-y-6">

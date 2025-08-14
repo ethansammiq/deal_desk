@@ -180,73 +180,77 @@ export function FormProgressTracker({
   currentStep: string | number;
   onStepClick: (stepId: string | number) => void;
 }) {
+  const currentIndex = steps.findIndex(s => s.id === currentStep);
+  
   return (
-    <div className={FormStyles.progress.container}>
-      <div className={FormStyles.progress.track}>
-        {/* Progress Bar */}
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => [
-            // Step Circle
-            <div
-              key={`step-${step.id}`}
-              onClick={() => onStepClick(step.id)}
-              className={cn(
-                FormStyles.progress.step.base,
-                currentStep === step.id || index < steps.findIndex(s => s.id === currentStep) 
-                  ? FormStyles.progress.step.active
-                  : FormStyles.progress.step.inactive
-              )}
-            >
-              {index + 1}
-            </div>,
+    <div className="w-full max-w-4xl mx-auto mb-8">
+      <div className="relative">
+        {/* Step indicators and connecting lines */}
+        <div className="flex items-center justify-between relative">
+          {steps.map((step, index) => {
+            const isActive = currentStep === step.id;
+            const isCompleted = index < currentIndex;
+            const isClickable = index <= currentIndex + 1; // Allow clicking on current, previous, or next step
             
-            // Connecting Line (except for the last step)
-            index < steps.length - 1 ? (
-              <div
-                key={`line-${step.id}`}
-                className={cn(
-                  FormStyles.progress.line.base,
-                  index < steps.findIndex(s => s.id === currentStep)
-                    ? FormStyles.progress.line.active
-                    : FormStyles.progress.line.inactive
+            return (
+              <React.Fragment key={step.id}>
+                {/* Step Circle */}
+                <div className="relative z-10 flex flex-col items-center">
+                  <div
+                    onClick={() => isClickable && onStepClick(step.id)}
+                    className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 border-2",
+                      isActive 
+                        ? "bg-purple-600 text-white border-purple-600 shadow-lg" 
+                        : isCompleted 
+                          ? "bg-green-500 text-white border-green-500" 
+                          : "bg-white text-gray-400 border-gray-300 hover:border-gray-400",
+                      isClickable ? "cursor-pointer hover:scale-105" : "cursor-not-allowed"
+                    )}
+                  >
+                    {isCompleted ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  
+                  {/* Step Label */}
+                  <div className="mt-2 text-center">
+                    <span
+                      onClick={() => isClickable && onStepClick(step.id)}
+                      className={cn(
+                        "text-sm font-medium transition-colors duration-200",
+                        isActive 
+                          ? "text-purple-600" 
+                          : isCompleted 
+                            ? "text-green-600" 
+                            : "text-gray-500",
+                        isClickable ? "cursor-pointer hover:text-purple-500" : "cursor-not-allowed",
+                        "max-w-[120px] leading-tight"
+                      )}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Connecting Line */}
+                {index < steps.length - 1 && (
+                  <div className="flex-1 h-0.5 bg-gray-200 mx-4 relative">
+                    <div 
+                      className={cn(
+                        "absolute inset-y-0 left-0 bg-purple-600 transition-all duration-300",
+                        index < currentIndex ? "w-full" : "w-0"
+                      )}
+                    />
+                  </div>
                 )}
-                style={{ 
-                  left: `${10 + (index * (100 / (steps.length - 1)))}%`, 
-                  right: `${100 - (10 + ((index + 1) * (100 / (steps.length - 1))))}%`
-                }}
-              ></div>
-            ) : null
-          ]).flat().filter(Boolean)}
-        </div>
-        
-        {/* Labels */}
-        <div className="flex justify-between mt-2 text-sm">
-          {steps.map((step, index) => (
-            <div 
-              key={`label-${step.id}`}
-              className="text-center"
-              style={{ 
-                width: `${100 / steps.length}%`,
-                transform: index === 0 
-                  ? "translateX(10%)" 
-                  : index === steps.length - 1 
-                    ? "translateX(-10%)" 
-                    : "translateX(0)"
-              }}
-            >
-              <span
-                onClick={() => onStepClick(step.id)}
-                className={cn(
-                  FormStyles.progress.label.base,
-                  currentStep === step.id
-                    ? FormStyles.progress.label.active
-                    : FormStyles.progress.label.inactive
-                )}
-              >
-                {step.label}
-              </span>
-            </div>
-          ))}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
     </div>

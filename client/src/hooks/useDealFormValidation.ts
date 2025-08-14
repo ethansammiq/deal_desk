@@ -84,7 +84,7 @@ const SUBMIT_DEAL_STEPS: FormStep[] = [
   },
   {
     id: 3,
-    title: 'Value Structure', // Step 2 in actual implementation
+    title: 'Financial Structure', // Step 2 in actual implementation
     fields: [
       'annualRevenue',      // Financial configuration
       'annualGrossMargin'   // Financial configuration
