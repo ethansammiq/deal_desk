@@ -54,11 +54,14 @@ interface DealSummaryProps {
 export function DealSummary({ form, dealStructureType, dealTiers }: DealSummaryProps) {
   const formValues = form.getValues();
 
-  // Calculate contract term from dates
+  // Calculate contract term from dates - handle string dates properly
   const startDate = formValues.termStartDate;
   const endDate = formValues.termEndDate;
-  const contractTerm = startDate && endDate ?
-    Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
+  const contractTerm = startDate && endDate ? (() => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()));
+  })() : 12;
 
   return (
     <div className="space-y-6">
@@ -159,11 +162,14 @@ export function ReviewSubmitSection({
 }: ReviewSubmitSectionProps) {
   const formValues = form.getValues();
 
-  // Calculate contract term from dates
+  // Calculate contract term from dates - handle string dates properly
   const startDate = formValues.termStartDate;
   const endDate = formValues.termEndDate;
-  const contractTerm = startDate && endDate ?
-    Math.max(1, (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())) : 12;
+  const contractTerm = startDate && endDate ? (() => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()));
+  })() : 12;
 
   // Auto-populate business summary based on business context fields
   useEffect(() => {
