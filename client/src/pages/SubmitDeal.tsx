@@ -105,7 +105,7 @@ import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
-import { useAutoSave } from "@/hooks/useAutoSave";
+// Auto-save import removed as requested
 import { DraftManager } from "@/components/draft/DraftManager";
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
@@ -262,30 +262,14 @@ export default function SubmitDeal() {
     formType: 'submitDeal' // ✅ SYNCHRONIZED: Use SubmitDeal form steps
   });
 
-  // Auto-save functionality
-  const autoSave = useAutoSave({
-    data: form.getValues(),
-    save: async (data) => {
-      // Optional: save to server as draft
-      // await apiRequest('/api/deals/draft', { method: 'POST', body: data });
-    },
-    storageKey: 'deal-submission-draft',
-    enabled: true,
-    delay: 2000 // Save after 2 seconds of inactivity
-  });
+  // Auto-save functionality removed as requested by user
 
-  // Load saved data on mount - simplified since we now have proper draft management
+  // Load draft data when resuming from Priority Actions
   useEffect(() => {
-    // Only auto-load if specifically coming from scoping or draft parameter
-    if (fromScopingId || draftId) {
-      const savedData = autoSave.loadSavedData();
-      if (savedData) {
-        form.reset(savedData);
-      }
-    } else {
-      // Clear any previous session data for fresh form
-      autoSave.clearSavedData();
-      // Reset to clean form state
+    if (draftId) {
+      handleLoadDraft(parseInt(draftId));
+    } else if (!fromScopingId) {
+      // Reset to clean form state for new submissions
       form.reset({
         // Basic deal information
         dealType: "grow",
@@ -326,8 +310,7 @@ export default function SubmitDeal() {
         }
       });
 
-      // Clear auto-save since we have a proper draft now
-      autoSave.clearSavedData();
+      // Auto-save functionality removed
 
       toast({
         title: "Draft Saved",
@@ -344,15 +327,17 @@ export default function SubmitDeal() {
     }
   };
 
-  const handleLoadDraft = (draftData: any) => {
-    form.reset(draftData);
-    
-    // Clear auto-save data since we're loading a specific draft
-    autoSave.clearSavedData();
-    
-    // If the draft has a deal structure, update our state
-    if (draftData.dealStructure) {
-      setDealStructure(draftData.dealStructure);
+  const handleLoadDraft = async (draftId: number) => {
+    try {
+      const response = await apiRequest(`/api/deals/${draftId}`);
+      form.reset(response);
+      
+      // If the draft has a deal structure, update our state
+      if (response.dealStructure) {
+        setDealStructure(response.dealStructure);
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
     }
   };
   

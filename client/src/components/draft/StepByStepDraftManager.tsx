@@ -37,16 +37,7 @@ export function StepByStepDraftManager({
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Auto-save after 3 seconds of inactivity
-  const debouncedSave = useCallback(async (data: any, step: number) => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(async () => {
-      await saveDraft(data, step, true); // Auto-save flag
-    }, 3000);
-  }, []);
+  // Auto-save functionality removed as requested
 
   const saveDraft = async (data: any, step: number, isAutoSave = false) => {
     if (!data.dealName && !data.advertiserName && !data.agencyName) {
@@ -122,7 +113,7 @@ export function StepByStepDraftManager({
       if (error && typeof error === 'object' && 'details' in error) {
         console.error('Validation details:', error.details);
       }
-      console.error('Form data being sent:', JSON.stringify(cleanFormData, null, 2));
+      console.error('Form data being sent:', JSON.stringify(requestPayload, null, 2));
       if (!isAutoSave) {
         toast({
           title: "Save Failed",
@@ -140,18 +131,7 @@ export function StepByStepDraftManager({
     saveDraft(formData, currentStep);
   };
 
-  // Auto-save trigger on form data changes
-  React.useEffect(() => {
-    if (formData && (formData.dealName || formData.advertiserName || formData.agencyName)) {
-      debouncedSave(formData, currentStep);
-    }
-    
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [formData, currentStep, debouncedSave]);
+  // Auto-save removed as requested by user - only manual save now
 
   const formatLastSaved = (date: Date) => {
     const now = new Date();
