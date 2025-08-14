@@ -531,37 +531,7 @@ export default function SubmitDeal() {
         setAgencies(agenciesData);
         setAdvertisers(advertisersData);
 
-        // If coming from scoping request, fetch and pre-fill data
-        if (fromScopingId) {
-          setIsPreFilling(true);
-          try {
-            const scopingData = await apiRequest(`/api/deal-scoping-requests/${fromScopingId}`);
-            
-            // ✅ REFACTORED: Using shared pre-fill mapping utility
-            const preFillData = createPreFillMapping(scopingData);
-
-            // Update form values
-            Object.entries(preFillData).forEach(([key, value]) => {
-              if (value !== undefined && value !== null && value !== "") {
-                form.setValue(key as any, value);
-              }
-            });
-
-            toast({
-              title: "Data Pre-filled",
-              description: "Form has been pre-filled with data from your scoping request.",
-            });
-          } catch (error) {
-            console.error("Failed to fetch scoping request data:", error);
-            toast({
-              title: "Pre-fill Failed", 
-              description: "Could not load scoping request data, but you can still submit a deal manually.",
-              variant: "destructive",
-            });
-          } finally {
-            setIsPreFilling(false);
-          }
-        }
+        // Note: Scoping data pre-filling is handled in the earlier useEffect
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
         toast({
@@ -573,7 +543,7 @@ export default function SubmitDeal() {
     };
 
     fetchData();
-  }, [fromScopingId, form, toast]);
+  }, [fromScopingId]);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");
