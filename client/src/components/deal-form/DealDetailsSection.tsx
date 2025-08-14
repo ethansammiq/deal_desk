@@ -277,9 +277,8 @@ export function DealDetailsSection({
             <Button
               type="button"
               onClick={nextStep}
-              className="bg-purple-600 hover:bg-purple-700"
             >
-              Next: Financial Structure
+              Next: Business Context
             </Button>
           </div>
         )}
