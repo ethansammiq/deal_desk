@@ -1006,10 +1006,10 @@ export default function SubmitDeal() {
             e.preventDefault();
             console.log("Form submit event triggered");
             form.handleSubmit(onSubmit)(e);
-          }} className="bg-white rounded-lg shadow-sm">
+          }} className="space-y-6">
             {/* Step 1: Deal Overview - Using shared component */}
             {formStep === 0 && (
-              <div className="space-y-6 p-6">
+              <div className="space-y-6">
 
                 <DealOverviewStep
                   form={form}
@@ -1533,9 +1533,9 @@ export default function SubmitDeal() {
 
             {/* Step 1: Business Context */}
             {formStep === 1 && (
-              <div className="space-y-6">
+              <div>
                 <BusinessContextSection form={form} variant="submitDeal" />
-                <div className="p-6 border-t bg-gray-50">
+                <div className="p-4 border-t bg-gray-50 mt-6">
                   <div className="flex justify-between items-center">
                     <Button type="button" variant="outline" onClick={prevStep}>
                       Previous: Deal Overview
@@ -1550,8 +1550,8 @@ export default function SubmitDeal() {
 
             {/* Step 2: Financial Structure */}
             {formStep === 2 && (
-              <div className="space-y-6">
-                <div className="p-6">
+              <div>
+                <div>
                   <FormSectionHeader
                     title="Financial Structure"
                     description="Define the financial structure and value proposition for this deal"
@@ -2202,9 +2202,8 @@ export default function SubmitDeal() {
 
             {/* Step 3: Review & Submit */}
             {formStep === 3 && (
-              <div className="space-y-6">
-
-                <div className="p-6">
+              <div>
+                <div>
                   <FormSectionHeader
                     title="Review & Submit"
                   />
