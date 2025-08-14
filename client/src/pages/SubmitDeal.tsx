@@ -105,6 +105,7 @@ import { useDealTiers, type DealTier } from "@/hooks/useDealTiers";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
+import { useClientData } from "@/hooks/useClientData";
 // Auto-save import removed as requested
 import { DraftManager } from "@/components/draft/DraftManager";
 import { FormPageHeader, FormNavigation } from "@/components/ui/form-style-guide";
@@ -180,9 +181,8 @@ export default function SubmitDeal() {
 
   // ❌ ELIMINATED: Incentive change handlers - DealTier manages its own data
 
-  // State to track selected agencies and advertisers for dropdowns
-  const [agencies, setAgencies] = useState<AgencyData[]>([]);
-  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+  // ✅ PHASE 2: Using shared client data hook  
+  const { agencies, advertisers, isLoading: isLoadingClientData, error: clientDataError } = useClientData();
   
   // Memoize arrays to prevent infinite loops in useEffect dependencies
   const stableAdvertisers = React.useMemo(() => advertisers, [advertisers.length]);
@@ -695,32 +695,7 @@ export default function SubmitDeal() {
     }
   });
 
-  // Fetch agencies and advertisers for dropdowns
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch agencies and advertisers in parallel
-        const [agenciesData, advertisersData] = await Promise.all([
-          apiRequest("/api/agencies"),
-          apiRequest("/api/advertisers")
-        ]);
-        
-        setAgencies(agenciesData);
-        setAdvertisers(advertisersData);
-
-        // Note: Scoping data pre-filling is handled in the earlier useEffect
-      } catch (error) {
-        console.error("Failed to fetch initial data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load form data",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchData();
-  }, [fromScopingId]);
+  // ✅ PHASE 2: Data fetching now handled by useClientData hook
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");

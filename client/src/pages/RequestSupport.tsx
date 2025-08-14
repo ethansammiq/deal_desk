@@ -45,6 +45,7 @@ import { DealOverviewStep } from "@/components/shared/DealOverviewStep";
 import { BusinessContextSection } from "@/components/deal-form/BusinessContextSection";
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { processDealScopingData } from "@/utils/form-data-processing";
+import { useClientData } from "@/hooks/useClientData";
 import { AdvertiserData, AgencyData } from "@shared/types";
 
 // Schema for deal scoping requests
@@ -60,9 +61,8 @@ export default function RequestSupport() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("deal-overview");
 
-  // State to track selected agencies and advertisers for dropdowns
-  const [agencies, setAgencies] = useState<AgencyData[]>([]);
-  const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+  // ✅ PHASE 2: Using shared client data hook
+  const { agencies, advertisers, isLoading: isLoadingClientData, error: clientDataError } = useClientData();
   
   // Deal structure state for DealDetailsSection
   const [dealStructureType, setDealStructureType] = useState<"tiered" | "flat_commit" | "">("");
@@ -171,52 +171,7 @@ export default function RequestSupport() {
     navigate("/submit-deal");
   }
 
-  // Fetch agencies and advertisers on component mount
-  useEffect(() => {
-    async function fetchAgencies() {
-      try {
-        const response = await fetch("/api/agencies", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch agencies");
-        }
-        const data = await response.json();
-        setAgencies(data as AgencyData[]);
-      } catch (error) {
-        toast({
-          title: "Error Fetching Agencies",
-          description: "Could not load agency data. Please refresh the page.",
-          variant: "destructive",
-        });
-      }
-    }
-
-    async function fetchAdvertisers() {
-      try {
-        const response = await fetch("/api/advertisers", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch advertisers");
-        }
-        const data = await response.json();
-        setAdvertisers(data as AdvertiserData[]);
-      } catch (error) {
-        toast({
-          title: "Error Fetching Advertisers",
-          description:
-            "Could not load advertiser data. Please refresh the page.",
-          variant: "destructive",
-        });
-      }
-    }
-
-    fetchAgencies();
-    fetchAdvertisers();
-  }, [toast]);
+  // ✅ PHASE 2: Data fetching now handled by useClientData hook
 
   return (
     <div className="p-6 rounded-lg bg-white shadow-md">
