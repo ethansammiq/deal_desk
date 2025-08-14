@@ -1,16 +1,14 @@
 import { Deal, type DealStatus, type UserRole } from "@shared/schema";
 
 export interface PriorityItem {
-  dealId: number;
-  dealName: string;
-  clientName: string;
+  id: string;
+  deal: Deal;
+  title: string;
+  description: string;
   urgencyLevel: 'high' | 'medium' | 'low';
-  actionType: 'convert' | 'review' | 'approve' | 'legal_review' | 'contract' | 'nudge';
   actionLabel: string;
-  daysInStatus: number;
-  dealValue: number;
-  status: DealStatus;
-  urgencyScore: number;
+  actionType: 'convert' | 'review' | 'approve' | 'legal_review' | 'contract' | 'nudge' | 'draft';
+  daysOverdue: number;
 }
 
 // Calculate how many days a deal has been in its current status
@@ -40,16 +38,16 @@ export const needsAttention = (deal: Deal, userRole: UserRole): boolean => {
   switch (userRole) {
     case 'seller':
       return deal.status === 'scoping' || 
-             ['under_review', 'legal_review', 'negotiating'].includes(deal.status);
+             ['under_review', 'contract_drafting', 'negotiating'].includes(deal.status);
     
     case 'approver':
-      return deal.status === 'under_review' || deal.status === 'legal_review';
+      return deal.status === 'under_review' || deal.status === 'revision_requested';
     
     case 'legal':
-      return deal.status === 'legal_review' || deal.status === 'approved';
+      return deal.status === 'contract_drafting' || deal.status === 'approved';
     
     case 'admin':
-      return true; // Admin can see all priority items
+      return deal.status !== 'draft'; // Admin can see all except drafts
     
     default:
       return false;
@@ -109,75 +107,58 @@ export const getActionTypeAndLabel = (deal: Deal, userRole: UserRole): { actionT
   return { actionType: 'review', actionLabel: 'Review' };
 };
 
-// Calculate urgency score for sorting (higher = more urgent)
-export const getUrgencyScore = (priorityItem: PriorityItem): number => {
-  let score = 0;
-  
-  // Days in status weight
-  score += priorityItem.daysInStatus * 10;
-  
-  // Deal value weight (normalize to 0-50 range)
-  score += Math.min(priorityItem.dealValue / 20000, 50);
-  
-  // Urgency level weight
-  switch (priorityItem.urgencyLevel) {
-    case 'high':
-      score += 100;
-      break;
-    case 'medium':
-      score += 50;
-      break;
-    case 'low':
-      score += 25;
-      break;
-  }
-  
-  // Status-specific weights
-  switch (priorityItem.status) {
-    case 'under_review':
-    case 'legal_review':
-      score += 30; // These need immediate attention
-      break;
-    case 'scoping':
-      score += 20; // Converting scoping to deals is important
-      break;
-    case 'negotiating':
-      score += 15; // Active negotiations need monitoring
-      break;
-  }
-  
-  return score;
-};
+
 
 // Main function to calculate priority items for a user
 export const calculatePriorityItems = (deals: Deal[], userRole: UserRole): PriorityItem[] => {
-  return deals
-    .filter(deal => needsAttention(deal, userRole))
-    .map(deal => {
-      const daysInStatus = getDaysInCurrentStatus(deal);
-      const urgencyLevel = calculateUrgency(deal, daysInStatus);
-      const { actionType, actionLabel } = getActionTypeAndLabel(deal, userRole);
-      const dealValue = getDealValue(deal);
-      const clientName = deal.advertiserName || deal.agencyName || "Unknown Client";
-      
-      const priorityItem: PriorityItem = {
-        dealId: deal.id,
-        dealName: deal.dealName,
-        clientName,
-        urgencyLevel,
-        actionType,
-        actionLabel,
-        daysInStatus,
-        dealValue,
-        status: deal.status as DealStatus,
-        urgencyScore: 0 // Will be calculated below
-      };
-      
-      // Calculate urgency score
-      priorityItem.urgencyScore = getUrgencyScore(priorityItem);
-      
-      return priorityItem;
-    })
-    .sort((a, b) => b.urgencyScore - a.urgencyScore) // Sort by urgency score (highest first)
-    .slice(0, 10); // Limit to top 10 priority items
+  const items: PriorityItem[] = [];
+
+  // Add regular priority deals
+  deals.filter(deal => needsAttention(deal, userRole)).forEach(deal => {
+    const daysInStatus = getDaysInCurrentStatus(deal);
+    const urgencyLevel = calculateUrgency(deal, daysInStatus);
+    const { actionType, actionLabel } = getActionTypeAndLabel(deal, userRole);
+    const clientName = deal.advertiserName || deal.agencyName || "Unknown Client";
+    
+    items.push({
+      id: `deal-${deal.id}`,
+      deal,
+      title: `${actionLabel}: ${deal.dealName}`,
+      description: `${clientName} - ${daysInStatus} days in ${deal.status.replace('_', ' ')} status`,
+      urgencyLevel,
+      actionLabel,
+      actionType,
+      daysOverdue: daysInStatus
+    });
+  });
+
+  // Phase 8B: Add drafts to Priority Actions for sellers only
+  if (userRole === 'seller') {
+    const drafts = deals.filter(deal => deal.status === 'draft');
+    drafts.forEach(deal => {
+      items.push({
+        id: `draft-${deal.id}`,
+        deal,
+        title: `Resume Draft: ${deal.advertiserName || 'New Client'}`,
+        description: `Continue working on draft deal for ${deal.advertiserName || 'client'}.`,
+        urgencyLevel: 'medium' as const,
+        actionLabel: 'Continue Draft',
+        actionType: 'draft' as const,
+        daysOverdue: 0
+      });
+    });
+  }
+
+  // Sort by priority: drafts first for sellers, then by urgency
+  return items.sort((a, b) => {
+    // Drafts get priority for sellers
+    if (userRole === 'seller' && a.actionType === 'draft' && b.actionType !== 'draft') return -1;
+    if (userRole === 'seller' && a.actionType !== 'draft' && b.actionType === 'draft') return 1;
+    
+    const urgencyOrder = { high: 3, medium: 2, low: 1 };
+    if (a.urgencyLevel !== b.urgencyLevel) {
+      return urgencyOrder[b.urgencyLevel] - urgencyOrder[a.urgencyLevel];
+    }
+    return b.daysOverdue - a.daysOverdue;
+  }).slice(0, 10);
 };

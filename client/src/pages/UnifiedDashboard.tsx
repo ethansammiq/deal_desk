@@ -644,21 +644,17 @@ export default function UnifiedDashboard() {
                 </Button>
               </div>
             }
-            emptyCheck={(data) => data.length === 0}
+            emptyCheck={(data) => data.filter(deal => deal.status !== 'draft').length === 0}
           >
             {(deals) => {
-              // Phase 8: Filter drafts based on role visibility - only seller and admin can see drafts
-              const filteredDeals = deals.filter(deal => {
-                if (deal.status === 'draft') {
-                  return userRole === 'seller' || userRole === 'admin';
-                }
-                return true;
-              });
+              // Phase 8B: Filter drafts from main deal table - drafts should only appear in Priority Actions
+              const nonDraftDeals = deals.filter(deal => deal.status !== 'draft');
+
               
               return (
                 <DataTable 
                   columns={columns} 
-                  data={filteredDeals} 
+                  data={nonDraftDeals} 
                   searchKey="client"
                   placeholder="Search by client name..."
                   statusFilter={true}

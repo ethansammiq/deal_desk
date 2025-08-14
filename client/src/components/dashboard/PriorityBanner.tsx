@@ -10,7 +10,8 @@ import {
   ArrowUpRight, 
   MessageSquare, 
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  FileEdit
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { type PriorityItem } from "@shared/services/priorityService";
@@ -42,6 +43,8 @@ const getActionIcon = (actionType: PriorityItem['actionType']) => {
       return FileCheck;
     case 'contract':
       return ArrowUpRight;
+    case 'draft':
+      return FileEdit;
     default:
       return FileCheck;
   }
@@ -165,7 +168,7 @@ export function PriorityBanner({
               
               return (
                 <div
-                  key={item.dealId}
+                  key={item.id}
                   className={cn(
                     "flex items-center justify-between p-3 rounded border",
                     urgencyStyle.cardBorder
@@ -177,18 +180,14 @@ export function PriorityBanner({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium text-slate-900 truncate">
-                          {item.dealName}
+                          {item.title}
                         </h4>
                         <Badge variant={urgencyStyle.badgeVariant} className="text-xs flex-shrink-0">
                           {item.urgencyLevel}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
-                        <span className="truncate">{item.clientName}</span>
-                        <span className="flex-shrink-0">{formatCurrency(item.dealValue)}</span>
-                        <span className="flex-shrink-0">
-                          {item.daysInStatus} {item.daysInStatus === 1 ? 'day' : 'days'} in status
-                        </span>
+                        <span className="truncate">{item.description}</span>
                       </div>
                     </div>
                   </div>
@@ -198,7 +197,7 @@ export function PriorityBanner({
                     variant={item.urgencyLevel === 'high' ? 'default' : 'outline'}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAction(item.dealId, item.actionType);
+                      onAction(item.deal.id, item.actionType);
                     }}
                     className="flex-shrink-0 ml-3 gap-1"
                   >
