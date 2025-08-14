@@ -183,85 +183,49 @@ export function FormProgressTracker({
   const currentIndex = steps.findIndex(s => s.id === currentStep);
   
   return (
-    <div className="w-full max-w-4xl mx-auto mb-8">
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        {/* Header with step count */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-700">
+    <div className="w-full mb-6">
+      <div className="flex items-center justify-between py-3 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        {/* Left: Step info */}
+        <div className="flex items-center space-x-3">
+          <span className="text-sm font-medium text-gray-600">
             Step {currentIndex + 1} of {steps.length}
-          </h3>
-          <div className="flex items-center space-x-1">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-colors duration-200",
-                  index < currentIndex 
-                    ? "bg-green-500" 
-                    : index === currentIndex 
-                      ? "bg-purple-600" 
-                      : "bg-gray-300"
-                )}
-              />
-            ))}
-          </div>
+          </span>
+          <span className="text-sm text-gray-400">•</span>
+          <span className="text-sm font-semibold text-gray-900">
+            {steps[currentIndex]?.label}
+          </span>
         </div>
 
-        {/* Step cards layout */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Right: Progress dots */}
+        <div className="flex items-center space-x-2">
           {steps.map((step, index) => {
-            const isActive = currentStep === step.id;
+            const isActive = index === currentIndex;
             const isCompleted = index < currentIndex;
             const isClickable = index <= currentIndex + 1;
             
             return (
-              <div
+              <button
                 key={step.id}
                 onClick={() => isClickable && onStepClick(step.id)}
                 className={cn(
-                  "relative p-3 rounded-md border-2 transition-all duration-200 text-center",
+                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-200 border",
                   isActive 
-                    ? "border-purple-600 bg-purple-50 shadow-md" 
+                    ? "bg-purple-600 text-white border-purple-600 shadow-sm" 
                     : isCompleted 
-                      ? "border-green-500 bg-green-50 hover:shadow-sm" 
-                      : "border-gray-200 bg-white hover:border-gray-300",
-                  isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                      ? "bg-green-500 text-white border-green-500" 
+                      : "bg-gray-100 text-gray-400 border-gray-200 hover:border-gray-300",
+                  isClickable ? "cursor-pointer hover:scale-105" : "cursor-not-allowed opacity-50"
                 )}
+                title={step.label}
               >
-                {/* Status Icon */}
-                <div className="flex justify-center mb-2">
-                  {isCompleted ? (
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  ) : isActive ? (
-                    <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
-                      <span className="text-xs font-bold text-white">{index + 1}</span>
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600">{index + 1}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Step Label */}
-                <div className="text-xs font-medium leading-tight">
-                  <span
-                    className={cn(
-                      isActive 
-                        ? "text-purple-700" 
-                        : isCompleted 
-                          ? "text-green-700" 
-                          : "text-gray-600"
-                    )}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-              </div>
+                {isCompleted ? (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  index + 1
+                )}
+              </button>
             );
           })}
         </div>
