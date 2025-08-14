@@ -42,6 +42,7 @@ type ReviewSubmitFormValues = any;
 
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
 
 interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
@@ -173,6 +174,14 @@ export function ReviewSubmitSection({
   onPrevStep,
 }: ReviewSubmitSectionProps) {
   const formValues = form.getValues();
+  const dealCalculations = useDealCalculations();
+  
+  // Helper to get client names for calculations
+  const getClientNames = () => ({
+    advertiserName: String(formValues.advertiserName || ""),
+    agencyName: String(formValues.agencyName || ""),
+    salesChannel: String(formValues.salesChannel || "")
+  });
 
   // Calculate contract term from dates - handle string dates properly
   const startDate = formValues.termStartDate;
@@ -219,54 +228,80 @@ export function ReviewSubmitSection({
         description="Review your deal details and submit for approval"
       />
 
-      {/* Deal Summary */}
+      {/* Enhanced Deal Summary - All Client Information and Deal Timeline fields */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Deal Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Deal Type</label>
-              <p className="text-base capitalize">{formValues.dealType}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Sales Channel</label>
-              <p className="text-base">
-                {formValues.salesChannel === "client_direct" ? "Client Direct" :
-                 formValues.salesChannel === "holding_company" ? "Holding Company" :
-                 "Independent Agency"}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Region</label>
-              <p className="text-base capitalize">{formValues.region}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Structure</label>
-              <p className="text-base">
-                {formValues.dealStructure === "tiered" ? "Tiered Revenue" : "Flat Commit"}
-              </p>
+        <CardContent className="space-y-6">
+          {/* Client Information Section */}
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Client Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {formValues.advertiserName && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Advertiser</label>
+                  <p className="text-base">{formValues.advertiserName}</p>
+                </div>
+              )}
+              {formValues.agencyName && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Agency</label>
+                  <p className="text-base">{formValues.agencyName}</p>
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium text-gray-700">Sales Channel</label>
+                <p className="text-base">
+                  {formValues.salesChannel === "client_direct" ? "Client Direct" :
+                   formValues.salesChannel === "holding_company" ? "Holding Company" :
+                   "Independent Agency"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Region</label>
+                <p className="text-base capitalize">{formValues.region}</p>
+              </div>
             </div>
           </div>
 
-          {formValues.advertiserName && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Advertiser</label>
-              <p className="text-base">{formValues.advertiserName}</p>
-            </div>
-          )}
-
-          {formValues.agencyName && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Agency</label>
-              <p className="text-base">{formValues.agencyName}</p>
-            </div>
-          )}
-
+          {/* Deal Timeline Section */}
           <div>
-            <label className="text-sm font-medium text-gray-700">Contract Term</label>
-            <p className="text-base">{contractTerm} months</p>
+            <h4 className="font-medium text-gray-900 mb-3">Deal Timeline</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Deal Type</label>
+                <p className="text-base capitalize">{formValues.dealType}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Structure</label>
+                <p className="text-base">
+                  {dealStructureType === "tiered" ? "Tiered Revenue" : "Flat Commit"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Contract Term</label>
+                <p className="text-base">{contractTerm} months</p>
+              </div>
+              {formValues.termStartDate && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Start Date</label>
+                  <p className="text-base">{new Date(formValues.termStartDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {formValues.termEndDate && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">End Date</label>
+                  <p className="text-base">{new Date(formValues.termEndDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {formValues.contractTermMonths && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Contract Term (Months)</label>
+                  <p className="text-base">{formValues.contractTermMonths}</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Auto-populated Business Summary Field */}
@@ -356,67 +391,159 @@ export function ReviewSubmitSection({
         </CardContent>
       </Card>
 
-      {/* Deal Structure Details */}
+      {/* Financial Structure - Consolidated Deal Structure Summary Table */}
       {dealStructureType === "tiered" && dealTiers.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Tier Structure</CardTitle>
+            <CardTitle className="text-lg">Financial Structure</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {dealTiers.map((tier) => (
-                <div key={tier.tierNumber} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <Badge variant="outline">Tier {tier.tierNumber}</Badge>
-                    <div>
-                      <span className="font-medium">
-                        {formatCurrency(tier.annualRevenue || 0)}
-                      </span>
-                      <span className="text-gray-600 ml-2">
-                        ({((tier.annualGrossMargin || 0) * 100) || 0}% margin)
-                      </span>
-                    </div>
-                  </div>
-                  {tier.incentives && tier.incentives.length > 0 && (
-                    <Badge variant="secondary">
-                      {tier.incentives.length} Incentive{tier.incentives.length !== 1 ? 's' : ''}
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Selected Incentives - Show tier-embedded incentives */}
-      {dealTiers.some(tier => tier.incentives && tier.incentives.length > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Deal Incentives</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {dealTiers.map((tier) => (
-                tier.incentives && tier.incentives.length > 0 && (
-                  <div key={tier.tierNumber} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">Tier {tier.tierNumber}</Badge>
-                      <span className="text-sm text-gray-600">
-                        {formatCurrency(tier.annualRevenue || 0)} Revenue Target
-                      </span>
-                    </div>
-                    <div className="ml-4 space-y-1">
-                      {tier.incentives.map((incentive, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm">
-                          <span className="font-medium">{incentive.type}</span>
-                          <span className="text-gray-700">{incentive.value}%</span>
-                        </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 p-3 text-left font-medium text-gray-700">Metric</th>
+                    <th className="border border-gray-300 p-3 text-center font-medium text-gray-700 bg-gray-50">Last Year</th>
+                    {dealTiers.map((tier) => (
+                      <th key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium text-gray-700">
+                        Tier {tier.tierNumber}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Annual Revenue Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Annual Revenue</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {formatCurrency(dealCalculations.getPreviousYearValue(
+                        getClientNames().salesChannel, 
+                        getClientNames().advertiserName, 
+                        getClientNames().agencyName
                       ))}
-                    </div>
-                  </div>
-                )
-              ))}
+                    </td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
+                        {formatCurrency(tier.annualRevenue || 0)}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Revenue Growth Rate Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Revenue Growth Rate</td>
+                    <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
+                        {formatPercentage(dealCalculations.calculateRevenueGrowthRate(
+                          tier, 
+                          getClientNames().salesChannel, 
+                          getClientNames().advertiserName, 
+                          getClientNames().agencyName
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Adjusted Gross Margin Growth Rate Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Adjusted Gross Margin Growth Rate</td>
+                    <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
+                        {formatPercentage(dealCalculations.calculateAdjustedGrossMarginGrowthRate(
+                          tier, 
+                          getClientNames().salesChannel, 
+                          getClientNames().advertiserName, 
+                          getClientNames().agencyName
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Adjusted Gross Profit Growth Rate Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Adjusted Gross Profit Growth Rate</td>
+                    <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
+                        {formatPercentage(dealCalculations.calculateAdjustedGrossProfitGrowthRate(
+                          tier, 
+                          getClientNames().salesChannel, 
+                          getClientNames().advertiserName, 
+                          getClientNames().agencyName
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Total Incentive Cost Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Total Incentive Cost</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {formatCurrency(dealCalculations.getPreviousYearIncentiveCost(
+                        getClientNames().salesChannel, 
+                        getClientNames().advertiserName, 
+                        getClientNames().agencyName
+                      ))}
+                    </td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
+                        {formatCurrency(dealCalculations.calculateTierIncentiveCost(tier))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Total Client Value Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Total Client Value</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {formatCurrency(dealCalculations.getPreviousYearClientValue(
+                        getClientNames().salesChannel, 
+                        getClientNames().advertiserName, 
+                        getClientNames().agencyName
+                      ))}
+                    </td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
+                        {formatCurrency(dealCalculations.calculateTierClientValue(tier))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Client Value Growth Rate Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Client Value Growth Rate</td>
+                    <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
+                        {formatPercentage(dealCalculations.calculateClientValueGrowthRate(
+                          tier, 
+                          getClientNames().salesChannel, 
+                          getClientNames().advertiserName, 
+                          getClientNames().agencyName
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                  
+                  {/* Incentive Cost Growth Rate Row */}
+                  <tr>
+                    <td className="border border-gray-300 p-3 font-medium">Incentive Cost Growth Rate</td>
+                    <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
+                    {dealTiers.map((tier) => (
+                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
+                        {formatPercentage(dealCalculations.calculateIncentiveCostGrowthRate(
+                          tier, 
+                          getClientNames().salesChannel, 
+                          getClientNames().advertiserName, 
+                          getClientNames().agencyName
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
