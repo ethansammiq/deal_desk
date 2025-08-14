@@ -543,7 +543,7 @@ export default function UnifiedDashboard() {
           </div>
         </div>
         
-        <div className="overflow-hidden bg-white shadow sm:rounded-lg">
+        <div className="overflow-hidden bg-white border border-slate-200 rounded-md">
           <QueryStateHandler
             query={dealsQuery}
             loadingComponent={<SectionLoading title="Loading deals..." rows={5} />}
