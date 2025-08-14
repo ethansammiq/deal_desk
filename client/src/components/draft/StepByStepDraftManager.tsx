@@ -202,7 +202,7 @@ export function StepByStepDraftManager({
           variant="outline" 
           size="sm"
           onClick={handleSave}
-          disabled={isSaving || !isValid}
+          disabled={isSaving}
         >
           <Save className="h-3 w-3 mr-1" />
           Save Draft
