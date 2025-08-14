@@ -129,7 +129,53 @@ export function FormHelpPopover({
 }
 
 /**
- * FormSectionHeader - A standardized header component for form sections
+ * FormPageHeader - A standardized header for entire forms (top-level)
+ * Visually distinct from FormSectionHeader to establish clear hierarchy
+ */
+export function FormPageHeader({
+  title,
+  description,
+  badge,
+  helpTitle,
+  helpContent,
+}: {
+  title: string;
+  description?: string;
+  badge?: string;
+  helpTitle?: string;
+  helpContent?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8 pb-6 border-b-2 border-purple-100">
+      <div className="flex items-center mb-3">
+        <h1 className="text-2xl font-bold text-slate-900">
+          {title}
+          {badge && (
+            <span className="ml-3 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full">
+              {badge}
+            </span>
+          )}
+        </h1>
+        
+        {helpTitle && helpContent && (
+          <div className="ml-3">
+            <FormHelpPopover title={helpTitle}>
+              {helpContent}
+            </FormHelpPopover>
+          </div>
+        )}
+      </div>
+      
+      {description && (
+        <p className="text-base text-slate-600 leading-relaxed max-w-4xl">{description}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * FormSectionHeader - A standardized header component for form sections (section-level)
+ * Smaller and less prominent than FormPageHeader
  */
 export function FormSectionHeader({
   title,
@@ -147,12 +193,12 @@ export function FormSectionHeader({
   return (
     <div className={FormStyles.header.container}>
       <div className="flex items-center mb-2">
-        <h2 className={FormStyles.header.title}>
+        <h3 className={FormStyles.header.title}>
           {title}
           {badge && (
             <span className={FormStyles.header.badge}>{badge}</span>
           )}
-        </h2>
+        </h3>
         
         {helpTitle && helpContent && (
           <FormHelpPopover title={helpTitle}>
