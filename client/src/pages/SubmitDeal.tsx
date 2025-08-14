@@ -175,6 +175,10 @@ export default function SubmitDeal() {
   // State to track selected agencies and advertisers for dropdowns
   const [agencies, setAgencies] = useState<AgencyData[]>([]);
   const [advertisers, setAdvertisers] = useState<AdvertiserData[]>([]);
+  
+  // Memoize arrays to prevent infinite loops in useEffect dependencies
+  const stableAdvertisers = React.useMemo(() => advertisers, [advertisers.length]);
+  const stableAgencies = React.useMemo(() => agencies, [agencies.length]);
 
   // Initialize calculation service with current advertiser/agency data
   const dealCalculations = useDealCalculations(advertisers, agencies);
@@ -362,7 +366,7 @@ export default function SubmitDeal() {
         aiAnalysis.triggerAnalysis(dealData);
       }
     }
-  }, [formStep, dealStructureType, aiAnalysis]);
+  }, [formStep, dealStructureType]);
 
   // Financial calculation helper functions - now using extracted service
 
@@ -565,15 +569,15 @@ export default function SubmitDeal() {
       salesChannel,
       advertiserName,
       agencyName,
-      advertisers,
-      agencies
+      stableAdvertisers,
+      stableAgencies
     );
     
     if (region) {
       const regionValue = region as "northeast" | "midwest" | "midatlantic" | "west" | "south";
       form.setValue("region", regionValue);
     }
-  }, [salesChannel, form, advertisers, agencies]);
+  }, [salesChannel, stableAdvertisers, stableAgencies]);
 
   // Calculate real-time financial impact using dealTiers
   useEffect(() => {
@@ -624,7 +628,7 @@ export default function SubmitDeal() {
 
     // Update the financial summary state
     setFinancialSummary(summary);
-  }, [dealTiers, salesChannel, advertisers, agencies]);
+  }, [dealTiers, salesChannel]);
 
   // ✅ MIGRATED: Form navigation now handled by formValidation hook
   // Legacy functions replaced with hook methods:
