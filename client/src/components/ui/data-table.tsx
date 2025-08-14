@@ -69,9 +69,10 @@ export function DataTable<TData, TValue>({
   }, [statusValue, statusFilter, table])
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-4 items-center justify-between py-4">
-        <div className="flex flex-1 gap-2 items-center min-w-[280px]">
+    <div className="space-y-4">
+      {/* Search and Filter Controls */}
+      <div className="flex flex-wrap gap-4 items-center justify-between px-4 py-3 bg-slate-50 rounded-md">
+        <div className="flex flex-1 gap-3 items-center min-w-[280px]">
           {searchKey && (
             <div className="relative flex-1">
               <Input
@@ -80,7 +81,7 @@ export function DataTable<TData, TValue>({
                 onChange={(event) =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="w-full px-4 py-2 pl-9 md:max-w-sm"
+                className="w-full px-4 py-2 pl-9 md:max-w-sm bg-white"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Search className="w-4 h-4 text-slate-400" />
@@ -89,7 +90,7 @@ export function DataTable<TData, TValue>({
           )}
           {statusFilter && (
             <Select value={statusValue} onValueChange={setStatusValue}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-white">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
@@ -108,14 +109,16 @@ export function DataTable<TData, TValue>({
           )}
         </div>
       </div>
-      <div>
+
+      {/* Table */}
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="px-4 py-3">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -138,7 +141,7 @@ export function DataTable<TData, TValue>({
                   onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="px-4 py-3">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -146,7 +149,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center px-4 py-3">
                   No results.
                 </TableCell>
               </TableRow>
@@ -154,8 +157,10 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-md">
+        <div className="flex-1 text-sm text-slate-600">
           Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min(
             (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
             table.getFilteredRowModel().rows.length

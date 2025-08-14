@@ -550,7 +550,7 @@ export default function UnifiedDashboard() {
           </div>
         </div>
         
-        <div className="overflow-hidden bg-white border border-slate-200 rounded-md">
+        <div className="bg-white border border-slate-200 rounded-md p-4">
           <QueryStateHandler
             query={dealsQuery}
             loadingComponent={<SectionLoading title="Loading deals..." rows={5} />}
@@ -575,8 +575,8 @@ export default function UnifiedDashboard() {
               <DataTable 
                 columns={columns} 
                 data={deals} 
-                searchKey="dealName"
-                placeholder="Search deals..."
+                searchKey="client"
+                placeholder="Search by client name..."
                 statusFilter={true}
                 onRowClick={(deal) => handleView(deal.id)}
               />
