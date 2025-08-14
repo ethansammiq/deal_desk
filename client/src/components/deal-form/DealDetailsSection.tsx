@@ -1,6 +1,6 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { CardContent } from "@/components/ui/card";
+
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,7 @@ export function DealDetailsSection({
   description = "Configure the deal type, structure, and timeline",
 }: DealDetailsSectionProps) {
   return (
-    <CardContent className="p-6">
+    <div className="p-6">
       <FormSectionHeader
         title={title}
         description={description}
@@ -284,6 +284,6 @@ export function DealDetailsSection({
           </div>
         )}
       </div>
-    </CardContent>
+    </div>
   );
 }

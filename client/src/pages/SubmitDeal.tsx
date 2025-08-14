@@ -994,18 +994,17 @@ export default function SubmitDeal() {
         }}
       />
 
-      {/* Form Container */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <FormErrorBoundary
-          fallbackTitle="Deal Form Error"
-          fallbackMessage="An error occurred while processing the deal form. Please try refreshing the page or contact support if the issue persists."
-        >
-          <Form {...form}>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              console.log("Form submit event triggered");
-              form.handleSubmit(onSubmit)(e);
-            }}>
+      {/* Form Container - Completely unconstrained */}
+      <FormErrorBoundary
+        fallbackTitle="Deal Form Error"
+        fallbackMessage="An error occurred while processing the deal form. Please try refreshing the page or contact support if the issue persists."
+      >
+        <Form {...form}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form submit event triggered");
+            form.handleSubmit(onSubmit)(e);
+          }} className="bg-white rounded-lg shadow-sm">
             {/* Step 1: Deal Overview - Using shared component */}
             {formStep === 0 && (
               <div className="space-y-6 p-6">
@@ -3373,7 +3372,7 @@ export default function SubmitDeal() {
         </Form>
       </FormErrorBoundary>
       </div>
-      </div>
     </div>
+  );
   );
 }
