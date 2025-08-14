@@ -22,14 +22,33 @@ This document outlines comprehensive testing procedures for the enhanced deal wo
 ### 1.1 **Manual Draft Creation & Saving**
 **Test Objective**: Validate manual draft saving functionality across all form steps
 
+## **CORRECTED TC1.1.1 VALIDATION STEPS**
+
+For the actual implementation:
+
+1. **Fill Step 1 Information**: Deal type, business summary, growth opportunities
+2. **Click "Save Draft" Button**: Located at bottom of form
+3. **Verify Toast Notification**: "Draft Saved" appears
+4. **Check Progress Indicator**: Shows "Step 1 of 4" with "Draft" badge
+5. **Navigate to Dashboard**: Go to UnifiedDashboard
+6. **Verify Priority Actions ONLY**: Look for "Resume Draft: [ClientName]" 
+7. **Confirm NO Main Table Entry**: Draft should NOT appear in deals table
+
+**Key Corrections**:
+- ❌ NO modal opens (direct save)
+- ❌ NO drafts in main deals table  
+- ✅ Only Priority Actions shows drafts
+- ✅ Toast notification confirms save
+- ✅ Progress indicator shows draft status
+
 **Test Cases**:
 ```
 TC1.1.1 - Manual Draft Save from Step 1 (Deal Information)
 • Fill in basic deal information (dealType, businessSummary, etc.)
 • Click "Save Draft" button
-• Verify draft modal opens with auto-generated name
-• Confirm draft saves with status "draft"
-• Validate draft appears in deals table
+• Verify draft saves successfully with toast notification "Draft Saved"
+• Confirm progress indicator shows "Step 1 of 4" with "Draft" status
+• Validate NO modal appears (direct save functionality)
 
 TC1.1.2 - Manual Draft Save from Step 2 (Client Details)
 • Navigate to Step 2 with advertiser/agency information
@@ -54,25 +73,32 @@ TC1.1.4 - Manual Draft Save from Step 4 (Financial Details)
 ```
 
 ### 1.2 **Priority Actions Draft Integration**
-**Test Objective**: Validate draft display and resumption through Priority Actions
+**Test Objective**: Validate draft display and resumption through Priority Actions (ONLY location for draft visibility)
 
 **Test Cases**:
 ```
-TC1.2.1 - Draft Display in Priority Actions
-• Save draft with agency name (e.g., "Omnicom")
+TC1.2.1 - Draft Display in Priority Actions (EXCLUSIVE)
+• Save draft with agency name (e.g., "Wieden+Kennedy")
 • Navigate to UnifiedDashboard
-• Verify Priority Actions shows "Resume Draft: Omnicom"
-• Confirm no "Draft Client" fallback text
+• Verify Priority Actions shows "Resume Draft: Wieden+Kennedy"
+• Confirm drafts do NOT appear in main deals table
 • Validate medium urgency priority assignment
 
-TC1.2.2 - Resume Draft Functionality
+TC1.2.2 - Draft Exclusion from Main Deals Table
+• Save multiple drafts with different client names
+• Navigate to UnifiedDashboard main deals table
+• Verify NO drafts appear in the main deals table
+• Confirm only submitted/scoping/under_review deals appear
+• Validate drafts are EXCLUSIVELY visible in Priority Actions
+
+TC1.2.3 - Resume Draft Functionality
 • Click "Continue Draft" from Priority Actions
 • Verify navigation to SubmitDeal form with ?draft=ID parameter
 • Confirm form pre-loads with saved draft data
 • Test all form steps retain proper data
 • Validate deal structure and tiers load correctly
 
-TC1.2.3 - Multiple Draft Management
+TC1.2.4 - Multiple Draft Management
 • Create 3+ drafts with different client names
 • Verify each shows correct client name in Priority Actions
 • Test resuming different drafts maintains proper data separation
