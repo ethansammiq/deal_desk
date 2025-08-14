@@ -670,9 +670,19 @@ export default function SubmitDeal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
       queryClient.invalidateQueries({ queryKey: ['/api/deals/drafts'] });
+      toast({
+        title: "Draft Saved",
+        description: "Your progress has been saved successfully.",
+        variant: "default",
+      });
     },
     onError: (error: any) => {
       console.error("Draft save error:", error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "Could not save draft. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -894,8 +904,9 @@ export default function SubmitDeal() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-6">
         <div>
           <FormSectionHeader
             title="Deal Submission"
@@ -3362,6 +3373,7 @@ export default function SubmitDeal() {
         </Form>
       </FormErrorBoundary>
       </Card>
+      </div>
     </div>
   );
 }
