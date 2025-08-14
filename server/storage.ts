@@ -68,6 +68,10 @@ export interface IStorage {
   getDealStatusHistory(dealId: number): Promise<DealStatusHistory[]>;
   createDealStatusHistory(statusHistory: InsertDealStatusHistory): Promise<DealStatusHistory>;
   
+  // Phase 3: Deal Comments methods
+  getDealComments(dealId: number): Promise<any[]>;
+  createDealComment(commentData: any): Promise<any>;
+  
   // Deal tier methods
   getDealTiers(dealId: number): Promise<DealTier[]>;
   createDealTier(tier: InsertDealTier): Promise<DealTier>;

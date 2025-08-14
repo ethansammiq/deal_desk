@@ -233,6 +233,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch allowed transitions" });
     }
   });
+
+  // Phase 3: Deal comments endpoints
+  router.get("/deals/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const comments = await storage.getDealComments(dealId);
+      res.status(200).json(comments);
+    } catch (error) {
+      console.error("Error fetching deal comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  router.post("/deals/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const { content, author, authorRole } = req.body;
+      
+      if (!content?.trim()) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+      
+      if (!author || !authorRole) {
+        return res.status(400).json({ message: "Author and author role are required" });
+      }
+
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const comment = await storage.createDealComment({
+        dealId,
+        content: content.trim(),
+        author,
+        authorRole,
+        createdAt: new Date()
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating deal comment:", error);
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
   
   // Deal scoping requests endpoints
   router.get("/deal-scoping-requests", async (req: Request, res: Response) => {

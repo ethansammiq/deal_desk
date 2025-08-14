@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
+import { DealComments } from "@/components/collaboration/DealComments";
+import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -278,6 +280,13 @@ export default function DealDetails() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Comments Section */}
+              <DealComments 
+                deal={deal} 
+                userRole={userRole} 
+                currentUser={user?.username || 'Unknown User'} 
+              />
             </div>
 
             {/* Sidebar */}
