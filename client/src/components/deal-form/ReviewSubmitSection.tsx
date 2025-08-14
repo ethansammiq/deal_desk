@@ -498,7 +498,11 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Total Client Value</td>
                     <td className="border border-gray-300 p-3 text-center">
-                      {formatCurrency(dealCalculations.getPreviousYearClientValue(
+                      {formatCurrency(dealCalculations.getPreviousYearValue(
+                        getClientNames().salesChannel, 
+                        getClientNames().advertiserName, 
+                        getClientNames().agencyName
+                      ) - dealCalculations.getPreviousYearIncentiveCost(
                         getClientNames().salesChannel, 
                         getClientNames().advertiserName, 
                         getClientNames().agencyName
@@ -506,7 +510,7 @@ export function ReviewSubmitSection({
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
-                        {formatCurrency(dealCalculations.calculateTierClientValue(tier))}
+                        {formatCurrency((tier.annualRevenue || 0) - dealCalculations.calculateTierIncentiveCost(tier))}
                       </td>
                     ))}
                   </tr>
@@ -533,7 +537,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateIncentiveCostGrowthRate(
+                        {formatPercentage(dealCalculations.calculateCostGrowthRate(
                           tier, 
                           getClientNames().salesChannel, 
                           getClientNames().advertiserName, 
