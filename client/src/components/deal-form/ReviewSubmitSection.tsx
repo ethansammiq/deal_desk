@@ -44,6 +44,7 @@ type ReviewSubmitFormValues = any;
 import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { useFinancialData } from "@/hooks/useFinancialData";
+import { GrowthIndicator } from "@/components/ui/financial-table";
 
 interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
@@ -433,15 +434,9 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
                       const growthRate = dealCalculations.calculateRevenueGrowthRate(tier, salesChannel, advertiserName, agencyName);
-                      const isNegative = growthRate < 0;
-                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
                       return (
-                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'percent',
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          }).format(growthRate)}
+                        <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium">
+                          <GrowthIndicator value={growthRate} />
                         </td>
                       );
                     })}
@@ -453,15 +448,9 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
                       const growthRate = dealCalculations.calculateAdjustedGrossMarginGrowthRate(tier, salesChannel, advertiserName, agencyName);
-                      const isNegative = growthRate < 0;
-                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
                       return (
-                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'percent',
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          }).format(growthRate)}
+                        <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium">
+                          <GrowthIndicator value={growthRate} />
                         </td>
                       );
                     })}
@@ -473,15 +462,9 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
                       const growthRate = dealCalculations.calculateAdjustedGrossProfitGrowthRate(tier, salesChannel, advertiserName, agencyName);
-                      const isNegative = growthRate < 0;
-                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
                       return (
-                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'percent',
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          }).format(growthRate)}
+                        <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium">
+                          <GrowthIndicator value={growthRate} />
                         </td>
                       );
                     })}
@@ -519,15 +502,9 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
                       const growthRate = dealCalculations.calculationService.calculateClientValueGrowthRateFromIncentives(tier, salesChannel, advertiserName, agencyName);
-                      const isNegative = growthRate < 0;
-                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
                       return (
-                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'percent',
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          }).format(growthRate)}
+                        <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium">
+                          <GrowthIndicator value={growthRate} />
                         </td>
                       );
                     })}
@@ -539,16 +516,9 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => {
                       const growthRate = dealCalculations.calculateCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
-                      const isNegative = growthRate < 0;
-                      // For incentive costs: increases are bad (red), decreases are good (green)
-                      const colorClass = isNegative ? "text-green-600" : "text-red-600";
                       return (
-                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
-                          {new Intl.NumberFormat('en-US', {
-                            style: 'percent',
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          }).format(growthRate)}
+                        <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center font-medium">
+                          <GrowthIndicator value={growthRate} invertColors={true} />
                         </td>
                       );
                     })}
