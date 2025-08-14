@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
+import { FormFieldWithTooltip } from "@/components/ui/form-components";
 import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
 // Legacy interfaces - simplified for current architecture
@@ -212,31 +213,18 @@ export function ReviewSubmitSection({
         contractTerm={contractTerm}
       />
 
-      {/* Business Summary Field */}
+      {/* Business Summary Field - Using shared FormFieldWithTooltip */}
       <Card>
         <CardContent className="p-6">
-          <FormField
-            control={form.control}
+          <FormFieldWithTooltip
+            form={form}
             name="businessSummary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Business Summary <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Auto-populated from business context fields..."
-                    className="min-h-[100px]"
-                    value={field.value || ""}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormDescription>
-                  This summary is auto-generated from your business context inputs but can be edited as needed.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Business Summary"
+            type="textarea"
+            required={true}
+            placeholder="Auto-populated from business context fields..."
+            description="This summary is auto-generated from your business context inputs but can be edited as needed."
+            tooltip="Use this field to provide additional context about the deal that wasn't captured in other sections."
           />
         </CardContent>
       </Card>
@@ -257,10 +245,10 @@ export function ReviewSubmitSection({
       {/* Approval Requirements */}
       {currentApprover && (
         <ApprovalAlert
-          totalValue={0}
-          contractTerm={12}
-          dealType="grow"
-          salesChannel="independent_agency"
+          totalValue={financialSummary.totalAnnualRevenue}
+          contractTerm={contractTerm}
+          dealType={formValues.dealType}
+          salesChannel={salesChannel}
           onChange={() => {}}
         />
       )}
