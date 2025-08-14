@@ -15,6 +15,7 @@ import { SmartSearch } from "@/components/SmartSearch";
 // Lazy load pages for better performance
 const NotFound = lazy(() => import("@/pages/not-found"));
 const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
+const DealDetails = lazy(() => import("@/pages/DealDetails"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
 const HelpResources = lazy(() => import("@/pages/HelpResources"));
@@ -67,6 +68,7 @@ function Router() {
             <Route path="/dashboard" component={UnifiedDashboard} />
             <Route path="/help" component={HelpResources} />
             <Route path="/deals" component={UnifiedDashboard} />
+            <Route path="/deals/:id" component={DealDetails} />
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/role-demo" component={RoleDemo} />
             <Route path="/role-testing" component={RoleTestingPanel} />

@@ -1,9 +1,20 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Home, ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function NotFound() {
+  const [, navigate] = useLocation();
+  
+  const handleGoBack = () => {
+    // Safe navigation back - if no history, go to dashboard
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="w-full flex items-center justify-center py-8">
       <Card className="w-full max-w-md mx-4 border border-[#f0e6ff] shadow-lg overflow-hidden">
@@ -28,11 +39,9 @@ export default function NotFound() {
               Go to Home
             </Link>
           </Button>
-          <Button asChild className="bg-[#3e0075] hover:bg-[#5a0099]">
-            <Link href="javascript:history.back()">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </Link>
+          <Button onClick={handleGoBack} className="bg-[#3e0075] hover:bg-[#5a0099]">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
           </Button>
         </CardFooter>
       </Card>
