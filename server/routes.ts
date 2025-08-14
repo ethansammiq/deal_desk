@@ -13,6 +13,7 @@ import {
 import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { canTransitionStatus } from "@shared/status-transitions";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
 import { 
   analyzeDeal, 
@@ -204,6 +205,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch deal statuses" });
     }
   });
+
+  // Phase 3: Enhanced status transition validation endpoint
+  router.get("/deals/:id/allowed-transitions", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userRole = req.query.role as string || 'admin';
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const allowedTransitions = getAllowedTransitions(deal.status as any, userRole as any);
+      
+      res.status(200).json({
+        currentStatus: deal.status,
+        allowedTransitions,
+        userRole
+      });
+    } catch (error) {
+      console.error("Error fetching allowed transitions:", error);
+      res.status(500).json({ message: "Failed to fetch allowed transitions" });
+    }
+  });
   
   // Deal scoping requests endpoints
   router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
@@ -335,8 +364,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update deal status to under_review and increment revision count
-      const updatedDeal = await storage.updateDeal(id, {
-        status: 'under_review',
+      const updatedDeal = await storage.updateDealWithRevision(id, {
+        status: 'under_review' as DealStatus,
         submittedAt: new Date(),
         revisionCount: (deal.revisionCount || 0) + 1,
         lastResubmittedAt: new Date()
