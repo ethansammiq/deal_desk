@@ -132,7 +132,7 @@ export default function DealDetails() {
                       <CardTitle className="text-xl">{deal.dealName}</CardTitle>
                       <p className="text-sm text-slate-500 mt-1">#{deal.referenceNumber}</p>
                     </div>
-                    <DealStatusBadge status={deal.status} />
+                    <DealStatusBadge status={deal.status as any} />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

@@ -24,7 +24,6 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
 
   const revisionMutation = useMutation({
     mutationFn: async (data: { dealId: number; revisionReason: string }) => {
-      console.log("Sending revision request:", data); // Debug log
       const response = await fetch(`/api/deals/${data.dealId}/request-revision`, {
         method: "POST",
         headers: {
@@ -60,7 +59,6 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
 
   const handleSubmit = async () => {
     const trimmedReason = revisionReason.trim();
-    console.log("Form submission - revisionReason:", revisionReason, "trimmed:", trimmedReason); // Debug log
     
     if (!trimmedReason) {
       toast({
@@ -78,7 +76,7 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
         revisionReason: trimmedReason
       });
     } catch (error) {
-      console.error("Revision request failed:", error);
+      // Error handling is done in mutation onError
     } finally {
       setIsSubmitting(false);
     }
