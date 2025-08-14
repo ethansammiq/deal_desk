@@ -431,33 +431,60 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Revenue Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateRevenueGrowthRate(tier, salesChannel, advertiserName, agencyName))}
-                      </td>
-                    ))}
+                    {dealTiers.map((tier) => {
+                      const growthRate = dealCalculations.calculateRevenueGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const isNegative = growthRate < 0;
+                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
+                      return (
+                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'percent',
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }).format(growthRate)}
+                        </td>
+                      );
+                    })}
                   </tr>
                   
                   {/* Adjusted Gross Margin Growth Rate Row */}
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Adjusted Gross Margin Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateAdjustedGrossMarginGrowthRate(tier, salesChannel, advertiserName, agencyName))}
-                      </td>
-                    ))}
+                    {dealTiers.map((tier) => {
+                      const growthRate = dealCalculations.calculateAdjustedGrossMarginGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const isNegative = growthRate < 0;
+                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
+                      return (
+                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'percent',
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }).format(growthRate)}
+                        </td>
+                      );
+                    })}
                   </tr>
                   
                   {/* Adjusted Gross Profit Growth Rate Row */}
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Adjusted Gross Profit Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateAdjustedGrossProfitGrowthRate(tier, salesChannel, advertiserName, agencyName))}
-                      </td>
-                    ))}
+                    {dealTiers.map((tier) => {
+                      const growthRate = dealCalculations.calculateAdjustedGrossProfitGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const isNegative = growthRate < 0;
+                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
+                      return (
+                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'percent',
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }).format(growthRate)}
+                        </td>
+                      );
+                    })}
                   </tr>
                   
                   {/* Total Incentive Cost Row */}
@@ -481,7 +508,7 @@ export function ReviewSubmitSection({
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
-                        {formatCurrency((tier.annualRevenue || 0) - dealCalculations.calculateTierIncentiveCost(tier))}
+                        {formatCurrency(dealCalculations.calculateClientValue(tier))}
                       </td>
                     ))}
                   </tr>
@@ -490,22 +517,41 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Client Value Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateClientValueGrowthRate(tier, salesChannel, advertiserName, agencyName))}
-                      </td>
-                    ))}
+                    {dealTiers.map((tier) => {
+                      const growthRate = dealCalculations.calculateClientValueGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const isNegative = growthRate < 0;
+                      const colorClass = isNegative ? "text-red-600" : "text-green-600";
+                      return (
+                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'percent',
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }).format(growthRate)}
+                        </td>
+                      );
+                    })}
                   </tr>
                   
                   {/* Incentive Cost Growth Rate Row */}
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Incentive Cost Growth Rate</td>
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
-                    {dealTiers.map((tier) => (
-                      <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateCostGrowthRate(tier, salesChannel, advertiserName, agencyName))}
-                      </td>
-                    ))}
+                    {dealTiers.map((tier) => {
+                      const growthRate = dealCalculations.calculateCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                      const isNegative = growthRate < 0;
+                      // For incentive costs: increases are bad (red), decreases are good (green)
+                      const colorClass = isNegative ? "text-green-600" : "text-red-600";
+                      return (
+                        <td key={tier.tierNumber} className={`border border-gray-300 p-3 text-center font-medium ${colorClass}`}>
+                          {new Intl.NumberFormat('en-US', {
+                            style: 'percent',
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }).format(growthRate)}
+                        </td>
+                      );
+                    })}
                   </tr>
                 </tbody>
               </table>
