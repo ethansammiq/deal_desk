@@ -327,9 +327,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertDealSchema.safeParse(draftDeal);
       if (!validatedData.success) {
         const errorMessage = fromZodError(validatedData.error);
+        console.error("Draft validation errors:", validatedData.error.errors);
+        console.error("Draft data being validated:", JSON.stringify(draftDeal, null, 2));
         return res.status(400).json({ 
           message: "Draft validation failed", 
-          errors: errorMessage.message 
+          errors: errorMessage.message,
+          details: validatedData.error.errors
         });
       }
 

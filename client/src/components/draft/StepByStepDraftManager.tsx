@@ -111,6 +111,10 @@ export function StepByStepDraftManager({
       
     } catch (error) {
       console.error('Draft save error:', error);
+      if (error && typeof error === 'object' && 'details' in error) {
+        console.error('Validation details:', error.details);
+      }
+      console.error('Form data being sent:', JSON.stringify(cleanFormData, null, 2));
       if (!isAutoSave) {
         toast({
           title: "Save Failed",
