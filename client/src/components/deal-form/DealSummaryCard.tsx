@@ -59,10 +59,6 @@ export function DealSummaryCard({ formValues, dealStructureType, contractTerm }:
                 {dealStructureType === "tiered" ? "Tiered Revenue" : "Flat Commit"}
               </p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Contract Term</label>
-              <p className="text-base">{contractTerm} months</p>
-            </div>
             {formValues.termStartDate && (
               <div>
                 <label className="text-sm font-medium text-gray-700">Start Date</label>

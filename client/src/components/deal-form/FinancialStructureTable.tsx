@@ -101,11 +101,11 @@ export function FinancialStructureTable({
               })}
             </tr>
             
-            {/* Gross Margin Growth Rate Row - Match Step 3 exactly */}
+            {/* Adjusted Gross Margin Growth Rate Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Gross Margin Growth Rate"
+                  title="Adjusted Gross Margin Growth Rate"
                   description="Change in margin percentage vs last year"
                 />
               </FinancialDataCell>
@@ -113,7 +113,7 @@ export function FinancialStructureTable({
                 <span className="text-slate-500">—</span>
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const marginGrowthRate = dealCalculations.calculationService.calculateGrossMarginGrowthRate(
+                const marginGrowthRate = dealCalculations.calculationService.calculateAdjustedGrossMarginGrowthRate(
                   tier,
                   salesChannel,
                   advertiserName,
@@ -127,11 +127,11 @@ export function FinancialStructureTable({
               })}
             </tr>
             
-            {/* Gross Profit Growth Rate Row - Match Step 3 exactly */}
+            {/* Adjusted Gross Profit Growth Rate Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Gross Profit Growth Rate"
+                  title="Adjusted Gross Profit Growth Rate"
                   description="Change in dollar profit amount vs last year"
                 />
               </FinancialDataCell>
@@ -139,7 +139,7 @@ export function FinancialStructureTable({
                 <span className="text-slate-500">—</span>
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const profitGrowthRate = dealCalculations.calculationService.calculateProfitGrowthRate(
+                const profitGrowthRate = dealCalculations.calculationService.calculateAdjustedGrossProfitGrowthRate(
                   tier,
                   salesChannel,
                   advertiserName,
@@ -189,6 +189,27 @@ export function FinancialStructureTable({
               ))}
             </tr>
             
+            {/* Incentive Cost Growth Rate Row - Moved above Client Value Growth Rate */}
+            <tr>
+              <FinancialDataCell isMetricLabel>
+                <FinancialMetricLabel 
+                  title="Incentive Cost Growth Rate"
+                  description="Change vs. last year"
+                />
+              </FinancialDataCell>
+              <FinancialDataCell>
+                <span className="text-slate-500">—</span>
+              </FinancialDataCell>
+              {dealTiers.map((tier) => {
+                const growthRate = dealCalculations.calculationService.calculateIncentiveCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                return (
+                  <FinancialDataCell key={`cost-growth-${tier.tierNumber}`}>
+                    <GrowthIndicator value={growthRate} invertColors={true} />
+                  </FinancialDataCell>
+                );
+              })}
+            </tr>
+            
             {/* Client Value Growth Rate Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
@@ -205,27 +226,6 @@ export function FinancialStructureTable({
                 return (
                   <FinancialDataCell key={`client-value-growth-${tier.tierNumber}`}>
                     <GrowthIndicator value={growthRate} />
-                  </FinancialDataCell>
-                );
-              })}
-            </tr>
-            
-            {/* Incentive Cost Growth Rate Row */}
-            <tr>
-              <FinancialDataCell isMetricLabel>
-                <FinancialMetricLabel 
-                  title="Incentive Cost Growth Rate"
-                  description="Change vs. last year"
-                />
-              </FinancialDataCell>
-              <FinancialDataCell>
-                <span className="text-slate-500">—</span>
-              </FinancialDataCell>
-              {dealTiers.map((tier) => {
-                const growthRate = dealCalculations.calculationService.calculateIncentiveCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
-                return (
-                  <FinancialDataCell key={`cost-growth-${tier.tierNumber}`}>
-                    <GrowthIndicator value={growthRate} invertColors={true} />
                   </FinancialDataCell>
                 );
               })}
