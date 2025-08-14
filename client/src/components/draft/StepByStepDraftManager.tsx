@@ -67,11 +67,19 @@ export function StepByStepDraftManager({
       const clientName = data.advertiserName || data.agencyName || "New Client";
       const autoName = `${clientName} - ${data.dealType || 'Deal'} Draft`;
       
+      // Clean up form data for draft submission
+      const cleanFormData = { ...data };
+      
+      // Remove or fix validation-problematic fields for drafts
+      if (cleanFormData.growthAmbition === 0 || cleanFormData.growthAmbition < 1000000) {
+        delete cleanFormData.growthAmbition; // Remove field if it doesn't meet validation
+      }
+      
       const requestPayload = {
         name: autoName,
         description: `Auto-saved draft at step ${step}`,
         formData: {
-          ...data,
+          ...cleanFormData,
           status: "draft",
           isDraft: true,
           draftType: "submission_draft",
