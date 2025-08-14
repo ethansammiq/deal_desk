@@ -1485,26 +1485,8 @@ export default function SubmitDeal() {
                     )}
                   />
 
-                  {/* Navigation and Draft Management */}
-                  <div className="flex justify-between items-center pt-4">
-                    <StepByStepDraftManager
-                      currentFormData={form.getValues()}
-                      currentStep={formStep}
-                      onLoadDraft={(formData, step) => {
-                        Object.entries(formData).forEach(([key, value]) => {
-                          form.setValue(key as any, value);
-                        });
-                        setFormStep(step);
-                      }}
-                      onSaveDraft={async (name, description) => {
-                        await saveDraftMutation.mutateAsync({
-                          name,
-                          description,
-                          formData: form.getValues(),
-                          step: formStep
-                        });
-                      }}
-                    />
+                  {/* Navigation */}
+                  <div className="flex justify-end pt-4">
                     <Button
                       type="button"
                       onClick={nextStep}
@@ -1520,12 +1502,6 @@ export default function SubmitDeal() {
             {/* Step 1: Business Context */}
             {formStep === 1 && (
               <div className="space-y-6">
-                <StepByStepDraftManager 
-                  formData={form.getValues()}
-                  currentStep={2}
-                  totalSteps={4}
-                  isValid={formValidation.validateStep(2).isValid}
-                />
                 <BusinessContextSection form={form} variant="submitDeal" />
                 <CardContent className="p-6 border-t">
                   <div className="flex justify-between items-center">
@@ -1543,12 +1519,6 @@ export default function SubmitDeal() {
             {/* Step 2: Financial Structure */}
             {formStep === 2 && (
               <div className="space-y-6">
-                <StepByStepDraftManager 
-                  formData={form.getValues()}
-                  currentStep={3}
-                  totalSteps={4}
-                  isValid={formValidation.validateStep(3).isValid}
-                />
                 <CardContent className="p-6">
                   <FormSectionHeader
                     title="Financial Structure"
