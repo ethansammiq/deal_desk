@@ -326,7 +326,8 @@ export function FormNavigation({
 
   return (
     <div className={containerClass}>
-      {onPrevious && (
+      {/* Left side: Previous button (when available) */}
+      {onPrevious ? (
         <Button
           type="button"
           variant="outline"
@@ -335,8 +336,11 @@ export function FormNavigation({
         >
           {previousLabel}
         </Button>
+      ) : (
+        <div /> // Spacer to push right content to the right
       )}
 
+      {/* Right side: Next or Submit button */}
       {variant === "next" && onNext && (
         <Button
           type="button"
