@@ -27,14 +27,14 @@ const RoleTestingPanel = lazy(() => import("@/components/testing/RoleTestingPane
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-[#f8f5ff] to-slate-50">
       <TopNavbar />
       
       {/* Main Content Area with Fixed Width */}
-      <div className="flex-1 overflow-auto bg-gradient-to-b from-[#f8f5ff] to-slate-50 pt-6">
+      <div className="pt-6 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs />
-          <div className="min-h-full">
+          <div>
             {children}
           </div>
         </div>
