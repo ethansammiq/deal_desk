@@ -316,6 +316,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phase 8 Phase 3: Resubmit deal after revisions
+  router.post("/deals/:id/resubmit", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Only allow resubmission of deals in revision_requested status
+      if (deal.status !== 'revision_requested') {
+        return res.status(400).json({ message: "Deal is not in revision requested status" });
+      }
+
+      // Update deal status to under_review and increment revision count
+      const updatedDeal = await storage.updateDeal(id, {
+        status: 'under_review',
+        submittedAt: new Date(),
+        revisionCount: (deal.revisionCount || 0) + 1,
+        lastResubmittedAt: new Date()
+      });
+
+      res.status(200).json({
+        message: "Deal resubmitted successfully",
+        deal: updatedDeal
+      });
+    } catch (error) {
+      console.error("Error resubmitting deal:", error);
+      res.status(500).json({ message: "Failed to resubmit deal" });
+    }
+  });
+
   router.post("/deals", async (req: Request, res: Response) => {
     try {
       // Extract dealTiers from request body if present
