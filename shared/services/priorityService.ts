@@ -150,8 +150,8 @@ export const calculatePriorityItems = (deals: Deal[], userRole: UserRole): Prior
       items.push({
         id: `draft-${deal.id}`,
         deal,
-        title: `Resume Draft: ${deal.advertiserName || 'New Client'}`,
-        description: `Continue working on draft deal for ${deal.advertiserName || 'client'}.`,
+        title: `Resume Draft: ${deal.advertiserName || deal.agencyName || 'New Client'}`,
+        description: `Continue working on draft deal for ${deal.advertiserName || deal.agencyName || 'client'}.`,
         urgencyLevel: 'medium' as const,
         actionLabel: 'Continue Draft',
         actionType: 'draft' as const,

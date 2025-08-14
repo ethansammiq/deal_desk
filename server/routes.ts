@@ -314,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dealType: formData.dealType || "grow",
         region: formData.region || "west",
         salesChannel: formData.salesChannel || "client_direct",
-        advertiserName: formData.advertiserName || "Draft Client",
+        advertiserName: formData.advertiserName || "",
         termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
         termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         // Only include financial fields if they have valid values (avoid validation errors for drafts)

@@ -55,7 +55,7 @@ export function StepByStepDraftManager({
     
     try {
       // Generate auto-name for draft if not provided
-      const clientName = data.advertiserName || data.agencyName || "New Client";
+      const clientName = data.advertiserName || data.agencyName || "Draft";
       const autoName = `${clientName} - ${data.dealType || 'Deal'} Draft`;
       
       // Clean up form data for draft submission
