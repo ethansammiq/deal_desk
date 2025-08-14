@@ -110,7 +110,7 @@ import { DraftManager } from "@/components/draft/DraftManager";
 import { FormPageHeader, FormNavigation } from "@/components/ui/form-style-guide";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { SUBMIT_DEAL_TABS, createTabToStepMap, getNextTabId, getPreviousTabId, getTabLabel } from "@/lib/tab-config";
-import { DealSummary } from "@/components/deal-form/ReviewSubmitSection";
+// DealSummary removed - consolidated into DealSummaryCard
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
