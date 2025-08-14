@@ -70,10 +70,8 @@ export function StepByStepDraftManager({
       // Clean up form data for draft submission
       const cleanFormData = { ...data };
       
-      // Remove or fix validation-problematic fields for drafts
-      if (cleanFormData.growthAmbition === 0 || cleanFormData.growthAmbition < 1000000) {
-        delete cleanFormData.growthAmbition; // Remove field if it doesn't meet validation
-      }
+      // Remove fields that don't belong to SubmitDeal form
+      delete cleanFormData.growthAmbition; // This field only exists in scoping form, not submit form
       
       const requestPayload = {
         name: autoName,

@@ -123,7 +123,7 @@ const dealFormSchema = z.object({
   clientAsks: z.string().min(1, "Client Asks is required"),
   
   // Optional fields that may come from shared components
-  growthAmbition: z.number().optional(),
+  // Note: growthAmbition removed - only exists in scoping form
   contractTermMonths: z.number().optional(),
   
   // Essential financial data for calculations
@@ -212,8 +212,7 @@ export default function SubmitDeal() {
       growthOpportunityClient: "",
       clientAsks: "",
       
-      // Optional RequestSupport fields
-      growthAmbition: 0,
+      // Note: growthAmbition field removed - only exists in scoping form
       contractTermMonths: 12,
 
       // Client/Agency information
@@ -294,7 +293,7 @@ export default function SubmitDeal() {
         growthOpportunityMIQ: "",
         growthOpportunityClient: "",
         clientAsks: "",
-        growthAmbition: 0,
+        // growthAmbition field excluded - only in scoping form
         contractTermMonths: 12,
         salesChannel: undefined,
         region: undefined,
