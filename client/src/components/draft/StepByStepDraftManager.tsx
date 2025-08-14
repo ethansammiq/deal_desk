@@ -63,23 +63,31 @@ export function StepByStepDraftManager({
     setIsSaving(true);
     
     try {
-      const draftData = {
-        ...data,
-        status: "draft",
-        isDraft: true,
-        draftType: "submission_draft",
-        currentStep: step,
-        lastSavedAt: new Date().toISOString(),
-        formProgress: {
-          completedSteps: Array.from({ length: step - 1 }, (_, i) => i + 1),
+      // Generate auto-name for draft if not provided
+      const clientName = data.advertiserName || data.agencyName || "New Client";
+      const autoName = `${clientName} - ${data.dealType || 'Deal'} Draft`;
+      
+      const requestPayload = {
+        name: autoName,
+        description: `Auto-saved draft at step ${step}`,
+        formData: {
+          ...data,
+          status: "draft",
+          isDraft: true,
+          draftType: "submission_draft",
           currentStep: step,
-          totalSteps: totalSteps
+          lastSavedAt: new Date().toISOString(),
+          formProgress: {
+            completedSteps: Array.from({ length: step - 1 }, (_, i) => i + 1),
+            currentStep: step,
+            totalSteps: totalSteps
+          }
         }
       };
 
-      const response = await apiRequest('/api/deals/draft', {
+      const response = await apiRequest('/api/deals/drafts', {
         method: 'POST',
-        body: JSON.stringify(draftData),
+        body: JSON.stringify(requestPayload),
         headers: {
           'Content-Type': 'application/json',
         },

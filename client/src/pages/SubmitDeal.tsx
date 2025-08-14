@@ -277,12 +277,40 @@ export default function SubmitDeal() {
 
   // Load saved data on mount - simplified since we now have proper draft management
   useEffect(() => {
-    const savedData = autoSave.loadSavedData();
-    if (savedData && !fromScopingId) {
-      // Auto-load the auto-saved data without confirmation since it's just temporary backup
-      form.reset(savedData);
+    // Only auto-load if specifically coming from scoping or draft parameter
+    if (fromScopingId || draftId) {
+      const savedData = autoSave.loadSavedData();
+      if (savedData) {
+        form.reset(savedData);
+      }
+    } else {
+      // Clear any previous session data for fresh form
+      autoSave.clearSavedData();
+      // Reset to clean form state
+      form.reset({
+        // Basic deal information
+        dealType: "grow",
+        businessSummary: "",
+        growthOpportunityMIQ: "",
+        growthOpportunityClient: "",
+        clientAsks: "",
+        growthAmbition: 0,
+        contractTermMonths: 12,
+        salesChannel: undefined,
+        region: undefined,
+        advertiserName: "",
+        agencyName: "",
+        dealStructure: undefined,
+        termStartDate: new Date().toISOString().split('T')[0],
+        termEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        annualRevenue: 0,
+        annualGrossMargin: 0,
+        email: "",
+        status: "submitted",
+        referenceNumber: `DEAL-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
+      });
     }
-  }, []);
+  }, [fromScopingId, draftId]);
 
   // Draft management handlers
   const handleSaveDraft = async (draftName: string, description?: string) => {
