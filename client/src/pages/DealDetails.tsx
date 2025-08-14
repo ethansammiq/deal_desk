@@ -1,20 +1,30 @@
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
+import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { useDealActions } from "@/hooks/useDealActions";
+import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
+
+type UserRole = 'seller' | 'approver' | 'legal' | 'admin';
 
 export default function DealDetails() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  const { data: user } = useCurrentUser();
+  const [revisionModalOpen, setRevisionModalOpen] = useState(false);
+  const { approveDeal, isUpdatingStatus } = useDealActions();
   
   const dealId = parseInt(id || "0");
+  const userRole = (user?.role as UserRole) || 'seller';
   
   const dealQuery = useQuery({
     queryKey: ['/api/deals', dealId],
@@ -55,6 +65,49 @@ export default function DealDetails() {
           </Button>
           <h1 className="text-2xl font-bold text-slate-900">Deal Details</h1>
         </div>
+        
+        {/* Role-based Action Buttons */}
+        <QueryStateHandler query={dealQuery} loadingComponent={null} errorComponent={null}>
+          {(deal) => (
+            <div className="flex items-center gap-2">
+              {/* Approver Actions */}
+              {userRole === 'approver' && deal.status === 'under_review' && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRevisionModalOpen(true)}
+                    disabled={isUpdatingStatus}
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Request Revision
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => approveDeal.mutate({ dealId: deal.id, comments: "Approved via deal details" })}
+                    disabled={isUpdatingStatus}
+                  >
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Approve Deal
+                  </Button>
+                </>
+              )}
+              
+              {/* Approver Actions for Negotiating */}
+              {userRole === 'approver' && deal.status === 'negotiating' && (
+                <Button
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setRevisionModalOpen(true)}
+                  disabled={isUpdatingStatus}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Request Revision
+                </Button>
+              )}
+            </div>
+          )}
+        </QueryStateHandler>
       </div>
 
       <QueryStateHandler
@@ -204,6 +257,17 @@ export default function DealDetails() {
               </Card>
             </div>
           </div>
+        )}
+      </QueryStateHandler>
+
+      {/* Revision Request Modal */}
+      <QueryStateHandler query={dealQuery} loadingComponent={null} errorComponent={null}>
+        {(deal) => (
+          <RevisionRequestModal
+            isOpen={revisionModalOpen}
+            onClose={() => setRevisionModalOpen(false)}
+            deal={deal}
+          />
         )}
       </QueryStateHandler>
     </div>
