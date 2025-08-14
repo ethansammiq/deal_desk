@@ -184,71 +184,84 @@ export function FormProgressTracker({
   
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
-      <div className="relative">
-        {/* Step indicators and connecting lines */}
-        <div className="flex items-center justify-between relative">
+      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        {/* Header with step count */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-700">
+            Step {currentIndex + 1} of {steps.length}
+          </h3>
+          <div className="flex items-center space-x-1">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-colors duration-200",
+                  index < currentIndex 
+                    ? "bg-green-500" 
+                    : index === currentIndex 
+                      ? "bg-purple-600" 
+                      : "bg-gray-300"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Step cards layout */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {steps.map((step, index) => {
             const isActive = currentStep === step.id;
             const isCompleted = index < currentIndex;
-            const isClickable = index <= currentIndex + 1; // Allow clicking on current, previous, or next step
+            const isClickable = index <= currentIndex + 1;
             
             return (
-              <React.Fragment key={step.id}>
-                {/* Step Circle */}
-                <div className="relative z-10 flex flex-col items-center">
-                  <div
-                    onClick={() => isClickable && onStepClick(step.id)}
-                    className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 border-2",
-                      isActive 
-                        ? "bg-purple-600 text-white border-purple-600 shadow-lg" 
-                        : isCompleted 
-                          ? "bg-green-500 text-white border-green-500" 
-                          : "bg-white text-gray-400 border-gray-300 hover:border-gray-400",
-                      isClickable ? "cursor-pointer hover:scale-105" : "cursor-not-allowed"
-                    )}
-                  >
-                    {isCompleted ? (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <div
+                key={step.id}
+                onClick={() => isClickable && onStepClick(step.id)}
+                className={cn(
+                  "relative p-3 rounded-md border-2 transition-all duration-200 text-center",
+                  isActive 
+                    ? "border-purple-600 bg-purple-50 shadow-md" 
+                    : isCompleted 
+                      ? "border-green-500 bg-green-50 hover:shadow-sm" 
+                      : "border-gray-200 bg-white hover:border-gray-300",
+                  isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                )}
+              >
+                {/* Status Icon */}
+                <div className="flex justify-center mb-2">
+                  {isCompleted ? (
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  
-                  {/* Step Label */}
-                  <div className="mt-2 text-center">
-                    <span
-                      onClick={() => isClickable && onStepClick(step.id)}
-                      className={cn(
-                        "text-sm font-medium transition-colors duration-200",
-                        isActive 
-                          ? "text-purple-600" 
-                          : isCompleted 
-                            ? "text-green-600" 
-                            : "text-gray-500",
-                        isClickable ? "cursor-pointer hover:text-purple-500" : "cursor-not-allowed",
-                        "max-w-[120px] leading-tight"
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
+                    </div>
+                  ) : isActive ? (
+                    <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">{index + 1}</span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600">{index + 1}</span>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Connecting Line */}
-                {index < steps.length - 1 && (
-                  <div className="flex-1 h-0.5 bg-gray-200 mx-4 relative">
-                    <div 
-                      className={cn(
-                        "absolute inset-y-0 left-0 bg-purple-600 transition-all duration-300",
-                        index < currentIndex ? "w-full" : "w-0"
-                      )}
-                    />
-                  </div>
-                )}
-              </React.Fragment>
+
+                {/* Step Label */}
+                <div className="text-xs font-medium leading-tight">
+                  <span
+                    className={cn(
+                      isActive 
+                        ? "text-purple-700" 
+                        : isCompleted 
+                          ? "text-green-700" 
+                          : "text-gray-600"
+                    )}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              </div>
             );
           })}
         </div>
