@@ -24,10 +24,21 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
 
   const revisionMutation = useMutation({
     mutationFn: async (data: { dealId: number; revisionReason: string }) => {
-      return apiRequest(`/api/deals/${data.dealId}/request-revision`, {
+      console.log("Sending revision request:", data); // Debug log
+      const response = await fetch(`/api/deals/${data.dealId}/request-revision`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ revisionReason: data.revisionReason })
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Request failed');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
@@ -48,7 +59,10 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
   });
 
   const handleSubmit = async () => {
-    if (!revisionReason.trim()) {
+    const trimmedReason = revisionReason.trim();
+    console.log("Form submission - revisionReason:", revisionReason, "trimmed:", trimmedReason); // Debug log
+    
+    if (!trimmedReason) {
       toast({
         title: "Revision Reason Required",
         description: "Please provide a reason for requesting revisions.",
@@ -61,8 +75,10 @@ export function RevisionRequestModal({ isOpen, onClose, deal }: RevisionRequestM
     try {
       await revisionMutation.mutateAsync({
         dealId: deal.id,
-        revisionReason: revisionReason.trim()
+        revisionReason: trimmedReason
       });
+    } catch (error) {
+      console.error("Revision request failed:", error);
     } finally {
       setIsSubmitting(false);
     }

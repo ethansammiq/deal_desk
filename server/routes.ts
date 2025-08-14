@@ -272,9 +272,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid deal ID" });
       }
 
+      console.log("Revision request received - Body:", req.body); // Debug log
       const { revisionReason } = req.body;
+      console.log("Extracted revisionReason:", revisionReason, "Type:", typeof revisionReason); // Debug log
       
       if (!revisionReason || typeof revisionReason !== 'string' || !revisionReason.trim()) {
+        console.log("Validation failed - revisionReason is invalid"); // Debug log
         return res.status(400).json({ message: "Revision reason is required" });
       }
 
