@@ -43,6 +43,7 @@ type ReviewSubmitFormValues = any;
 // Import unified interface from hook
 import { DealTier } from "@/hooks/useDealTiers";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { useFinancialData } from "@/hooks/useFinancialData";
 
 interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
@@ -174,14 +175,15 @@ export function ReviewSubmitSection({
   onPrevStep,
 }: ReviewSubmitSectionProps) {
   const formValues = form.getValues();
-  const dealCalculations = useDealCalculations();
   
-  // Helper to get client names for calculations
-  const getClientNames = () => ({
-    advertiserName: String(formValues.advertiserName || ""),
-    agencyName: String(formValues.agencyName || ""),
-    salesChannel: String(formValues.salesChannel || "")
-  });
+  // ✅ FIXED: Use same data source as FinancialTierTable (Step 3)
+  const { agenciesData, advertisersData } = useFinancialData();
+  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
+  
+  // Helper to get client names for calculations (same as SubmitDeal.tsx)
+  const salesChannel = String(formValues.salesChannel || "");
+  const advertiserName = String(formValues.advertiserName || "");
+  const agencyName = String(formValues.agencyName || "");
 
   // Calculate contract term from dates - handle string dates properly
   const startDate = formValues.termStartDate;
@@ -416,11 +418,7 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Annual Revenue</td>
                     <td className="border border-gray-300 p-3 text-center">
-                      {formatCurrency(dealCalculations.getPreviousYearValue(
-                        getClientNames().salesChannel, 
-                        getClientNames().advertiserName, 
-                        getClientNames().agencyName
-                      ))}
+                      {formatCurrency(dealCalculations.getPreviousYearValue(salesChannel, advertiserName, agencyName))}
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
@@ -435,12 +433,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateRevenueGrowthRate(
-                          tier, 
-                          getClientNames().salesChannel, 
-                          getClientNames().advertiserName, 
-                          getClientNames().agencyName
-                        ))}
+                        {formatPercentage(dealCalculations.calculateRevenueGrowthRate(tier, salesChannel, advertiserName, agencyName))}
                       </td>
                     ))}
                   </tr>
@@ -451,12 +444,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateAdjustedGrossMarginGrowthRate(
-                          tier, 
-                          getClientNames().salesChannel, 
-                          getClientNames().advertiserName, 
-                          getClientNames().agencyName
-                        ))}
+                        {formatPercentage(dealCalculations.calculateAdjustedGrossMarginGrowthRate(tier, salesChannel, advertiserName, agencyName))}
                       </td>
                     ))}
                   </tr>
@@ -467,12 +455,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateAdjustedGrossProfitGrowthRate(
-                          tier, 
-                          getClientNames().salesChannel, 
-                          getClientNames().advertiserName, 
-                          getClientNames().agencyName
-                        ))}
+                        {formatPercentage(dealCalculations.calculateAdjustedGrossProfitGrowthRate(tier, salesChannel, advertiserName, agencyName))}
                       </td>
                     ))}
                   </tr>
@@ -481,11 +464,7 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Total Incentive Cost</td>
                     <td className="border border-gray-300 p-3 text-center">
-                      {formatCurrency(dealCalculations.getPreviousYearIncentiveCost(
-                        getClientNames().salesChannel, 
-                        getClientNames().advertiserName, 
-                        getClientNames().agencyName
-                      ))}
+                      {formatCurrency(dealCalculations.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName))}
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
@@ -498,15 +477,7 @@ export function ReviewSubmitSection({
                   <tr>
                     <td className="border border-gray-300 p-3 font-medium">Total Client Value</td>
                     <td className="border border-gray-300 p-3 text-center">
-                      {formatCurrency(dealCalculations.getPreviousYearValue(
-                        getClientNames().salesChannel, 
-                        getClientNames().advertiserName, 
-                        getClientNames().agencyName
-                      ) - dealCalculations.getPreviousYearIncentiveCost(
-                        getClientNames().salesChannel, 
-                        getClientNames().advertiserName, 
-                        getClientNames().agencyName
-                      ))}
+                      {formatCurrency(dealCalculations.calculationService.getPreviousYearClientValue(salesChannel, advertiserName, agencyName))}
                     </td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center">
@@ -521,12 +492,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateClientValueGrowthRate(
-                          tier, 
-                          getClientNames().salesChannel, 
-                          getClientNames().advertiserName, 
-                          getClientNames().agencyName
-                        ))}
+                        {formatPercentage(dealCalculations.calculateClientValueGrowthRate(tier, salesChannel, advertiserName, agencyName))}
                       </td>
                     ))}
                   </tr>
@@ -537,12 +503,7 @@ export function ReviewSubmitSection({
                     <td className="border border-gray-300 p-3 text-center text-gray-500">--</td>
                     {dealTiers.map((tier) => (
                       <td key={tier.tierNumber} className="border border-gray-300 p-3 text-center text-green-600 font-medium">
-                        {formatPercentage(dealCalculations.calculateCostGrowthRate(
-                          tier, 
-                          getClientNames().salesChannel, 
-                          getClientNames().advertiserName, 
-                          getClientNames().agencyName
-                        ))}
+                        {formatPercentage(dealCalculations.calculateCostGrowthRate(tier, salesChannel, advertiserName, agencyName))}
                       </td>
                     ))}
                   </tr>
