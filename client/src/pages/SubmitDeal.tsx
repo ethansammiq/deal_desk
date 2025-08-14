@@ -907,7 +907,7 @@ export default function SubmitDeal() {
   }
 
   return (
-    <>
+    <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <FormSectionHeader
@@ -3372,6 +3372,6 @@ export default function SubmitDeal() {
           </form>
         </Form>
       </FormErrorBoundary>
-    </>
+    </div>
   );
 }

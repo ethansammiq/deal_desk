@@ -34,10 +34,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 overflow-auto bg-gradient-to-b from-[#f8f5ff] to-slate-50 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs />
-          <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
-            <div className="max-w-full">
-              {children}
-            </div>
+          <div className="min-h-full">
+            {children}
           </div>
         </div>
       </div>
