@@ -278,6 +278,26 @@ export class MemStorage implements IStorage {
         previousYearIncentiveCost: 52000,
         previousYearClientValue: 182000,
         region: "midwest" 
+      },
+      { 
+        name: "Meta", 
+        type: "technology", 
+        previousYearRevenue: 1500000, 
+        previousYearMargin: 0.280, // 28.0% as decimal
+        previousYearProfit: 420000,
+        previousYearIncentiveCost: 45000,
+        previousYearClientValue: 150000,
+        region: "west" 
+      },
+      { 
+        name: "Tesla", 
+        type: "automotive", 
+        previousYearRevenue: 6000000, 
+        previousYearMargin: 0.220, // 22.0% as decimal
+        previousYearProfit: 1320000,
+        previousYearIncentiveCost: 85000,
+        previousYearClientValue: 300000,
+        region: "west" 
       }
     ];
     

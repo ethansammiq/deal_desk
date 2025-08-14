@@ -333,7 +333,7 @@ export default function SubmitDeal() {
           });
         });
     }
-  }, [fromScopingId, scopingDealData, form, toast]);
+  }, [fromScopingId, scopingDealData]);
   
   // Removed complex tier manager - using simple state management
   
