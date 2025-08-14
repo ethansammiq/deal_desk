@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FormSectionHeader } from "@/components/ui/form-style-guide";
+import { FormSectionHeader, FormNavigation } from "@/components/ui/form-style-guide";
 import { FormFieldWithTooltip } from "@/components/ui/form-components";
 import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
@@ -27,7 +27,7 @@ import {
   formatPercentage,
   type DealFinancialSummary,
 } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+
 import { Textarea } from "@/components/ui/textarea";
 import {
   FormField,
@@ -253,33 +253,16 @@ export function ReviewSubmitSection({
         />
       )}
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onPrevStep}
-          disabled={isSubmitting}
-        >
-          Back to Value Structure
-        </Button>
-
-        <Button
-          type="submit"
-          onClick={onSubmit}
-          disabled={isSubmitting}
-          className="min-w-[120px]"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Submitting...
-            </>
-          ) : (
-            "Submit Deal"
-          )}
-        </Button>
-      </div>
+      {/* Action Buttons - Using shared FormNavigation component */}
+      <FormNavigation
+        variant="submit"
+        onPrevious={onPrevStep}
+        onSubmit={onSubmit}
+        previousLabel="Back to Value Structure"
+        submitLabel="Submit Deal"
+        isSubmitting={isSubmitting}
+        showBorder={true}
+      />
     </div>
   );
 }

@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -284,6 +285,85 @@ export function FormProgressTracker({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * FormNavigation - A standardized navigation component for multi-step forms
+ * Supports both Previous/Next and Previous/Submit patterns
+ */
+export function FormNavigation({
+  onPrevious,
+  onNext,
+  onSubmit,
+  previousLabel = "Previous",
+  nextLabel = "Next",
+  submitLabel = "Submit",
+  isSubmitting = false,
+  previousDisabled = false,
+  nextDisabled = false,
+  submitDisabled = false,
+  showBorder = false,
+  variant = "next" // "next" | "submit"
+}: {
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onSubmit?: () => void;
+  previousLabel?: string;
+  nextLabel?: string;
+  submitLabel?: string;
+  isSubmitting?: boolean;
+  previousDisabled?: boolean;
+  nextDisabled?: boolean;
+  submitDisabled?: boolean;
+  showBorder?: boolean;
+  variant?: "next" | "submit";
+}) {
+  const containerClass = showBorder 
+    ? "flex items-center justify-between pt-6 border-t border-gray-200"
+    : "mt-8 flex justify-between items-center";
+
+  return (
+    <div className={containerClass}>
+      {onPrevious && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onPrevious}
+          disabled={previousDisabled || isSubmitting}
+        >
+          {previousLabel}
+        </Button>
+      )}
+
+      {variant === "next" && onNext && (
+        <Button
+          type="button"
+          onClick={onNext}
+          disabled={nextDisabled || isSubmitting}
+        >
+          {nextLabel}
+        </Button>
+      )}
+
+      {variant === "submit" && onSubmit && (
+        <Button
+          type="submit"
+          onClick={onSubmit}
+          disabled={submitDisabled || isSubmitting}
+          className="min-w-[120px]"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Submitting...
+            </>
+          ) : (
+            submitLabel
+          )}
+        </Button>
+      )}
     </div>
   );
 }

@@ -107,7 +107,7 @@ import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
 // Auto-save import removed as requested
 import { DraftManager } from "@/components/draft/DraftManager";
-import { FormPageHeader } from "@/components/ui/form-style-guide";
+import { FormPageHeader, FormNavigation } from "@/components/ui/form-style-guide";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { SUBMIT_DEAL_TABS, createTabToStepMap, getNextTabId, getPreviousTabId, getTabLabel } from "@/lib/tab-config";
 import { DealSummary } from "@/components/deal-form/ReviewSubmitSection";
@@ -1077,15 +1077,14 @@ export default function SubmitDeal() {
                       agencyName={form.watch("agencyName")}
                     />
 
-                    {/* Navigation */}
-                    <div className="mt-8 flex justify-between items-center">
-                      <Button type="button" variant="outline" onClick={goToPrevTab}>
-                        Previous: Business Context
-                      </Button>
-                      <Button type="button" onClick={goToNextTab}>
-                        Next: Review & Submit
-                      </Button>
-                    </div>
+                    {/* Navigation - Using shared FormNavigation component */}
+                    <FormNavigation
+                      variant="next"
+                      onPrevious={goToPrevTab}
+                      onNext={goToNextTab}
+                      previousLabel="Previous: Business Context"
+                      nextLabel="Next: Review & Submit"
+                    />
                   </div>
                 </TabsContent>
 
