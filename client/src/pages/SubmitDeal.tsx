@@ -303,10 +303,13 @@ export default function SubmitDeal() {
       // Save to server as proper draft deal
       await apiRequest('/api/deals/drafts', {
         method: 'POST',
-        body: {
+        body: JSON.stringify({
           name: draftName,
           description,
           formData
+        }),
+        headers: {
+          'Content-Type': 'application/json'
         }
       });
 
@@ -437,7 +440,7 @@ export default function SubmitDeal() {
           
           // Set form step if available
           if (draftData.currentStep) {
-            formValidation.setStep(draftData.currentStep);
+            formValidation.goToStep(draftData.currentStep);
           }
           
           setIsPreFilling(false);
@@ -3373,6 +3376,5 @@ export default function SubmitDeal() {
       </FormErrorBoundary>
       </div>
     </div>
-  );
   );
 }
