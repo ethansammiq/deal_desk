@@ -243,9 +243,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         });
       }
       
-      // Validate changedBy
+      // Validate performedBy
       if (!changedBy || typeof changedBy !== 'string') {
-        return res.status(400).json({ message: "changedBy is required" });
+        return res.status(400).json({ message: "performedBy is required" });
       }
       
       const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, changedBy, comments);
@@ -310,7 +310,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         dealId: id,
         status: deal.status, // Keep current status
         previousStatus: deal.status,
-        changedBy: sender,
+        performedBy: sender,
         comments: nudgeComment
       });
       
@@ -748,9 +748,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Update deal status to under_review and increment revision count
       const updatedDeal = await storage.updateDealWithRevision(id, {
         status: 'under_review' as DealStatus,
-        // submittedAt field removed as it's not in the schema,
+        // submittedAt field removed as it's not in the schema
         revisionCount: (deal.revisionCount || 0) + 1,
-        lastResubmittedAt: new Date()
+        // lastResubmittedAt removed - use lastRevisedAt instead
       });
 
       res.status(200).json({
@@ -1371,7 +1371,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Invalid ID" });
       }
 
-      const { status, comments, reviewedBy } = req.body;
+      const { status, comments } = req.body;
 
       // Validate status
       if (!["pending", "approved", "rejected", "revision_requested"].includes(status)) {
@@ -1389,15 +1389,14 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       }
 
       // Create an action record for this approval decision
-      if (reviewedBy) {
-        await storage.createApprovalAction({
-          approvalId,
-          actionType: status === 'approved' ? 'approve' : 
-                     status === 'rejected' ? 'reject' : 'request_revision',
-          performedBy: reviewedBy,
-          comments: comments || null
-        });
-      }
+      const currentUser = getCurrentUser();
+      await storage.createApprovalAction({
+        approvalId,
+        actionType: status === 'approved' ? 'approve' : 
+                   status === 'rejected' ? 'reject' : 'request_revision',
+        performedBy: currentUser.id,
+        comments: comments || null
+      });
 
       // AUTO-TRIGGER WORKFLOW AUTOMATION: Check if deal status should be updated
       if (status === 'approved' || status === 'rejected') {

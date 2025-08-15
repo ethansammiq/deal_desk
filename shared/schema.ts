@@ -142,7 +142,7 @@ export const dealStatusHistory = pgTable("deal_status_history", {
   dealId: integer("deal_id").notNull(),
   status: text("status").notNull(),
   previousStatus: text("previous_status"),
-  changedBy: text("changed_by"), // User email/identifier who made the change
+  performedBy: text("performed_by"), // Standardized to match approvalActions
   comments: text("comments"), // Optional comments about the status change
   changedAt: timestamp("changed_at").defaultNow(),
 });
@@ -165,7 +165,7 @@ export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistor
       "lost"
     ]),
     previousStatus: z.string().optional(),
-    changedBy: z.string().min(1, "Changed by is required"),
+    performedBy: z.string().min(1, "Performed by is required"),
     comments: z.string().optional(),
   });
 
@@ -460,8 +460,7 @@ export const approvalActions = pgTable("approval_actions", {
     enum: ["approve", "reject", "request_revision", "comment", "initiate", "assign"] 
   }).notNull(), // Added missing 'initiate' and 'assign' types
   performedBy: integer("performed_by").notNull(), // Updated field name to match routes.ts usage
-  userId: integer("user_id"), // Alternative field name used in some routes
-  action: text("action"), // Alternative field name for status actions
+  // Removed duplicate fields for consistency
   comments: text("comments"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -472,8 +471,7 @@ export const insertApprovalActionSchema = createInsertSchema(approvalActions)
     approvalId: z.number().positive("Approval ID must be positive"),
     actionType: z.enum(["approve", "reject", "request_revision", "comment", "initiate", "assign"]),
     performedBy: z.number().positive("Performed by user ID is required"),
-    userId: z.number().positive().optional(), // Alternative field
-    action: z.string().optional(), // Alternative field
+    // Removed duplicate field validations
     comments: z.string().optional(),
   });
 
