@@ -12,6 +12,7 @@ import {
   FinancialTableColGroup,
   formatCurrency
 } from "@/components/ui/financial-table";
+import { incentiveCategories } from "@/lib/incentive-data";
 
 export interface IncentiveDisplayTableProps {
   dealTiers: DealTier[];
@@ -106,6 +107,18 @@ export function IncentiveDisplayTable({
     }));
   };
 
+  // Helper function to get display names from IDs
+  const getDisplayNames = (incentiveType: IncentiveType) => {
+    const category = incentiveCategories.find(cat => cat.id === incentiveType.category);
+    const subCategory = category?.subCategories.find(sub => sub.id === incentiveType.subCategory);
+    
+    return {
+      categoryName: category?.name || incentiveType.category,
+      subCategoryName: subCategory?.name || incentiveType.subCategory,
+      optionName: incentiveType.option // Options are already display names
+    };
+  };
+
   const uniqueIncentiveTypes = getUniqueIncentiveTypes();
 
   // Return empty state if no incentives
@@ -140,25 +153,28 @@ export function IncentiveDisplayTable({
       </FinancialTableHeader>
       
       <FinancialTableBody>
-        {uniqueIncentiveTypes.map(({ key, type }) => (
-          <tr key={key} className="hover:bg-slate-50">
-            <FinancialDataCell isMetricLabel>
-              <div className="space-y-1">
-                <div className="font-medium text-purple-600 flex items-center">
-                  <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
-                    $
-                  </span>
-                  {type.option}
+        {uniqueIncentiveTypes.map(({ key, type }) => {
+          const { categoryName, subCategoryName, optionName } = getDisplayNames(type);
+          
+          return (
+            <tr key={key} className="hover:bg-slate-50">
+              <FinancialDataCell isMetricLabel>
+                <div className="space-y-1">
+                  <div className="font-medium text-purple-600 flex items-center">
+                    <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 text-sm">
+                      $
+                    </span>
+                    {optionName}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {categoryName} → {subCategoryName}
+                  </div>
                 </div>
-                <div className="text-xs text-slate-500">
-                  {type.category} → {type.subCategory}
-                </div>
-              </div>
-            </FinancialDataCell>
+              </FinancialDataCell>
             
             {showActions && (
               <FinancialDataCell>
-                <div className="flex gap-1">
+                <div className="flex gap-1 justify-center">
                   {editingIncentive === key ? (
                     <>
                       <Button
@@ -231,8 +247,9 @@ export function IncentiveDisplayTable({
                 </FinancialDataCell>
               );
             })}
-          </tr>
-        ))}
+            </tr>
+          );
+        })}
       </FinancialTableBody>
     </FinancialTable>
   );
