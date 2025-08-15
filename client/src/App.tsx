@@ -20,8 +20,7 @@ const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
 const HelpResources = lazy(() => import("@/pages/HelpResources"));
 const DealRequests = lazy(() => import("@/pages/DealRequests"));
-const RoleDemo = lazy(() => import("@/pages/RoleDemo"));
-const RoleTestingPanel = lazy(() => import("@/components/testing/RoleTestingPanel"));
+const Testing = lazy(() => import("@/pages/Testing"));
 const DepartmentQueues = lazy(() => import("@/pages/DepartmentQueues"));
 const SLAMonitoring = lazy(() => import("@/pages/SLAMonitoring"));
 const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
@@ -71,8 +70,9 @@ function Router() {
             <Route path="/deals" component={UnifiedDashboard} />
             <Route path="/deals/:id" component={DealDetails} />
             <Route path="/deal-requests" component={DealRequests} />
-            <Route path="/role-demo" component={RoleDemo} />
-            <Route path="/role-testing" component={RoleTestingPanel} />
+            <Route path="/testing" component={Testing} />
+            <Route path="/role-demo" component={Testing} />
+            <Route path="/role-testing" component={Testing} />
             <Route path="/department-queues" component={DepartmentQueues} />
             <Route path="/sla-monitoring" component={SLAMonitoring} />
             <Route path="/admin" component={AdminPanel} />

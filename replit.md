@@ -26,6 +26,7 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Streamlined Approval Pipeline**: Simplified from 3-stage to 2-stage system (parallel department review + business approval)
 - **Complete User Management**: Admin panel for role/department assignment, role testing interface with department_reviewer support
 - **Role-Based Navigation**: Conditional access to admin features and testing tools based on user permissions
+- **Consolidated Testing Interface**: Unified testing platform at `/testing` combining role switching, workflow testing, permission validation, and status transition testing (August 2025)
 
 ### Technical Implementation & Design
 The application features an Express.js backend with an in-memory storage solution, defining RESTful API endpoints for deal management. The frontend employs a component-based design with extensive use of reusable components and custom React hooks for encapsulating business logic. UI/UX decisions emphasize consistency through standardized form components, a clear functional layout, and consistent styling across all financial sections.
