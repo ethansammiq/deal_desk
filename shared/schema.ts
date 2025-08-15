@@ -532,9 +532,9 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
   approver: {
     canViewDeals: true,
     canCreateDeals: false,
-    canEditDeals: true,
+    canEditDeals: false, // Cannot directly edit deals - must request revisions instead
     canDeleteDeals: false,
-    canChangeStatus: ["under_review", "negotiating", "approved", "lost"], // Review and approval flow
+    canChangeStatus: ["under_review", "negotiating", "approved", "revision_requested", "lost"], // Review and approval flow
     canViewAllDeals: true,
     canApproveDeals: true,
     canAccessLegalReview: false,

@@ -402,15 +402,25 @@ export default function Testing() {
 
         {/* Status Transitions Tab */}
         <TabsContent value="transitions" className="space-y-4">
+          <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="font-semibold text-blue-900 mb-2">How to Use Status Transition Testing</h3>
+            <div className="text-sm text-blue-800 space-y-1">
+              <p>• <strong>Current Status</strong>: Shows a deal's current status (starting point)</p>
+              <p>• <strong>Allowed Transitions</strong>: Shows what statuses your role can change this deal to</p>
+              <p>• <strong>Role-Based</strong>: Different roles see different allowed transitions</p>
+              <p>• <strong>Live Testing</strong>: Use the "Workflow Testing" tab to actually perform these transitions</p>
+            </div>
+          </div>
+          
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <ArrowUpRight className="h-5 w-5" />
-                  <span>Status Transition Testing</span>
+                  <span>Status Transition Rules</span>
                 </CardTitle>
                 <CardDescription>
-                  Test which status transitions are allowed for your current role
+                  Shows which status changes your current role ({currentUser.role}) can make
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -432,7 +442,7 @@ export default function Testing() {
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-xs text-muted-foreground">No transitions allowed</span>
+                          <span className="text-xs text-muted-foreground">No transitions allowed from this status</span>
                         )}
                       </div>
                     </div>
