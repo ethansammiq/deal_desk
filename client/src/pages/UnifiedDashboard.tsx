@@ -657,68 +657,12 @@ export default function UnifiedDashboard() {
         </Card>
       </div>
 
-      {/* Universal Approval Queue - Available for All Roles */}
-      <UniversalApprovalQueue />
-
-      {/* Department Reviewer Approval Queue */}
-      {userRole === 'department_reviewer' && userDepartment && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileCheck className="h-5 w-5" />
-              Your Approval Queue - {departments.find(d => d.department === userDepartment)?.displayName || userDepartment}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <QueryStateHandler
-              query={{ data: userPendingApprovals, isLoading: false, error: null }}
-              loadingComponent={<SectionLoading title="Loading pending approvals..." rows={3} />}
-              emptyComponent={
-                <div className="text-center py-6">
-                  <p className="text-gray-500">No pending approvals for your department.</p>
-                </div>
-              }
-              emptyCheck={(data) => !Array.isArray(data) || data.length === 0}
-            >
-              {(approvals) => {
-                // Ensure approvals is an array
-                const approvalsArray = Array.isArray(approvals) ? approvals : [];
-                return (
-                <div className="space-y-3">
-                  {approvalsArray.slice(0, 5).map((approval: any) => (
-                    <div key={approval.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">Deal #{approval.dealId}</h4>
-                        <p className="text-sm text-gray-600">
-                          Stage {approval.approvalStage} • Priority: {approval.priority}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Due: {new Date(approval.dueDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleView(approval.dealId)}
-                        className="ml-4"
-                      >
-                        Review
-                      </Button>
-                    </div>
-                  ))}
-                  {approvalsArray.length > 5 && (
-                    <div className="text-center pt-2">
-                      <p className="text-sm text-gray-500">
-                        +{approvalsArray.length - 5} more approvals pending
-                      </p>
-                    </div>
-                  )}
-                </div>
-                );
-              }}
-            </QueryStateHandler>
-          </CardContent>
-        </Card>
-      )}
+      {/* Consolidated Approval Queue - Adapts to User Role */}
+      <UniversalApprovalQueue 
+        userRole={userRole} 
+        userDepartment={userDepartment} 
+        departmentDisplayName={departments.find(d => d.department === userDepartment)?.displayName}
+      />
 
       {/* Main Deals Table */}
       <div>

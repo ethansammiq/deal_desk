@@ -109,7 +109,17 @@ const getActionButtonText = (actionRequired: string) => {
   }
 };
 
-export function UniversalApprovalQueue() {
+interface UniversalApprovalQueueProps {
+  userRole?: string;
+  userDepartment?: string;
+  departmentDisplayName?: string;
+}
+
+export function UniversalApprovalQueue({ 
+  userRole, 
+  userDepartment, 
+  departmentDisplayName 
+}: UniversalApprovalQueueProps = {}) {
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
 
   const { data: queueData, isLoading, error } = useQuery<ApprovalQueueData>({
@@ -165,7 +175,12 @@ export function UniversalApprovalQueue() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <FileText className="h-5 w-5" />
-              <span>My Approval Queue</span>
+              <span>
+                {userRole === 'department_reviewer' && departmentDisplayName 
+                  ? `Your Approval Queue - ${departmentDisplayName}`
+                  : 'My Approval Queue'
+                }
+              </span>
               <Badge variant="outline" className="ml-2">
                 {userContext.role.replace('_', ' ').toUpperCase()}
                 {userContext.department && ` - ${userContext.department.toUpperCase()}`}
