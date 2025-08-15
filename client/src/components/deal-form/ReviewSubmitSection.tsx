@@ -8,6 +8,7 @@ import { FormSectionHeader, FormNavigation } from "@/components/ui/form-style-gu
 import { FormFieldWithTooltip } from "@/components/ui/form-components";
 import { ApprovalAlert } from "@/components/ApprovalAlert";
 import { ApprovalRule } from "@/lib/approval-matrix";
+import { EnhancedApprovalAlert } from "@/components/EnhancedApprovalAlert";
 // Legacy interfaces - simplified for current architecture
 interface SelectedIncentive {
   id: string;
@@ -140,16 +141,15 @@ export function ReviewSubmitSection({
         />
       )}
 
-      {/* Approval Requirements */}
-      {currentApprover && (
-        <ApprovalAlert
-          totalValue={financialSummary.totalAnnualRevenue}
-          contractTerm={contractTerm}
-          dealType={formValues.dealType}
-          salesChannel={salesChannel}
-          onChange={() => {}}
-        />
-      )}
+      {/* Enhanced Approval Pipeline Alert */}
+      <EnhancedApprovalAlert
+        totalValue={financialSummary.totalAnnualRevenue}
+        contractTerm={contractTerm}
+        dealType={formValues.dealType}
+        salesChannel={salesChannel}
+        dealTiers={dealTiers}
+        selectedIncentives={selectedIncentives}
+      />
 
       {/* Action Buttons - Using shared FormNavigation component */}
       <FormNavigation
