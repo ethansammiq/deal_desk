@@ -323,8 +323,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1,
             annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0,
-            // Include tier data if provided
-            dealTiers: formData.dealTiers || [],
             status: "draft" as const,
             isDraft: true,
             draftType: "submission_draft",
@@ -341,6 +339,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           const updatedDraft = await storage.updateDeal(parseInt(draftId), validatedData.data);
+
+          // Save tier data separately if provided
+          if (formData.dealTiers && Array.isArray(formData.dealTiers) && formData.dealTiers.length > 0) {
+            // Clear existing tiers for this deal
+            await storage.clearDealTiers(parseInt(draftId));
+            // Save new tier data
+            for (const tier of formData.dealTiers) {
+              await storage.createDealTier({
+                dealId: parseInt(draftId),
+                tierNumber: tier.tierNumber,
+                annualRevenue: tier.annualRevenue,
+                annualGrossMargin: tier.annualGrossMargin,
+                incentives: tier.incentives || []
+              });
+            }
+          }
+
           return res.status(200).json(updatedDraft);
         }
       }
@@ -378,6 +393,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const savedDraft = await storage.createDeal(validatedData.data);
+
+      // Save tier data separately if provided
+      if (formData.dealTiers && Array.isArray(formData.dealTiers) && formData.dealTiers.length > 0) {
+        // Save new tier data for the new draft
+        for (const tier of formData.dealTiers) {
+          await storage.createDealTier({
+            dealId: savedDraft.id,
+            tierNumber: tier.tierNumber,
+            annualRevenue: tier.annualRevenue,
+            annualGrossMargin: tier.annualGrossMargin,
+            incentives: tier.incentives || []
+          });
+        }
+      }
+
       res.status(201).json(savedDraft);
     } catch (error) {
       console.error("Error creating draft:", error);
@@ -434,9 +464,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Deal not found" });
       }
 
-      // Return empty array since dealTiers isn't part of the schema yet
-      // This is a temporary fix until schema is updated
-      res.status(200).json([]);
+      // Get tier data from the dealTiers table
+      const tierData = await storage.getDealTiers(id);
+      res.status(200).json(tierData);
     } catch (error) {
       console.error("Error fetching tier data:", error);
       res.status(500).json({ message: "Failed to fetch tier data" });

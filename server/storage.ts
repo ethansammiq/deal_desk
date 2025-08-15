@@ -78,6 +78,7 @@ export interface IStorage {
   getDealTiers(dealId: number): Promise<DealTier[]>;
   createDealTier(tier: InsertDealTier): Promise<DealTier>;
   updateDealTier(id: number, tier: Partial<InsertDealTier>): Promise<DealTier | undefined>;
+  clearDealTiers(dealId: number): Promise<void>;
   
   // Deal scoping request methods
   getDealScopingRequest(id: number): Promise<DealScopingRequest | undefined>;
@@ -909,6 +910,31 @@ export class MemStorage implements IStorage {
     
     this.dealTiers.set(id, tier);
     return tier;
+  }
+
+  async updateDealTier(id: number, tierData: Partial<InsertDealTier>): Promise<DealTier | undefined> {
+    const tier = this.dealTiers.get(id);
+    if (!tier) return undefined;
+    
+    const now = new Date();
+    const updatedTier: DealTier = {
+      ...tier,
+      ...tierData,
+      id, // Preserve the original ID
+      updatedAt: now,
+    };
+    
+    this.dealTiers.set(id, updatedTier);
+    return updatedTier;
+  }
+
+  async clearDealTiers(dealId: number): Promise<void> {
+    // Remove all tiers for this deal
+    for (const [tierId, tier] of this.dealTiers.entries()) {
+      if (tier.dealId === dealId) {
+        this.dealTiers.delete(tierId);
+      }
+    }
   }
   
   async updateDealTier(id: number, tierUpdate: Partial<InsertDealTier>): Promise<DealTier | undefined> {
