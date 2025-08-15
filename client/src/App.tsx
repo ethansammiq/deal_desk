@@ -71,8 +71,6 @@ function Router() {
             <Route path="/deals/:id" component={DealDetails} />
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/testing" component={Testing} />
-            <Route path="/role-demo" component={Testing} />
-            <Route path="/role-testing" component={Testing} />
             <Route path="/department-queues" component={DepartmentQueues} />
             <Route path="/sla-monitoring" component={SLAMonitoring} />
             <Route path="/admin" component={AdminPanel} />
