@@ -7,7 +7,8 @@ import {
   X,
   ChevronDown,
   UserCircle,
-  BellIcon
+  BellIcon,
+  TestTube2
 } from "lucide-react";
 import companyLogo from "../../assets/miq-transparent.png";
 import { cn } from "@/lib/utils";
@@ -108,6 +109,14 @@ export function TopNavbar() {
           
           {/* User Profile & Notifications - Fixed Width */}
           <div className="hidden md:flex md:items-center md:space-x-3 flex-shrink-0 w-64 justify-end">
+            {/* Role Testing Quick Access - Temporary for development */}
+            <Link href="/role-demo">
+              <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
+                <TestTube2 className="w-3 h-3 mr-1" />
+                Test
+              </button>
+            </Link>
+            
             {/* Notification Bell */}
             <NotificationBell />
             
