@@ -3,11 +3,11 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Phase 7B: User roles for role-based permissions - Enhanced for multi-layered approval
-export const userRoles = ["seller", "approver", "legal", "admin", "department_reviewer"] as const;
+export const userRoles = ["seller", "department_reviewer", "approver", "admin"] as const;
 export type UserRole = typeof userRoles[number];
 
 // Department types for the approval system
-export const departmentTypes = ["trading", "finance", "creative", "marketing", "product", "solutions"] as const;
+export const departmentTypes = ["trading", "finance", "creative", "marketing", "product", "solutions", "legal"] as const;
 export type DepartmentType = typeof departmentTypes[number];
 
 // Phase 7B: Enhanced users table with role-based permissions and department assignment
@@ -541,18 +541,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageContracts: false,
     dashboardSections: ["deals", "approvals", "analytics", "reports"]
   },
-  legal: {
-    canViewDeals: true,
-    canCreateDeals: false,
-    canEditDeals: false, // Read-only for deals, but can manage contracts
-    canDeleteDeals: false,
-    canChangeStatus: ["contract_drafting", "client_review", "signed"], // Legal and contract flow
-    canViewAllDeals: true,
-    canApproveDeals: false,
-    canAccessLegalReview: true,
-    canManageContracts: true,
-    dashboardSections: ["legal-queue", "contracts", "compliance"]
-  },
+
   admin: {
     canViewDeals: true,
     canCreateDeals: true,
@@ -570,11 +559,11 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: false,
     canEditDeals: false,
     canDeleteDeals: false,
-    canChangeStatus: ["approved", "revision_requested"], // Can approve or request revisions
+    canChangeStatus: ["approved", "revision_requested", "contract_drafting", "client_review", "signed"], // Can approve, request revisions, and handle legal workflows
     canViewAllDeals: true, // Can view deals assigned to their department
     canApproveDeals: true,
-    canAccessLegalReview: false,
-    canManageContracts: false,
+    canAccessLegalReview: true, // Legal department reviewers have legal access
+    canManageContracts: true, // Legal department reviewers can manage contracts
     dashboardSections: ["department-approvals", "deals", "workload"]
   }
 };

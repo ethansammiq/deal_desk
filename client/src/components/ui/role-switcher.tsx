@@ -7,9 +7,8 @@ import { useCurrentUser } from '@/hooks/useAuth';
 
 const roleDescriptions = {
   seller: "Creates and manages deal submissions",
-  department_reviewer: "Technical review within assigned department", 
+  department_reviewer: "Technical review within assigned department (including legal)", 
   approver: "Business approval authority across all deals",
-  legal: "Legal review and contract management",
   admin: "Full system access and user management"
 };
 
@@ -19,7 +18,8 @@ const departmentOptions = [
   { value: 'creative', label: 'Creative' },
   { value: 'marketing', label: 'Marketing' },
   { value: 'product', label: 'Product' },
-  { value: 'solutions', label: 'Solutions' }
+  { value: 'solutions', label: 'Solutions' },
+  { value: 'legal', label: 'Legal' }
 ];
 
 interface RoleSwitcherProps {
@@ -47,6 +47,11 @@ export function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcherProps) {
     // Update localStorage for demo role switching
     if (typeof window !== 'undefined') {
       localStorage.setItem('demo_user_role', selectedRole);
+      if (selectedDepartment) {
+        localStorage.setItem('demo_user_department', selectedDepartment);
+      } else {
+        localStorage.removeItem('demo_user_department');
+      }
       // Refresh the page to apply the role change
       window.location.reload();
     }

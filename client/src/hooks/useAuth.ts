@@ -13,8 +13,16 @@ export function useCurrentUser() {
       const demoRole = typeof window !== 'undefined' && window.localStorage 
         ? localStorage.getItem('demo_user_role') || 'seller'
         : 'seller';
+      const demoDepartment = typeof window !== 'undefined' && window.localStorage 
+        ? localStorage.getItem('demo_user_department')
+        : null;
       
-      return apiRequest(`/api/users/current?role=${demoRole}`) as Promise<CurrentUser>;
+      const params = new URLSearchParams({ role: demoRole });
+      if (demoDepartment) {
+        params.append('department', demoDepartment);
+      }
+      
+      return apiRequest(`/api/users/current?${params.toString()}`) as Promise<CurrentUser>;
     },
   });
 }
@@ -56,12 +64,15 @@ export function useUserPermissions() {
     return hasPermission(currentUser.role, permission as any);
   };
 
+  // Handle special case for legal department reviewers
+  const hasLegalAccess = currentUser?.role === 'department_reviewer' && currentUser?.department === 'legal';
+
   const canCreateDeals = checkPermission("canCreateDeals");
   const canViewAllDeals = checkPermission("canViewAllDeals");
   const canEditDeals = checkPermission("canEditDeals");
   const canApproveDeals = checkPermission("canApproveDeals");
-  const canAccessLegalReview = checkPermission("canAccessLegalReview");
-  const canManageContracts = checkPermission("canManageContracts");
+  const canAccessLegalReview = checkPermission("canAccessLegalReview") || hasLegalAccess;
+  const canManageContracts = checkPermission("canManageContracts") || hasLegalAccess;
   
   return {
     currentUser,

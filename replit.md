@@ -28,6 +28,7 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Role-Based Navigation**: Conditional access to admin features and testing tools based on user permissions
 - **Consolidated Testing Interface**: Unified testing platform at `/testing` combining role switching, workflow testing, permission validation, and status transition testing. Legacy routes and components removed for cleaner codebase (August 2025)
 - **Enhanced Permission System**: Removed approver edit permissions to enforce revision request workflow, clarified "View Deals" vs "View All Deals" distinction, improved testing interface with clear explanations (August 2025)
+- **Role Consolidation**: Merged Legal role into Department Reviewer structure as legal department, added all 6 departments + legal to department selection, fixed role switching persistence (August 2025)
 
 ### Technical Implementation & Design
 The application features an Express.js backend with an in-memory storage solution, defining RESTful API endpoints for deal management. The frontend employs a component-based design with extensive use of reusable components and custom React hooks for encapsulating business logic. UI/UX decisions emphasize consistency through standardized form components, a clear functional layout, and consistent styling across all financial sections.

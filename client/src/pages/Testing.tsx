@@ -99,7 +99,8 @@ export default function Testing() {
   const [activeTest, setActiveTest] = useState<string | null>(null);
   
   const { data: currentUser } = useCurrentUser();
-  const { canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = useUserPermissions();
+  const permissions = useUserPermissions();
+  const { canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = permissions || {};
   
   const { data: deals = [] } = useQuery({
     queryKey: ["/api/deals"],
