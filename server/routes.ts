@@ -60,7 +60,7 @@ async function checkAndUpdateDealStatus(dealId: number, storage: WorkflowStorage
       newStatus = 'approved';
     } else {
       // Check stage progression for intermediate statuses
-      const stages = [...new Set(approvals.map((a: DealApproval) => a.approvalStage))].sort();
+      const stages = Array.from(new Set(approvals.map((a: DealApproval) => a.approvalStage))).sort();
       const completedStages = stages.filter((stage: number) => 
         approvals.filter((a: DealApproval) => a.approvalStage === stage)
           .every((a: DealApproval) => a.status === 'approved')
@@ -486,7 +486,11 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
                 tierNumber: tier.tierNumber,
                 annualRevenue: tier.annualRevenue,
                 annualGrossMargin: tier.annualGrossMargin,
-                incentives: tier.incentives || []
+                categoryName: tier.categoryName,
+                subCategoryName: tier.subCategoryName,
+                incentiveOption: tier.incentiveOption,
+                incentiveValue: tier.incentiveValue,
+                incentiveNotes: tier.incentiveNotes || ""
               });
             }
           }
@@ -538,7 +542,11 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
             tierNumber: tier.tierNumber,
             annualRevenue: tier.annualRevenue,
             annualGrossMargin: tier.annualGrossMargin,
-            incentives: tier.incentives || []
+            categoryName: tier.categoryName,
+            subCategoryName: tier.subCategoryName,
+            incentiveOption: tier.incentiveOption,
+            incentiveValue: tier.incentiveValue,
+            incentiveNotes: tier.incentiveNotes || ""
           });
         }
       }
@@ -740,7 +748,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Update deal status to under_review and increment revision count
       const updatedDeal = await storage.updateDealWithRevision(id, {
         status: 'under_review' as DealStatus,
-        submittedAt: new Date(),
+        // submittedAt field removed as it's not in the schema,
         revisionCount: (deal.revisionCount || 0) + 1,
         lastResubmittedAt: new Date()
       });
@@ -1370,10 +1378,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Invalid approval status" });
       }
 
-      // Update the approval
+      // Update the approval - remove reviewedBy field (not in schema)
       const updatedApproval = await storage.updateDealApproval(approvalId, {
         status,
-        reviewedBy,
         comments
       });
 
@@ -1495,10 +1502,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           approvalRequirements.push({
             dealId,
             approvalStage: 1,
-            departmentName: dept,
+            departmentName: dept as DepartmentType,
             requiredRole: 'department_reviewer',
-            status: 'pending',
-            priority: 'normal',
+            status: 'pending' as const,
+            priority: 'normal' as const,
             dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
           });
         }
@@ -1508,10 +1515,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       approvalRequirements.push({
         dealId,
         approvalStage: 2,
-        departmentName: 'trading',
+        departmentName: 'trading' as const,
         requiredRole: 'department_reviewer',
-        status: 'pending',
-        priority: 'normal',
+        status: 'pending' as const,
+        priority: 'normal' as const,
         dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days
       });
 
@@ -1521,10 +1528,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         approvalRequirements.push({
           dealId,
           approvalStage: 3,
-          departmentName: 'finance', // Executive oversight through finance
+          departmentName: 'finance' as const, // Executive oversight through finance
           requiredRole: 'admin', // Executive level
-          status: 'pending',
-          priority: dealValue >= 1000000 ? 'high' : 'normal',
+          status: 'pending' as const,
+          priority: (dealValue >= 1000000 ? 'high' : 'normal') as const,
           dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
         });
       }
