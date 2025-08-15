@@ -263,36 +263,38 @@ export function EnhancedApprovalAlert({
                     </div>
                   </div>
 
-                  {/* Stage Requirements */}
-                  <div className="p-3 space-y-3">
+                  {/* Stage Requirements - Simplified */}
+                  <div className="p-4 space-y-3">
                     {stageRequirements.map((req) => (
-                      <div key={req.id} className="p-3 bg-white border rounded space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div key={req.id}>
+                        {/* Department Header */}
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <div className="font-medium text-sm">
+                            <span className="font-medium text-sm text-slate-700">
                               {departmentConfig[req.department].name}
-                            </div>
+                            </span>
                             {getDepartmentBadge(req.department)}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-500 font-medium">
                             {req.estimatedTime}
-                          </div>
+                          </span>
                         </div>
 
-                        {/* What they review */}
-                        <div className="text-xs text-slate-600">
-                          <strong>Reviews:</strong> {departmentConfig[req.department].description}
+                        {/* Review Focus */}
+                        <div className="text-xs text-slate-600 mb-2">
+                          {departmentConfig[req.department].description}
                         </div>
 
-                        {/* Key process points */}
-                        <div className="bg-slate-50 p-2 rounded text-xs">
+                        {/* Key Actions - Simplified List */}
+                        <div className="bg-slate-50 p-3 rounded text-xs">
                           {getApprovalProcessDetails(req.stage, req.department)}
                         </div>
 
                         {/* Dependencies */}
                         {req.dependencies.length > 0 && (
-                          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                            ⏳ Waiting for {req.dependencies.length} prerequisite approval{req.dependencies.length > 1 ? 's' : ''}
+                          <div className="text-xs text-amber-700 bg-amber-50 p-2 rounded mt-2 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Waiting for {req.dependencies.length} prerequisite approval{req.dependencies.length > 1 ? 's' : ''}
                           </div>
                         )}
                       </div>
@@ -302,14 +304,28 @@ export function EnhancedApprovalAlert({
               );
             })}
 
-            {/* Reviewer Actions Reference */}
-            <div className="bg-blue-50 p-3 rounded border border-blue-200">
-              <div className="font-medium text-blue-800 mb-2 text-sm">Available Reviewer Actions:</div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
-                <div>✅ <strong>Approve</strong> - Move to next stage</div>
-                <div>🔄 <strong>Request Revision</strong> - Send back with feedback</div>
-                <div>❌ <strong>Reject</strong> - Decline with explanation</div>
-                <div>💬 <strong>Add Comments</strong> - Provide insights</div>
+            {/* Streamlined Actions Reference */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+              <div className="bg-blue-100 px-3 py-2 text-sm font-medium text-blue-800">
+                Available Reviewer Actions
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-blue-700">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3 w-3 text-green-600" />
+                  <span><strong>Approve</strong> - Move to next stage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-3 w-3 text-red-600" />
+                  <span><strong>Request Revision</strong> - Send back with feedback</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3 w-3 text-slate-600" />
+                  <span><strong>Reject</strong> - Decline with explanation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3 w-3 text-blue-600" />
+                  <span><strong>Add Comments</strong> - Provide insights</span>
+                </div>
               </div>
             </div>
           </div>
