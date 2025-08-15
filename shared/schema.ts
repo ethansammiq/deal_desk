@@ -415,15 +415,7 @@ export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSc
 export type IncentiveValue = typeof incentiveValues.$inferSelect;
 export type InsertIncentiveValue = z.infer<typeof insertIncentiveValueSchema>;
 
-// Multi-Layered Approval System Types
-export type DealApproval = typeof dealApprovals.$inferSelect;
-export type InsertDealApproval = z.infer<typeof insertDealApprovalSchema>;
-
-export type ApprovalAction = typeof approvalActions.$inferSelect;
-export type InsertApprovalAction = z.infer<typeof insertApprovalActionSchema>;
-
-export type ApprovalDepartment = typeof approvalDepartments.$inferSelect;
-export type InsertApprovalDepartment = z.infer<typeof insertApprovalDepartmentSchema>;
+// Multi-Layered Approval System Types - moved to end of file to avoid duplicates
 
 // Multi-Layered Approval System Tables
 
@@ -432,29 +424,26 @@ export const dealApprovals = pgTable("deal_approvals", {
   id: serial("id").primaryKey(),
   dealId: integer("deal_id").notNull(),
   
-  // Updated field names to match actual usage in routes.ts
+  // Standardized field names for consistency
   approvalStage: integer("approval_stage").notNull(), // Used in workflow automation
-  departmentName: text("department_name", { 
-    enum: ["trading", "finance", "creative", "marketing", "product", "solutions"] 
-  }).notNull(),
+  department: text("department", { enum: departmentTypes }).notNull(), // Consistent with users table
   requiredRole: text("required_role").notNull(), // Single role requirement
   
   status: text("status", { enum: ["pending", "approved", "rejected", "revision_requested"] }).default("pending"),
   priority: text("priority", { enum: ["normal", "high", "urgent"] }).default("normal"),
   dueDate: timestamp("due_date").notNull(),
   assignedTo: integer("assigned_to"),
-  reviewedBy: integer("reviewed_by"), // Added missing field used in routes
   completedAt: timestamp("completed_at"),
   comments: text("comments"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertDealApprovalSchema = createInsertSchema(dealApprovals)
-  .omit({ id: true, createdAt: true, completedAt: true, reviewedBy: true })
+  .omit({ id: true, createdAt: true, completedAt: true })
   .extend({
     dealId: z.number().positive("Deal ID must be positive"),
     approvalStage: z.number().positive("Approval stage must be positive"),
-    departmentName: z.enum(["trading", "finance", "creative", "marketing", "product", "solutions"]),
+    department: z.enum(departmentTypes),
     requiredRole: z.string().min(1, "Required role is required"),
     status: z.enum(["pending", "approved", "revision_requested", "rejected"]).default("pending"),
     priority: z.enum(["normal", "high", "urgent"]).default("normal"),
@@ -491,7 +480,7 @@ export const insertApprovalActionSchema = createInsertSchema(approvalActions)
 // Department configurations and assignments
 export const approvalDepartments = pgTable("approval_departments", {
   id: serial("id").primaryKey(),
-  departmentName: text("department_name", { enum: departmentTypes }).notNull().unique(),
+  department: text("department", { enum: departmentTypes }).notNull().unique(),
   displayName: text("display_name").notNull(),
   description: text("description"),
   contactEmail: text("contact_email"),
@@ -505,7 +494,7 @@ export const approvalDepartments = pgTable("approval_departments", {
 export const insertApprovalDepartmentSchema = createInsertSchema(approvalDepartments)
   .omit({ id: true, createdAt: true, updatedAt: true })
   .extend({
-    departmentName: z.enum(departmentTypes),
+    department: z.enum(departmentTypes),
     displayName: z.string().min(1, "Display name is required"),
     description: z.string().optional(),
     contactEmail: z.string().email().optional(),

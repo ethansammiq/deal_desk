@@ -126,7 +126,7 @@ async function sendStatusChangeNotification(dealId: number, oldStatus: string, n
           userId: approval.assignedTo,
           type: 'approval_assignment',
           title: `New Approval Required`,
-          message: `Deal "${deal.dealName}" requires your review (${approval.departmentName} department)`,
+          message: `Deal "${deal.dealName}" requires your review (${approval.department} department)`,
           dealId: dealId,
           approvalId: approval.id,
           priority: approval.priority || 'normal'
@@ -153,7 +153,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     const deal = await storage.getDeal(dealId);
     
     for (const approval of approvals) {
-      console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${approval.departmentName} department review`);
+      console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${approval.department} department review`);
       console.log(`   Stage: ${approval.approvalStage}, Priority: ${approval.priority}, Due: ${approval.dueDate}`);
     }
   } catch (error) {
@@ -1493,16 +1493,16 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         };
 
         // Get unique departments needed for this deal
-        const requiredDepartments = [...new Set(
+        const requiredDepartments = Array.from(new Set(
           incentiveTypes.map((type: string) => departmentMap[type]).filter(Boolean)
-        )];
+        )) as DepartmentType[];
 
         // Create parallel approval requirements for Stage 1
         for (const dept of requiredDepartments) {
           approvalRequirements.push({
             dealId,
             approvalStage: 1,
-            departmentName: dept as DepartmentType,
+            department: dept as DepartmentType,
             requiredRole: 'department_reviewer',
             status: 'pending' as const,
             priority: 'normal' as const,
@@ -1515,7 +1515,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       approvalRequirements.push({
         dealId,
         approvalStage: 2,
-        departmentName: 'trading' as const,
+        department: 'trading' as const,
         requiredRole: 'department_reviewer',
         status: 'pending' as const,
         priority: 'normal' as const,
@@ -1528,10 +1528,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         approvalRequirements.push({
           dealId,
           approvalStage: 3,
-          departmentName: 'finance' as const, // Executive oversight through finance
+          department: 'finance' as const, // Executive oversight through finance
           requiredRole: 'admin', // Executive level
           status: 'pending' as const,
-          priority: (dealValue >= 1000000 ? 'high' : 'normal') as const,
+          priority: dealValue >= 1000000 ? 'high' as const : 'normal' as const,
           dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
         });
       }
