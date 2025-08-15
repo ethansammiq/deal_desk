@@ -195,7 +195,8 @@ export function PriorityBanner({
                   
                   <Button
                     size="sm"
-                    variant={item.urgencyLevel === 'high' ? 'default' : 'outline'}
+                    variant={item.actionType === 'draft' || item.actionType === 'resume_draft' ? 'outline' : 
+                             item.urgencyLevel === 'high' ? 'default' : 'outline'}
                     onClick={(e) => {
                       e.stopPropagation();
                       onAction(item.deal.id, item.actionType);
@@ -203,7 +204,7 @@ export function PriorityBanner({
                     className="flex-shrink-0 ml-3 gap-1"
                   >
                     <ActionIcon className="h-3 w-3" />
-                    {item.actionLabel}
+                    {item.actionType === 'draft' || item.actionType === 'resume_draft' ? 'Resume Draft' : item.actionLabel}
                   </Button>
                 </div>
               );
