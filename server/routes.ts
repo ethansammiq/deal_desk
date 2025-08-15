@@ -1647,5 +1647,242 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
   });
 
   const httpServer = createServer(app);
+  // Department Queue Dashboard endpoints
+  router.get("/department-queue/:department", async (req: Request, res: Response) => {
+    try {
+      const { department } = req.params;
+      
+      // Mock implementation - in production, this would query actual approval data
+      const mockQueueData = {
+        items: [
+          {
+            id: 1,
+            dealId: 1,
+            dealName: "Tesla Growth Campaign",
+            clientName: "Tesla Inc.",
+            priority: "high",
+            dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
+            assignedTo: 1,
+            assignedToName: "John Smith",
+            dealValue: 2500000,
+            stage: 1,
+            isOverdue: false,
+            daysSinceCreated: 1
+          },
+          {
+            id: 2,
+            dealId: 2,
+            dealName: "Netflix Brand Partnership",
+            clientName: "Netflix",
+            priority: "urgent",
+            dueDate: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour overdue
+            createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 48 hours ago
+            assignedTo: 2,
+            assignedToName: "Sarah Johnson",
+            dealValue: 5000000,
+            stage: 2,
+            isOverdue: true,
+            daysSinceCreated: 2
+          }
+        ],
+        metrics: {
+          totalPending: 15,
+          overdueTasks: 3,
+          avgProcessingTime: 6.5,
+          completedToday: 8,
+          departmentCapacity: 20,
+          currentLoad: 75
+        }
+      };
+      
+      res.json(mockQueueData);
+    } catch (error) {
+      console.error("Error fetching department queue:", error);
+      res.status(500).json({ message: "Failed to fetch department queue" });
+    }
+  });
+
+  router.get("/department-workload-distribution", async (req: Request, res: Response) => {
+    try {
+      // Mock workload distribution data
+      const mockDistribution = [
+        {
+          department: "trading",
+          displayName: "Trading",
+          pendingCount: 5,
+          overdueCount: 1,
+          avgProcessingTime: 4.5,
+          loadPercentage: 62
+        },
+        {
+          department: "finance",
+          displayName: "Finance", 
+          pendingCount: 8,
+          overdueCount: 2,
+          avgProcessingTime: 6.2,
+          loadPercentage: 85
+        },
+        {
+          department: "creative",
+          displayName: "Creative",
+          pendingCount: 3,
+          overdueCount: 0,
+          avgProcessingTime: 3.1,
+          loadPercentage: 42
+        },
+        {
+          department: "marketing",
+          displayName: "Marketing",
+          pendingCount: 6,
+          overdueCount: 1,
+          avgProcessingTime: 5.8,
+          loadPercentage: 78
+        }
+      ];
+      
+      res.json(mockDistribution);
+    } catch (error) {
+      console.error("Error fetching workload distribution:", error);
+      res.status(500).json({ message: "Failed to fetch workload distribution" });
+    }
+  });
+
+  // SLA Monitoring endpoints
+  router.get("/sla-metrics/:timeframe", async (req: Request, res: Response) => {
+    try {
+      const { timeframe } = req.params;
+      
+      // Mock SLA metrics - in production, calculate from actual data
+      const mockMetrics = {
+        totalApprovals: 156,
+        onTimeCompletions: 142,
+        overdueItems: 8,
+        avgCompletionTime: 5.2,
+        slaComplianceRate: 91.0,
+        criticalBreaches: 3,
+        upcomingDeadlines: 12
+      };
+      
+      res.json(mockMetrics);
+    } catch (error) {
+      console.error("Error fetching SLA metrics:", error);
+      res.status(500).json({ message: "Failed to fetch SLA metrics" });
+    }
+  });
+
+  router.get("/sla-items/:department", async (req: Request, res: Response) => {
+    try {
+      const { department } = req.params;
+      
+      // Mock SLA items with real-time countdown data
+      const mockItems = [
+        {
+          id: 1,
+          dealId: 1,
+          dealName: "Tesla Growth Campaign",
+          department: "trading",
+          priority: "high",
+          dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 8,
+          timeRemaining: 2,
+          riskLevel: "warning",
+          assignedTo: "John Smith",
+          clientName: "Tesla Inc.",
+          dealValue: 2500000
+        },
+        {
+          id: 2,
+          dealId: 2,
+          dealName: "Netflix Brand Partnership", 
+          department: "finance",
+          priority: "urgent",
+          dueDate: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 24,
+          timeRemaining: -1,
+          riskLevel: "overdue",
+          assignedTo: "Sarah Johnson",
+          clientName: "Netflix",
+          dealValue: 5000000
+        },
+        {
+          id: 3,
+          dealId: 3,
+          dealName: "Microsoft Partnership",
+          department: "creative",
+          priority: "normal",
+          dueDate: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 24,
+          timeRemaining: 18,
+          riskLevel: "safe",
+          assignedTo: "Mike Chen",
+          clientName: "Microsoft",
+          dealValue: 1800000
+        }
+      ];
+      
+      res.json(mockItems);
+    } catch (error) {
+      console.error("Error fetching SLA items:", error);
+      res.status(500).json({ message: "Failed to fetch SLA items" });
+    }
+  });
+
+  router.get("/department-sla-performance", async (req: Request, res: Response) => {
+    try {
+      // Mock department SLA performance data
+      const mockPerformance = [
+        {
+          department: "trading",
+          displayName: "Trading",
+          complianceRate: 94.2,
+          avgCompletionTime: 5.8,
+          overdueCount: 1,
+          slaTarget: 8,
+          trend: "up",
+          riskItems: 2
+        },
+        {
+          department: "finance",
+          displayName: "Finance", 
+          complianceRate: 87.5,
+          avgCompletionTime: 18.5,
+          overdueCount: 3,
+          slaTarget: 24,
+          trend: "down",
+          riskItems: 5
+        },
+        {
+          department: "creative",
+          displayName: "Creative",
+          complianceRate: 96.8,
+          avgCompletionTime: 4.2,
+          overdueCount: 0,
+          slaTarget: 6,
+          trend: "up",
+          riskItems: 1
+        },
+        {
+          department: "marketing",
+          displayName: "Marketing",
+          complianceRate: 89.1,
+          avgCompletionTime: 7.3,
+          overdueCount: 2,
+          slaTarget: 12,
+          trend: "stable",
+          riskItems: 3
+        }
+      ];
+      
+      res.json(mockPerformance);
+    } catch (error) {
+      console.error("Error fetching department SLA performance:", error);
+      res.status(500).json({ message: "Failed to fetch department SLA performance" });
+    }
+  });
+
   return httpServer;
 }

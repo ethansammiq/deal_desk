@@ -22,6 +22,8 @@ const HelpResources = lazy(() => import("@/pages/HelpResources"));
 const DealRequests = lazy(() => import("@/pages/DealRequests"));
 const RoleDemo = lazy(() => import("@/pages/RoleDemo"));
 const RoleTestingPanel = lazy(() => import("@/components/testing/RoleTestingPanel"));
+const DepartmentQueues = lazy(() => import("@/pages/DepartmentQueues"));
+const SLAMonitoring = lazy(() => import("@/pages/SLAMonitoring"));
 
 // Legacy routes disabled - components archived as .legacy files
 
@@ -70,6 +72,8 @@ function Router() {
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/role-demo" component={RoleDemo} />
             <Route path="/role-testing" component={RoleTestingPanel} />
+            <Route path="/department-queues" component={DepartmentQueues} />
+            <Route path="/sla-monitoring" component={SLAMonitoring} />
             {/* Legacy routes archived - components moved to .legacy files */}
             {/* Fallback to 404 */}
             <Route component={NotFound} />

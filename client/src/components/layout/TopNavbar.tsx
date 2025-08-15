@@ -81,6 +81,28 @@ export function TopNavbar() {
                   <span className="whitespace-nowrap">Deal Requests</span>
                 </div>
               </Link>
+              <Link href="/department-queues">
+                <div className={cn(
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  location === "/department-queues"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                )}>
+                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Dept Queues</span>
+                </div>
+              </Link>
+              <Link href="/sla-monitoring">
+                <div className={cn(
+                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  location === "/sla-monitoring"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                )}>
+                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">SLA Monitor</span>
+                </div>
+              </Link>
             </nav>
           </div>
           
