@@ -106,6 +106,7 @@ import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormVal
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
 import { useClientData } from "@/hooks/useClientData";
+import { useTabNavigation } from "@/hooks/useTabNavigation";
 // Auto-save import removed as requested
 import { DraftManager } from "@/components/draft/DraftManager";
 import { FormPageHeader, FormNavigation } from "@/components/ui/form-style-guide";
@@ -143,8 +144,6 @@ const dealFormSchema = z.object({
 type DealFormValues = any; // Allow any fields from shared components
 
 export default function SubmitDeal() {
-  // ✅ OPTIMIZED: Converting from step-based to tab-based architecture
-  const [activeTab, setActiveTab] = useState(SUBMIT_DEAL_TABS[0].id);
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
@@ -267,6 +266,22 @@ export default function SubmitDeal() {
     validateOnChange: true,
     formType: 'submitDeal' // ✅ SYNCHRONIZED: Use SubmitDeal form steps
   });
+
+  // ✅ PHASE 3: Using shared tab navigation hook
+  const {
+    activeTab,
+    setActiveTab,
+    goToNextTab,
+    goToPrevTab,
+    goToTab,
+    getNextTabLabel,
+    getPreviousTabLabel,
+    isLastTab
+  } = useTabNavigation(
+    SUBMIT_DEAL_TABS,
+    SUBMIT_DEAL_TABS[0].id,
+    (targetStep) => formValidation.canAdvanceToStep(targetStep)
+  );
 
   // Auto-save functionality removed as requested by user
 
@@ -778,33 +793,7 @@ export default function SubmitDeal() {
     setFinancialSummary(summary);
   }, [dealTiers, salesChannel]);
 
-  // ✅ OPTIMIZED: Tab-based navigation functions replacing step-based logic
-  const navigateToTab = (targetTabId: string) => {
-    const stepNumber = tabToStepMap[targetTabId];
-    if (stepNumber && formValidation.canAdvanceToStep(stepNumber)) {
-      setActiveTab(targetTabId);
-    } else {
-      toast({
-        title: "Complete Current Step",
-        description: "Please fill out the required fields before proceeding.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const goToNextTab = () => {
-    const nextTabId = getNextTabId(activeTab, SUBMIT_DEAL_TABS);
-    if (nextTabId) {
-      navigateToTab(nextTabId);
-    }
-  };
-
-  const goToPrevTab = () => {
-    const prevTabId = getPreviousTabId(activeTab, SUBMIT_DEAL_TABS);
-    if (prevTabId) {
-      setActiveTab(prevTabId); // Previous tabs are always accessible
-    }
-  };
+  // ✅ PHASE 3: Tab navigation now handled by useTabNavigation hook
 
   function onSubmit(data: any) {
     console.log("Form submission triggered with data:", data);
@@ -944,7 +933,7 @@ export default function SubmitDeal() {
       <FormProgressTracker
         steps={SUBMIT_DEAL_TABS}
         currentStep={activeTab}
-        onStepClick={(stepId) => navigateToTab(String(stepId))}
+        onStepClick={(stepId) => goToTab(String(stepId))}
       />
 
       {/* ✅ OPTIMIZED: True tabs architecture with Card wrapper */}
@@ -958,7 +947,7 @@ export default function SubmitDeal() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
                 <Tabs
                   value={activeTab}
-                  onValueChange={setActiveTab}
+                  onValueChange={goToTab}
                   className="w-full"
                 >
                 <TabsContent value="deal-overview" className="space-y-6 pt-4">

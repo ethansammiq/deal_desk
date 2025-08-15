@@ -46,6 +46,7 @@ import { BusinessContextSection } from "@/components/deal-form/BusinessContextSe
 import { useDealFormValidation, type DealFormData } from "@/hooks/useDealFormValidation";
 import { processDealScopingData } from "@/utils/form-data-processing";
 import { useClientData } from "@/hooks/useClientData";
+import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { AdvertiserData, AgencyData } from "@shared/types";
 
 // Schema for deal scoping requests
@@ -56,10 +57,15 @@ const dealScopingSchema = z.object({
 
 type DealScopingFormValues = z.infer<typeof dealScopingSchema>;
 
+// Define tab configuration for RequestSupport
+const REQUEST_SUPPORT_TABS = [
+  { id: "deal-overview", label: "Deal Overview", stepNumber: 1 },
+  { id: "business-context", label: "Business Context", stepNumber: 2 }
+];
+
 export default function RequestSupport() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState("deal-overview");
 
   // ✅ PHASE 2: Using shared client data hook
   const { agencies, advertisers, isLoading: isLoadingClientData, error: clientDataError } = useClientData();
@@ -94,6 +100,21 @@ export default function RequestSupport() {
     validateOnChange: true,
     formType: 'requestSupport' // Use RequestSupport form steps (3 steps max)
   });
+
+  // ✅ PHASE 3: Using shared tab navigation hook
+  const {
+    activeTab,
+    goToNextTab,
+    goToPrevTab,
+    goToTab,
+    getNextTabLabel,
+    getPreviousTabLabel,
+    isLastTab
+  } = useTabNavigation(
+    REQUEST_SUPPORT_TABS,
+    "deal-overview",
+    (targetStep) => formValidation.canAdvanceToStep(targetStep)
+  );
 
   // Create deal scoping request mutation
   const createDealScopingRequest = useMutation({
@@ -155,18 +176,6 @@ export default function RequestSupport() {
     createDealScopingRequest.mutate(data);
   }
 
-  function goToNextTab() {
-    if (activeTab === "deal-overview") {
-      setActiveTab("business-context");
-    }
-  }
-
-  function goToPrevTab() {
-    if (activeTab === "business-context") {
-      setActiveTab("deal-overview");
-    }
-  }
-
   function goToDealSubmission() {
     navigate("/submit-deal");
   }
@@ -200,32 +209,11 @@ export default function RequestSupport() {
         }
       />
 
-      {/* ✅ SYNCHRONIZED: Form Progress Tracker with validation-aware navigation */}
+      {/* ✅ PHASE 3: Simplified Form Progress Tracker using shared navigation */}
       <FormProgressTracker
-        steps={[
-          { id: "deal-overview", label: "Deal Overview" },
-          { id: "business-context", label: "Business Context" }
-        ]}
+        steps={REQUEST_SUPPORT_TABS}
         currentStep={activeTab}
-        onStepClick={(stepId) => {
-          const targetStep = stepId.toString();
-          // Map tab IDs to step numbers for validation
-          const stepMap: Record<string, number> = {
-            'deal-overview': 1,
-            'business-context': 2
-          };
-          
-          const stepNumber = stepMap[targetStep];
-          if (stepNumber && formValidation.canAdvanceToStep(stepNumber)) {
-            setActiveTab(targetStep);
-          } else {
-            toast({
-              title: "Complete Current Step",
-              description: "Please fill out the required fields before proceeding.",
-              variant: "destructive",
-            });
-          }
-        }}
+        onStepClick={(stepId) => goToTab(String(stepId))}
       />
 
       {/* Form Card */}
@@ -234,7 +222,7 @@ export default function RequestSupport() {
           <Form {...form}>
             <Tabs
               value={activeTab}
-              onValueChange={setActiveTab}
+              onValueChange={goToTab}
               className="w-full"
             >
               <TabsContent value="deal-overview" className="space-y-6 pt-4">
@@ -265,14 +253,14 @@ export default function RequestSupport() {
         </CardContent>
       </Card>
 
-      {/* Navigation - Using shared FormNavigation component */}
+      {/* ✅ PHASE 3: Navigation using shared tab navigation labels */}
       <FormNavigation
-        variant={activeTab === "business-context" ? "submit" : "next"}
-        onPrevious={activeTab === "business-context" ? goToPrevTab : undefined}
-        onNext={activeTab === "deal-overview" ? goToNextTab : undefined}
-        onSubmit={activeTab === "business-context" ? form.handleSubmit(onSubmit) : undefined}
-        previousLabel="Previous: Deal Overview"
-        nextLabel="Next: Business Context"
+        variant={isLastTab() ? "submit" : "next"}
+        onPrevious={isLastTab() ? goToPrevTab : undefined}
+        onNext={!isLastTab() ? goToNextTab : undefined}
+        onSubmit={isLastTab() ? form.handleSubmit(onSubmit) : undefined}
+        previousLabel={getPreviousTabLabel()}
+        nextLabel={getNextTabLabel()}
         submitLabel="Submit Request"
         isSubmitting={createDealScopingRequest.isPending}
         showBorder={false}
