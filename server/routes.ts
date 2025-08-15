@@ -30,6 +30,128 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
   const router = express.Router();
+
+// Workflow Automation Helper Function
+async function checkAndUpdateDealStatus(dealId: number, storage: any) {
+  try {
+    const approvals = await storage.getDealApprovals(dealId);
+    const deal = await storage.getDeal(dealId);
+    
+    if (!deal || !approvals.length) return;
+
+    // Check completion status
+    const allApproved = approvals.every(a => a.status === 'approved');
+    const anyRejected = approvals.some(a => a.status === 'rejected');
+
+    let newStatus = deal.status;
+    
+    if (anyRejected) {
+      newStatus = 'revision_requested';
+    } else if (allApproved) {
+      newStatus = 'approved';
+    } else {
+      // Check stage progression for intermediate statuses
+      const stages = [...new Set(approvals.map(a => a.approvalStage))].sort();
+      const completedStages = stages.filter(stage => 
+        approvals.filter(a => a.approvalStage === stage)
+          .every(a => a.status === 'approved')
+      );
+      
+      if (completedStages.length === 0) {
+        newStatus = 'under_review';
+      } else if (completedStages.includes(2) && !completedStages.includes(3)) {
+        newStatus = 'negotiating';
+      } else if (completedStages.includes(3)) {
+        newStatus = 'contract_drafting';
+      }
+    }
+
+    // Update deal status if changed
+    if (newStatus !== deal.status) {
+      await storage.updateDealStatus(
+        dealId, 
+        newStatus as DealStatus, 
+        'System Automation',
+        `Status auto-updated based on approval workflow progress`
+      );
+        console.log(`✅ Deal ${dealId} status auto-updated: ${deal.status} → ${newStatus}`);
+      
+      // Send notifications for status change
+      await sendStatusChangeNotification(dealId, deal.status, newStatus, storage);
+    }
+  } catch (error) {
+    console.error(`Error in workflow automation for deal ${dealId}:`, error);
+  }
+}
+
+// Notification System Helper Function
+async function sendStatusChangeNotification(dealId: number, oldStatus: string, newStatus: string, storage: any) {
+  try {
+    const deal = await storage.getDeal(dealId);
+    const approvals = await storage.getDealApprovals(dealId);
+    
+    // Get all relevant stakeholders
+    const notifications = [];
+    
+    // Notify deal creator
+    if (deal?.createdBy) {
+      notifications.push({
+        userId: deal.createdBy,
+        type: 'deal_status_change',
+        title: `Deal Status Updated`,
+        message: `Your deal "${deal.dealName}" status changed from ${oldStatus} to ${newStatus}`,
+        dealId: dealId,
+        priority: newStatus === 'approved' ? 'high' : 'normal'
+      });
+    }
+    
+    // Notify pending reviewers
+    const pendingApprovals = approvals.filter(a => a.status === 'pending');
+    for (const approval of pendingApprovals) {
+      if (approval.assignedTo) {
+        notifications.push({
+          userId: approval.assignedTo,
+          type: 'approval_assignment',
+          title: `New Approval Required`,
+          message: `Deal "${deal.dealName}" requires your review (${approval.departmentName} department)`,
+          dealId: dealId,
+          approvalId: approval.id,
+          priority: approval.priority || 'normal'
+        });
+      }
+    }
+    
+    // Log notifications (in production, these would be sent via email/push/webhook)
+    for (const notification of notifications) {
+      console.log(`📧 NOTIFICATION: [${notification.type}] ${notification.title} → User ${notification.userId}`);
+      console.log(`   Message: ${notification.message}`);
+    }
+    
+    return notifications;
+  } catch (error) {
+    console.error(`Error sending notifications for deal ${dealId}:`, error);
+    return [];
+  }
+}
+
+// Approval Assignment Notification Helper
+async function sendApprovalAssignmentNotifications(dealId: number, approvals: any[], storage: any) {
+  try {
+    const deal = await storage.getDeal(dealId);
+    
+    for (const approval of approvals) {
+      // Get department reviewers
+      const departmentReviewers = await storage.getUsersByDepartment(approval.departmentName);
+      
+      for (const reviewer of departmentReviewers) {
+        console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned to ${reviewer.firstName} ${reviewer.lastName} (${approval.departmentName} dept)`);
+        console.log(`   Stage: ${approval.approvalStage}, Priority: ${approval.priority}, Due: ${approval.dueDate}`);
+      }
+    }
+  } catch (error) {
+    console.error(`Error sending approval assignment notifications:`, error);
+  }
+}
   app.use("/api", router);
   
   // Stats endpoint
@@ -1262,6 +1384,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // AUTO-TRIGGER WORKFLOW AUTOMATION: Check if deal status should be updated
+      if (status === 'approved' || status === 'rejected') {
+        await checkAndUpdateDealStatus(dealId, storage);
+      }
+
       res.status(200).json(updatedApproval);
     } catch (error) {
       console.error("Error updating approval:", error);
@@ -1408,6 +1535,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           comments: `Approval workflow initiated for deal: ${deal.dealName}`
         });
       }
+
+      // NOTIFICATION SYSTEM: Send assignment notifications to reviewers
+      await sendApprovalAssignmentNotifications(dealId, createdApprovals, storage);
 
       res.status(201).json({
         message: "Approval workflow initiated successfully",
