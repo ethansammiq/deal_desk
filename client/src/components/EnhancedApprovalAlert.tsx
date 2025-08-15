@@ -211,86 +211,107 @@ export function EnhancedApprovalAlert({
           </AlertDescription>
         </Alert>
 
-        {/* Stage Progress */}
-        <div className="space-y-3">
-          {pipelineStatus.stages.map((stage, index) => (
-            <div key={stage.stage} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-              {getStageIcon(stage.stage, stage.status)}
-              <div className="flex-1">
-                <div className="font-medium capitalize">
-                  {stage.stage.replace('_', ' ')} ({stage.completedCount}/{stage.totalCount})
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${stage.progress}%` }}
-                  />
-                </div>
-              </div>
-              <Badge className={getStatusColor(stage.status)}>
-                {stage.status.replace('_', ' ')}
-              </Badge>
-            </div>
-          ))}
-        </div>
-
-        {/* Detailed Approval Requirements */}
-        {showDetails && (
-          <div className="space-y-3 mt-4 pt-4 border-t">
-            <h4 className="font-medium text-sm text-slate-700">Detailed Approval Workflow</h4>
-            
-            {approvalRequirements.map((req) => (
-              <div key={req.id} className="p-4 bg-white border rounded-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {getStageIcon(req.stage, req.status)}
-                    <div>
-                      <div className="font-medium text-sm">
-                        {departmentConfig[req.department].name}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {departmentConfig[req.department].description}
-                      </div>
-                    </div>
+        {/* Streamlined Approval Overview */}
+        {!showDetails ? (
+          /* Condensed View - Just the essentials */
+          <div className="space-y-3">
+            {pipelineStatus.stages.map((stage, index) => (
+              <div key={stage.stage} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                {getStageIcon(stage.stage, stage.status)}
+                <div className="flex-1">
+                  <div className="font-medium capitalize">
+                    {stage.stage.replace('_', ' ')} ({stage.completedCount}/{stage.totalCount})
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {getDepartmentBadge(req.department)}
-                    <Badge className={getStatusColor(req.status)}>
-                      {req.status.replace('_', ' ')}
-                    </Badge>
+                  <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${stage.progress}%` }}
+                    />
                   </div>
                 </div>
-
-                {/* Approval Process Details */}
-                <div className="bg-slate-50 p-3 rounded text-xs space-y-2">
-                  <div className="font-medium text-slate-700">Review Process:</div>
-                  {getApprovalProcessDetails(req.stage, req.department)}
-                  
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200">
-                    <span className="text-slate-600">Estimated Timeline:</span>
-                    <span className="font-medium">{req.estimatedTime}</span>
-                  </div>
-                  
-                  {req.dependencies.length > 0 && (
-                    <div className="text-slate-500">
-                      <span className="font-medium">Dependencies:</span> Waiting for {req.dependencies.length} other approvals
-                    </div>
-                  )}
-                </div>
-
-                {/* Action Items for this Approval */}
-                <div className="bg-blue-50 p-3 rounded text-xs">
-                  <div className="font-medium text-blue-800 mb-1">Reviewer Actions Available:</div>
-                  <div className="text-blue-700 space-y-1">
-                    <div>• ✅ <strong>Approve</strong> - Move to next stage</div>
-                    <div>• 🔄 <strong>Request Revision</strong> - Send back with specific feedback</div>
-                    <div>• ❌ <strong>Reject</strong> - Decline deal with explanation</div>
-                    <div>• 💬 <strong>Add Comments</strong> - Provide feedback without blocking</div>
-                  </div>
-                </div>
+                <Badge className={getStatusColor(stage.status)}>
+                  {stage.status.replace('_', ' ')}
+                </Badge>
               </div>
             ))}
+          </div>
+        ) : (
+          /* Detailed View - Full workflow breakdown */
+          <div className="space-y-4">
+            {pipelineStatus.stages.map((stage, stageIndex) => {
+              const stageRequirements = approvalRequirements.filter(req => req.stage === stage.stage);
+              
+              return (
+                <div key={stage.stage} className="border rounded-lg overflow-hidden">
+                  {/* Stage Header */}
+                  <div className="bg-slate-100 p-3 border-b">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {getStageIcon(stage.stage, stage.status)}
+                        <div>
+                          <div className="font-medium capitalize">
+                            Stage {stageIndex + 1}: {stage.stage.replace('_', ' ')}
+                          </div>
+                          <div className="text-sm text-slate-600">
+                            {stage.completedCount}/{stage.totalCount} reviewers • {stage.progress}% complete
+                          </div>
+                        </div>
+                      </div>
+                      <Badge className={getStatusColor(stage.status)}>
+                        {stage.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Stage Requirements */}
+                  <div className="p-3 space-y-3">
+                    {stageRequirements.map((req) => (
+                      <div key={req.id} className="p-3 bg-white border rounded space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium text-sm">
+                              {departmentConfig[req.department].name}
+                            </div>
+                            {getDepartmentBadge(req.department)}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {req.estimatedTime}
+                          </div>
+                        </div>
+
+                        {/* What they review */}
+                        <div className="text-xs text-slate-600">
+                          <strong>Reviews:</strong> {departmentConfig[req.department].description}
+                        </div>
+
+                        {/* Key process points */}
+                        <div className="bg-slate-50 p-2 rounded text-xs">
+                          {getApprovalProcessDetails(req.stage, req.department)}
+                        </div>
+
+                        {/* Dependencies */}
+                        {req.dependencies.length > 0 && (
+                          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                            ⏳ Waiting for {req.dependencies.length} prerequisite approval{req.dependencies.length > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Reviewer Actions Reference */}
+            <div className="bg-blue-50 p-3 rounded border border-blue-200">
+              <div className="font-medium text-blue-800 mb-2 text-sm">Available Reviewer Actions:</div>
+              <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                <div>✅ <strong>Approve</strong> - Move to next stage</div>
+                <div>🔄 <strong>Request Revision</strong> - Send back with feedback</div>
+                <div>❌ <strong>Reject</strong> - Decline with explanation</div>
+                <div>💬 <strong>Add Comments</strong> - Provide insights</div>
+              </div>
+            </div>
           </div>
         )}
 

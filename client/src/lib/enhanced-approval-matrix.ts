@@ -187,26 +187,21 @@ export function generateApprovalRequirements(
   const requiredDepartments = determineRequiredDepartments(dealTiers, dealIncentives);
   const finalApprover = determineFinalApproverLevel(totalValue, dealType, salesChannel);
   
-  // Stage 1: Incentive Reviews (can run in parallel)
-  requiredDepartments.forEach((dept, index) => {
-    if (dept !== 'trading') { // Trading is for margin review
-      requirements.push({
-        id: `${dealId}-incentive-${dept}`,
-        dealId,
-        stage: 'incentive_review',
-        department: dept,
-        status: 'pending',
-        requiredFor: departmentConfig[dept].incentiveTypes,
-        estimatedTime: '1-2 business days',
-        canRunParallel: true,
-        dependencies: [],
-        createdAt: new Date()
-      });
-    }
+  // Stage 1: Incentive Reviews (can run in parallel) - Only Finance for now
+  requirements.push({
+    id: `${dealId}-incentive-finance`,
+    dealId,
+    stage: 'incentive_review',
+    department: 'finance',
+    status: 'pending',
+    requiredFor: departmentConfig.finance.incentiveTypes,
+    estimatedTime: '1-2 business days',
+    canRunParallel: true,
+    dependencies: [],
+    createdAt: new Date()
   });
   
   // Stage 2: Margin Review (depends on incentive completion)
-  const incentiveIds = requirements.map(req => req.id);
   requirements.push({
     id: `${dealId}-margin-trading`,
     dealId,
@@ -216,22 +211,21 @@ export function generateApprovalRequirements(
     requiredFor: ['margin_validation', 'trading_viability'],
     estimatedTime: '1-2 business days',
     canRunParallel: false,
-    dependencies: incentiveIds,
+    dependencies: [`${dealId}-incentive-finance`],
     createdAt: new Date()
   });
   
   // Stage 3: Final Review (depends on all previous stages)
-  const allPreviousIds = requirements.map(req => req.id);
   requirements.push({
     id: `${dealId}-final-${finalApprover.toLowerCase()}`,
     dealId,
     stage: 'final_review',
-    department: 'finance', // Placeholder - will be assigned to MD/Executive
+    department: 'finance', // Represents MD/Executive approval
     status: 'pending',
     requiredFor: ['final_approval'],
     estimatedTime: finalApprover === 'MD' ? '1-2 business days' : '3-5 business days',
     canRunParallel: false,
-    dependencies: allPreviousIds,
+    dependencies: [`${dealId}-incentive-finance`, `${dealId}-margin-trading`],
     createdAt: new Date()
   });
   
