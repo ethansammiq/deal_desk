@@ -129,8 +129,8 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
     }
   }
   
-  // Legal actions
-  if (userRole === 'legal') {
+  // Legal actions (now handled by department_reviewer with legal department)
+  if (userRole === 'department_reviewer' && userDepartment === 'legal') {
     if (deal.status === 'contract_drafting') {
       return {
         type: 'legal_approve',
@@ -678,11 +678,14 @@ export default function UnifiedDashboard() {
                   <p className="text-gray-500">No pending approvals for your department.</p>
                 </div>
               }
-              emptyCheck={(data) => data.length === 0}
+              emptyCheck={(data) => !Array.isArray(data) || data.length === 0}
             >
-              {(approvals) => (
+              {(approvals) => {
+                // Ensure approvals is an array
+                const approvalsArray = Array.isArray(approvals) ? approvals : [];
+                return (
                 <div className="space-y-3">
-                  {approvals.slice(0, 5).map((approval: any) => (
+                  {approvalsArray.slice(0, 5).map((approval: any) => (
                     <div key={approval.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1">
                         <h4 className="font-medium">Deal #{approval.dealId}</h4>
@@ -702,15 +705,16 @@ export default function UnifiedDashboard() {
                       </Button>
                     </div>
                   ))}
-                  {approvals.length > 5 && (
+                  {approvalsArray.length > 5 && (
                     <div className="text-center pt-2">
                       <p className="text-sm text-gray-500">
-                        +{approvals.length - 5} more approvals pending
+                        +{approvalsArray.length - 5} more approvals pending
                       </p>
                     </div>
                   )}
                 </div>
-              )}
+                );
+              }}
             </QueryStateHandler>
           </CardContent>
         </Card>
