@@ -21,6 +21,12 @@ This project is a comprehensive deal desk application designed to streamline com
 - **React Hook Form + Zod**: For robust form validation and schema definition.
 - **Shadcn/UI**: Component library for standardized UI elements.
 
+### Recent Updates (Phase 1 Foundation - August 2025)
+- **Enhanced Loss Tracking**: Comprehensive categorization system with 10 loss reasons, competitor tracking, and analytics
+- **Streamlined Approval Pipeline**: Simplified from 3-stage to 2-stage system (parallel department review + business approval)
+- **Complete User Management**: Admin panel for role/department assignment, role testing interface with department_reviewer support
+- **Role-Based Navigation**: Conditional access to admin features and testing tools based on user permissions
+
 ### Technical Implementation & Design
 The application features an Express.js backend with an in-memory storage solution, defining RESTful API endpoints for deal management. The frontend employs a component-based design with extensive use of reusable components and custom React hooks for encapsulating business logic. UI/UX decisions emphasize consistency through standardized form components, a clear functional layout, and consistent styling across all financial sections.
 

@@ -43,6 +43,13 @@ export function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcherProps) {
     if (onRoleChange) {
       onRoleChange(selectedRole, selectedDepartment);
     }
+    
+    // Update localStorage for demo role switching
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('demo_user_role', selectedRole);
+      // Refresh the page to apply the role change
+      window.location.reload();
+    }
   };
 
   const requiresDepartment = selectedRole === 'department_reviewer';

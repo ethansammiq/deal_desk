@@ -1222,7 +1222,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           role: "seller",
           firstName: "John",
           lastName: "Seller",
-          department: "Sales"
+          department: null
         },
         approver: {
           id: 2,
@@ -1231,30 +1231,39 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           role: "approver",
           firstName: "Sarah",
           lastName: "Chen",
-          department: "Revenue Operations"
+          department: null
+        },
+        department_reviewer: {
+          id: 3,
+          username: "trading_reviewer",
+          email: "trading@company.com",
+          role: "department_reviewer",
+          firstName: "Trading",
+          lastName: "Reviewer",
+          department: "trading"
         },
         legal: {
-          id: 3,
+          id: 4,
           username: "demo_legal",
           email: "legal@company.com",
           role: "legal",
           firstName: "Mike",
           lastName: "Johnson",
-          department: "Legal"
+          department: null
         },
         admin: {
-          id: 4,
+          id: 5,
           username: "demo_admin",
           email: "admin@company.com",
           role: "admin",
           firstName: "Alex",
           lastName: "Administrator",
-          department: "IT & Operations"
+          department: null
         }
       };
       
       // Return the requested role or default to seller
-      const selectedRole = ["seller", "approver", "legal", "admin"].includes(demoRole) ? demoRole : "seller";
+      const selectedRole = ["seller", "approver", "department_reviewer", "legal", "admin"].includes(demoRole) ? demoRole : "seller";
       res.status(200).json(roleConfigs[selectedRole as keyof typeof roleConfigs]);
     } catch (error) {
       console.error("Error fetching current user:", error);
