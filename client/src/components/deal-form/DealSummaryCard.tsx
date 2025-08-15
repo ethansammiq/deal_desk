@@ -80,30 +80,8 @@ export function DealSummaryCard({ formValues, dealStructureType, contractTerm }:
           </div>
         </div>
 
-        {/* Business Context Section */}
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Business Context</h4>
-          <div className="space-y-3">
-            {formValues.growthOpportunityMIQ && (
-              <div>
-                <label className="text-sm font-medium text-gray-700">Growth Opportunity (MIQ)</label>
-                <p className="text-base">{formValues.growthOpportunityMIQ}</p>
-              </div>
-            )}
-            {formValues.growthOpportunityClient && (
-              <div>
-                <label className="text-sm font-medium text-gray-700">Growth Opportunity (Client)</label>
-                <p className="text-base">{formValues.growthOpportunityClient}</p>
-              </div>
-            )}
-            {formValues.clientAsks && (
-              <div>
-                <label className="text-sm font-medium text-gray-700">Client Requirements</label>
-                <p className="text-base">{formValues.clientAsks}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Business Context Section - REMOVED per user request 
+            This section will be replaced by Business Summary logic */}
       </CardContent>
     </Card>
   );
