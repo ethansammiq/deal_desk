@@ -372,7 +372,8 @@ export default function SubmitDeal() {
             setDealTiers(tierData);
           }
         } catch (tierError) {
-          console.warn('No tier data found for draft:', tierError);
+          console.warn('No tier data found for draft, using empty array');
+          setDealTiers([]); // Set empty array if no tier data
         }
       }
     } catch (error) {
@@ -683,22 +684,18 @@ export default function SubmitDeal() {
 
   // Draft saving mutation with business rules
   const saveDraftMutation = useMutation({
-    mutationFn: async ({ name, description, formData, step, draftId, dealTiers }: { 
+    mutationFn: async ({ name, description, formData, step, draftId }: { 
       name: string; 
       description?: string; 
       formData: any;
       step: number;
       draftId?: number;
-      dealTiers?: any[];
     }) => {
       // Business Rule: One draft per advertiser/agency per seller account
       const requestData = {
         name,
         description,
-        formData: {
-          ...formData,
-          dealTiers: dealTiers // Include tier data in formData
-        },
+        formData,
         currentStep: step,
         advertiserName: formData.advertiserName,
         agencyName: formData.agencyName,
@@ -922,10 +919,12 @@ export default function SubmitDeal() {
             await saveDraftMutation.mutateAsync({
               name: autoName,
               description: `Draft saved from ${getTabLabel(activeTab, SUBMIT_DEAL_TABS)}`,
-              formData: form.getValues(),
+              formData: {
+                ...form.getValues(),
+                dealTiers: dealTiers // Include tier data in formData
+              },
               step: currentTabIndex >= 0 ? currentTabIndex : 0,
-              draftId: draftId ? parseInt(draftId) : undefined, // Pass draftId for updates
-              dealTiers: dealTiers // Include tier data
+              draftId: draftId ? parseInt(draftId) : undefined // Pass draftId for updates
             });
           }}
           disabled={saveDraftMutation.isPending}

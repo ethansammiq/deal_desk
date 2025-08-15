@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (draftId && !isNaN(parseInt(draftId))) {
         const existingDraft = await storage.getDeal(parseInt(draftId));
         if (existingDraft && existingDraft.status === 'draft') {
-          // Update existing draft instead of creating new one
+          // Update existing draft using the updateDeal method
           const updatedDraftData = {
             ...formData,
             dealName: name,
@@ -323,6 +323,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1,
             annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0,
+            // Include tier data if provided
+            dealTiers: formData.dealTiers || [],
             status: "draft" as const,
             isDraft: true,
             draftType: "submission_draft",
@@ -416,6 +418,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting draft:", error);
       res.status(500).json({ message: "Failed to delete draft" });
+    }
+  });
+
+  // Add endpoint to fetch tier data for a specific deal
+  router.get("/deals/:id/tiers", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Return empty array since dealTiers isn't part of the schema yet
+      // This is a temporary fix until schema is updated
+      res.status(200).json([]);
+    } catch (error) {
+      console.error("Error fetching tier data:", error);
+      res.status(500).json({ message: "Failed to fetch tier data" });
     }
   });
   

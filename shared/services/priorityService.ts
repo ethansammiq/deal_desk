@@ -124,8 +124,8 @@ export const getActionTypeAndLabel = (deal: Deal, userRole: UserRole): { actionT
 export const calculatePriorityItems = (deals: Deal[], userRole: UserRole): PriorityItem[] => {
   const items: PriorityItem[] = [];
 
-  // Add regular priority deals
-  deals.filter(deal => needsAttention(deal, userRole)).forEach(deal => {
+  // Add regular priority deals (excluding drafts to prevent duplicates)
+  deals.filter(deal => needsAttention(deal, userRole) && deal.status !== 'draft').forEach(deal => {
     const daysInStatus = getDaysInCurrentStatus(deal);
     const urgencyLevel = calculateUrgency(deal, daysInStatus);
     const { actionType, actionLabel } = getActionTypeAndLabel(deal, userRole);
@@ -143,19 +143,23 @@ export const calculatePriorityItems = (deals: Deal[], userRole: UserRole): Prior
     });
   });
 
-  // Phase 8B: Add drafts to Priority Actions for sellers only
-  if (userRole === 'seller') {
+  // Add drafts separately with proper deduplication - for sellers and admins only
+  if (userRole === 'seller' || userRole === 'admin') {
     const drafts = deals.filter(deal => deal.status === 'draft');
     drafts.forEach(deal => {
+      const daysInStatus = getDaysInCurrentStatus(deal);
+      // Use 'low' urgency for drafts since they're not time-critical
+      const urgencyLevel = 'low' as const;
+      
       items.push({
         id: `draft-${deal.id}`,
         deal,
-        title: `Resume Draft: ${deal.advertiserName || deal.agencyName || 'New Client'}`,
+        title: `Resume Draft: ${deal.dealName || deal.advertiserName || deal.agencyName || 'New Client'}`,
         description: `Continue working on draft deal for ${deal.advertiserName || deal.agencyName || 'client'}.`,
-        urgencyLevel: 'medium' as const,
-        actionLabel: 'Continue Draft',
-        actionType: 'draft' as const,
-        daysOverdue: 0
+        urgencyLevel,
+        actionLabel: 'Resume Draft',
+        actionType: 'resume_draft' as const,
+        daysOverdue: daysInStatus
       });
     });
   }
