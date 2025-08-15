@@ -1213,6 +1213,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Phase 7B: Mock current user with role switching support
       // Check for role override in query params (for demo role switching)
       const demoRole = req.query.role as string || "seller";
+      const demoDepartment = req.query.department as string || "trading";
       
       const roleConfigs = {
         seller: {
@@ -1222,7 +1223,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           role: "seller",
           firstName: "John",
           lastName: "Seller",
-          department: null
+          department: "sales"
         },
         approver: {
           id: 2,
@@ -1231,39 +1232,30 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           role: "approver",
           firstName: "Sarah",
           lastName: "Chen",
-          department: null
+          department: "operations"
         },
         department_reviewer: {
           id: 3,
-          username: "trading_reviewer",
-          email: "trading@company.com",
+          username: `${demoDepartment}_reviewer`,
+          email: `${demoDepartment}@company.com`,
           role: "department_reviewer",
-          firstName: "Trading",
+          firstName: demoDepartment.charAt(0).toUpperCase() + demoDepartment.slice(1),
           lastName: "Reviewer",
-          department: "trading"
-        },
-        legal: {
-          id: 4,
-          username: "demo_legal",
-          email: "legal@company.com",
-          role: "legal",
-          firstName: "Mike",
-          lastName: "Johnson",
-          department: null
+          department: demoDepartment
         },
         admin: {
-          id: 5,
+          id: 4,
           username: "demo_admin",
           email: "admin@company.com",
           role: "admin",
           firstName: "Alex",
           lastName: "Administrator",
-          department: null
+          department: "it"
         }
       };
       
       // Return the requested role or default to seller
-      const selectedRole = ["seller", "approver", "department_reviewer", "legal", "admin"].includes(demoRole) ? demoRole : "seller";
+      const selectedRole = ["seller", "approver", "department_reviewer", "admin"].includes(demoRole) ? demoRole : "seller";
       res.status(200).json(roleConfigs[selectedRole as keyof typeof roleConfigs]);
     } catch (error) {
       console.error("Error fetching current user:", error);

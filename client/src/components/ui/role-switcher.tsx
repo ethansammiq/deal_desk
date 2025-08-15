@@ -95,6 +95,11 @@ export function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcherProps) {
               ))}
             </SelectContent>
           </Select>
+          {selectedDepartment && (
+            <div className="text-xs text-gray-500">
+              {selectedDepartment === 'legal' ? 'Legal department reviewers get special legal permissions' : 'Technical review for your department'}
+            </div>
+          )}
         </div>
       )}
 
