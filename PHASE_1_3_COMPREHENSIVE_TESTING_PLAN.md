@@ -35,12 +35,38 @@ TC1.1.3 - Role-Based Draft Filtering
 • Test Admin sees all drafts regardless of type
 ```
 
-### 1.2 **11-Status Workflow Progression**
+### 1.2 **Enhanced Incentive Management**
+**Test Objective**: Validate incentive editing and display functionality
+
+**Test Cases**:
+```
+TC1.2.1 - Incentive Table Display
+• Navigate to Step 3 of Submit Deal form
+• Add incentives using the "Add Incentive" button
+• Verify proper display names show (e.g., "Product & Innovation" not "product-innovation")
+• Confirm category and subcategory names resolve correctly
+• Test incentive values display in proper currency format
+
+TC1.2.2 - Incentive Edit Functionality
+• Click Edit button in Actions column of incentive table
+• Verify inline editing mode activates with input fields
+• Test value modification across multiple tiers
+• Confirm Save/Cancel buttons appear and function properly
+• Validate changes persist after saving
+
+TC1.2.3 - Action Button Positioning
+• Verify Edit and Delete buttons are centered in Actions column
+• Test button tooltips display correctly ("Edit incentive values", "Remove incentive")
+• Confirm button state transitions (Edit/Delete → Save/Cancel → Edit/Delete)
+• Test responsive behavior on different screen sizes
+```
+
+### 1.3 **11-Status Workflow Progression**
 **Test Objective**: Validate complete status transition flow
 
 **Test Cases**:
 ```
-TC1.2.1 - Linear Progression Path (Happy Path)
+TC1.3.1 - Linear Progression Path (Happy Path)
 Draft → Scoping → Submitted → Under Review → Negotiating → 
 Approved → Contract Drafting → Client Review → Signed
 
@@ -49,14 +75,14 @@ Approved → Contract Drafting → Client Review → Signed
 • Confirm timestamps track each progression
 • Validate dashboard priority ordering
 
-TC1.2.2 - Revision Cycle Path
+TC1.3.2 - Revision Cycle Path
 Under Review → Revision Requested → Under Review (resubmit)
 • Test revision counter increments
 • Verify revision badges show count
 • Confirm revision timestamps update
 • Test multiple revision cycles
 
-TC1.2.3 - Loss Path Testing
+TC1.3.3 - Loss Path Testing
 Any Status → Lost
 • Test loss from each workflow stage
 • Verify proper termination handling
@@ -64,34 +90,35 @@ Any Status → Lost
 • Test loss reason capture if implemented
 ```
 
-### 1.3 **Role-Based Permissions**
+### 1.4 **Role-Based Permissions**
 **Test Objective**: Validate permission matrix enforcement
 
 **Test Cases**:
 ```
-TC1.3.1 - Seller Permissions
+TC1.4.1 - Seller Permissions
 • Can create/edit drafts and scoping deals
+• Can edit incentive values in deal forms
 • Can resubmit revision_requested deals
 • Cannot approve, negotiate, or handle legal tasks
 • Verify dashboard shows only relevant deals
 
-TC1.3.2 - Approver Permissions  
-• Can review submitted deals
+TC1.4.2 - Approver Permissions  
+• Can review submitted deals with all incentive details
 • Can request revisions with feedback
 • Can approve deals for legal processing
-• Cannot edit deal content or handle contracts
+• Cannot edit deal content or incentive structures
 
-TC1.3.3 - Legal Permissions
+TC1.4.3 - Legal Permissions
 • Can handle approved deals only
+• Can view incentive configurations for contract terms
 • Can draft contracts and send for review
-• Cannot edit deal financial terms
-• Limited to contract workflow stages
+• Cannot edit deal financial terms or incentives
 
-TC1.3.4 - Admin Permissions
+TC1.4.4 - Admin Permissions
 • Full access to all deals and statuses
+• Can edit any incentive configuration
 • Can override any permission restriction
-• Can perform any status transition
-• Sees complete system overview
+• Sees complete system overview including all incentive details
 ```
 
 ---
@@ -369,7 +396,9 @@ TC6.1.1 - Legacy Deal Handling
 TC6.1.2 - Form and Validation Consistency
 • Test all existing form validations
 • Verify tier management still functional
-• Confirm incentive calculations accurate
+• Confirm incentive calculations accurate with edited values
+• Test incentive edit/delete functionality doesn't break calculations
+• Validate display name resolution for all incentive categories
 • Test client/agency data handling
 ```
 
@@ -409,6 +438,8 @@ TC6.2.2 - Real-time Update Performance
 - **Error Reduction**: 60% fewer status transition errors
 - **Collaboration Improvement**: 50% increase in team communication
 - **Process Visibility**: 100% audit trail coverage for all deals
+- **Incentive Management**: 95% accuracy in display name resolution
+- **Edit Functionality**: 100% success rate for incentive value modifications
 
 ### **Risk Mitigation**
 - **Data Backup**: Complete system backup before testing
