@@ -244,7 +244,7 @@ export function ApprovalWorkflowDashboard({
         </TabsList>
 
         <TabsContent value="stages" className="space-y-4">
-          {Object.entries((approvalStatus as any)?.stageGroups || {}).map(([stage, stageApprovals]: [string, any[]]) => (
+          {Object.entries((approvalStatus as any)?.stageGroups || {}).map(([stage, stageApprovals]) => (
             <Card key={stage}>
               <CardHeader>
                 <CardTitle className="text-lg">
@@ -262,7 +262,7 @@ export function ApprovalWorkflowDashboard({
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3">
-                  {stageApprovals.map((approval: any) => (
+                  {(stageApprovals as any[] || []).map((approval: any) => (
                     <div key={approval.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(approval.status)}
