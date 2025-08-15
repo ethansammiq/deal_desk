@@ -51,6 +51,12 @@ export function getCurrentUser(): CurrentUser {
     demoRole = (localStorage.getItem('demo_user_role') as UserRole) || "seller";
   }
   
+  // Get demo department from localStorage for department_reviewer role
+  let demoDepartment: string | null = null;
+  if (typeof window !== 'undefined' && window.localStorage) {
+    demoDepartment = localStorage.getItem('demo_user_department');
+  }
+
   const roleConfigs = {
     seller: {
       id: 1,
@@ -59,7 +65,7 @@ export function getCurrentUser(): CurrentUser {
       role: "seller" as UserRole,
       firstName: "John",
       lastName: "Seller",
-      department: "Sales"
+      department: "sales"
     },
     approver: {
       id: 2,
@@ -68,16 +74,16 @@ export function getCurrentUser(): CurrentUser {
       role: "approver" as UserRole,
       firstName: "Sarah",
       lastName: "Chen",
-      department: "Revenue Operations"
+      department: "operations"
     },
-    legal: {
+    department_reviewer: {
       id: 3,
-      username: "demo_legal",
-      email: "legal@company.com",
-      role: "legal" as UserRole,
+      username: "demo_dept_reviewer",
+      email: "dept.reviewer@company.com",
+      role: "department_reviewer" as UserRole,
       firstName: "Mike",
       lastName: "Johnson",
-      department: "Legal"
+      department: demoDepartment || "trading"
     },
     admin: {
       id: 4,
@@ -86,7 +92,7 @@ export function getCurrentUser(): CurrentUser {
       role: "admin" as UserRole,
       firstName: "Alex",
       lastName: "Administrator", 
-      department: "IT & Operations"
+      department: "it"
     }
   };
   
@@ -106,7 +112,7 @@ export function getRoleDisplayName(role: UserRole): string {
   const roleNames = {
     seller: "Sales Representative",
     approver: "Deal Approver",
-    legal: "Legal Team",
+    department_reviewer: "Department Reviewer",
     admin: "System Administrator"
   };
   return roleNames[role];

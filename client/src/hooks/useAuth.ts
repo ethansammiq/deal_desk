@@ -57,7 +57,7 @@ export function useUpdateUserRole() {
 
 // Phase 7B: Permission checking hooks
 export function useUserPermissions() {
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, isLoading } = useCurrentUser();
   
   const checkPermission = (permission: string) => {
     if (!currentUser) return false;
@@ -66,6 +66,20 @@ export function useUserPermissions() {
 
   // Handle special case for legal department reviewers
   const hasLegalAccess = currentUser?.role === 'department_reviewer' && currentUser?.department === 'legal';
+
+  // Return default false values when loading or no user
+  if (isLoading || !currentUser) {
+    return {
+      currentUser: null,
+      canCreateDeals: false,
+      canViewAllDeals: false,
+      canEditDeals: false,
+      canApproveDeals: false,
+      canAccessLegalReview: false,
+      canManageContracts: false,
+      checkPermission: () => false,
+    };
+  }
 
   const canCreateDeals = checkPermission("canCreateDeals");
   const canViewAllDeals = checkPermission("canViewAllDeals");

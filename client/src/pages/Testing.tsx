@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { RoleSwitcher } from "@/components/ui/role-switcher";
 import { PermissionComparison } from "@/components/ui/permission-comparison";
-import { useCurrentUser, useUserPermissions } from "@/hooks/useAuth";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { useUserPermissions } from "@/hooks/usePermissions";
 import { useAllowedTransitions } from "@/hooks/useAllowedTransitions";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useDealConversion } from "@/hooks/useDealConversion";
@@ -81,7 +82,8 @@ const testScenarios: TestScenario[] = [
     dealId: 5,
     dealStatus: "legal_review",
     expectedAction: "Legal Review",
-    userRole: "legal"
+    userRole: "department_reviewer",
+    department: "legal"
   },
   {
     id: "legal-contract",
@@ -90,7 +92,8 @@ const testScenarios: TestScenario[] = [
     dealId: 6,
     dealStatus: "approved",
     expectedAction: "Send Contract",
-    userRole: "legal"
+    userRole: "department_reviewer",
+    department: "legal"
   }
 ];
 
@@ -99,8 +102,7 @@ export default function Testing() {
   const [activeTest, setActiveTest] = useState<string | null>(null);
   
   const { data: currentUser } = useCurrentUser();
-  const permissions = useUserPermissions();
-  const { canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = permissions || {};
+  const { canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = useUserPermissions();
   
   const { data: deals = [] } = useQuery({
     queryKey: ["/api/deals"],
