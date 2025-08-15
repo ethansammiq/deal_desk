@@ -48,7 +48,7 @@ export function ApprovalWorkflowDashboard({
   });
 
   // Fetch approval departments
-  const { data: departments } = useQuery({
+  const { data: departments = [] } = useQuery({
     queryKey: ['/api/approval-departments']
   });
 
@@ -143,7 +143,7 @@ export function ApprovalWorkflowDashboard({
   };
 
   const getDepartmentDisplayName = (departmentName: string) => {
-    const dept = departments?.find((d: any) => d.departmentName === departmentName);
+    const dept = Array.isArray(departments) ? departments.find((d: any) => d.departmentName === departmentName) : null;
     return dept?.displayName || departmentName.charAt(0).toUpperCase() + departmentName.slice(1);
   };
 
@@ -169,7 +169,7 @@ export function ApprovalWorkflowDashboard({
     );
   }
 
-  if (!approvalStatus || !approvalStatus.approvals.length) {
+  if (!approvalStatus || !approvalStatus.approvals || !approvalStatus.approvals.length) {
     return (
       <Card>
         <CardHeader>
@@ -245,7 +245,7 @@ export function ApprovalWorkflowDashboard({
         </TabsList>
 
         <TabsContent value="stages" className="space-y-4">
-          {Object.entries(approvalStatus.stageGroups).map(([stage, stageApprovals]: [string, any[]]) => (
+          {Object.entries(approvalStatus.stageGroups || {}).map(([stage, stageApprovals]: [string, any[]]) => (
             <Card key={stage}>
               <CardHeader>
                 <CardTitle className="text-lg">
@@ -304,7 +304,7 @@ export function ApprovalWorkflowDashboard({
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
-          {approvalStatus.pendingApprovals.map((approval: any) => (
+          {(approvalStatus.pendingApprovals || []).map((approval: any) => (
             <Card key={approval.id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -339,7 +339,7 @@ export function ApprovalWorkflowDashboard({
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
-          {approvalStatus.approvals
+          {(approvalStatus.approvals || [])
             .filter((a: any) => a.status !== 'pending')
             .map((approval: any) => (
               <Card key={approval.id}>

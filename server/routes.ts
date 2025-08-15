@@ -14,6 +14,7 @@ import {
   type DepartmentType,
   insertUserSchema
 } from "@shared/schema";
+import { fromZodError } from "zod-validation-error";
 import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";

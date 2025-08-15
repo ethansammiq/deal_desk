@@ -157,21 +157,21 @@ export function useApprovalWorkflow(dealId: number) {
 
   // Helper functions
   const getApprovalsByStage = (stage: number) => {
-    return approvals?.filter((approval: any) => approval.approvalStage === stage) || [];
+    return Array.isArray(approvals) ? approvals.filter((approval: any) => approval.approvalStage === stage) : [];
   };
 
   const getPendingApprovals = () => {
-    return approvals?.filter((approval: any) => approval.status === 'pending') || [];
+    return Array.isArray(approvals) ? approvals.filter((approval: any) => approval.status === 'pending') : [];
   };
 
   const getCompletedApprovals = () => {
-    return approvals?.filter((approval: any) => 
+    return Array.isArray(approvals) ? approvals.filter((approval: any) => 
       approval.status === 'approved' || approval.status === 'rejected'
-    ) || [];
+    ) : [];
   };
 
   const getDepartmentDisplayName = (departmentName: string) => {
-    const dept = departments?.find((d: any) => d.departmentName === departmentName);
+    const dept = Array.isArray(departments) ? departments.find((d: any) => d.departmentName === departmentName) : null;
     return dept?.displayName || departmentName.charAt(0).toUpperCase() + departmentName.slice(1);
   };
 
@@ -194,10 +194,10 @@ export function useApprovalWorkflow(dealId: number) {
     if (!approvalStatus) return { percentage: 0, currentStage: 1, isComplete: false };
     
     return {
-      percentage: approvalStatus.progressPercentage,
-      currentStage: approvalStatus.currentStage,
-      isComplete: approvalStatus.isComplete,
-      totalStages: Math.max(...(approvals?.map((a: any) => a.approvalStage) || [1]))
+      percentage: approvalStatus.progressPercentage || 0,
+      currentStage: approvalStatus.currentStage || 1,
+      isComplete: approvalStatus.isComplete || false,
+      totalStages: Math.max(...(Array.isArray(approvals) ? approvals.map((a: any) => a.approvalStage) : [1]))
     };
   };
 
