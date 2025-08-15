@@ -1612,56 +1612,213 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
   });
 
   const httpServer = createServer(app);
-  // Department Queue Dashboard endpoints
+  // Universal Approval Queue - Role-Based Queues for All Users
+  router.get("/approvals/pending", async (req: Request, res: Response) => {
+    try {
+      // Get current user context from query params
+      const userRole = req.query.role as string || "seller";
+      const userDepartment = req.query.department as string;
+      
+      // Fetch all deals to build role-specific queues
+      const allDeals = await storage.getDeals();
+      
+      // Role-specific queue generation
+      const generateRoleQueue = (role: string, department?: string) => {
+        switch (role) {
+          case "seller":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "revision_requested" || 
+                  deal.status === "draft" ||
+                  (deal.status === "submitted" && deal.createdBy === 1) // Mock seller ID
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "deal_action",
+                  title: deal.status === "revision_requested" ? 
+                    `Revision Required: ${deal.dealName}` : 
+                    `Continue Working: ${deal.dealName}`,
+                  description: deal.status === "revision_requested" ? 
+                    deal.revisionReason || "Revision feedback received" :
+                    "Complete deal submission or review progress",
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: deal.status === "revision_requested" ? "urgent" : "normal",
+                  dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: deal.status === "revision_requested" ? "address_revision" : "complete_submission",
+                  isOverdue: false
+                })),
+              queueType: "seller_actions",
+              summary: "Your active deals and revision requests"
+            };
+            
+          case "approver":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "negotiating" || 
+                  deal.status === "pending_approval" ||
+                  deal.status === "under_review"
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "business_approval",
+                  title: `Business Approval: ${deal.dealName}`,
+                  description: `Review deal terms and provide business approval decision`,
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: deal.dealValue > 1000000 ? "high" : "normal",
+                  dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "business_approval",
+                  stage: "Stage 2: Business Approval",
+                  isOverdue: false
+                })),
+              queueType: "business_approvals",
+              summary: "Deals pending your business approval"
+            };
+            
+          case "department_reviewer":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "submitted" || 
+                  deal.status === "under_review"
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "technical_review",
+                  title: `${department?.charAt(0).toUpperCase()}${department?.slice(1)} Review: ${deal.dealName}`,
+                  description: department === 'legal' ? 
+                    "Legal compliance review and contract validation" :
+                    `Technical validation from ${department} perspective`,
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: department === 'legal' ? "high" : "normal",
+                  dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "department_review",
+                  stage: "Stage 1: Technical Review",
+                  department: department,
+                  reviewType: department === 'legal' ? 'legal_compliance' : 'technical_validation',
+                  isOverdue: false
+                })),
+              queueType: "department_reviews",
+              summary: `${department?.charAt(0).toUpperCase()}${department?.slice(1)} department reviews`
+            };
+            
+          case "admin":
+            const allItems = [
+              ...allDeals
+                .filter(deal => deal.status === "submitted")
+                .map(deal => ({
+                  id: deal.id,
+                  type: "system_oversight",
+                  title: `System Review: ${deal.dealName}`,
+                  description: "Administrative oversight and system monitoring",
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: "normal",
+                  dueDate: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "system_review",
+                  isOverdue: false
+                }))
+            ];
+            
+            return {
+              items: allItems,
+              queueType: "admin_oversight",
+              summary: "System administration and oversight tasks"
+            };
+            
+          default:
+            return {
+              items: [],
+              queueType: "empty",
+              summary: "No pending items"
+            };
+        }
+      };
+      
+      const queueData = generateRoleQueue(userRole, userDepartment);
+      
+      // Calculate metrics
+      const metrics = {
+        totalPending: queueData.items.length,
+        urgentTasks: queueData.items.filter(item => item.priority === "urgent").length,
+        highPriorityTasks: queueData.items.filter(item => item.priority === "high").length,
+        overdueTasks: queueData.items.filter(item => item.isOverdue).length,
+        avgDealValue: queueData.items.length > 0 ? 
+          queueData.items.reduce((sum, item) => sum + (item.dealValue || 0), 0) / queueData.items.length : 0,
+        completedToday: Math.floor(Math.random() * 5), // Mock data
+        currentLoad: Math.min(100, (queueData.items.length / 10) * 100) // Mock capacity calculation
+      };
+      
+      res.status(200).json({
+        ...queueData,
+        metrics,
+        userContext: {
+          role: userRole,
+          department: userDepartment,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error fetching pending approvals:", error);
+      res.status(500).json({ message: "Failed to fetch pending approvals" });
+    }
+  });
+
+  // Department Queue Dashboard endpoints (Enhanced)
   router.get("/department-queue/:department", async (req: Request, res: Response) => {
     try {
       const { department } = req.params;
       
-      // Mock implementation - in production, this would query actual approval data
-      const mockQueueData = {
-        items: [
-          {
-            id: 1,
-            dealId: 1,
-            dealName: "Tesla Growth Campaign",
-            clientName: "Tesla Inc.",
-            priority: "high",
-            dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
-            assignedTo: 1,
-            assignedToName: "John Smith",
-            dealValue: 2500000,
-            stage: 1,
-            isOverdue: false,
-            daysSinceCreated: 1
-          },
-          {
-            id: 2,
-            dealId: 2,
-            dealName: "Netflix Brand Partnership",
-            clientName: "Netflix",
-            priority: "urgent",
-            dueDate: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour overdue
-            createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 48 hours ago
-            assignedTo: 2,
-            assignedToName: "Sarah Johnson",
-            dealValue: 5000000,
-            stage: 2,
-            isOverdue: true,
-            daysSinceCreated: 2
-          }
-        ],
+      // Enhanced queue data with real deal integration
+      const allDeals = await storage.getDeals();
+      const departmentDeals = allDeals.filter(deal => 
+        deal.status === "submitted" || deal.status === "under_review"
+      );
+      
+      const queueData = {
+        items: departmentDeals.map((deal, index) => ({
+          id: deal.id,
+          dealId: deal.id,
+          dealName: deal.dealName,
+          clientName: deal.clientName,
+          priority: department === 'legal' ? "high" : index % 3 === 0 ? "urgent" : "normal",
+          dueDate: new Date(Date.now() + ((index + 1) * 12 * 60 * 60 * 1000)).toISOString(),
+          createdAt: deal.createdAt,
+          assignedTo: index + 1,
+          assignedToName: `${department.charAt(0).toUpperCase()}${department.slice(1)} Reviewer`,
+          dealValue: deal.dealValue,
+          stage: 1,
+          isOverdue: index > 5, // Mock some overdue items
+          daysSinceCreated: Math.floor((Date.now() - new Date(deal.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+        })),
         metrics: {
-          totalPending: 15,
-          overdueTasks: 3,
-          avgProcessingTime: 6.5,
-          completedToday: 8,
+          totalPending: departmentDeals.length,
+          overdueTasks: Math.floor(departmentDeals.length * 0.2),
+          avgProcessingTime: department === 'legal' ? 8.5 : 5.2,
+          completedToday: Math.floor(Math.random() * 5),
           departmentCapacity: 20,
-          currentLoad: 75
+          currentLoad: Math.min(100, (departmentDeals.length / 15) * 100)
         }
       };
       
-      res.json(mockQueueData);
+      res.json(queueData);
     } catch (error) {
       console.error("Error fetching department queue:", error);
       res.status(500).json({ message: "Failed to fetch department queue" });

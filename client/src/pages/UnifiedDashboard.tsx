@@ -14,6 +14,7 @@ import { useDealActions } from "@/hooks/useDealActions";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
 import { PriorityBanner } from "@/components/dashboard/PriorityBanner";
 import { useApprovalWorkflow } from "@/hooks/useApprovalWorkflow";
+import { UniversalApprovalQueue } from "@/components/approval/UniversalApprovalQueue";
 import { 
   BarChart3, 
   CheckCircle,
@@ -655,6 +656,9 @@ export default function UnifiedDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Universal Approval Queue - Available for All Roles */}
+      <UniversalApprovalQueue />
 
       {/* Department Reviewer Approval Queue */}
       {userRole === 'department_reviewer' && userDepartment && (
