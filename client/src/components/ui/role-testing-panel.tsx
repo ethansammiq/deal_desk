@@ -119,50 +119,7 @@ export function RoleTestingPanel() {
                   }}
                 />
               </CardContent>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <UserRoleBadge role={currentUser.role} />
-                  <div>
-                    <p className="font-medium">{currentUser.firstName} {currentUser.lastName}</p>
-                    <p className="text-sm text-muted-foreground">{currentUser.department}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={canCreateDeals ? "default" : "secondary"} className="text-xs">
-                      {canCreateDeals ? "✓" : "✗"}
-                    </Badge>
-                    <span>Create Deals</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={canViewAllDeals ? "default" : "secondary"} className="text-xs">
-                      {canViewAllDeals ? "✓" : "✗"}
-                    </Badge>
-                    <span>View All Deals</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={canApproveDeals ? "default" : "secondary"} className="text-xs">
-                      {canApproveDeals ? "✓" : "✗"}
-                    </Badge>
-                    <span>Approve Deals</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={canAccessLegalReview ? "default" : "secondary"} className="text-xs">
-                      {canAccessLegalReview ? "✓" : "✗"}
-                    </Badge>
-                    <span>Legal Review</span>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
-
-            <RoleSwitcher 
-              currentRole={currentUser.role}
-              onRoleChange={(newRole) => {
-                console.log("Role will switch to:", newRole);
-              }}
-            />
           </div>
         </TabsContent>
 
