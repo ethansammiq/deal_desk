@@ -68,7 +68,7 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
   onSendContract: (dealId: number) => void;
   onRequestRevision: (dealId: number) => void;
   onView: (dealId: number) => void;
-}): DealAction => {
+}, userDepartment?: string): DealAction => {
   const { onConvert, onNudge, onApprove, onLegalApprove, onSendContract, onRequestRevision, onView } = handlers;
 
   // Seller actions
@@ -510,7 +510,7 @@ export default function UnifiedDashboard() {
           onSendContract: handleSendContract,
           onRequestRevision: handleRequestRevision,
           onView: handleView,
-        });
+        }, userDepartment);
 
         if (!action.visible) return null;
 
