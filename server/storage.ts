@@ -7,6 +7,9 @@ import {
   dealTiers,
   incentiveValues,
   dealStatusHistory,
+  dealApprovals,
+  approvalActions,
+  approvalDepartments,
   type User, 
   type InsertUser, 
   type Deal, 
@@ -23,6 +26,13 @@ import {
   type InsertIncentiveValue,
   type DealStatusHistory,
   type InsertDealStatusHistory,
+  type DealApproval,
+  type InsertDealApproval,
+  type ApprovalAction,
+  type InsertApprovalAction,
+  type ApprovalDepartment,
+  type InsertApprovalDepartment,
+  type DepartmentType,
   DEAL_STATUSES,
   type DealStatus
 } from "@shared/schema";
@@ -74,6 +84,18 @@ export interface IStorage {
   getDealComments(dealId: number): Promise<any[]>;
   createDealComment(commentData: any): Promise<any>;
   
+  // Multi-Layered Approval System methods
+  getDealApprovals(dealId: number): Promise<DealApproval[]>;
+  createDealApproval(approval: InsertDealApproval): Promise<DealApproval>;
+  updateDealApproval(id: number, approvalData: Partial<InsertDealApproval>): Promise<DealApproval | undefined>;
+  
+  getApprovalActions(approvalId: number): Promise<ApprovalAction[]>;
+  createApprovalAction(action: InsertApprovalAction): Promise<ApprovalAction>;
+  
+  getApprovalDepartments(): Promise<ApprovalDepartment[]>;
+  getApprovalDepartment(departmentName: DepartmentType): Promise<ApprovalDepartment | undefined>;
+  createApprovalDepartment(department: InsertApprovalDepartment): Promise<ApprovalDepartment>;
+  
   // Deal tier methods
   getDealTiers(dealId: number): Promise<DealTier[]>;
   createDealTier(tier: InsertDealTier): Promise<DealTier>;
@@ -119,6 +141,9 @@ export class MemStorage implements IStorage {
   private dealScopingRequests: Map<number, DealScopingRequest>;
   private incentiveValues: Map<number, IncentiveValue>;
   private dealStatusHistories: Map<number, DealStatusHistory>; // Phase 7A
+  private dealApprovals: Map<number, DealApproval>; // Multi-layered approval system
+  private approvalActions: Map<number, ApprovalAction>;
+  private approvalDepartments: Map<number, ApprovalDepartment>;
   
   private userCurrentId: number;
   private advertiserCurrentId: number;
@@ -128,6 +153,9 @@ export class MemStorage implements IStorage {
   private dealScopingRequestCurrentId: number;
   private incentiveValueCurrentId: number;
   private dealStatusHistoryCurrentId: number; // Phase 7A
+  private dealApprovalCurrentId: number;
+  private approvalActionCurrentId: number;
+  private approvalDepartmentCurrentId: number;
 
   constructor() {
     this.users = new Map();
@@ -138,6 +166,9 @@ export class MemStorage implements IStorage {
     this.dealScopingRequests = new Map();
     this.incentiveValues = new Map();
     this.dealStatusHistories = new Map(); // Phase 7A
+    this.dealApprovals = new Map();
+    this.approvalActions = new Map();
+    this.approvalDepartments = new Map();
     
     this.userCurrentId = 1;
     this.advertiserCurrentId = 1;
@@ -147,9 +178,15 @@ export class MemStorage implements IStorage {
     this.dealScopingRequestCurrentId = 1;
     this.incentiveValueCurrentId = 1;
     this.dealStatusHistoryCurrentId = 1; // Phase 7A
+    this.dealApprovalCurrentId = 1;
+    this.approvalActionCurrentId = 1;
+    this.approvalDepartmentCurrentId = 1;
     
     // Initialize with some sample data
     this.initSampleData();
+    
+    // Initialize approval departments
+    this.initApprovalDepartments();
   }
   
   // Initialize with sample data for demo purposes
@@ -163,7 +200,7 @@ export class MemStorage implements IStorage {
         role: "seller",
         firstName: "John",
         lastName: "Seller",
-        department: "Sales",
+        department: null,
         isActive: true
       },
       {
@@ -171,9 +208,9 @@ export class MemStorage implements IStorage {
         password: "password123", 
         email: "sarah.approver@company.com",
         role: "approver",
-        firstName: "Sarah",
+        firstName: "Sarah", 
         lastName: "Chen",
-        department: "Revenue Operations",
+        department: null,
         isActive: true
       },
       {
@@ -182,8 +219,8 @@ export class MemStorage implements IStorage {
         email: "mike.legal@company.com", 
         role: "legal",
         firstName: "Mike",
-        lastName: "Johnson",
-        department: "Legal",
+        lastName: "Johnson", 
+        department: null,
         isActive: true
       },
       {
@@ -193,7 +230,7 @@ export class MemStorage implements IStorage {
         role: "seller",
         firstName: "Lisa",
         lastName: "Rodriguez",
-        department: "Sales",
+        department: null,
         isActive: true
       },
       {
@@ -203,7 +240,7 @@ export class MemStorage implements IStorage {
         role: "approver", 
         firstName: "David",
         lastName: "Wilson",
-        department: "Finance",
+        department: null,
         isActive: true
       }
     ];
@@ -211,6 +248,102 @@ export class MemStorage implements IStorage {
     // Add sample users
     sampleUsers.forEach(user => {
       this.createUser(user);
+    });
+    
+    // Add sample department reviewers
+    const departmentReviewers: InsertUser[] = [
+      {
+        username: "finance_reviewer",
+        password: "password123",
+        email: "finance.reviewer@company.com",
+        role: "department_reviewer",
+        firstName: "Emma",
+        lastName: "Thompson",
+        department: "finance",
+        isActive: true
+      },
+      {
+        username: "trading_reviewer", 
+        password: "password123",
+        email: "trading.reviewer@company.com",
+        role: "department_reviewer",
+        firstName: "Alex",
+        lastName: "Chen",
+        department: "trading",
+        isActive: true
+      },
+      {
+        username: "creative_reviewer",
+        password: "password123", 
+        email: "creative.reviewer@company.com",
+        role: "department_reviewer",
+        firstName: "Jordan",
+        lastName: "Parker",
+        department: "creative",
+        isActive: true
+      }
+    ];
+    
+    departmentReviewers.forEach(user => {
+      this.createUser(user);
+    });
+  }
+
+  private initApprovalDepartments() {
+    // Initialize the 6 departments for multi-layered approval
+    const departments = [
+      {
+        departmentName: "finance" as const,
+        displayName: "Finance Team",
+        description: "Reviews financial incentives and overall deal viability",
+        contactEmail: "finance-team@company.com",
+        incentiveTypes: ["financial_incentive", "payment_terms", "credit_terms", "budget_allocation"],
+        isActive: true
+      },
+      {
+        departmentName: "trading" as const,
+        displayName: "Trading Team", 
+        description: "Reviews margin implications and trading viability",
+        contactEmail: "trading-team@company.com",
+        incentiveTypes: ["margin_optimization", "trading_terms", "volume_commitments"],
+        isActive: true
+      },
+      {
+        departmentName: "creative" as const,
+        displayName: "Creative Team",
+        description: "Reviews creative and marketing incentives",
+        contactEmail: "creative-team@company.com", 
+        incentiveTypes: ["creative_incentive", "marketing_support", "brand_exposure", "co_marketing"],
+        isActive: true
+      },
+      {
+        departmentName: "marketing" as const,
+        displayName: "Marketing Team",
+        description: "Reviews marketing strategy and promotional incentives",
+        contactEmail: "marketing-team@company.com",
+        incentiveTypes: ["promotional_support", "campaign_incentives", "media_benefits", "marketing_tools"],
+        isActive: true
+      },
+      {
+        departmentName: "product" as const,
+        displayName: "Product Team", 
+        description: "Reviews product-related incentives and offerings",
+        contactEmail: "product-team@company.com",
+        incentiveTypes: ["product_incentive", "feature_access", "product_discount", "beta_access"],
+        isActive: true
+      },
+      {
+        departmentName: "solutions" as const,
+        displayName: "Solutions Team",
+        description: "Reviews technical solutions and implementation incentives", 
+        contactEmail: "solutions-team@company.com",
+        incentiveTypes: ["technical_support", "implementation_services", "consulting_hours", "training_programs"],
+        isActive: true
+      }
+    ];
+    
+    departments.forEach(dept => {
+      this.createApprovalDepartment(dept);
     });
 
     // Sample advertisers
@@ -1384,6 +1517,92 @@ export class MemStorage implements IStorage {
     }
     
     return true;
+  }
+
+  // Multi-Layered Approval System methods
+  async getDealApprovals(dealId: number): Promise<DealApproval[]> {
+    return Array.from(this.dealApprovals.values())
+      .filter(approval => approval.dealId === dealId)
+      .sort((a, b) => a.id - b.id);
+  }
+
+  async createDealApproval(approval: InsertDealApproval): Promise<DealApproval> {
+    const id = this.dealApprovalCurrentId++;
+    const now = new Date();
+    
+    const newApproval: DealApproval = {
+      ...approval,
+      id,
+      createdAt: now,
+      completedAt: null,
+      comments: approval.comments || null,
+    };
+    
+    this.dealApprovals.set(id, newApproval);
+    return newApproval;
+  }
+
+  async updateDealApproval(id: number, approvalData: Partial<InsertDealApproval>): Promise<DealApproval | undefined> {
+    const approval = this.dealApprovals.get(id);
+    if (!approval) return undefined;
+    
+    const updatedApproval: DealApproval = {
+      ...approval,
+      ...approvalData,
+      completedAt: approvalData.status === 'approved' ? new Date() : null,
+    };
+    
+    this.dealApprovals.set(id, updatedApproval);
+    return updatedApproval;
+  }
+
+  async getApprovalActions(approvalId: number): Promise<ApprovalAction[]> {
+    return Array.from(this.approvalActions.values())
+      .filter(action => action.approvalId === approvalId)
+      .sort((a, b) => a.id - b.id);
+  }
+
+  async createApprovalAction(action: InsertApprovalAction): Promise<ApprovalAction> {
+    const id = this.approvalActionCurrentId++;
+    const now = new Date();
+    
+    const newAction: ApprovalAction = {
+      ...action,
+      id,
+      createdAt: now,
+      comments: action.comments || null,
+    };
+    
+    this.approvalActions.set(id, newAction);
+    return newAction;
+  }
+
+  async getApprovalDepartments(): Promise<ApprovalDepartment[]> {
+    return Array.from(this.approvalDepartments.values())
+      .filter(dept => dept.isActive)
+      .sort((a, b) => a.departmentName.localeCompare(b.departmentName));
+  }
+
+  async getApprovalDepartment(departmentName: DepartmentType): Promise<ApprovalDepartment | undefined> {
+    return Array.from(this.approvalDepartments.values())
+      .find(dept => dept.departmentName === departmentName && dept.isActive);
+  }
+
+  async createApprovalDepartment(department: InsertApprovalDepartment): Promise<ApprovalDepartment> {
+    const id = this.approvalDepartmentCurrentId++;
+    const now = new Date();
+    
+    const newDepartment: ApprovalDepartment = {
+      ...department,
+      id,
+      createdAt: now,
+      updatedAt: now,
+      contactEmail: department.contactEmail || null,
+      defaultAssignee: department.defaultAssignee || null,
+    };
+    
+    this.approvalDepartments.set(id, newDepartment);
+    return newDepartment;
   }
 }
 

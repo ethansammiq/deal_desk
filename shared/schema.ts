@@ -2,20 +2,24 @@ import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, da
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Phase 7B: User roles for role-based permissions
-export const userRoles = ["seller", "approver", "legal", "admin"] as const;
+// Phase 7B: User roles for role-based permissions - Enhanced for multi-layered approval
+export const userRoles = ["seller", "approver", "legal", "admin", "department_reviewer"] as const;
 export type UserRole = typeof userRoles[number];
 
-// Phase 7B: Enhanced users table with role-based permissions
+// Department types for the approval system
+export const departmentTypes = ["trading", "finance", "creative", "marketing", "product", "solutions"] as const;
+export type DepartmentType = typeof departmentTypes[number];
+
+// Phase 7B: Enhanced users table with role-based permissions and department assignment
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
   role: text("role", { enum: userRoles }).notNull().default("seller"),
+  department: text("department", { enum: departmentTypes }), // Enhanced with specific department types
   firstName: text("first_name"),
   lastName: text("last_name"),
-  department: text("department"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -411,6 +415,83 @@ export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSc
 export type IncentiveValue = typeof incentiveValues.$inferSelect;
 export type InsertIncentiveValue = z.infer<typeof insertIncentiveValueSchema>;
 
+// Multi-Layered Approval System Tables
+
+// Deal approval requirements table
+export const dealApprovals = pgTable("deal_approvals", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  stage: text("stage").notNull(), // 'incentive_review', 'margin_review', 'final_review'
+  department: text("department", { enum: departmentTypes }).notNull(),
+  requiredFor: text("required_for").array().notNull().default([]), // Array of what this approval covers
+  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'revision_requested', 'rejected'
+  assignedTo: integer("assigned_to"), // References users.id - specific user assigned
+  estimatedTime: text("estimated_time").notNull(),
+  dependencies: text("dependencies").array().notNull().default([]), // Array of approval IDs that must complete first
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  comments: text("comments"),
+});
+
+export const insertDealApprovalSchema = createInsertSchema(dealApprovals)
+  .omit({ id: true, createdAt: true, completedAt: true })
+  .extend({
+    dealId: z.number().positive("Deal ID must be positive"),
+    stage: z.enum(["incentive_review", "margin_review", "final_review"]),
+    department: z.enum(departmentTypes),
+    status: z.enum(["pending", "approved", "revision_requested", "rejected"]).default("pending"),
+    assignedTo: z.number().positive().optional(),
+    estimatedTime: z.string().min(1, "Estimated time is required"),
+    requiredFor: z.array(z.string()).default([]),
+    dependencies: z.array(z.string()).default([]),
+    comments: z.string().optional(),
+  });
+
+// Individual approval actions/history
+export const approvalActions = pgTable("approval_actions", {
+  id: serial("id").primaryKey(),
+  approvalId: integer("approval_id").notNull(),
+  actionType: text("action_type").notNull(), // 'approve', 'reject', 'request_revision', 'comment'
+  actionBy: integer("action_by").notNull(), // References users.id
+  comments: text("comments"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertApprovalActionSchema = createInsertSchema(approvalActions)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    approvalId: z.number().positive("Approval ID must be positive"),
+    actionType: z.enum(["approve", "reject", "request_revision", "comment"]),
+    actionBy: z.number().positive("Action by user ID is required"),
+    comments: z.string().optional(),
+  });
+
+// Department configurations and assignments
+export const approvalDepartments = pgTable("approval_departments", {
+  id: serial("id").primaryKey(),
+  departmentName: text("department_name", { enum: departmentTypes }).notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  contactEmail: text("contact_email"),
+  defaultAssignee: integer("default_assignee"), // References users.id
+  incentiveTypes: text("incentive_types").array().notNull().default([]), // Which incentive types this dept handles
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertApprovalDepartmentSchema = createInsertSchema(approvalDepartments)
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .extend({
+    departmentName: z.enum(departmentTypes),
+    displayName: z.string().min(1, "Display name is required"),
+    description: z.string().optional(),
+    contactEmail: z.string().email().optional(),
+    defaultAssignee: z.number().positive().optional(),
+    incentiveTypes: z.array(z.string()).default([]),
+    isActive: z.boolean().default(true),
+  });
+
 // Phase 7B: Role-based permissions system
 export interface RolePermissions {
   canViewDeals: boolean;
@@ -474,8 +555,30 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canAccessLegalReview: true,
     canManageContracts: true,
     dashboardSections: ["admin-panel", "deals", "scoping", "approvals", "legal-queue", "contracts", "analytics", "reports", "compliance", "performance", "user-management", "system-metrics", "audit-logs", "technical-support"]
+  },
+  department_reviewer: {
+    canViewDeals: true,
+    canCreateDeals: false,
+    canEditDeals: false,
+    canDeleteDeals: false,
+    canChangeStatus: ["approved", "revision_requested"], // Can approve or request revisions
+    canViewAllDeals: true, // Can view deals assigned to their department
+    canApproveDeals: true,
+    canAccessLegalReview: false,
+    canManageContracts: false,
+    dashboardSections: ["department-approvals", "deals", "workload"]
   }
 };
+
+// Export new approval system types
+export type DealApproval = typeof dealApprovals.$inferSelect;
+export type InsertDealApproval = z.infer<typeof insertDealApprovalSchema>;
+
+export type ApprovalAction = typeof approvalActions.$inferSelect;
+export type InsertApprovalAction = z.infer<typeof insertApprovalActionSchema>;
+
+export type ApprovalDepartment = typeof approvalDepartments.$inferSelect;
+export type InsertApprovalDepartment = z.infer<typeof insertApprovalDepartmentSchema>;
 
 // Phase 8: Enhanced status transition validation with draft support
 export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
