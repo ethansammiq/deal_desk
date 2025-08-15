@@ -13,6 +13,7 @@ import { useDealConversion } from "@/hooks/useDealConversion";
 import { useDealActions } from "@/hooks/useDealActions";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
 import { PriorityBanner } from "@/components/dashboard/PriorityBanner";
+import { useApprovalWorkflow } from "@/hooks/useApprovalWorkflow";
 import { 
   BarChart3, 
   CheckCircle,
@@ -151,6 +152,21 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
     }
   }
   
+  // Department Reviewer actions for approval workflow
+  if (userRole === 'department_reviewer') {
+    // Show approval actions for deals in review status
+    if (deal.status === 'under_review' || deal.status === 'submitted') {
+      return {
+        type: 'approve',
+        label: 'Review Approval',
+        variant: 'default',
+        icon: FileCheck,
+        onClick: onView, // Navigate to deal details for full approval workflow
+        visible: true
+      };
+    }
+  }
+
   // Admin actions (can override any status)
   if (userRole === 'admin') {
     return {
@@ -187,6 +203,20 @@ export default function UnifiedDashboard() {
   } = useDealActions();
   const userName = user?.firstName || user?.username || "User";
   const userRole = (user?.role as UserRole) || 'seller';
+  const userDepartment = user?.department;
+
+  // Fetch approval departments for department reviewer filtering
+  const { data: departments = [] } = useQuery({
+    queryKey: ['/api/approval-departments'],
+    staleTime: 300000 // 5 minutes
+  });
+
+  // Fetch user's pending approvals if they are a department reviewer
+  const { data: userPendingApprovals = [] } = useQuery({
+    queryKey: [`/api/approvals/pending?department=${userDepartment}`],
+    enabled: userRole === 'department_reviewer' && !!userDepartment,
+    staleTime: 30000 // 30 seconds
+  });
 
   // Get priority items for the current user
   const { 
@@ -625,6 +655,62 @@ export default function UnifiedDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Department Reviewer Approval Queue */}
+      {userRole === 'department_reviewer' && userDepartment && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileCheck className="h-5 w-5" />
+              Your Approval Queue - {departments.find(d => d.departmentName === userDepartment)?.displayName || userDepartment}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <QueryStateHandler
+              query={{ data: userPendingApprovals, isLoading: false, error: null }}
+              loadingComponent={<SectionLoading title="Loading pending approvals..." rows={3} />}
+              emptyComponent={
+                <div className="text-center py-6">
+                  <p className="text-gray-500">No pending approvals for your department.</p>
+                </div>
+              }
+              emptyCheck={(data) => data.length === 0}
+            >
+              {(approvals) => (
+                <div className="space-y-3">
+                  {approvals.slice(0, 5).map((approval: any) => (
+                    <div key={approval.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">Deal #{approval.dealId}</h4>
+                        <p className="text-sm text-gray-600">
+                          Stage {approval.approvalStage} • Priority: {approval.priority}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Due: {new Date(approval.dueDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleView(approval.dealId)}
+                        className="ml-4"
+                      >
+                        Review
+                      </Button>
+                    </div>
+                  ))}
+                  {approvals.length > 5 && (
+                    <div className="text-center pt-2">
+                      <p className="text-sm text-gray-500">
+                        +{approvals.length - 5} more approvals pending
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </QueryStateHandler>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Deals Table */}
       <div>
