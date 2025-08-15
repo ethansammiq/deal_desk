@@ -102,7 +102,18 @@ export default function Testing() {
   const [activeTest, setActiveTest] = useState<string | null>(null);
   
   const { data: currentUser } = useCurrentUser();
-  const { canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = useUserPermissions();
+  const { 
+    canCreateDeals, 
+    canViewAllDeals, 
+    canEditDeals,
+    canDeleteDeals,
+    canApproveDeals, 
+    canAccessLegalReview,
+    canManageContracts,
+    canViewReports,
+    canManageUsers,
+    canManageSystem
+  } = useUserPermissions();
   
   const { data: deals = [] } = useQuery({
     queryKey: ["/api/deals"],
@@ -281,6 +292,22 @@ export default function Testing() {
                     View All Deals
                   </div>
                   <div className="flex items-center gap-2">
+                    {canEditDeals ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    Edit Deals
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canDeleteDeals ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    Delete Deals
+                  </div>
+                  <div className="flex items-center gap-2">
                     {canApproveDeals ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
@@ -295,6 +322,38 @@ export default function Testing() {
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                     )}
                     Legal Review
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canManageContracts ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    Manage Contracts
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canViewReports ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    View Reports
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canManageUsers ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    Manage Users
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canManageSystem ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    )}
+                    System Admin
                   </div>
                 </div>
               </CardContent>

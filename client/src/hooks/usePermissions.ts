@@ -66,5 +66,10 @@ export function useUserPermissions() {
     checkPermission: (permission: string) => {
       return (rolePermissions as any)[permission] || false;
     },
+    // Additional permissions for comprehensive testing
+    canDeleteDeals: role === 'admin',
+    canManageUsers: role === 'admin',
+    canViewReports: ['approver', 'admin'].includes(role),
+    canManageSystem: role === 'admin',
   };
 }
