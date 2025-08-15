@@ -4,10 +4,14 @@ import { storage } from "./storage";
 import { 
   insertDealSchema, 
   insertDealScopingRequestSchema,
+  insertDealApprovalSchema,
+  insertApprovalActionSchema,
+  insertApprovalDepartmentSchema,
   DEAL_STATUSES,
   DEAL_STATUS_LABELS,
   type DealStatus,
   type UserRole,
+  type DepartmentType,
   insertUserSchema
 } from "@shared/schema";
 import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
@@ -1152,6 +1156,331 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching allowed transitions:", error);
       res.status(500).json({ message: "Failed to fetch allowed transitions" });
+    }
+  });
+
+  // ============================================================================
+  // MULTI-LAYERED APPROVAL SYSTEM ENDPOINTS
+  // ============================================================================
+
+  // Get all approvals for a specific deal
+  router.get("/deals/:dealId/approvals", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const approvals = await storage.getDealApprovals(dealId);
+      
+      // Enhance approvals with action history
+      const approvalsWithActions = await Promise.all(
+        approvals.map(async (approval) => {
+          const actions = await storage.getApprovalActions(approval.id);
+          return {
+            ...approval,
+            actions
+          };
+        })
+      );
+
+      res.status(200).json(approvalsWithActions);
+    } catch (error) {
+      console.error("Error fetching deal approvals:", error);
+      res.status(500).json({ message: "Failed to fetch deal approvals" });
+    }
+  });
+
+  // Create a new approval requirement for a deal
+  router.post("/deals/:dealId/approvals", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      // Validate request body using Zod schema
+      const validationResult = insertDealApprovalSchema.safeParse({
+        ...req.body,
+        dealId
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: "Invalid approval data",
+          errors: fromZodError(validationResult.error).toString()
+        });
+      }
+
+      const approval = await storage.createDealApproval(validationResult.data);
+      res.status(201).json(approval);
+    } catch (error) {
+      console.error("Error creating deal approval:", error);
+      res.status(500).json({ message: "Failed to create deal approval" });
+    }
+  });
+
+  // Update an approval status (approve/reject/request revision)
+  router.patch("/deals/:dealId/approvals/:approvalId", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const approvalId = parseInt(req.params.approvalId);
+      
+      if (isNaN(dealId) || isNaN(approvalId)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const { status, comments, reviewedBy } = req.body;
+
+      // Validate status
+      if (!["pending", "approved", "rejected", "revision_requested"].includes(status)) {
+        return res.status(400).json({ message: "Invalid approval status" });
+      }
+
+      // Update the approval
+      const updatedApproval = await storage.updateDealApproval(approvalId, {
+        status,
+        reviewedBy,
+        comments
+      });
+
+      if (!updatedApproval) {
+        return res.status(404).json({ message: "Approval not found" });
+      }
+
+      // Create an action record for this approval decision
+      if (reviewedBy) {
+        await storage.createApprovalAction({
+          approvalId,
+          actionType: status === 'approved' ? 'approve' : 
+                     status === 'rejected' ? 'reject' : 'request_revision',
+          performedBy: reviewedBy,
+          comments: comments || null
+        });
+      }
+
+      res.status(200).json(updatedApproval);
+    } catch (error) {
+      console.error("Error updating approval:", error);
+      res.status(500).json({ message: "Failed to update approval" });
+    }
+  });
+
+  // Get all approval departments
+  router.get("/approval-departments", async (req: Request, res: Response) => {
+    try {
+      const departments = await storage.getApprovalDepartments();
+      res.status(200).json(departments);
+    } catch (error) {
+      console.error("Error fetching approval departments:", error);
+      res.status(500).json({ message: "Failed to fetch approval departments" });
+    }
+  });
+
+  // Get specific approval department
+  router.get("/approval-departments/:departmentName", async (req: Request, res: Response) => {
+    try {
+      const departmentName = req.params.departmentName as DepartmentType;
+      
+      if (!["finance", "trading", "creative", "marketing", "product", "solutions"].includes(departmentName)) {
+        return res.status(400).json({ message: "Invalid department name" });
+      }
+
+      const department = await storage.getApprovalDepartment(departmentName);
+      
+      if (!department) {
+        return res.status(404).json({ message: "Department not found" });
+      }
+
+      res.status(200).json(department);
+    } catch (error) {
+      console.error("Error fetching approval department:", error);
+      res.status(500).json({ message: "Failed to fetch approval department" });
+    }
+  });
+
+  // Initiate multi-stage approval workflow for a deal
+  router.post("/deals/:dealId/initiate-approval", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      // Get the deal to determine approval requirements
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const { incentiveTypes, dealValue, initiatedBy } = req.body;
+
+      // Create approval requirements based on deal characteristics
+      const approvalRequirements = [];
+
+      // Stage 1: Incentive Review (parallel processing)
+      if (incentiveTypes && incentiveTypes.length > 0) {
+        // Map incentive types to appropriate departments
+        const departmentMap: Record<string, DepartmentType> = {
+          'financial_incentive': 'finance',
+          'payment_terms': 'finance',
+          'credit_terms': 'finance',
+          'budget_allocation': 'finance',
+          'margin_optimization': 'trading',
+          'trading_terms': 'trading',
+          'volume_commitments': 'trading',
+          'creative_incentive': 'creative',
+          'marketing_support': 'creative',
+          'brand_exposure': 'creative',
+          'co_marketing': 'marketing',
+          'promotional_support': 'marketing',
+          'campaign_incentives': 'marketing',
+          'media_benefits': 'marketing',
+          'product_incentive': 'product',
+          'feature_access': 'product',
+          'product_discount': 'product',
+          'beta_access': 'product',
+          'technical_support': 'solutions',
+          'implementation_services': 'solutions',
+          'consulting_hours': 'solutions',
+          'training_programs': 'solutions'
+        };
+
+        // Get unique departments needed for this deal
+        const requiredDepartments = [...new Set(
+          incentiveTypes.map((type: string) => departmentMap[type]).filter(Boolean)
+        )];
+
+        // Create parallel approval requirements for Stage 1
+        for (const dept of requiredDepartments) {
+          approvalRequirements.push({
+            dealId,
+            approvalStage: 1,
+            departmentName: dept,
+            requiredRole: 'department_reviewer',
+            status: 'pending',
+            priority: 'normal',
+            dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
+          });
+        }
+      }
+
+      // Stage 2: Margin Review (sequential after Stage 1)
+      approvalRequirements.push({
+        dealId,
+        approvalStage: 2,
+        departmentName: 'trading',
+        requiredRole: 'department_reviewer',
+        status: 'pending',
+        priority: 'normal',
+        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days
+      });
+
+      // Stage 3: Final Review (Executive/MD approval based on deal value)
+      const executiveThreshold = 500000; // $500K threshold
+      if (dealValue >= executiveThreshold) {
+        approvalRequirements.push({
+          dealId,
+          approvalStage: 3,
+          departmentName: 'finance', // Executive oversight through finance
+          requiredRole: 'admin', // Executive level
+          status: 'pending',
+          priority: dealValue >= 1000000 ? 'high' : 'normal',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        });
+      }
+
+      // Create all approval requirements
+      const createdApprovals = await Promise.all(
+        approvalRequirements.map(req => storage.createDealApproval(req))
+      );
+
+      // Create initial action record
+      if (initiatedBy && createdApprovals.length > 0) {
+        await storage.createApprovalAction({
+          approvalId: createdApprovals[0].id,
+          actionType: 'initiate',
+          performedBy: initiatedBy,
+          comments: `Approval workflow initiated for deal: ${deal.dealName}`
+        });
+      }
+
+      res.status(201).json({
+        message: "Approval workflow initiated successfully",
+        approvals: createdApprovals,
+        workflow: {
+          totalStages: Math.max(...createdApprovals.map(a => a.approvalStage)),
+          parallelStage1: createdApprovals.filter(a => a.approvalStage === 1).length,
+          sequentialStages: createdApprovals.filter(a => a.approvalStage > 1).length,
+          estimatedDuration: "7-14 business days"
+        }
+      });
+    } catch (error) {
+      console.error("Error initiating approval workflow:", error);
+      res.status(500).json({ message: "Failed to initiate approval workflow" });
+    }
+  });
+
+  // Get approval workflow status for a deal
+  router.get("/deals/:dealId/approval-status", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const approvals = await storage.getDealApprovals(dealId);
+      
+      // Group approvals by stage
+      const stageGroups = approvals.reduce((groups, approval) => {
+        const stage = approval.approvalStage;
+        if (!groups[stage]) groups[stage] = [];
+        groups[stage].push(approval);
+        return groups;
+      }, {} as Record<number, typeof approvals>);
+
+      // Calculate progress
+      const totalApprovals = approvals.length;
+      const completedApprovals = approvals.filter(a => 
+        a.status === 'approved' || a.status === 'rejected'
+      ).length;
+      const progressPercentage = totalApprovals > 0 
+        ? Math.round((completedApprovals / totalApprovals) * 100)
+        : 0;
+
+      // Determine current stage
+      let currentStage = 1;
+      for (const stage of Object.keys(stageGroups).map(Number).sort()) {
+        const stageApprovals = stageGroups[stage];
+        const allStageComplete = stageApprovals.every(a => 
+          a.status === 'approved' || a.status === 'rejected'
+        );
+        if (!allStageComplete) {
+          currentStage = stage;
+          break;
+        }
+        currentStage = stage + 1;
+      }
+
+      res.status(200).json({
+        dealId,
+        approvals,
+        stageGroups,
+        currentStage,
+        progressPercentage,
+        isComplete: completedApprovals === totalApprovals,
+        pendingApprovals: approvals.filter(a => a.status === 'pending'),
+        blockedStages: Object.keys(stageGroups).map(Number).filter(stage => 
+          stage > currentStage
+        )
+      });
+    } catch (error) {
+      console.error("Error fetching approval status:", error);
+      res.status(500).json({ message: "Failed to fetch approval status" });
     }
   });
 
