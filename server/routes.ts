@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Draft management endpoints  
   router.post("/deals/drafts", async (req: Request, res: Response) => {
     try {
-      const { name, description, formData } = req.body;
+      const { name, description, formData, draftId } = req.body;
       
       if (!name?.trim()) {
         return res.status(400).json({ message: "Draft name is required" });
@@ -305,7 +305,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Form data is required" });
       }
 
-      // Create a deal with draft status - use minimal validation for drafts
+      // Check if this is an update to an existing draft
+      if (draftId && !isNaN(parseInt(draftId))) {
+        const existingDraft = await storage.getDeal(parseInt(draftId));
+        if (existingDraft && existingDraft.status === 'draft') {
+          // Update existing draft instead of creating new one
+          const updatedDraftData = {
+            ...formData,
+            dealName: name,
+            businessSummary: description || formData.businessSummary || "",
+            dealStructure: formData.dealStructure || "tiered",
+            dealType: formData.dealType || "grow",
+            region: formData.region || "west",
+            salesChannel: formData.salesChannel || "client_direct",
+            advertiserName: formData.advertiserName || "",
+            termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
+            termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1,
+            annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0,
+            status: "draft" as const,
+            isDraft: true,
+            draftType: "submission_draft",
+            updatedAt: new Date()
+          };
+
+          const validatedData = insertDealSchema.safeParse(updatedDraftData);
+          if (!validatedData.success) {
+            const errorMessage = fromZodError(validatedData.error);
+            return res.status(400).json({ 
+              message: "Draft validation failed", 
+              errors: errorMessage.message
+            });
+          }
+
+          const updatedDraft = await storage.updateDeal(parseInt(draftId), validatedData.data);
+          return res.status(200).json(updatedDraft);
+        }
+      }
+
+      // Create new draft if no existing draft ID or draft not found
       const draftDeal = {
         ...formData,
         dealName: name,

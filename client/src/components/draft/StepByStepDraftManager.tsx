@@ -12,6 +12,7 @@ interface StepByStepDraftManagerProps {
   totalSteps: number;
   isValid?: boolean;
   onSave?: () => void;
+  draftId?: number; // Added to support updating existing drafts
 }
 
 // Business rule: One draft per advertiser/agency combination per seller
@@ -30,7 +31,8 @@ export function StepByStepDraftManager({
   currentStep, 
   totalSteps,
   isValid = true,
-  onSave 
+  onSave,
+  draftId
 }: StepByStepDraftManagerProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = React.useState(false);
@@ -87,7 +89,8 @@ export function StepByStepDraftManager({
             currentStep: step,
             totalSteps: totalSteps
           }
-        }
+        },
+        draftId: draftId // Include draft ID for updates
       };
 
       const response = await apiRequest('/api/deals/drafts', {
@@ -113,7 +116,7 @@ export function StepByStepDraftManager({
       if (error && typeof error === 'object' && 'details' in error) {
         console.error('Validation details:', error.details);
       }
-      console.error('Form data being sent:', JSON.stringify(requestPayload, null, 2));
+      console.error('Form data being sent:', JSON.stringify(data, null, 2));
       if (!isAutoSave) {
         toast({
           title: "Save Failed",

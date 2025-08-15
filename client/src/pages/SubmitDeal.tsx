@@ -902,7 +902,8 @@ export default function SubmitDeal() {
               name: autoName,
               description: `Draft saved from ${getTabLabel(activeTab, SUBMIT_DEAL_TABS)}`,
               formData: form.getValues(),
-              step: currentTabIndex >= 0 ? currentTabIndex : 0
+              step: currentTabIndex >= 0 ? currentTabIndex : 0,
+              draftId: draftId ? parseInt(draftId) : undefined // Pass draftId for updates
             });
           }}
           disabled={saveDraftMutation.isPending}
@@ -985,24 +986,7 @@ export default function SubmitDeal() {
                     description="Define the financial structure and value proposition for this deal"
                   />
                   <div className="space-y-6">
-                    {/* Simplified approval alert based on basic deal parameters */}
-                    {form.watch("annualRevenue") !== undefined &&
-                      form.watch("contractTerm") !== undefined && (
-                        <ApprovalAlert
-                          totalValue={
-                            Number(form.watch("annualRevenue")) || 0
-                          }
-                          contractTerm={
-                            Number(form.watch("contractTerm")) || 12
-                          }
-                          dealType={String(form.watch("dealType")) || "grow"}
-                          salesChannel={
-                            String(form.watch("salesChannel")) ||
-                            "independent_agency"
-                          }
-                          onChange={handleApprovalChange}
-                        />
-                      )}
+                    {/* Approval alert removed from Step 3 - now only shows in Step 4 (Review & Submit) */}
 
                     {/* Revenue & Profitability Section */}
                     <FinancialTierTable
