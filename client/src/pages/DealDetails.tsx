@@ -9,6 +9,7 @@ import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
+import { ApprovalWorkflowDashboard } from "@/components/approval/ApprovalWorkflowDashboard";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -287,6 +288,20 @@ export default function DealDetails() {
                 userRole={userRole} 
                 currentUser={user?.username || 'Unknown User'} 
               />
+
+              {/* Approval Workflow Dashboard */}
+              {deal.status !== 'draft' && deal.status !== 'scoping' && user && (
+                <ApprovalWorkflowDashboard
+                  dealId={deal.id}
+                  dealName={deal.dealName}
+                  dealValue={deal.annualRevenue || 0}
+                  currentUser={{
+                    id: user.id,
+                    role: user.role,
+                    department: user.department
+                  }}
+                />
+              )}
             </div>
 
             {/* Sidebar */}

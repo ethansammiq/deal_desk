@@ -13,6 +13,7 @@ import {
   type ApprovalPipelineStatus,
   type ApprovalDepartment
 } from "@/lib/enhanced-approval-matrix";
+import { useQuery } from "@tanstack/react-query";
 import type { DealTier } from "@/hooks/useDealTiers";
 
 interface SelectedIncentive {
@@ -31,6 +32,7 @@ interface EnhancedApprovalAlertProps {
   salesChannel: string;
   dealTiers: DealTier[];
   selectedIncentives: SelectedIncentive[];
+  dealId?: number; // Optional for existing deals
 }
 
 export function EnhancedApprovalAlert({
@@ -39,18 +41,44 @@ export function EnhancedApprovalAlert({
   dealType,
   salesChannel,
   dealTiers,
-  selectedIncentives
+  selectedIncentives,
+  dealId
 }: EnhancedApprovalAlertProps) {
   const [approvalRequirements, setApprovalRequirements] = useState<ApprovalRequirement[]>([]);
   const [pipelineStatus, setPipelineStatus] = useState<ApprovalPipelineStatus | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [followUpRecommendations, setFollowUpRecommendations] = useState<string[]>([]);
 
+  // Fetch real approval data if dealId is provided
+  const { data: realApprovalData } = useQuery({
+    queryKey: [`/api/deals/${dealId}/approval-status`],
+    enabled: !!dealId,
+    staleTime: 30000 // 30 seconds
+  });
+
+  // Fetch approval departments for real department information
+  const { data: departments = [] } = useQuery({
+    queryKey: ['/api/approval-departments'],
+    staleTime: 300000 // 5 minutes
+  });
+
   useEffect(() => {
-    if (totalValue > 0) {
-      // Generate approval requirements for this deal
+    if (dealId && realApprovalData && realApprovalData.approvals) {
+      // Use real approval data for existing deals
+      const realRequirements = realApprovalData.approvals || [];
+      setApprovalRequirements(realRequirements);
+      
+      // Calculate pipeline status from real data
+      const realStatus = calculateApprovalPipelineStatus(realRequirements);
+      setPipelineStatus(realStatus);
+      
+      // Use real recommendations or generate them
+      const realRecommendations = realApprovalData.recommendations || getFollowUpRecommendations(realStatus);
+      setFollowUpRecommendations(realRecommendations);
+    } else if (totalValue > 0) {
+      // Generate simulated approval requirements for new deals
       const requirements = generateApprovalRequirements(
-        0, // Deal ID placeholder
+        dealId || 0,
         totalValue,
         dealType,
         salesChannel,
@@ -68,7 +96,7 @@ export function EnhancedApprovalAlert({
       const recommendations = getFollowUpRecommendations(status);
       setFollowUpRecommendations(recommendations);
     }
-  }, [totalValue, dealType, salesChannel, dealTiers, selectedIncentives]);
+  }, [totalValue, dealType, salesChannel, dealTiers, selectedIncentives, dealId, realApprovalData]);
 
   if (!pipelineStatus || approvalRequirements.length === 0) {
     return null;

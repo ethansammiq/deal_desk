@@ -149,6 +149,7 @@ export function ReviewSubmitSection({
         salesChannel={salesChannel}
         dealTiers={dealTiers}
         selectedIncentives={selectedIncentives}
+        dealId={formValues.id} // Pass deal ID if editing existing deal
       />
 
       {/* Action Buttons - Using shared FormNavigation component */}

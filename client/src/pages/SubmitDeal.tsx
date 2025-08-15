@@ -662,14 +662,46 @@ export default function SubmitDeal() {
         body: JSON.stringify(data),
       });
     },
-    onSuccess: () => {
-      console.log("Deal submission successful!");
+    onSuccess: async (response) => {
+      console.log("Deal submission successful!", response);
+      
+      // Initiate approval workflow for submitted deals
+      if (response?.id && response?.annualRevenue) {
+        try {
+          const approvalResponse = await apiRequest(`/api/deals/${response.id}/initiate-approval`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              dealValue: response.annualRevenue,
+              dealType: response.dealType,
+              salesChannel: response.salesChannel
+            }),
+          });
+          
+          console.log("Approval workflow initiated:", approvalResponse);
+          
+          toast({
+            title: "Success",
+            description: "Deal submitted and approval workflow initiated!",
+            variant: "default",
+          });
+        } catch (approvalError) {
+          console.warn("Approval workflow initiation failed:", approvalError);
+          toast({
+            title: "Deal Submitted",
+            description: "Deal submitted successfully, but approval workflow may need manual setup.",
+            variant: "default",
+          });
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: "Deal submitted successfully!",
+          variant: "default",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
-      toast({
-        title: "Success",
-        description: "Deal submitted successfully!",
-        variant: "default",
-      });
       navigate("/");
     },
     onError: (error: any) => {
