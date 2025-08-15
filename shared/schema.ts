@@ -579,7 +579,18 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
   }
 };
 
-// Export new approval system types
+// Simplified 2-stage approval pipeline
+export const approvalStages = {
+  TECHNICAL_REVIEW: 1,    // All department reviewers (parallel)
+  BUSINESS_APPROVAL: 2    // Executive approver (after Stage 1 complete)
+} as const;
+
+// All 6 departments participate in Stage 1 technical review
+export const stage1Departments: DepartmentType[] = [
+  'trading', 'finance', 'creative', 'marketing', 'product', 'solutions'
+];
+
+// Export approval system types
 export type DealApproval = typeof dealApprovals.$inferSelect;
 export type InsertDealApproval = z.infer<typeof insertDealApprovalSchema>;
 
@@ -589,17 +600,62 @@ export type InsertApprovalAction = z.infer<typeof insertApprovalActionSchema>;
 export type ApprovalDepartment = typeof approvalDepartments.$inferSelect;
 export type InsertApprovalDepartment = z.infer<typeof insertApprovalDepartmentSchema>;
 
-// Phase 8: Enhanced status transition validation with draft support
+// Enhanced loss tracking system
+export const lostReasons = [
+  'client_budget_cut',
+  'client_timeline_change', 
+  'competitive_loss',
+  'technical_unfeasibility',
+  'internal_resource_constraint',
+  'pricing_mismatch',
+  'compliance_issue',
+  'strategic_misalignment',
+  'client_cancelled_project',
+  'other'
+] as const;
+
+export type LostReason = typeof lostReasons[number];
+
+// Deal loss tracking table
+export const dealLossTracking = pgTable("deal_loss_tracking", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  lostReason: text("lost_reason", { enum: lostReasons }).notNull(),
+  lostReasonDetails: text("lost_reason_details"),
+  lostAt: timestamp("lost_at").defaultNow(),
+  lostBy: integer("lost_by").notNull(),
+  competitorName: text("competitor_name"),
+  estimatedLostValue: text("estimated_lost_value"), // Using text for now to avoid decimal import
+  lessonsLearned: text("lessons_learned"),
+  followUpDate: timestamp("follow_up_date"),
+});
+
+// Loss tracking schema
+export const insertDealLossTrackingSchema = createInsertSchema(dealLossTracking);
+
+// Export loss tracking types
+export type DealLossTracking = typeof dealLossTracking.$inferSelect;
+export type InsertDealLossTracking = z.infer<typeof insertDealLossTrackingSchema>;
+
+// Enhanced status transition rules - sellers can mark lost from any non-terminal status
 export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
   draft: ["scoping", "submitted", "lost"],
   scoping: ["submitted", "lost"],
   submitted: ["under_review", "lost"],
   under_review: ["negotiating", "revision_requested", "approved", "lost"],
-  revision_requested: ["under_review", "lost"], // After seller responds to revision
+  revision_requested: ["under_review", "lost"],
   negotiating: ["approved", "revision_requested", "lost"],
   approved: ["contract_drafting", "lost"],
   contract_drafting: ["client_review", "negotiating", "lost"],
   client_review: ["signed", "contract_drafting", "lost"],
   signed: [], // Terminal state
   lost: [] // Terminal state
+};
+
+// Role-based lost transition permissions
+export const lostTransitionPermissions = {
+  seller: ['draft', 'scoping', 'submitted', 'revision_requested'],
+  approver: ['under_review', 'negotiating', 'approved'], 
+  legal: ['contract_drafting', 'client_review'],
+  admin: ['all'] as const
 };

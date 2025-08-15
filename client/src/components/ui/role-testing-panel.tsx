@@ -74,6 +74,52 @@ export function RoleTestingPanel() {
                 <CardDescription>Your active role and permissions</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <UserRoleBadge role={currentUser.role} />
+                  <span className="text-sm text-gray-600">
+                    {currentUser.username}
+                  </span>
+                </div>
+                
+                {currentUser.department && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="outline">Department</Badge>
+                    <span className="capitalize">{currentUser.department}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-1">
+                    {canCreateDeals ? '✓' : '✗'} Create Deals
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {canViewAllDeals ? '✓' : '✗'} View All Deals
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {canApproveDeals ? '✓' : '✗'} Approve Deals
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {canAccessLegalReview ? '✓' : '✗'} Legal Review
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Role Switcher</CardTitle>
+                <CardDescription>Test different roles and permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RoleSwitcher 
+                  currentRole={currentUser.role}
+                  onRoleChange={(role, department) => {
+                    // In production: API call to switch role
+                    console.log('Switching to role:', role, department);
+                  }}
+                />
+              </CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <UserRoleBadge role={currentUser.role} />
                   <div>

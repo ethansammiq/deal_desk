@@ -980,7 +980,11 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       const nextSequence = allDeals.length + 1;
       const referenceNumber = `DEAL-${year}-${String(nextSequence).padStart(3, '0')}`;
 
-      const newDeal = await storage.createDeal(dealData, referenceNumber);
+      const newDeal = await storage.createDeal({
+        ...dealData,
+        salesChannel: dealData.salesChannel as "holding_company" | "independent_agency" | "client_direct",
+        region: dealData.region as "northeast" | "midwest" | "midatlantic" | "west" | "south"
+      }, referenceNumber);
 
       res.status(201).json({ 
         deal: newDeal,
@@ -1298,7 +1302,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       
       // Get current user role (mock for now)
       const currentUser = getCurrentUser();
-      const allowedTransitions = getAllowedTransitions(currentUser.role as UserRole, deal.status as DealStatus);
+      const allowedTransitions = getAllowedTransitions(currentUser.role, deal.status as DealStatus);
       
       res.status(200).json({ allowedTransitions });
     } catch (error) {
@@ -1472,75 +1476,35 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Create approval requirements based on deal characteristics
       const approvalRequirements = [];
 
-      // Stage 1: Incentive Review (parallel processing)
-      if (incentiveTypes && incentiveTypes.length > 0) {
-        // Map incentive types to appropriate departments
-        const departmentMap: Record<string, DepartmentType> = {
-          'financial_incentive': 'finance',
-          'payment_terms': 'finance',
-          'credit_terms': 'finance',
-          'budget_allocation': 'finance',
-          'margin_optimization': 'trading',
-          'trading_terms': 'trading',
-          'volume_commitments': 'trading',
-          'creative_incentive': 'creative',
-          'marketing_support': 'creative',
-          'brand_exposure': 'creative',
-          'co_marketing': 'marketing',
-          'promotional_support': 'marketing',
-          'campaign_incentives': 'marketing',
-          'media_benefits': 'marketing',
-          'product_incentive': 'product',
-          'feature_access': 'product',
-          'product_discount': 'product',
-          'beta_access': 'product',
-          'technical_support': 'solutions',
-          'implementation_services': 'solutions',
-          'consulting_hours': 'solutions',
-          'training_programs': 'solutions'
-        };
-
-        // Get unique departments needed for this deal
-        const requiredDepartments = Array.from(new Set(
-          incentiveTypes.map((type: string) => departmentMap[type]).filter(Boolean)
-        )) as DepartmentType[];
-
-        // Create parallel approval requirements for Stage 1
-        for (const dept of requiredDepartments) {
-          approvalRequirements.push({
-            dealId,
-            approvalStage: 1,
-            department: dept as DepartmentType,
-            requiredRole: 'department_reviewer',
-            status: 'pending' as const,
-            priority: 'normal' as const,
-            dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
-          });
-        }
+      // STREAMLINED 2-STAGE APPROVAL PIPELINE
+      
+      // Stage 1: Technical Review (All 6 departments in parallel)
+      // All departments review deals for technical feasibility and compliance
+      const stage1Departments: DepartmentType[] = ['trading', 'finance', 'creative', 'marketing', 'product', 'solutions'];
+      
+      for (const dept of stage1Departments) {
+        approvalRequirements.push({
+          dealId,
+          approvalStage: 1, // Technical review stage
+          department: dept,
+          requiredRole: 'department_reviewer',
+          status: 'pending' as const,
+          priority: 'normal' as const,
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days for technical review
+        });
       }
 
-      // Stage 2: Margin Review (sequential after Stage 1)
-      approvalRequirements.push({
-        dealId,
-        approvalStage: 2,
-        department: 'trading' as const,
-        requiredRole: 'department_reviewer',
-        status: 'pending' as const,
-        priority: 'normal' as const,
-        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days
-      });
-
-      // Stage 3: Final Review (Executive/MD approval based on deal value)
-      const executiveThreshold = 500000; // $500K threshold
+      // Stage 2: Business Approval (Executive decision after all technical reviews complete)
+      const executiveThreshold = 500000; // $500K threshold for executive approval
       if (dealValue >= executiveThreshold) {
         approvalRequirements.push({
           dealId,
-          approvalStage: 3,
+          approvalStage: 2, // Business approval stage
           department: 'finance' as const, // Executive oversight through finance
-          requiredRole: 'admin', // Executive level
+          requiredRole: 'approver', // Business approver level
           status: 'pending' as const,
           priority: dealValue >= 1000000 ? 'high' as const : 'normal' as const,
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+          dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days for executive decision
         });
       }
 
@@ -1881,6 +1845,186 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     } catch (error) {
       console.error("Error fetching department SLA performance:", error);
       res.status(500).json({ message: "Failed to fetch department SLA performance" });
+    }
+  });
+
+  // User Management API endpoints
+  router.get("/admin/users", async (req: Request, res: Response) => {
+    try {
+      // Mock user data - in production, fetch from actual user table
+      const mockUsers = [
+        {
+          id: 1,
+          username: "demo_seller",
+          email: "seller@company.com", 
+          firstName: "Demo",
+          lastName: "Seller",
+          role: "seller",
+          department: null,
+          isActive: true,
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 2,
+          username: "demo_approver",
+          email: "approver@company.com",
+          firstName: "Demo", 
+          lastName: "Approver",
+          role: "approver",
+          department: null,
+          isActive: true,
+          createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 3,
+          username: "trading_reviewer",
+          email: "trading@company.com",
+          firstName: "Trading",
+          lastName: "Reviewer", 
+          role: "department_reviewer",
+          department: "trading",
+          isActive: true,
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 4,
+          username: "finance_reviewer", 
+          email: "finance@company.com",
+          firstName: "Finance",
+          lastName: "Reviewer",
+          role: "department_reviewer", 
+          department: "finance",
+          isActive: true,
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 5,
+          username: "creative_reviewer",
+          email: "creative@company.com", 
+          firstName: "Creative",
+          lastName: "Reviewer",
+          role: "department_reviewer",
+          department: "creative", 
+          isActive: true,
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      res.json(mockUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  router.get("/admin/available-roles", async (req: Request, res: Response) => {
+    try {
+      const availableRoles = [
+        { role: "seller", description: "Creates and manages deal submissions" },
+        { role: "department_reviewer", description: "Technical review within assigned department" },
+        { role: "approver", description: "Business approval authority across all deals" },
+        { role: "legal", description: "Legal review and contract management" },
+        { role: "admin", description: "Full system access and user management" }
+      ];
+      
+      res.json(availableRoles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch available roles" });
+    }
+  });
+
+  router.post("/admin/users/:userId/assign-role", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { role, department, reason } = req.body;
+      
+      // Validate input
+      if (!role) {
+        return res.status(400).json({ message: "Role is required" });
+      }
+      
+      if (role === 'department_reviewer' && !department) {
+        return res.status(400).json({ message: "Department is required for department_reviewer role" });
+      }
+      
+      // In production: Update user in database
+      console.log(`Assigning role ${role} to user ${userId}`, { department, reason });
+      
+      res.json({ 
+        message: "Role assigned successfully",
+        userId: parseInt(userId),
+        role,
+        department,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error assigning role:", error);
+      res.status(500).json({ message: "Failed to assign role" });
+    }
+  });
+
+  // Deal loss tracking endpoints
+  router.post("/deals/:dealId/mark-lost", async (req: Request, res: Response) => {
+    try {
+      const { dealId } = req.params;
+      const { lostReason, lostReasonDetails, competitorName, estimatedLostValue, lessonsLearned } = req.body;
+      
+      if (!lostReason) {
+        return res.status(400).json({ message: "Lost reason is required" });
+      }
+      
+      // In production: Create loss tracking record and update deal status
+      const lossTracking = {
+        id: Math.floor(Math.random() * 1000),
+        dealId: parseInt(dealId),
+        lostReason,
+        lostReasonDetails,
+        lostAt: new Date().toISOString(),
+        lostBy: 1, // Current user ID
+        competitorName,
+        estimatedLostValue: estimatedLostValue ? parseFloat(estimatedLostValue) : null,
+        lessonsLearned
+      };
+      
+      console.log("Deal marked as lost:", lossTracking);
+      
+      res.json({
+        message: "Deal marked as lost successfully",
+        lossTracking
+      });
+    } catch (error) {
+      console.error("Error marking deal as lost:", error);
+      res.status(500).json({ message: "Failed to mark deal as lost" });
+    }
+  });
+
+  router.get("/deals/loss-analytics", async (req: Request, res: Response) => {
+    try {
+      // Mock loss analytics data
+      const mockAnalytics = {
+        totalLostDeals: 45,
+        totalLostValue: 12500000,
+        topLossReasons: [
+          { reason: "competitive_loss", count: 15, percentage: 33.3 },
+          { reason: "client_budget_cut", count: 12, percentage: 26.7 },
+          { reason: "pricing_mismatch", count: 8, percentage: 17.8 },
+          { reason: "technical_unfeasibility", count: 5, percentage: 11.1 },
+          { reason: "other", count: 5, percentage: 11.1 }
+        ],
+        lossRateByMonth: [
+          { month: "Jan", lostDeals: 8, totalDeals: 45, rate: 17.8 },
+          { month: "Feb", lostDeals: 6, totalDeals: 38, rate: 15.8 },
+          { month: "Mar", lostDeals: 12, totalDeals: 52, rate: 23.1 },
+          { month: "Apr", lostDeals: 9, totalDeals: 41, rate: 22.0 },
+          { month: "May", lostDeals: 10, totalDeals: 48, rate: 20.8 }
+        ]
+      };
+      
+      res.json(mockAnalytics);
+    } catch (error) {
+      console.error("Error fetching loss analytics:", error);
+      res.status(500).json({ message: "Failed to fetch loss analytics" });
     }
   });
 

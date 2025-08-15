@@ -2,14 +2,18 @@ import { Link, useLocation } from "wouter";
 import { 
   HomeIcon, 
   ClipboardPenIcon,
-  HelpCircleIcon 
+  HelpCircleIcon,
+  Shield,
+  TestTube2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useCurrentUser } from "@/hooks/useAuth";
 
 export function Sidebar() {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: user } = useCurrentUser();
 
   const closeMobileMenu = () => {
     setMobileOpen(false);
@@ -101,6 +105,42 @@ export function Sidebar() {
                   Help & Resources
                 </div>
               </Link>
+              
+              {/* Admin Panel - Only visible to admins */}
+              {user?.role === 'admin' && (
+                <Link href="/admin">
+                  <div
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "flex items-center px-4 py-3 text-sm font-medium rounded-md group cursor-pointer",
+                      location === "/admin" 
+                        ? "bg-slate-700 text-white" 
+                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                    )}
+                  >
+                    <Shield className="w-6 h-6 mr-3" />
+                    Admin Panel
+                  </div>
+                </Link>
+              )}
+              
+              {/* Role Testing - Development only */}
+              {user?.role === 'admin' && (
+                <Link href="/role-demo">
+                  <div
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "flex items-center px-4 py-3 text-sm font-medium rounded-md group cursor-pointer",
+                      location === "/role-demo" 
+                        ? "bg-slate-700 text-white" 
+                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                    )}
+                  >
+                    <TestTube2 className="w-6 h-6 mr-3" />
+                    Role Testing
+                  </div>
+                </Link>
+              )}
             </nav>
             <div className="pt-4 mt-6 border-t border-slate-700">
               <div className="flex items-center px-4 py-3">

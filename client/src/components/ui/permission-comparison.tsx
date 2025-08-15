@@ -1,138 +1,110 @@
-// Phase 7B: Permission comparison component to show role differences
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { UserRoleBadge } from "@/components/ui/user-role-badge";
-import { rolePermissions, type UserRole } from "@shared/schema";
-import { Check, X, Shield } from "lucide-react";
+import React from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Check, X } from 'lucide-react';
+import { UserRole, rolePermissions } from '@shared/schema';
 
-interface PermissionComparisonProps {
-  className?: string;
-}
+const permissionLabels = {
+  canViewDeals: "View Deals",
+  canCreateDeals: "Create Deals", 
+  canEditDeals: "Edit Deals",
+  canDeleteDeals: "Delete Deals",
+  canApproveDeals: "Approve Deals",
+  canAccessLegalReview: "Legal Review",
+  canManageContracts: "Manage Contracts",
+  canViewAllDeals: "View All Deals"
+};
 
-export function PermissionComparison({ className }: PermissionComparisonProps) {
-  const roles: UserRole[] = ["seller", "approver", "legal", "admin"];
-  
-  const permissionLabels = {
-    canViewDeals: "View Deals",
-    canCreateDeals: "Create Deals", 
-    canEditDeals: "Edit Deals",
-    canDeleteDeals: "Delete Deals",
-    canViewAllDeals: "View All Deals",
-    canApproveDeals: "Approve Deals",
-    canAccessLegalReview: "Legal Review",
-    canManageContracts: "Manage Contracts",
-  };
+export function PermissionComparison() {
+  const roles: UserRole[] = ['seller', 'department_reviewer', 'approver', 'legal', 'admin'];
 
-  const statusTransitionLabels = {
-    seller: ["scoping", "submitted"],
-    approver: ["under_review", "negotiating", "approved", "lost"],
-    legal: ["legal_review", "contract_sent", "signed"],
-    admin: ["scoping", "submitted", "under_review", "negotiating", "approved", "legal_review", "contract_sent", "signed", "lost"],
+  const getRoleBadgeColor = (role: UserRole) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'approver': return 'bg-purple-100 text-purple-800';
+      case 'department_reviewer': return 'bg-blue-100 text-blue-800';
+      case 'legal': return 'bg-green-100 text-green-800';
+      case 'seller': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Shield className="h-5 w-5" />
-          <span>Role Permission Matrix</span>
-        </CardTitle>
-        <CardDescription>
-          Compare permissions and allowed status transitions across all user roles
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Basic Permissions */}
-        <div>
-          <h4 className="font-medium mb-3">Basic Permissions</h4>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium">Permission</th>
-                  {roles.map((role) => (
-                    <th key={role} className="text-center py-2 px-2">
-                      <UserRoleBadge role={role} className="text-xs" />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(permissionLabels).map(([key, label]) => (
-                  <tr key={key} className="border-b">
-                    <td className="py-2 font-medium">{label}</td>
-                    {roles.map((role) => {
-                      const permissions = rolePermissions[role];
-                      const hasPermission = permissions[key as keyof typeof permissions];
-                      return (
-                        <td key={role} className="text-center py-2 px-2">
-                          {typeof hasPermission === 'boolean' ? (
-                            hasPermission ? (
-                              <Check className="h-4 w-4 text-green-600 mx-auto" />
-                            ) : (
-                              <X className="h-4 w-4 text-red-500 mx-auto" />
-                            )
-                          ) : (
-                            <span className="text-xs text-muted-foreground">N/A</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Status Transitions */}
-        <div>
-          <h4 className="font-medium mb-3">Allowed Status Transitions</h4>
-          <div className="grid md:grid-cols-3 gap-4">
-            {roles.map((role) => (
-              <Card key={role} className="p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <UserRoleBadge role={role} />
-                  <span className="font-medium text-sm">
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {statusTransitionLabels[role].map((status) => (
-                    <Badge key={status} variant="outline" className="text-xs mr-1 mb-1">
-                      {status.replace('_', ' ')}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
+    <div className="space-y-4">
+      <div className="text-sm text-gray-600">
+        Compare permissions across all user roles
+      </div>
+      
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-semibold">Permission</TableHead>
+              {roles.map((role) => (
+                <TableHead key={role} className="text-center">
+                  <Badge className={getRoleBadgeColor(role)}>
+                    {role.replace('_', ' ')}
+                  </Badge>
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Object.entries(permissionLabels).map(([permission, label]) => (
+              <TableRow key={permission}>
+                <TableCell className="font-medium">{label}</TableCell>
+                {roles.map((role) => {
+                  const hasPermission = rolePermissions[role][permission as keyof typeof rolePermissions[UserRole]];
+                  return (
+                    <TableCell key={`${role}-${permission}`} className="text-center">
+                      {typeof hasPermission === 'boolean' ? (
+                        hasPermission ? (
+                          <Check className="h-4 w-4 text-green-600 mx-auto" />
+                        ) : (
+                          <X className="h-4 w-4 text-red-600 mx-auto" />
+                        )
+                      ) : (
+                        <span className="text-xs text-gray-500">N/A</span>
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
             ))}
-          </div>
-        </div>
+            
+            {/* Status Transition Permissions */}
+            <TableRow className="border-t-2">
+              <TableCell className="font-medium">Status Transitions</TableCell>
+              {roles.map((role) => (
+                <TableCell key={`${role}-transitions`} className="text-center">
+                  <div className="text-xs space-y-1">
+                    {rolePermissions[role].canChangeStatus.slice(0, 3).map((status, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {status.replace('_', ' ')}
+                      </Badge>
+                    ))}
+                    {rolePermissions[role].canChangeStatus.length > 3 && (
+                      <div className="text-gray-500">+{rolePermissions[role].canChangeStatus.length - 3}</div>
+                    )}
+                  </div>
+                </TableCell>
+              ))}
+            </TableRow>
 
-        {/* Dashboard Sections */}
-        <div>
-          <h4 className="font-medium mb-3">Dashboard Sections</h4>
-          <div className="grid md:grid-cols-3 gap-4">
-            {roles.map((role) => (
-              <Card key={role} className="p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <UserRoleBadge role={role} />
-                  <span className="font-medium text-sm">
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {rolePermissions[role].dashboardSections.map((section) => (
-                    <Badge key={section} variant="secondary" className="text-xs mr-1 mb-1">
-                      {section.replace('-', ' ')}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            {/* Dashboard Sections */}
+            <TableRow>
+              <TableCell className="font-medium">Dashboard Access</TableCell>
+              {roles.map((role) => (
+                <TableCell key={`${role}-dashboard`} className="text-center">
+                  <div className="text-xs">
+                    {rolePermissions[role].dashboardSections.length} sections
+                  </div>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }
