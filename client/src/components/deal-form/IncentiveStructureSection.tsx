@@ -164,6 +164,32 @@ export function IncentiveStructureSection({
                   }));
                   setDealTiers(updatedTiers);
                 }}
+                onEditIncentive={(incentiveType, newValues) => {
+                  // Update incentive values for specific tiers
+                  const updatedTiers = dealTiers.map(tier => {
+                    if (newValues[tier.tierNumber] !== undefined) {
+                      // Find and update the specific incentive
+                      const updatedIncentives = tier.incentives?.map(incentive => {
+                        if (incentive.category === incentiveType.category && 
+                            incentive.subCategory === incentiveType.subCategory && 
+                            incentive.option === incentiveType.option) {
+                          return {
+                            ...incentive,
+                            value: newValues[tier.tierNumber]
+                          };
+                        }
+                        return incentive;
+                      }) || [];
+                      
+                      return {
+                        ...tier,
+                        incentives: updatedIncentives
+                      };
+                    }
+                    return tier;
+                  });
+                  setDealTiers(updatedTiers);
+                }}
                 showActions={true}
               />
             </div>

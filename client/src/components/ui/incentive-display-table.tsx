@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Trash2, Edit, Check, X } from "lucide-react";
 import { DealTier, TierIncentive } from "@/hooks/useDealTiers";
 import { 
   FinancialTable,
@@ -15,6 +16,7 @@ import {
 export interface IncentiveDisplayTableProps {
   dealTiers: DealTier[];
   onRemoveIncentive: (incentiveType: IncentiveType) => void;
+  onEditIncentive?: (incentiveType: IncentiveType, newValues: { [tierNumber: number]: number }) => void;
   showActions?: boolean;
 }
 
@@ -32,8 +34,12 @@ export interface IncentiveType {
 export function IncentiveDisplayTable({ 
   dealTiers, 
   onRemoveIncentive,
+  onEditIncentive,
   showActions = true 
 }: IncentiveDisplayTableProps) {
+  // State for editing mode
+  const [editingIncentive, setEditingIncentive] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{ [tierNumber: number]: number }>({});
   
   // Extract unique incentive types from all tiers (shared logic)
   const getUniqueIncentiveTypes = (): Array<{ key: string; type: IncentiveType }> => {
@@ -63,6 +69,41 @@ export function IncentiveDisplayTable({
       inc.option === incentiveType.option
     );
     return incentive?.value || 0;
+  };
+
+  // Handle edit mode start
+  const handleStartEdit = (incentiveKey: string, incentiveType: IncentiveType) => {
+    setEditingIncentive(incentiveKey);
+    // Initialize edit values with current values
+    const initialValues: { [tierNumber: number]: number } = {};
+    dealTiers.forEach(tier => {
+      initialValues[tier.tierNumber] = getIncentiveValue(tier, incentiveType);
+    });
+    setEditValues(initialValues);
+  };
+
+  // Handle save edit
+  const handleSaveEdit = (incentiveType: IncentiveType) => {
+    if (onEditIncentive) {
+      onEditIncentive(incentiveType, editValues);
+    }
+    setEditingIncentive(null);
+    setEditValues({});
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingIncentive(null);
+    setEditValues({});
+  };
+
+  // Handle edit value change
+  const handleEditValueChange = (tierNumber: number, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setEditValues(prev => ({
+      ...prev,
+      [tierNumber]: numValue
+    }));
   };
 
   const uniqueIncentiveTypes = getUniqueIncentiveTypes();
@@ -117,23 +158,76 @@ export function IncentiveDisplayTable({
             
             {showActions && (
               <FinancialDataCell>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemoveIncentive(type)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  {editingIncentive === key ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSaveEdit(type)}
+                        className="text-green-500 hover:text-green-700"
+                        title="Save changes"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        className="text-gray-500 hover:text-gray-700"
+                        title="Cancel edit"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleStartEdit(key, type)}
+                        className="text-blue-500 hover:text-blue-700"
+                        title="Edit incentive values"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRemoveIncentive(type)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Remove incentive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </FinancialDataCell>
             )}
             
             {dealTiers.map((tier) => {
               const value = getIncentiveValue(tier, type);
+              const isEditing = editingIncentive === key;
+              
               return (
                 <FinancialDataCell key={`incentive-${tier.tierNumber}-${key}`}>
-                  {formatCurrency(value)}
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      value={editValues[tier.tierNumber] || 0}
+                      onChange={(e) => handleEditValueChange(tier.tierNumber, e.target.value)}
+                      className="w-24 h-8 text-sm"
+                      min="0"
+                      step="0.01"
+                    />
+                  ) : (
+                    formatCurrency(value)
+                  )}
                 </FinancialDataCell>
               );
             })}
