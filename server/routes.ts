@@ -12,12 +12,15 @@ import {
   type DealStatus,
   type UserRole,
   type DepartmentType,
+  type DealApproval,
+  type InsertDealApproval,
+  type ApprovalAction,
+  type InsertApprovalAction,
   insertUserSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
 import { z } from "zod";
-import { fromZodError } from "zod-validation-error";
 import { canTransitionStatus } from "@shared/status-transitions";
 import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
 import { 
@@ -31,8 +34,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
   const router = express.Router();
 
-// Workflow Automation Helper Function
-async function checkAndUpdateDealStatus(dealId: number, storage: any) {
+// Workflow Automation Helper Function - Type-safe version
+interface WorkflowStorage {
+  getDealApprovals(dealId: number): Promise<DealApproval[]>;
+  getDeal(dealId: number): Promise<any>;
+  updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<any>;
+}
+
+async function checkAndUpdateDealStatus(dealId: number, storage: WorkflowStorage): Promise<void> {
   try {
     const approvals = await storage.getDealApprovals(dealId);
     const deal = await storage.getDeal(dealId);
@@ -40,8 +49,8 @@ async function checkAndUpdateDealStatus(dealId: number, storage: any) {
     if (!deal || !approvals.length) return;
 
     // Check completion status
-    const allApproved = approvals.every(a => a.status === 'approved');
-    const anyRejected = approvals.some(a => a.status === 'rejected');
+    const allApproved = approvals.every((a: DealApproval) => a.status === 'approved');
+    const anyRejected = approvals.some((a: DealApproval) => a.status === 'rejected');
 
     let newStatus = deal.status;
     
@@ -51,10 +60,10 @@ async function checkAndUpdateDealStatus(dealId: number, storage: any) {
       newStatus = 'approved';
     } else {
       // Check stage progression for intermediate statuses
-      const stages = [...new Set(approvals.map(a => a.approvalStage))].sort();
-      const completedStages = stages.filter(stage => 
-        approvals.filter(a => a.approvalStage === stage)
-          .every(a => a.status === 'approved')
+      const stages = [...new Set(approvals.map((a: DealApproval) => a.approvalStage))].sort();
+      const completedStages = stages.filter((stage: number) => 
+        approvals.filter((a: DealApproval) => a.approvalStage === stage)
+          .every((a: DealApproval) => a.status === 'approved')
       );
       
       if (completedStages.length === 0) {
@@ -84,14 +93,18 @@ async function checkAndUpdateDealStatus(dealId: number, storage: any) {
   }
 }
 
-// Notification System Helper Function
-async function sendStatusChangeNotification(dealId: number, oldStatus: string, newStatus: string, storage: any) {
+// Notification System Helper Function - Type-safe version
+interface NotificationStorage extends WorkflowStorage {
+  getDeal(dealId: number): Promise<any>;
+}
+
+async function sendStatusChangeNotification(dealId: number, oldStatus: string, newStatus: string, storage: NotificationStorage): Promise<any[]> {
   try {
     const deal = await storage.getDeal(dealId);
     const approvals = await storage.getDealApprovals(dealId);
     
     // Get all relevant stakeholders
-    const notifications = [];
+    const notifications: any[] = [];
     
     // Notify deal creator
     if (deal?.createdBy) {
@@ -106,7 +119,7 @@ async function sendStatusChangeNotification(dealId: number, oldStatus: string, n
     }
     
     // Notify pending reviewers
-    const pendingApprovals = approvals.filter(a => a.status === 'pending');
+    const pendingApprovals = approvals.filter((a: DealApproval) => a.status === 'pending');
     for (const approval of pendingApprovals) {
       if (approval.assignedTo) {
         notifications.push({
@@ -134,19 +147,14 @@ async function sendStatusChangeNotification(dealId: number, oldStatus: string, n
   }
 }
 
-// Approval Assignment Notification Helper
-async function sendApprovalAssignmentNotifications(dealId: number, approvals: any[], storage: any) {
+// Approval Assignment Notification Helper - Type-safe version
+async function sendApprovalAssignmentNotifications(dealId: number, approvals: DealApproval[], storage: NotificationStorage): Promise<void> {
   try {
     const deal = await storage.getDeal(dealId);
     
     for (const approval of approvals) {
-      // Get department reviewers
-      const departmentReviewers = await storage.getUsersByDepartment(approval.departmentName);
-      
-      for (const reviewer of departmentReviewers) {
-        console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned to ${reviewer.firstName} ${reviewer.lastName} (${approval.departmentName} dept)`);
-        console.log(`   Stage: ${approval.approvalStage}, Priority: ${approval.priority}, Due: ${approval.dueDate}`);
-      }
+      console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${approval.departmentName} department review`);
+      console.log(`   Stage: ${approval.approvalStage}, Priority: ${approval.priority}, Due: ${approval.dueDate}`);
     }
   } catch (error) {
     console.error(`Error sending approval assignment notifications:`, error);
@@ -1521,16 +1529,16 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: an
         });
       }
 
-      // Create all approval requirements
+      // Create all approval requirements  
       const createdApprovals = await Promise.all(
-        approvalRequirements.map(req => storage.createDealApproval(req))
+        approvalRequirements.map((req: InsertDealApproval) => storage.createDealApproval(req))
       );
 
       // Create initial action record
       if (initiatedBy && createdApprovals.length > 0) {
         await storage.createApprovalAction({
           approvalId: createdApprovals[0].id,
-          actionType: 'initiate',
+          actionType: 'initiate' as const,
           performedBy: initiatedBy,
           comments: `Approval workflow initiated for deal: ${deal.dealName}`
         });
