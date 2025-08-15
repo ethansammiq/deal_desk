@@ -42,13 +42,13 @@ export function ApprovalWorkflowDashboard({
   const [reviewComments, setReviewComments] = useState('');
 
   // Fetch approval status
-  const { data: approvalStatus, isLoading } = useQuery({
+  const { data: approvalStatus, isLoading } = useQuery<any>({
     queryKey: [`/api/deals/${dealId}/approval-status`],
     enabled: !!dealId
   });
 
   // Fetch approval departments
-  const { data: departments = [] } = useQuery({
+  const { data: departments = [] } = useQuery<any[]>({
     queryKey: ['/api/approval-departments']
   });
 
@@ -64,8 +64,7 @@ export function ApprovalWorkflowDashboard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status,
-          comments,
-          reviewedBy: currentUser.id
+          comments
         })
       });
       
@@ -169,7 +168,7 @@ export function ApprovalWorkflowDashboard({
     );
   }
 
-  if (!approvalStatus || !approvalStatus.approvals || !approvalStatus.approvals.length) {
+  if (!approvalStatus || !(approvalStatus as any)?.approvals || !(approvalStatus as any)?.approvals?.length) {
     return (
       <Card>
         <CardHeader>
@@ -195,7 +194,7 @@ export function ApprovalWorkflowDashboard({
             Approval Workflow: {dealName}
           </CardTitle>
           <CardDescription>
-            Deal Value: ${dealValue?.toLocaleString()} • Stage {approvalStatus.currentStage} of {Math.max(...approvalStatus.approvals.map((a: any) => a.approvalStage))}
+            Deal Value: ${dealValue?.toLocaleString()} • Stage {(approvalStatus as any)?.currentStage} of {Math.max(...((approvalStatus as any)?.approvals || []).map((a: any) => a.approvalStage))}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,32 +202,32 @@ export function ApprovalWorkflowDashboard({
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span>Progress</span>
-                <span>{approvalStatus.progressPercentage}%</span>
+                <span>{(approvalStatus as any)?.progressPercentage || 0}%</span>
               </div>
-              <Progress value={approvalStatus.progressPercentage} className="h-2" />
+              <Progress value={(approvalStatus as any)?.progressPercentage || 0} className="h-2" />
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <div className="font-medium text-gray-700">Total Approvals</div>
-                <div className="text-lg font-semibold">{approvalStatus.approvals.length}</div>
+                <div className="text-lg font-semibold">{((approvalStatus as any)?.approvals || []).length}</div>
               </div>
               <div>
                 <div className="font-medium text-gray-700">Pending</div>
                 <div className="text-lg font-semibold text-yellow-600">
-                  {approvalStatus.pendingApprovals.length}
+                  {((approvalStatus as any)?.pendingApprovals || []).length}
                 </div>
               </div>
               <div>
                 <div className="font-medium text-gray-700">Approved</div>
                 <div className="text-lg font-semibold text-green-600">
-                  {approvalStatus.approvals.filter((a: any) => a.status === 'approved').length}
+                  {((approvalStatus as any)?.approvals || []).filter((a: any) => a.status === 'approved').length}
                 </div>
               </div>
               <div>
                 <div className="font-medium text-gray-700">Current Stage</div>
                 <div className="text-lg font-semibold text-blue-600">
-                  {approvalStatus.currentStage}
+                  {(approvalStatus as any)?.currentStage || 1}
                 </div>
               </div>
             </div>
@@ -245,7 +244,7 @@ export function ApprovalWorkflowDashboard({
         </TabsList>
 
         <TabsContent value="stages" className="space-y-4">
-          {Object.entries(approvalStatus.stageGroups || {}).map(([stage, stageApprovals]: [string, any[]]) => (
+          {Object.entries((approvalStatus as any)?.stageGroups || {}).map(([stage, stageApprovals]: [string, any[]]) => (
             <Card key={stage}>
               <CardHeader>
                 <CardTitle className="text-lg">
@@ -304,7 +303,7 @@ export function ApprovalWorkflowDashboard({
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
-          {(approvalStatus.pendingApprovals || []).map((approval: any) => (
+          {(((approvalStatus as any)?.pendingApprovals) || []).map((approval: any) => (
             <Card key={approval.id}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">

@@ -142,7 +142,7 @@ export const dealStatusHistory = pgTable("deal_status_history", {
   dealId: integer("deal_id").notNull(),
   status: text("status").notNull(),
   previousStatus: text("previous_status"),
-  performedBy: text("performed_by"), // Standardized to match approvalActions
+  performedBy: integer("performed_by"), // Standardized to match approvalActions - user ID
   comments: text("comments"), // Optional comments about the status change
   changedAt: timestamp("changed_at").defaultNow(),
 });
@@ -165,7 +165,7 @@ export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistor
       "lost"
     ]),
     previousStatus: z.string().optional(),
-    performedBy: z.string().min(1, "Performed by is required"),
+    performedBy: z.number().positive("Performed by user ID is required"),
     comments: z.string().optional(),
   });
 

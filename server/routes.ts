@@ -248,7 +248,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "performedBy is required" });
       }
       
-      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, changedBy, comments);
+      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, getCurrentUser().id.toString(), comments);
       
       if (!updatedDeal) {
         return res.status(404).json({ message: "Deal not found" });
@@ -308,9 +308,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       const nudgeComment = `NUDGE from ${sender} to ${targetRole}: ${message}`;
       await storage.createDealStatusHistory({
         dealId: id,
-        status: deal.status, // Keep current status
+        status: deal.status as DealStatus, // Keep current status
         previousStatus: deal.status,
-        performedBy: sender,
+        performedBy: getCurrentUser().id,
         comments: nudgeComment
       });
       
@@ -945,10 +945,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(404).json({ message: "Scoping request not found" });
       }
 
-      // Convert scoping request to deal
+      // Convert scoping request to deal with all required fields
       const dealData = {
         dealName: scopingRequest.requestTitle || "Converted Deal",
-        dealType: scopingRequest.dealType || "grow",
+        dealType: (scopingRequest.dealType as "grow" | "protect" | "custom") || "grow",
         salesChannel: scopingRequest.salesChannel,
         region: scopingRequest.region,
         advertiserName: scopingRequest.advertiserName,
@@ -962,7 +962,16 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         termEndDate: scopingRequest.termEndDate,
         contractTermMonths: scopingRequest.contractTermMonths,
         status: "submitted" as const,
-        email: scopingRequest.email
+        email: scopingRequest.email,
+        // Required fields with default values
+        isRevision: false,
+        hasTradeAMImplications: false,
+        yearlyRevenueGrowthRate: 0,
+        forecastedMargin: 0,
+        yearlyMarginGrowthRate: 0,
+        addedValueBenefitsCost: 0,
+        analyticsTier: "silver",
+        requiresCustomMarketing: false
       };
 
       // Generate reference number
@@ -1289,7 +1298,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       
       // Get current user role (mock for now)
       const currentUser = getCurrentUser();
-      const allowedTransitions = getAllowedTransitions(currentUser.role, deal.status as DealStatus);
+      const allowedTransitions = getAllowedTransitions(currentUser.role as UserRole, deal.status as DealStatus);
       
       res.status(200).json({ allowedTransitions });
     } catch (error) {

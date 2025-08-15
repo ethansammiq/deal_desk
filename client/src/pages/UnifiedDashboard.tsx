@@ -82,7 +82,7 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
         visible: true
       };
     }
-    if (['under_review', 'legal_review', 'negotiating'].includes(deal.status)) {
+    if (['under_review', 'contract_drafting', 'negotiating'].includes(deal.status)) {
       return {
         type: 'nudge',
         label: 'Send Nudge',
@@ -130,7 +130,7 @@ const getActionForDeal = (deal: Deal, userRole: UserRole, handlers: {
   
   // Legal actions
   if (userRole === 'legal') {
-    if (deal.status === 'legal_review') {
+    if (deal.status === 'contract_drafting') {
       return {
         type: 'legal_approve',
         label: 'Legal Review',
@@ -206,13 +206,13 @@ export default function UnifiedDashboard() {
   const userDepartment = user?.department;
 
   // Fetch approval departments for department reviewer filtering
-  const { data: departments = [] } = useQuery({
+  const { data: departments = [] } = useQuery<{ department: string; displayName: string }[]>({
     queryKey: ['/api/approval-departments'],
     staleTime: 300000 // 5 minutes
   });
 
   // Fetch user's pending approvals if they are a department reviewer
-  const { data: userPendingApprovals = [] } = useQuery({
+  const { data: userPendingApprovals = [] } = useQuery<any[]>({
     queryKey: [`/api/approvals/pending?department=${userDepartment}`],
     enabled: userRole === 'department_reviewer' && !!userDepartment,
     staleTime: 30000 // 30 seconds
@@ -662,7 +662,7 @@ export default function UnifiedDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileCheck className="h-5 w-5" />
-              Your Approval Queue - {departments.find(d => d.departmentName === userDepartment)?.displayName || userDepartment}
+              Your Approval Queue - {departments.find(d => d.department === userDepartment)?.displayName || userDepartment}
             </CardTitle>
           </CardHeader>
           <CardContent>

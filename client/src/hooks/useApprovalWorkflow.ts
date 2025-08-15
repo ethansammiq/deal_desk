@@ -14,7 +14,7 @@ export function useApprovalWorkflow(dealId: number) {
     data: approvalStatus,
     isLoading: isLoadingStatus,
     error: statusError
-  } = useQuery({
+  } = useQuery<any>({
     queryKey: [`/api/deals/${dealId}/approval-status`],
     enabled: !!dealId
   });
@@ -23,13 +23,13 @@ export function useApprovalWorkflow(dealId: number) {
   const {
     data: approvals,
     isLoading: isLoadingApprovals
-  } = useQuery({
+  } = useQuery<any[]>({
     queryKey: [`/api/deals/${dealId}/approvals`],
     enabled: !!dealId
   });
 
   // Fetch approval departments
-  const { data: departments } = useQuery({
+  const { data: departments } = useQuery<any[]>({
     queryKey: ['/api/approval-departments']
   });
 
