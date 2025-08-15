@@ -92,6 +92,73 @@ export function EnhancedApprovalAlert({
     }
   };
 
+  const getApprovalProcessDetails = (stage: string, department: ApprovalDepartment) => {
+    const processMap = {
+      incentive_review: {
+        finance: [
+          "• Review financial incentive structure and payment terms",
+          "• Validate budget impact and cash flow implications", 
+          "• Assess credit risk and payment feasibility",
+          "• Ensure compliance with financial policies"
+        ],
+        product: [
+          "• Evaluate product incentive offerings and discounts",
+          "• Review feature access and product bundle proposals",
+          "• Validate technical feasibility of product commitments",
+          "• Assess impact on product roadmap and resources"
+        ],
+        creative: [
+          "• Review marketing and creative incentive proposals",
+          "• Validate brand exposure and co-marketing opportunities",
+          "• Assess creative resource allocation and timeline",
+          "• Ensure brand guidelines and compliance"
+        ],
+        analytics: [
+          "• Review data access and analytics incentive proposals",
+          "• Validate reporting tools and data sharing agreements",
+          "• Assess technical requirements and data privacy",
+          "• Ensure compliance with data governance policies"
+        ]
+      },
+      margin_review: {
+        trading: [
+          "• Validate margin calculations and profit projections",
+          "• Review trading desk capacity and execution feasibility",
+          "• Assess market conditions and risk factors",
+          "• Confirm pricing strategy alignment"
+        ],
+        finance: [
+          "• Review overall profitability and ROI projections",
+          "• Validate financial modeling and assumptions",
+          "• Assess impact on quarterly/annual targets",
+          "• Confirm budget allocation and resource requirements"
+        ]
+      },
+      final_review: {
+        finance: [
+          "• Comprehensive deal structure and strategic alignment review",
+          "• Final validation of all financial and risk components",
+          "• Assessment of precedent-setting implications",
+          "• Executive decision on deal approval or escalation"
+        ]
+      }
+    };
+
+    const stageProcesses = processMap[stage as keyof typeof processMap];
+    if (!stageProcesses) return <div>Standard approval process</div>;
+    
+    const departmentProcess = stageProcesses[department as keyof typeof stageProcesses];
+    if (!departmentProcess) return <div>Department-specific review process</div>;
+
+    return (
+      <div className="space-y-1">
+        {departmentProcess.map((step, index) => (
+          <div key={index} className="text-slate-600">{step}</div>
+        ))}
+      </div>
+    );
+  };
+
   const getDepartmentBadge = (dept: ApprovalDepartment) => {
     const config = departmentConfig[dept];
     return (
@@ -170,30 +237,57 @@ export function EnhancedApprovalAlert({
         {/* Detailed Approval Requirements */}
         {showDetails && (
           <div className="space-y-3 mt-4 pt-4 border-t">
-            <h4 className="font-medium text-sm text-slate-700">Detailed Approval Requirements</h4>
+            <h4 className="font-medium text-sm text-slate-700">Detailed Approval Workflow</h4>
             
             {approvalRequirements.map((req) => (
-              <div key={req.id} className="flex items-center justify-between p-3 bg-white border rounded-lg">
-                <div className="flex items-center gap-3">
-                  {getStageIcon(req.stage, req.status)}
-                  <div>
-                    <div className="font-medium text-sm">
-                      {departmentConfig[req.department].name}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {departmentConfig[req.department].description}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      Est. time: {req.estimatedTime}
+              <div key={req.id} className="p-4 bg-white border rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getStageIcon(req.stage, req.status)}
+                    <div>
+                      <div className="font-medium text-sm">
+                        {departmentConfig[req.department].name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {departmentConfig[req.department].description}
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {getDepartmentBadge(req.department)}
+                    <Badge className={getStatusColor(req.status)}>
+                      {req.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  {getDepartmentBadge(req.department)}
-                  <Badge className={getStatusColor(req.status)}>
-                    {req.status.replace('_', ' ')}
-                  </Badge>
+
+                {/* Approval Process Details */}
+                <div className="bg-slate-50 p-3 rounded text-xs space-y-2">
+                  <div className="font-medium text-slate-700">Review Process:</div>
+                  {getApprovalProcessDetails(req.stage, req.department)}
+                  
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200">
+                    <span className="text-slate-600">Estimated Timeline:</span>
+                    <span className="font-medium">{req.estimatedTime}</span>
+                  </div>
+                  
+                  {req.dependencies.length > 0 && (
+                    <div className="text-slate-500">
+                      <span className="font-medium">Dependencies:</span> Waiting for {req.dependencies.length} other approvals
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Items for this Approval */}
+                <div className="bg-blue-50 p-3 rounded text-xs">
+                  <div className="font-medium text-blue-800 mb-1">Reviewer Actions Available:</div>
+                  <div className="text-blue-700 space-y-1">
+                    <div>• ✅ <strong>Approve</strong> - Move to next stage</div>
+                    <div>• 🔄 <strong>Request Revision</strong> - Send back with specific feedback</div>
+                    <div>• ❌ <strong>Reject</strong> - Decline deal with explanation</div>
+                    <div>• 💬 <strong>Add Comments</strong> - Provide feedback without blocking</div>
+                  </div>
                 </div>
               </div>
             ))}
