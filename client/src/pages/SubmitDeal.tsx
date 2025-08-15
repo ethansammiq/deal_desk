@@ -360,6 +360,21 @@ export default function SubmitDeal() {
       if (response.dealStructure) {
         setDealStructure(response.dealStructure);
       }
+
+      // Load tier data if available
+      if (response.dealTiers && Array.isArray(response.dealTiers)) {
+        setDealTiers(response.dealTiers);
+      } else {
+        // Try to fetch tier data separately
+        try {
+          const tierData = await apiRequest(`/api/deals/${draftId}/tiers`);
+          if (tierData && Array.isArray(tierData)) {
+            setDealTiers(tierData);
+          }
+        } catch (tierError) {
+          console.warn('No tier data found for draft:', tierError);
+        }
+      }
     } catch (error) {
       console.error('Error loading draft:', error);
     }
@@ -668,21 +683,27 @@ export default function SubmitDeal() {
 
   // Draft saving mutation with business rules
   const saveDraftMutation = useMutation({
-    mutationFn: async ({ name, description, formData, step }: { 
+    mutationFn: async ({ name, description, formData, step, draftId, dealTiers }: { 
       name: string; 
       description?: string; 
       formData: any;
       step: number;
+      draftId?: number;
+      dealTiers?: any[];
     }) => {
       // Business Rule: One draft per advertiser/agency per seller account
       const requestData = {
         name,
         description,
-        formData,
+        formData: {
+          ...formData,
+          dealTiers: dealTiers // Include tier data in formData
+        },
         currentStep: step,
         advertiserName: formData.advertiserName,
         agencyName: formData.agencyName,
-        salesChannel: formData.salesChannel
+        salesChannel: formData.salesChannel,
+        draftId: draftId // Pass draftId for updates
       };
 
       return apiRequest("/api/deals/drafts", {
@@ -903,7 +924,8 @@ export default function SubmitDeal() {
               description: `Draft saved from ${getTabLabel(activeTab, SUBMIT_DEAL_TABS)}`,
               formData: form.getValues(),
               step: currentTabIndex >= 0 ? currentTabIndex : 0,
-              draftId: draftId ? parseInt(draftId) : undefined // Pass draftId for updates
+              draftId: draftId ? parseInt(draftId) : undefined, // Pass draftId for updates
+              dealTiers: dealTiers // Include tier data
             });
           }}
           disabled={saveDraftMutation.isPending}

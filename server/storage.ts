@@ -61,6 +61,7 @@ export interface IStorage {
     assignedTo?: number 
   }): Promise<Deal[]>;
   createDeal(deal: InsertDeal, referenceNumber?: string): Promise<Deal>;
+  updateDeal(id: number, dealData: Partial<InsertDeal>): Promise<Deal | undefined>;
   updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined>;
   updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined>;
   deleteDeal(id: number): Promise<boolean>;
@@ -994,6 +995,24 @@ export class MemStorage implements IStorage {
     
     this.deals.set(id, deal);
     return deal;
+  }
+
+  async updateDeal(id: number, dealData: Partial<InsertDeal>): Promise<Deal | undefined> {
+    const deal = this.deals.get(id);
+    if (!deal) return undefined;
+    
+    const now = new Date();
+    
+    // Update the deal with new data
+    const updatedDeal: Deal = {
+      ...deal,
+      ...dealData,
+      id, // Preserve the original ID
+      updatedAt: now,
+    };
+    
+    this.deals.set(id, updatedDeal);
+    return updatedDeal;
   }
   
   // Phase 7A: Enhanced updateDealStatus with status history tracking
