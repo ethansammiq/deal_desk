@@ -415,44 +415,64 @@ export type InsertDealScopingRequest = z.infer<typeof insertDealScopingRequestSc
 export type IncentiveValue = typeof incentiveValues.$inferSelect;
 export type InsertIncentiveValue = z.infer<typeof insertIncentiveValueSchema>;
 
+// Multi-Layered Approval System Types
+export type DealApproval = typeof dealApprovals.$inferSelect;
+export type InsertDealApproval = z.infer<typeof insertDealApprovalSchema>;
+
+export type ApprovalAction = typeof approvalActions.$inferSelect;
+export type InsertApprovalAction = z.infer<typeof insertApprovalActionSchema>;
+
+export type ApprovalDepartment = typeof approvalDepartments.$inferSelect;
+export type InsertApprovalDepartment = z.infer<typeof insertApprovalDepartmentSchema>;
+
 // Multi-Layered Approval System Tables
 
-// Deal approval requirements table
+// Deal approval requirements table - Updated to match routes.ts usage
 export const dealApprovals = pgTable("deal_approvals", {
   id: serial("id").primaryKey(),
   dealId: integer("deal_id").notNull(),
-  stage: text("stage").notNull(), // 'incentive_review', 'margin_review', 'final_review'
-  department: text("department", { enum: departmentTypes }).notNull(),
-  requiredFor: text("required_for").array().notNull().default([]), // Array of what this approval covers
-  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'revision_requested', 'rejected'
-  assignedTo: integer("assigned_to"), // References users.id - specific user assigned
-  estimatedTime: text("estimated_time").notNull(),
-  dependencies: text("dependencies").array().notNull().default([]), // Array of approval IDs that must complete first
-  createdAt: timestamp("created_at").defaultNow(),
+  
+  // Updated field names to match actual usage in routes.ts
+  approvalStage: integer("approval_stage").notNull(), // Used in workflow automation
+  departmentName: text("department_name", { 
+    enum: ["trading", "finance", "creative", "marketing", "product", "solutions"] 
+  }).notNull(),
+  requiredRole: text("required_role").notNull(), // Single role requirement
+  
+  status: text("status", { enum: ["pending", "approved", "rejected", "revision_requested"] }).default("pending"),
+  priority: text("priority", { enum: ["normal", "high", "urgent"] }).default("normal"),
+  dueDate: timestamp("due_date").notNull(),
+  assignedTo: integer("assigned_to"),
+  reviewedBy: integer("reviewed_by"), // Added missing field used in routes
   completedAt: timestamp("completed_at"),
   comments: text("comments"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertDealApprovalSchema = createInsertSchema(dealApprovals)
-  .omit({ id: true, createdAt: true, completedAt: true })
+  .omit({ id: true, createdAt: true, completedAt: true, reviewedBy: true })
   .extend({
     dealId: z.number().positive("Deal ID must be positive"),
-    stage: z.enum(["incentive_review", "margin_review", "final_review"]),
-    department: z.enum(departmentTypes),
+    approvalStage: z.number().positive("Approval stage must be positive"),
+    departmentName: z.enum(["trading", "finance", "creative", "marketing", "product", "solutions"]),
+    requiredRole: z.string().min(1, "Required role is required"),
     status: z.enum(["pending", "approved", "revision_requested", "rejected"]).default("pending"),
+    priority: z.enum(["normal", "high", "urgent"]).default("normal"),
+    dueDate: z.date(),
     assignedTo: z.number().positive().optional(),
-    estimatedTime: z.string().min(1, "Estimated time is required"),
-    requiredFor: z.array(z.string()).default([]),
-    dependencies: z.array(z.string()).default([]),
     comments: z.string().optional(),
   });
 
-// Individual approval actions/history
+// Individual approval actions/history - Updated to match routes.ts usage
 export const approvalActions = pgTable("approval_actions", {
   id: serial("id").primaryKey(),
   approvalId: integer("approval_id").notNull(),
-  actionType: text("action_type").notNull(), // 'approve', 'reject', 'request_revision', 'comment'
-  actionBy: integer("action_by").notNull(), // References users.id
+  actionType: text("action_type", { 
+    enum: ["approve", "reject", "request_revision", "comment", "initiate", "assign"] 
+  }).notNull(), // Added missing 'initiate' and 'assign' types
+  performedBy: integer("performed_by").notNull(), // Updated field name to match routes.ts usage
+  userId: integer("user_id"), // Alternative field name used in some routes
+  action: text("action"), // Alternative field name for status actions
   comments: text("comments"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -461,8 +481,10 @@ export const insertApprovalActionSchema = createInsertSchema(approvalActions)
   .omit({ id: true, createdAt: true })
   .extend({
     approvalId: z.number().positive("Approval ID must be positive"),
-    actionType: z.enum(["approve", "reject", "request_revision", "comment"]),
-    actionBy: z.number().positive("Action by user ID is required"),
+    actionType: z.enum(["approve", "reject", "request_revision", "comment", "initiate", "assign"]),
+    performedBy: z.number().positive("Performed by user ID is required"),
+    userId: z.number().positive().optional(), // Alternative field
+    action: z.string().optional(), // Alternative field
     comments: z.string().optional(),
   });
 

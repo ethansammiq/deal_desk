@@ -1526,6 +1526,10 @@ export class MemStorage implements IStorage {
       .sort((a, b) => a.id - b.id);
   }
 
+  getAllDealApprovals(): DealApproval[] {
+    return Array.from(this.dealApprovals.values());
+  }
+
   async createDealApproval(approval: InsertDealApproval): Promise<DealApproval> {
     const id = this.dealApprovalCurrentId++;
     const now = new Date();
