@@ -7,8 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
 import { UniversalApprovalQueue } from "@/components/approval/UniversalApprovalQueue";
-import type { Deal, UserRole } from "@shared/schema";
-import { Link } from "wouter";
+import { DataTable } from "@/components/ui/data-table";
+import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
+import type { Deal, UserRole, DealStatus } from "@shared/schema";
+import { Link, useLocation } from "wouter";
+import { ColumnDef } from "@tanstack/react-table";
 import { 
   Briefcase, 
   TrendingUp, 
@@ -24,6 +27,7 @@ import {
 
 export function RoleBasedDashboard() {
   const { currentUser, canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = useUserPermissions();
+  const [, navigate] = useLocation(); // Move hook call to top level to avoid conditional usage
   
   // Fetch core data
   const { data: stats } = useQuery({
@@ -63,6 +67,123 @@ export function RoleBasedDashboard() {
   const userName = currentUser?.firstName || currentUser?.username || "User";
   const userRole = currentUser?.role as UserRole;
   const userDepartment = currentUser?.department;
+
+  // Helper function to format currency in shortened format (from UnifiedDashboard)
+  const formatShortCurrency = (amount: number, isMultiTier: boolean = false): string => {
+    if (amount === 0) return "$0";
+    
+    const suffix = isMultiTier ? "+" : "";
+    
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(amount % 1000000000 === 0 ? 0 : 1)}B${suffix}`;
+    } else if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(amount % 1000000 === 0 ? 0 : 1)}M${suffix}`;
+    } else if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}k${suffix}`;
+    } else {
+      return `$${amount.toFixed(0)}${suffix}`;
+    }
+  };
+
+  // Helper function to get deal value (from UnifiedDashboard)
+  const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
+    // For scoping deals, use growth ambition
+    if (deal.status === 'scoping' && deal.growthAmbition) {
+      return { amount: deal.growthAmbition, isMultiTier: false };
+    }
+    
+    // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
+    if (deal.dealStructure === 'tiered') {
+      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
+      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
+      return { amount, isMultiTier: true }; // Always true for tiered deals
+    }
+    
+    // For flat commit deals, use annual revenue (no + sign)
+    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
+      return { amount: deal.annualRevenue, isMultiTier: false };
+    }
+    
+    // Fallback to any available revenue value
+    const amount = deal.annualRevenue || deal.growthAmbition || 0;
+    return { amount, isMultiTier: false };
+  };
+
+  // Define columns for seller's recent deals table (simplified version of UnifiedDashboard)
+  const sellerDealColumns: ColumnDef<Deal>[] = [
+    {
+      id: "client",
+      header: "Client",
+      cell: ({ row }) => {
+        const deal = row.original;
+        const clientName = deal.advertiserName || deal.agencyName || "N/A";
+        return <div className="font-medium text-slate-900">{clientName}</div>;
+      },
+    },
+    {
+      id: "dealValue", 
+      header: "Deal Value",
+      cell: ({ row }) => {
+        const { amount, isMultiTier } = getDealValue(row.original);
+        return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
+      },
+    },
+    {
+      accessorKey: "dealStructure",
+      header: "Type",
+      cell: ({ row }) => {
+        const structure = row.original.dealStructure;
+        const typeLabels = {
+          'tiered': 'Tiered',
+          'flat_commit': 'Flat Commit'
+        };
+        const label = typeLabels[structure as keyof typeof typeLabels] || structure;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const deal = row.original;
+        const status = deal.status as DealStatus;
+        return (
+          <div className="flex items-center gap-2">
+            <DealStatusBadge status={status} />
+            {deal.revisionCount > 0 && (
+              <Badge variant="outline" className="text-xs px-1 py-0">
+                Rev {deal.revisionCount}
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "updatedAt",
+      header: "Updated",
+      cell: ({ row }) => {
+        const updatedAt = row.original.updatedAt;
+        if (!updatedAt) return <div className="text-sm text-slate-500">N/A</div>;
+        
+        const date = new Date(updatedAt.toString());
+        const now = new Date();
+        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        
+        let timeString;
+        if (diffInHours < 1) {
+          timeString = "Just now";
+        } else if (diffInHours < 24) {
+          timeString = `${diffInHours}h ago`;
+        } else {
+          const diffInDays = Math.floor(diffInHours / 24);
+          timeString = `${diffInDays}d ago`;
+        }
+        
+        return <div className="text-sm text-slate-500">{timeString}</div>;
+      },
+    }
+  ];
 
   // Get role-specific metrics (streamlined to 3-4 key items only)
   const getRoleSpecificMetrics = () => {
@@ -296,50 +417,41 @@ export function RoleBasedDashboard() {
         />
       )}
 
-      {/* Seller-Specific: Recent Deal Activity */}
+      {/* Seller-Specific: Recent Deal Activity with DataTable */}
       {userRole === 'seller' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Recent Deals
+              My Recent Deals
             </CardTitle>
-            <CardDescription>Your latest deal submissions and their status</CardDescription>
+            <CardDescription>Your latest deal submissions and their current status</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {deals.slice(0, 5).map((deal, index) => (
-                <div key={deal.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium text-slate-900">{deal.dealName || `Deal #${deal.id}`}</p>
-                    <p className="text-sm text-slate-500">
-                      {deal.advertiserName || deal.agencyName || 'Client TBD'} • 
-                      {deal.annualRevenue ? ` $${Math.round(deal.annualRevenue / 1000)}k` : ' Value TBD'}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={
-                      deal.status === 'signed' ? 'default' :
-                      deal.status === 'lost' ? 'destructive' :
-                      deal.status === 'under_review' ? 'secondary' : 'outline'
-                    }>
-                      {deal.status.replace('_', ' ')}
-                    </Badge>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {deals.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-slate-500">No deals yet. Ready to create your first deal?</p>
-                  <Button asChild className="mt-3">
-                    <Link to="/submit-deal">Create Deal</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+            {deals.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-slate-700 mb-2">No deals yet</h3>
+                <p className="text-slate-500 mb-4">Ready to create your first deal?</p>
+                <Button asChild>
+                  <Link to="/submit-deal">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Create Deal
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-md">
+                <DataTable 
+                  columns={sellerDealColumns} 
+                  data={deals.slice(0, 10)} // Show last 10 deals
+                  searchKey="client"
+                  placeholder="Search your deals..."
+                  statusFilter={true}
+                  onRowClick={(deal) => navigate(`/deals/${deal.id}`)}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
