@@ -450,7 +450,7 @@ export function ConsolidatedDashboard() {
                   {userRole === 'seller' && (
                     <>
                       <Button asChild className="h-auto p-6 flex-col gap-3 bg-[#3e0075] hover:bg-[#2d0055] text-white border-0 shadow-sm hover:shadow transition-all duration-200">
-                        <Link to="/submit-deal">
+                        <Link to="/request/proposal">
                           <div className="p-2 bg-white/15 rounded-lg">
                             <PlusCircle className="h-5 w-5" />
                           </div>
@@ -544,7 +544,7 @@ export function ConsolidatedDashboard() {
                 </div>
               </div>
               <Button asChild variant="outline" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
-                <Link to="/deals">
+                <Link to="/analytics">
                   View All Deals
                 </Link>
               </Button>
@@ -560,7 +560,7 @@ export function ConsolidatedDashboard() {
                 <p className="text-slate-500 text-sm mb-4">Ready to create your first deal?</p>
                 {userRole === 'seller' && (
                   <Button asChild size="sm" className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                    <Link to="/submit-deal">
+                    <Link to="/request/proposal">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Create Deal
                     </Link>
@@ -595,7 +595,7 @@ export function ConsolidatedDashboard() {
                 {getFilteredDeals().length > 5 && (
                   <div className="pt-3 border-t border-slate-200">
                     <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
-                      <Link to="/deals">
+                      <Link to="/analytics">
                         View {getFilteredDeals().length - 5} more deals →
                       </Link>
                     </Button>

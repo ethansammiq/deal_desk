@@ -20,7 +20,8 @@ import {
   FileText,
   MoreHorizontal,
   Eye,
-  Edit2
+  Edit2,
+  BarChart3
 } from "lucide-react";
 
 export default function DealsPage() {
@@ -165,7 +166,7 @@ export default function DealsPage() {
               Home
             </Link>
             <span className="text-slate-400">/</span>
-            <span className="text-[#3e0075] font-medium">Deals</span>
+            <span className="text-[#3e0075] font-medium">Analytics</span>
           </nav>
         </div>
       </div>
@@ -175,17 +176,17 @@ export default function DealsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-3">
-              <Briefcase className="h-8 w-8 text-[#3e0075]" />
-              All Deals
+              <BarChart3 className="h-8 w-8 text-[#3e0075]" />
+              Analytics
             </h1>
             <p className="text-slate-600 mt-2">
-              {canViewAllDeals ? 'Manage and track all commercial deals' : 'View your submitted deals'}
+              Comprehensive deal analytics and performance insights
             </p>
           </div>
           
           {canCreateDeals && (
             <Button asChild className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
-              <Link to="/submit-deal">
+              <Link to="/request/proposal">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Create Deal
               </Link>
@@ -291,7 +292,7 @@ export default function DealsPage() {
                 </p>
                 {canCreateDeals && !searchTerm && statusFilter === "all" && (
                   <Button asChild className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                    <Link to="/submit-deal">
+                    <Link to="/request/proposal">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Create Deal
                     </Link>

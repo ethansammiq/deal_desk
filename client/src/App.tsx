@@ -66,13 +66,11 @@ function Router() {
           <Switch>
             <Route path="/" component={ConsolidatedDashboard} />
             <Route path="/dashboard" component={ConsolidatedDashboard} />
-            <Route path="/deals" component={DealsPage} />
-            <Route path="/insights" component={ConsolidatedDashboard} />
-            <Route path="/support" component={RequestSupport} />
-            <Route path="/request-support" component={RequestSupport} />
-            <Route path="/submit-deal" component={SubmitDeal} />
-            <Route path="/help" component={HelpResources} />
-            <Route path="/deal-requests" component={DealRequests} />
+            <Route path="/request" component={DealRequests} />
+            <Route path="/request/scoping" component={RequestSupport} />
+            <Route path="/request/proposal" component={SubmitDeal} />
+            <Route path="/support" component={HelpResources} />
+            <Route path="/analytics" component={DealsPage} />
             <Route path="/deals/:id" component={DealDetails} />
             <Route path="/testing" component={Testing} />
             <Route path="/department-queues" component={DepartmentQueues} />

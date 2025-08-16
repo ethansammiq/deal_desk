@@ -9,11 +9,25 @@ export default function DealRequests() {
   const [_, setLocation] = useLocation();
 
   return (
-    <div className="p-6">
-      <FormSectionHeader
-        title="Deal Requests"
-        description="Choose the right option for your commercial deal needs"
-      />
+    <div className="min-h-screen bg-slate-50">
+      {/* Breadcrumb Navigation */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <nav className="flex items-center space-x-2 text-sm">
+            <span className="text-slate-500 hover:text-slate-700 cursor-pointer" onClick={() => setLocation("/")}>
+              Home
+            </span>
+            <span className="text-slate-400">/</span>
+            <span className="text-[#3e0075] font-medium">Requests</span>
+          </nav>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-8 space-y-8">
+        <FormSectionHeader
+          title="Deal Requests"
+          description="Choose the right option for your commercial deal needs"
+        />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Deal Scoping Card */}
@@ -54,7 +68,7 @@ export default function DealRequests() {
             <div className="flex items-center space-x-2">
               <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Recommended for new users</span>
             </div>
-            <Button onClick={() => setLocation("/request-support")} className="flex items-center">
+            <Button onClick={() => setLocation("/request/scoping")} className="flex items-center">
               Start Scoping
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
@@ -99,15 +113,15 @@ export default function DealRequests() {
             <div className="flex items-center space-x-2">
               <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">For experienced users</span>
             </div>
-            <Button onClick={() => setLocation("/submit-deal")} variant="default" className="flex items-center">
+            <Button onClick={() => setLocation("/request/proposal")} variant="default" className="flex items-center">
               Submit Deal
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardFooter>
         </Card>
-      </div>
+        </div>
 
-      {/* Decision Guide */}
+        {/* Decision Guide */}
       <div className="mt-8">
         <Tabs defaultValue="comparison">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
@@ -203,6 +217,7 @@ export default function DealRequests() {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
       </div>
     </div>
   );

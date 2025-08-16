@@ -127,10 +127,10 @@ export function TopNavbar() {
             {/* Navigation - Centered */}
             <nav className="hidden lg:flex lg:space-x-3 flex-1 justify-center">
             {/* Core: Dashboard */}
-            <Link href="/">
+            <Link href="/dashboard">
               <div className={cn(
                 "flex items-center justify-center min-w-[120px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                (location === "/" || location === "/insights")
+                (location === "/" || location === "/dashboard")
                   ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                   : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
               )}>
@@ -139,37 +139,24 @@ export function TopNavbar() {
               </div>
             </Link>
 
-            {/* Core: Deals */}
-            <Link href="/deals">
+            {/* Core: Requests */}
+            <Link href="/request">
               <div className={cn(
                 "flex items-center justify-center min-w-[100px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                location === "/deals"
-                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-              )}>
-                <Briefcase className="flex-shrink-0 w-4 h-4 mr-2" />
-                <span className="whitespace-nowrap">Deals</span>
-              </div>
-            </Link>
-
-            {/* Core: Deal Requests */}
-            <Link href="/deal-requests">
-              <div className={cn(
-                "flex items-center justify-center min-w-[120px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                (location === "/deal-requests" || location === "/submit-deal")
+                (location === "/request" || location === "/request/scoping" || location === "/request/proposal")
                   ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                   : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
               )}>
                 <FileText className="flex-shrink-0 w-4 h-4 mr-2" />
-                <span className="whitespace-nowrap">Deal Requests</span>
+                <span className="whitespace-nowrap">Requests</span>
               </div>
             </Link>
 
             {/* Core: Support */}
-            <Link href="/help">
+            <Link href="/support">
               <div className={cn(
                 "flex items-center justify-center min-w-[100px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                location === "/help"
+                location === "/support"
                   ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                   : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
               )}>
@@ -178,12 +165,12 @@ export function TopNavbar() {
               </div>
             </Link>
 
-            {/* Admin Only: Analytics */}
-            {(userRole === 'admin' || userRole === 'approver') && (
-              <Link href="/sla-monitoring">
+            {/* Analytics - All roles except seller */}
+            {userRole !== 'seller' && (
+              <Link href="/analytics">
                 <div className={cn(
                   "flex items-center justify-center min-w-[110px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/sla-monitoring"
+                  location === "/analytics"
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
@@ -246,10 +233,10 @@ export function TopNavbar() {
       <div className={`${mobileMenuOpen ? 'block' : 'hidden'} lg:hidden`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b border-slate-200">
           {/* Mobile Navigation Links */}
-          <Link href="/">
+          <Link href="/dashboard">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              (location === "/" || location === "/insights")
+              (location === "/" || location === "/dashboard")
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
