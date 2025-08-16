@@ -17,6 +17,7 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
 const RoleBasedDashboard = lazy(() => import("@/components/dashboard/RoleBasedDashboard").then(m => ({ default: m.RoleBasedDashboard })));
 const ConsolidatedDashboard = lazy(() => import("@/components/dashboard/ConsolidatedDashboard").then(m => ({ default: m.ConsolidatedDashboard })));
+const DealsPage = lazy(() => import("@/pages/DealsPage"));
 const DealDetails = lazy(() => import("@/pages/DealDetails"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
@@ -65,7 +66,7 @@ function Router() {
           <Switch>
             <Route path="/" component={ConsolidatedDashboard} />
             <Route path="/dashboard" component={ConsolidatedDashboard} />
-            <Route path="/deals" component={ConsolidatedDashboard} />
+            <Route path="/deals" component={DealsPage} />
             <Route path="/insights" component={ConsolidatedDashboard} />
             <Route path="/support" component={RequestSupport} />
             <Route path="/request-support" component={RequestSupport} />

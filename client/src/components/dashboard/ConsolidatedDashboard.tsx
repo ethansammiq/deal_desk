@@ -527,32 +527,39 @@ export function ConsolidatedDashboard() {
           </CardContent>
         </Card>
 
-        {/* Smart Deal Table - No Action Column */}
+        {/* Recent Deals Preview - Dashboard Summary */}
         <Card className="border border-slate-200 shadow-sm bg-white">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-              <div>
-                <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  {userRole === 'seller' ? 'My Deals' : 'All Deals'}
-                </CardTitle>
-                <CardDescription className="text-slate-500">
-                  {userRole === 'seller' ? 'Your latest deal submissions and their current status' : 'Overview of all deals in the system'}
-                </CardDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+                <div>
+                  <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Recent Deals
+                  </CardTitle>
+                  <CardDescription className="text-slate-500">
+                    Latest activity and deal updates
+                  </CardDescription>
+                </div>
               </div>
+              <Button asChild variant="outline" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
+                <Link to="/deals">
+                  View All Deals
+                </Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
             {getFilteredDeals().length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="h-8 w-8 text-slate-400" />
+              <div className="text-center py-12">
+                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <FileText className="h-6 w-6 text-slate-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">No deals yet</h3>
-                <p className="text-slate-500 mb-6">Ready to create your first deal?</p>
+                <h3 className="text-base font-medium text-slate-700 mb-2">No deals yet</h3>
+                <p className="text-slate-500 text-sm mb-4">Ready to create your first deal?</p>
                 {userRole === 'seller' && (
-                  <Button asChild className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
+                  <Button asChild size="sm" className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
                     <Link to="/submit-deal">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Create Deal
@@ -561,15 +568,39 @@ export function ConsolidatedDashboard() {
                 )}
               </div>
             ) : (
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <DataTable 
-                  columns={dealColumns} 
-                  data={getFilteredDeals()} 
-                  searchKey="advertiserName"
-                  placeholder="Search by client name..."
-                  statusFilter={true}
-                  onRowClick={(deal) => navigate(`/deals/${deal.id}`)}
-                />
+              <div className="space-y-3">
+                {getFilteredDeals().slice(0, 5).map((deal) => (
+                  <div 
+                    key={deal.id}
+                    className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/deals/${deal.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
+                      <div>
+                        <p className="font-medium text-slate-900">{deal.dealName}</p>
+                        <p className="text-sm text-slate-500">
+                          {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <DealStatusBadge status={deal.status as DealStatus} />
+                      <div className="text-sm font-medium text-slate-700">
+                        {formatShortCurrency((deal as any).annualRevenue || (deal as any).totalValue || 0)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {getFilteredDeals().length > 5 && (
+                  <div className="pt-3 border-t border-slate-200">
+                    <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
+                      <Link to="/deals">
+                        View {getFilteredDeals().length - 5} more deals →
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
