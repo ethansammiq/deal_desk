@@ -15,6 +15,7 @@ import { SmartSearch } from "@/components/SmartSearch";
 // Lazy load pages for better performance
 const NotFound = lazy(() => import("@/pages/not-found"));
 const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
+const RoleBasedDashboard = lazy(() => import("@/components/dashboard/RoleBasedDashboard").then(m => ({ default: m.RoleBasedDashboard })));
 const DealDetails = lazy(() => import("@/pages/DealDetails"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
@@ -61,7 +62,8 @@ function Router() {
       <AppLayout>
         <Suspense fallback={<PageLoading title="Loading page..." />}>
           <Switch>
-            <Route path="/" component={UnifiedDashboard} />
+            <Route path="/" component={RoleBasedDashboard} />
+            <Route path="/insights" component={RoleBasedDashboard} />
             <Route path="/support" component={RequestSupport} />
             <Route path="/request-support" component={RequestSupport} />
             <Route path="/submit-deal" component={SubmitDeal} />
