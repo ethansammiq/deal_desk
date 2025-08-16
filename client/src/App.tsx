@@ -27,6 +27,7 @@ const Testing = lazy(() => import("@/pages/Testing"));
 const DepartmentQueues = lazy(() => import("@/pages/DepartmentQueues"));
 const SLAMonitoring = lazy(() => import("@/pages/SLAMonitoring"));
 const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
 
 // Legacy routes disabled - components archived as .legacy files
 
@@ -61,27 +62,31 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 function Router() {
   return (
     <ErrorBoundary>
-      <AppLayout>
-        <Suspense fallback={<PageLoading title="Loading page..." />}>
-          <Switch>
-            <Route path="/" component={ConsolidatedDashboard} />
-            <Route path="/dashboard" component={ConsolidatedDashboard} />
-            <Route path="/request" component={DealRequests} />
-            <Route path="/request/scoping" component={RequestSupport} />
-            <Route path="/request/proposal" component={SubmitDeal} />
-            <Route path="/support" component={HelpResources} />
-            <Route path="/analytics" component={DealsPage} />
-            <Route path="/deals/:id" component={DealDetails} />
-            <Route path="/testing" component={Testing} />
-            <Route path="/department-queues" component={DepartmentQueues} />
-            <Route path="/sla-monitoring" component={SLAMonitoring} />
-            <Route path="/admin" component={AdminPanel} />
-            {/* Legacy routes archived - components moved to .legacy files */}
-            {/* Fallback to 404 */}
-            <Route component={NotFound} />
-          </Switch>
-        </Suspense>
-      </AppLayout>
+      <Suspense fallback={<PageLoading title="Loading page..." />}>
+        <Switch>
+          <Route path="/" component={LoginPage} />
+          <Route>
+            <AppLayout>
+              <Switch>
+                <Route path="/dashboard" component={ConsolidatedDashboard} />
+                <Route path="/request" component={DealRequests} />
+                <Route path="/request/scoping" component={RequestSupport} />
+                <Route path="/request/proposal" component={SubmitDeal} />
+                <Route path="/support" component={HelpResources} />
+                <Route path="/analytics" component={DealsPage} />
+                <Route path="/deals/:id" component={DealDetails} />
+                <Route path="/testing" component={Testing} />
+                <Route path="/department-queues" component={DepartmentQueues} />
+                <Route path="/sla-monitoring" component={SLAMonitoring} />
+                <Route path="/admin" component={AdminPanel} />
+                {/* Legacy routes archived - components moved to .legacy files */}
+                {/* Fallback to 404 */}
+                <Route component={NotFound} />
+              </Switch>
+            </AppLayout>
+          </Route>
+        </Switch>
+      </Suspense>
     </ErrorBoundary>
   );
 }
