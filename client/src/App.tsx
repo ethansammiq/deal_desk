@@ -16,6 +16,7 @@ import { SmartSearch } from "@/components/SmartSearch";
 const NotFound = lazy(() => import("@/pages/not-found"));
 const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
 const RoleBasedDashboard = lazy(() => import("@/components/dashboard/RoleBasedDashboard").then(m => ({ default: m.RoleBasedDashboard })));
+const ConsolidatedDashboard = lazy(() => import("@/components/dashboard/ConsolidatedDashboard").then(m => ({ default: m.ConsolidatedDashboard })));
 const DealDetails = lazy(() => import("@/pages/DealDetails"));
 const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
 const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
@@ -62,14 +63,14 @@ function Router() {
       <AppLayout>
         <Suspense fallback={<PageLoading title="Loading page..." />}>
           <Switch>
-            <Route path="/" component={RoleBasedDashboard} />
-            <Route path="/insights" component={RoleBasedDashboard} />
+            <Route path="/" component={ConsolidatedDashboard} />
+            <Route path="/dashboard" component={ConsolidatedDashboard} />
+            <Route path="/deals" component={ConsolidatedDashboard} />
+            <Route path="/insights" component={ConsolidatedDashboard} />
             <Route path="/support" component={RequestSupport} />
             <Route path="/request-support" component={RequestSupport} />
             <Route path="/submit-deal" component={SubmitDeal} />
-            <Route path="/dashboard" component={UnifiedDashboard} />
             <Route path="/help" component={HelpResources} />
-            <Route path="/deals" component={UnifiedDashboard} />
             <Route path="/deals/:id" component={DealDetails} />
             <Route path="/deal-requests" component={DealRequests} />
             <Route path="/testing" component={Testing} />
