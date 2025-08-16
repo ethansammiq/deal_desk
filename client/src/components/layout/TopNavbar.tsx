@@ -106,25 +106,25 @@ export function TopNavbar() {
       {/* Responsive Navigation */}
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between h-16 px-4">
-          {/* Logo Section - Responsive */}
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="h-8 w-8 md:h-12 md:w-12 mr-2 md:mr-3 flex-shrink-0 flex items-center justify-center">
+          {/* Logo and Navigation Container */}
+          <div className="flex items-center w-full">
+            {/* Logo Section - Fixed Width */}
+            <div className="flex-shrink-0 flex items-center lg:w-80">
+              <div className="h-8 w-8 lg:h-12 lg:w-12 mr-2 lg:mr-3 flex-shrink-0 flex items-center justify-center">
                 <img 
                   src={companyLogo} 
                   alt="Logo" 
                   className="h-full w-full object-contain" 
                 />
               </div>
-              <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent">
+              <h1 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
                 <span className="hidden sm:inline">Commercial Deal Desk</span>
                 <span className="sm:hidden">Deal Desk</span>
               </h1>
             </div>
-          </div>
             
-          {/* Navigation - Responsive Breakpoints */}
-          <nav className="hidden lg:flex lg:space-x-3 flex-1 justify-center">
+            {/* Navigation - Centered */}
+            <nav className="hidden lg:flex lg:space-x-3 flex-1 justify-center">
             {/* Core: Dashboard */}
             <Link href="/">
               <div className={cn(
@@ -178,10 +178,11 @@ export function TopNavbar() {
                 </div>
               </Link>
             )}
-          </nav>
+            </nav>
+          </div>
           
-          {/* User Tools - Responsive */}
-          <div className="flex items-center space-x-2">
+          {/* User Tools - Fixed Width Right Section */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Desktop Tools */}
             <div className="hidden lg:flex lg:items-center lg:space-x-3">
               {/* Admin/Dev Tools */}
