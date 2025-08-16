@@ -86,6 +86,69 @@ export function ConsolidatedDashboard() {
     return `$${amount.toLocaleString()}`;
   };
 
+  // Get seller-specific deals for metrics - defined before use
+  const getSellerDeals = () => {
+    if (userRole === 'seller') {
+      return deals.filter(deal => 
+        deal.email === currentUser?.email && 
+        deal.status !== 'draft'
+      );
+    }
+    return deals.filter(deal => deal.status !== 'draft');
+  };
+
+  // Calculate seller-specific metrics - defined before use
+  const calculateSellerMetrics = (sellerDeals: Deal[]) => {
+    // Pipeline Value - total value of active deals
+    const activeDealValue = sellerDeals
+      .filter(deal => !['signed', 'lost'].includes(deal.status))
+      .reduce((sum, deal) => sum + ((deal as any).annualRevenue || 0), 0);
+
+    // Close Rate - signed deals / total submitted deals
+    const submittedDeals = sellerDeals.filter(deal => 
+      !['draft', 'scoping'].includes(deal.status)
+    );
+    const signedDeals = sellerDeals.filter(deal => deal.status === 'signed');
+    const closeRate = submittedDeals.length > 0 
+      ? Math.round((signedDeals.length / submittedDeals.length) * 100)
+      : 0;
+
+    // Deals at Risk - using refined criteria
+    const getDealsAtRisk = () => {
+      const now = new Date();
+      return sellerDeals.filter(deal => {
+        const daysSinceUpdate = deal.lastStatusChange 
+          ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
+          : 0;
+        
+        return (
+          // IMMEDIATE RISK - Seller must act
+          deal.status === 'revision_requested' ||
+          
+          // STAGNATION RISK - No movement for too long
+          (deal.status === 'under_review' && daysSinceUpdate > 10) ||
+          (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
+          
+          // QUALITY RISK - Multiple revision cycles
+          (deal.revisionCount && deal.revisionCount >= 2) ||
+          
+          // EXPIRATION RISK - Draft about to expire
+          (deal.draftExpiresAt && 
+           (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
+        );
+      });
+    };
+
+    const dealsAtRisk = getDealsAtRisk();
+
+    return {
+      pipelineValue: activeDealValue,
+      closeRate,
+      dealsAtRisk: dealsAtRisk.length,
+      totalActiveDeals: sellerDeals.filter(deal => !['signed', 'lost'].includes(deal.status)).length
+    };
+  };
+
   // Role-specific metrics configuration
   const getRoleSpecificMetrics = () => {
     const totalDeals = stats?.totalDeals || 0;
@@ -293,68 +356,7 @@ export function ConsolidatedDashboard() {
     return nonDraftDeals;
   };
 
-  // Get seller-specific deals for metrics
-  const getSellerDeals = () => {
-    if (userRole === 'seller') {
-      return deals.filter(deal => 
-        deal.email === currentUser?.email && 
-        deal.status !== 'draft'
-      );
-    }
-    return deals.filter(deal => deal.status !== 'draft');
-  };
-
-  // Calculate seller-specific metrics
-  const calculateSellerMetrics = (sellerDeals: Deal[]) => {
-    // Pipeline Value - total value of active deals
-    const activeDealValue = sellerDeals
-      .filter(deal => !['signed', 'lost'].includes(deal.status))
-      .reduce((sum, deal) => sum + ((deal as any).annualRevenue || 0), 0);
-
-    // Close Rate - signed deals / total submitted deals
-    const submittedDeals = sellerDeals.filter(deal => 
-      !['draft', 'scoping'].includes(deal.status)
-    );
-    const signedDeals = sellerDeals.filter(deal => deal.status === 'signed');
-    const closeRate = submittedDeals.length > 0 
-      ? Math.round((signedDeals.length / submittedDeals.length) * 100)
-      : 0;
-
-    // Deals at Risk - using refined criteria
-    const getDealsAtRisk = () => {
-      const now = new Date();
-      return sellerDeals.filter(deal => {
-        const daysSinceUpdate = deal.lastStatusChange 
-          ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
-          : 0;
-        
-        return (
-          // IMMEDIATE RISK - Seller must act
-          deal.status === 'revision_requested' ||
-          
-          // STAGNATION RISK - No movement for too long
-          (deal.status === 'under_review' && daysSinceUpdate > 10) ||
-          (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
-          
-          // QUALITY RISK - Multiple revision cycles
-          (deal.revisionCount && deal.revisionCount >= 2) ||
-          
-          // EXPIRATION RISK - Draft about to expire
-          (deal.draftExpiresAt && 
-           (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
-        );
-      });
-    };
-
-    const dealsAtRisk = getDealsAtRisk();
-
-    return {
-      pipelineValue: activeDealValue,
-      closeRate,
-      dealsAtRisk: dealsAtRisk.length,
-      totalActiveDeals: sellerDeals.filter(deal => !['signed', 'lost'].includes(deal.status)).length
-    };
-  };
+  // Functions moved above to fix hoisting issue
 
   return (
     <div className="min-h-screen">
