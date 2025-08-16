@@ -8,17 +8,22 @@ import {
   ChevronDown,
   UserCircle,
   BellIcon,
-  TestTube2
+  TestTube2,
+  BarChart3,
+  Briefcase
 } from "lucide-react";
 import companyLogo from "../../assets/miq-transparent.png";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "./NotificationBell";
+import { useUserPermissions } from "@/hooks/useAuth";
 
 export function TopNavbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { currentUser } = useUserPermissions();
+  const userRole = currentUser?.role;
   
   // Close mobile menu on location change
   useEffect(() => {
@@ -46,76 +51,75 @@ export function TopNavbar() {
               </h1>
             </div>
             
-            {/* Navigation Links - Each with fixed width */}
-            <nav className="hidden md:flex md:space-x-2 flex-1 justify-center">
-              {/* Each nav item has fixed width to prevent shifting */}
+            {/* Streamlined Navigation - Role-Aware */}
+            <nav className="hidden md:flex md:space-x-3 flex-1 justify-center">
+              {/* Core: Dashboard */}
               <Link href="/">
                 <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   (location === "/" || location === "/insights")
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
                   <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Insights</span>
+                  <span className="whitespace-nowrap">Dashboard</span>
                 </div>
               </Link>
+
+              {/* Core: Deals (Consolidated) */}
+              <Link href="/deals">
+                <div className={cn(
+                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                )}>
+                  <Briefcase className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Deals</span>
+                </div>
+              </Link>
+
+              {/* Core: Support */}
               <Link href="/help">
                 <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   location === "/help"
                     ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                     : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
                 )}>
                   <HelpCircleIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Support Desk</span>
+                  <span className="whitespace-nowrap">Support</span>
                 </div>
               </Link>
-              <Link href="/deal-requests">
-                <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/deal-requests" || location === "/support" || location === "/submit-deal" 
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Deal Requests</span>
-                </div>
-              </Link>
-              <Link href="/department-queues">
-                <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/department-queues"
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Dept Queues</span>
-                </div>
-              </Link>
-              <Link href="/sla-monitoring">
-                <div className={cn(
-                  "flex items-center justify-center w-40 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/sla-monitoring"
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <ClipboardPenIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">SLA Monitor</span>
-                </div>
-              </Link>
+
+              {/* Admin Only: Analytics */}
+              {(userRole === 'admin' || userRole === 'approver') && (
+                <Link href="/sla-monitoring">
+                  <div className={cn(
+                    "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                    location === "/sla-monitoring"
+                      ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                      : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                  )}>
+                    <BarChart3 className="flex-shrink-0 w-4 h-4 mr-2" />
+                    <span className="whitespace-nowrap">Analytics</span>
+                  </div>
+                </Link>
+              )}
             </nav>
           </div>
           
-          {/* User Profile & Notifications - Fixed Width */}
-          <div className="hidden md:flex md:items-center md:space-x-3 flex-shrink-0 w-64 justify-end">
-            {/* Role Testing Quick Access - Temporary for development */}
-            <Link href="/testing">
-              <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
-                <TestTube2 className="w-3 h-3 mr-1" />
-                Test
-              </button>
-            </Link>
+          {/* User Profile & Tools - Streamlined */}
+          <div className="hidden md:flex md:items-center md:space-x-3 flex-shrink-0 w-52 justify-end">
+            {/* Admin/Dev Tools */}
+            {(userRole === 'admin' || import.meta.env.DEV) && (
+              <Link href="/testing">
+                <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
+                  <TestTube2 className="w-3 h-3 mr-1" />
+                  Test
+                </button>
+              </Link>
+            )}
             
             {/* Notification Bell */}
             <NotificationBell />
@@ -124,7 +128,7 @@ export function TopNavbar() {
             <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all cursor-pointer">
               <div className="flex items-center text-sm">
                 <UserCircle className="flex-shrink-0 w-5 h-5 text-[#5a0099] mr-1.5" />
-                <span className="font-medium text-[#3e0075] whitespace-nowrap">Charlie Far</span>
+                <span className="font-medium text-[#3e0075] whitespace-nowrap">{currentUser?.firstName || currentUser?.username || 'User'}</span>
                 <ChevronDown className="flex-shrink-0 w-4 h-4 ml-1 text-[#5a0099]" />
               </div>
             </div>
