@@ -1219,7 +1219,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         seller: {
           id: 1,
           username: "demo_seller",
-          email: "seller@company.com",
+          email: "john.seller@company.com",
           role: "seller",
           firstName: "John",
           lastName: "Seller",
