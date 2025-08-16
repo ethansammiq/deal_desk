@@ -48,6 +48,7 @@ import { processDealScopingData } from "@/utils/form-data-processing";
 import { useClientData } from "@/hooks/useClientData";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { AdvertiserData, AgencyData } from "@shared/types";
+import { Breadcrumb, buildBreadcrumbs } from "@/components/ui/breadcrumb";
 
 // Schema for deal scoping requests
 // Simplified schema - fields now handled by shared components
@@ -183,8 +184,12 @@ export default function RequestSupport() {
   // ✅ PHASE 2: Data fetching now handled by useClientData hook
 
   return (
-    <div className="p-6 rounded-lg bg-white shadow-md">
-      {/* Standardized Form Section Header */}
+    <div className="min-h-screen bg-slate-50">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb items={buildBreadcrumbs('/request/scoping')} />
+      
+      <div className="p-6 rounded-lg bg-white shadow-md">
+        {/* Standardized Form Section Header */}
       <FormSectionHeader
         title="Deal Scoping"
         badge="Step 1 of 2"
@@ -265,6 +270,7 @@ export default function RequestSupport() {
         isSubmitting={createDealScopingRequest.isPending}
         showBorder={false}
       />
+      </div>
     </div>
   );
 }

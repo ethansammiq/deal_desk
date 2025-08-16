@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { Deal, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
+import { Breadcrumb, buildBreadcrumbs } from "@/components/ui/breadcrumb";
 import { 
   Briefcase, 
   PlusCircle, 
@@ -159,17 +160,7 @@ export default function DealsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <nav className="flex items-center space-x-2 text-sm">
-            <Link href="/" className="text-slate-500 hover:text-slate-700">
-              Home
-            </Link>
-            <span className="text-slate-400">/</span>
-            <span className="text-[#3e0075] font-medium">Analytics</span>
-          </nav>
-        </div>
-      </div>
+      <Breadcrumb items={buildBreadcrumbs('/analytics')} />
 
       <div className="max-w-7xl mx-auto p-8 space-y-8">
         {/* Page Header */}

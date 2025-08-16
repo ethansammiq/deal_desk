@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@/lib/chat-context";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { Breadcrumb, buildBreadcrumbs } from "@/components/ui/breadcrumb";
 
 // Embedded Chat Component for the Help Resources Page
 function EmbeddedChat() {
@@ -221,11 +222,15 @@ export default function HelpResources() {
   }, []);
   
   return (
-    <div className="p-6 relative">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Commercial Deal Desk Support</h1>
-        <p className="mt-1 text-sm text-slate-600">Welcome to the Support Desk. Get assistance, find resources, and connect with our deal experts.</p>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb items={buildBreadcrumbs('/support')} />
+      
+      <div className="p-6 relative">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Commercial Deal Desk Support</h1>
+          <p className="mt-1 text-sm text-slate-600">Welcome to the Support Desk. Get assistance, find resources, and connect with our deal experts.</p>
+        </div>
       
       {/* Help Tabs */}
       <div className="mb-6">

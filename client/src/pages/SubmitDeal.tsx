@@ -107,6 +107,7 @@ import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { FormLoading } from "@/components/ui/loading-states";
 import { useClientData } from "@/hooks/useClientData";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
+import { Breadcrumb, buildBreadcrumbs } from "@/components/ui/breadcrumb";
 // Auto-save import removed as requested
 import { DraftManager } from "@/components/draft/DraftManager";
 import { FormPageHeader, FormNavigation } from "@/components/ui/form-style-guide";
@@ -922,7 +923,11 @@ export default function SubmitDeal() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+    <div className="min-h-screen bg-slate-50">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb items={buildBreadcrumbs('/request/proposal')} />
+      
+      <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
       {/* Header with integrated Save Draft button - matching RequestSupport layout */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -1109,6 +1114,7 @@ export default function SubmitDeal() {
           </FormErrorBoundary>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

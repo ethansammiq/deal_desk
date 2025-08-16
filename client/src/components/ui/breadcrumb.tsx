@@ -1,115 +1,91 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { Link } from "wouter";
+import { ChevronRight, Home } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isCurrentPage?: boolean;
+}
 
-const Breadcrumb = React.forwardRef<
-  HTMLElement,
-  React.ComponentPropsWithoutRef<"nav"> & {
-    separator?: React.ReactNode
-  }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
-Breadcrumb.displayName = "Breadcrumb"
+interface BreadcrumbProps {
+  items: BreadcrumbItem[];
+  className?: string;
+}
 
-const BreadcrumbList = React.forwardRef<
-  HTMLOListElement,
-  React.ComponentPropsWithoutRef<"ol">
->(({ className, ...props }, ref) => (
-  <ol
-    ref={ref}
-    className={cn(
-      "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-      className
-    )}
-    {...props}
-  />
-))
-BreadcrumbList.displayName = "BreadcrumbList"
-
-const BreadcrumbItem = React.forwardRef<
-  HTMLLIElement,
-  React.ComponentPropsWithoutRef<"li">
->(({ className, ...props }, ref) => (
-  <li
-    ref={ref}
-    className={cn("inline-flex items-center gap-1.5", className)}
-    {...props}
-  />
-))
-BreadcrumbItem.displayName = "BreadcrumbItem"
-
-const BreadcrumbLink = React.forwardRef<
-  HTMLAnchorElement,
-  React.ComponentPropsWithoutRef<"a"> & {
-    asChild?: boolean
-  }
->(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a"
-
+export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
-    <Comp
-      ref={ref}
-      className={cn("transition-colors hover:text-foreground", className)}
-      {...props}
-    />
-  )
-})
-BreadcrumbLink.displayName = "BreadcrumbLink"
+    <div className={cn("bg-white border-b border-slate-200", className)}>
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <nav className="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
+          {/* Home Icon + Link */}
+          <Link href="/" className="text-slate-500 hover:text-slate-700 transition-colors">
+            <Home className="h-4 w-4" />
+            <span className="sr-only">Home</span>
+          </Link>
+          
+          {/* Breadcrumb Items */}
+          {items.map((item, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <ChevronRight className="h-4 w-4 text-slate-400" />
+              {item.href && !item.isCurrentPage ? (
+                <Link 
+                  href={item.href} 
+                  className="text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span className={cn(
+                  "font-medium",
+                  item.isCurrentPage ? "text-[#3e0075]" : "text-slate-500"
+                )}>
+                  {item.label}
+                </span>
+              )}
+            </div>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
+}
 
-const BreadcrumbPage = React.forwardRef<
-  HTMLSpanElement,
-  React.ComponentPropsWithoutRef<"span">
->(({ className, ...props }, ref) => (
-  <span
-    ref={ref}
-    role="link"
-    aria-disabled="true"
-    aria-current="page"
-    className={cn("font-normal text-foreground", className)}
-    {...props}
-  />
-))
-BreadcrumbPage.displayName = "BreadcrumbPage"
-
-const BreadcrumbSeparator = ({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<"li">) => (
-  <li
-    role="presentation"
-    aria-hidden="true"
-    className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
-    {...props}
-  >
-    {children ?? <ChevronRight />}
-  </li>
-)
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
-
-const BreadcrumbEllipsis = ({
-  className,
-  ...props
-}: React.ComponentProps<"span">) => (
-  <span
-    role="presentation"
-    aria-hidden="true"
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
-  </span>
-)
-BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
-
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
+// Utility function to build breadcrumb items for common patterns
+export function buildBreadcrumbs(path: string): BreadcrumbItem[] {
+  switch (path) {
+    case '/dashboard':
+      return [{ label: 'Dashboard', isCurrentPage: true }];
+    
+    case '/request':
+      return [{ label: 'Requests', isCurrentPage: true }];
+    
+    case '/request/scoping':
+      return [
+        { label: 'Requests', href: '/request' },
+        { label: 'Scoping', isCurrentPage: true }
+      ];
+    
+    case '/request/proposal':
+      return [
+        { label: 'Requests', href: '/request' },
+        { label: 'Proposal', isCurrentPage: true }
+      ];
+    
+    case '/support':
+      return [{ label: 'Support', isCurrentPage: true }];
+    
+    case '/analytics':
+      return [{ label: 'Analytics', isCurrentPage: true }];
+    
+    default:
+      // For dynamic routes like /deals/:id
+      if (path.startsWith('/deals/')) {
+        return [
+          { label: 'Analytics', href: '/analytics' },
+          { label: 'Deal Details', isCurrentPage: true }
+        ];
+      }
+      return [];
+  }
 }
