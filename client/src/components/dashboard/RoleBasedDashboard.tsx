@@ -375,91 +375,83 @@ export function RoleBasedDashboard() {
           </CardContent>
         </Card>
 
-        {/* Clean Action Items Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <div className="xl:col-span-2">
-            <Card className="border border-slate-200 shadow-sm bg-white">
-              <CardHeader className="pb-6">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${priorityItems.length > 0 ? 'bg-orange-50 border border-orange-100' : 'bg-slate-50 border border-slate-100'}`}>
-                    {priorityItems.length > 0 ? (
-                      <AlertTriangle className="h-5 w-5 text-orange-600" />
-                    ) : (
-                      <PlusCircle className="h-5 w-5 text-slate-600" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
-                      {priorityItems.length > 0 ? 'Action Items' : 'Workflow Actions'}
-                      {priorityItems.length > 0 && (
-                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                          {priorityItems.length}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="text-slate-500">
-                      {priorityItems.length > 0 
-                        ? "Urgent tasks requiring attention plus essential workflow actions"
-                        : "Essential workflow actions for your role"
-                      }
-                    </CardDescription>
-                  </div>
+        {/* Clean Action Items Layout - Full Width */}
+        <Card className="border border-slate-200 shadow-sm bg-white">
+          <CardHeader className="pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+              <div className="flex-1">
+                <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
+                  {priorityItems.length > 0 ? 'Action Items' : 'Workflow Actions'}
+                  {priorityItems.length > 0 && (
+                    <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                      {priorityItems.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-slate-500">
+                  {priorityItems.length > 0 
+                    ? "Urgent tasks requiring attention plus essential workflow actions"
+                    : "Essential workflow actions for your role"
+                  }
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Priority Tasks Section (when available) */}
+              {priorityItems.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Needs Your Attention
+                  </h4>
+                  {priorityItems.slice(0, 3).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-1 rounded-full ${
+                          item.urgencyLevel === 'high' ? 'bg-red-100' : 
+                          item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
+                        }`}>
+                          {item.urgencyLevel === 'high' ? 
+                            <AlertTriangle className="h-4 w-4 text-red-600" /> :
+                            item.urgencyLevel === 'medium' ? 
+                            <Clock className="h-4 w-4 text-amber-600" /> :
+                            <CheckCircle className="h-4 w-4 text-blue-600" />
+                          }
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">{item.title}</p>
+                          <p className="text-sm text-slate-500">{item.description}</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        {item.actionType === 'convert' ? 'Convert' :
+                         item.actionType === 'approve' ? 'Review' :
+                         item.actionType === 'nudge' ? 'Follow Up' : 'View'}
+                      </Button>
+                    </div>
+                  ))}
+                  {priorityItems.length > 3 && (
+                    <p className="text-sm text-slate-500 text-center pt-2">
+                      +{priorityItems.length - 3} more items
+                    </p>
+                  )}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-            {/* Priority Tasks Section (when available) */}
-            {priorityItems.length > 0 && (
+              )}
+
+              {/* Essential Actions - Workflow Specific Only */}
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Needs Your Attention
+                  <PlusCircle className="h-4 w-4" />
+                  {userRole === 'seller' && "Deal Actions"}
+                  {userRole === 'department_reviewer' && "Review Actions"}
+                  {userRole === 'approver' && "Approval Actions"}
+                  {userRole === 'admin' && "Admin Actions"}
                 </h4>
-                {priorityItems.slice(0, 3).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-1 rounded-full ${
-                        item.urgencyLevel === 'high' ? 'bg-red-100' : 
-                        item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
-                      }`}>
-                        {item.urgencyLevel === 'high' ? 
-                          <AlertTriangle className="h-4 w-4 text-red-600" /> :
-                          item.urgencyLevel === 'medium' ? 
-                          <Clock className="h-4 w-4 text-amber-600" /> :
-                          <CheckCircle className="h-4 w-4 text-blue-600" />
-                        }
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900">{item.title}</p>
-                        <p className="text-sm text-slate-500">{item.description}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      {item.actionType === 'convert' ? 'Convert' :
-                       item.actionType === 'approve' ? 'Review' :
-                       item.actionType === 'nudge' ? 'Follow Up' : 'View'}
-                    </Button>
-                  </div>
-                ))}
-                {priorityItems.length > 3 && (
-                  <p className="text-sm text-slate-500 text-center pt-2">
-                    +{priorityItems.length - 3} more items
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Essential Actions - Workflow Specific Only */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                {userRole === 'seller' && "Deal Actions"}
-                {userRole === 'department_reviewer' && "Review Actions"}
-                {userRole === 'approver' && "Approval Actions"}
-                {userRole === 'admin' && "Admin Actions"}
-              </h4>
               
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                 {/* Professional Seller Actions */}
                 {userRole === 'seller' && (
                   <>
@@ -535,13 +527,11 @@ export function RoleBasedDashboard() {
                     </Button>
                   </>
                 )}
+                </div>
               </div>
             </div>
-          </div>
         </CardContent>
-      </Card>
-      </div>
-      </div>
+        </Card>
 
       {/* Role-Specific Workflow Section */}
       {userRole !== 'seller' && (
