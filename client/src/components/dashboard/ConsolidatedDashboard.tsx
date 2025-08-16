@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
+import { useSellerMetrics, useSellerDealCategories, useSellerDeals } from "@/hooks/useSellerMetrics";
 import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
+import { DealRow } from "./DealRow";
 import type { Deal, UserRole, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
@@ -86,68 +88,13 @@ export function ConsolidatedDashboard() {
     return `$${amount.toLocaleString()}`;
   };
 
-  // Get seller-specific deals for metrics - defined before use
-  const getSellerDeals = () => {
-    if (userRole === 'seller') {
-      return deals.filter(deal => 
-        deal.email === currentUser?.email && 
-        deal.status !== 'draft'
-      );
-    }
-    return deals.filter(deal => deal.status !== 'draft');
-  };
-
-  // Calculate seller-specific metrics - defined before use
-  const calculateSellerMetrics = (sellerDeals: Deal[]) => {
-    // Pipeline Value - total value of active deals
-    const activeDealValue = sellerDeals
-      .filter(deal => !['signed', 'lost'].includes(deal.status))
-      .reduce((sum, deal) => sum + ((deal as any).annualRevenue || 0), 0);
-
-    // Close Rate - signed deals / total submitted deals
-    const submittedDeals = sellerDeals.filter(deal => 
-      !['draft', 'scoping'].includes(deal.status)
-    );
-    const signedDeals = sellerDeals.filter(deal => deal.status === 'signed');
-    const closeRate = submittedDeals.length > 0 
-      ? Math.round((signedDeals.length / submittedDeals.length) * 100)
-      : 0;
-
-    // Deals at Risk - using refined criteria
-    const getDealsAtRisk = () => {
-      const now = new Date();
-      return sellerDeals.filter(deal => {
-        const daysSinceUpdate = deal.lastStatusChange 
-          ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
-          : 0;
-        
-        return (
-          // IMMEDIATE RISK - Seller must act
-          deal.status === 'revision_requested' ||
-          
-          // STAGNATION RISK - No movement for too long
-          (deal.status === 'under_review' && daysSinceUpdate > 10) ||
-          (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
-          
-          // QUALITY RISK - Multiple revision cycles
-          (deal.revisionCount && deal.revisionCount >= 2) ||
-          
-          // EXPIRATION RISK - Draft about to expire
-          (deal.draftExpiresAt && 
-           (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
-        );
-      });
-    };
-
-    const dealsAtRisk = getDealsAtRisk();
-
-    return {
-      pipelineValue: activeDealValue,
-      closeRate,
-      dealsAtRisk: dealsAtRisk.length,
-      totalActiveDeals: sellerDeals.filter(deal => !['signed', 'lost'].includes(deal.status)).length
-    };
-  };
+  // Use centralized hooks for seller data
+  const sellerDeals = useSellerDeals(deals, userRole === 'seller' ? currentUser?.email : undefined);
+  const sellerMetrics = useSellerMetrics({ 
+    deals, 
+    userEmail: userRole === 'seller' ? currentUser?.email : undefined 
+  });
+  const sellerDealCategories = useSellerDealCategories(deals, userRole === 'seller' ? currentUser?.email : undefined);
 
   // Role-specific metrics configuration
   const getRoleSpecificMetrics = () => {
@@ -158,10 +105,6 @@ export function ConsolidatedDashboard() {
 
     switch (userRole) {
       case 'seller':
-        // Use seller-specific metrics calculation
-        const sellerDeals = getSellerDeals();
-        const sellerMetrics = calculateSellerMetrics(sellerDeals);
-        
         return [
           { 
             label: "Pipeline Value", 
@@ -187,7 +130,7 @@ export function ConsolidatedDashboard() {
             label: "Deals at Risk", 
             value: sellerMetrics.dealsAtRisk.toString(), 
             description: "Need attention",
-            percentage: sellerMetrics.totalActiveDeals > 0 ? Math.round((sellerMetrics.dealsAtRisk / sellerMetrics.totalActiveDeals) * 100) : 0,
+            percentage: sellerMetrics.activeDeals > 0 ? Math.round((sellerMetrics.dealsAtRisk / sellerMetrics.activeDeals) * 100) : 0,
             icon: AlertTriangle,
             color: "text-red-600",
             bgColor: "bg-red-100",
@@ -343,20 +286,15 @@ export function ConsolidatedDashboard() {
     },
   ];
 
-  // Filter deals based on role
+  // Filter deals based on role - use centralized logic
   const getFilteredDeals = () => {
-    const nonDraftDeals = deals.filter(deal => deal.status !== 'draft');
-    
     if (userRole === 'seller') {
-      // Sellers see only their own deals (filtered by email)
-      return nonDraftDeals.filter(deal => deal.email === currentUser?.email);
+      return sellerDeals; // Already filtered by email and non-draft
     }
-    
     // Other roles see all non-draft deals
-    return nonDraftDeals;
+    return deals.filter(deal => deal.status !== 'draft');
   };
 
-  // Functions moved above to fix hoisting issue
 
   return (
     <div className="min-h-screen">
@@ -424,20 +362,11 @@ export function ConsolidatedDashboard() {
                 <div className="flex-1">
                   <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
                     My Pipeline
-                    {(() => {
-                      const sellerDeals = getSellerDeals();
-                      const actionCount = sellerDeals.filter(deal => 
-                        deal.status === 'revision_requested' ||
-                        (deal.revisionCount && deal.revisionCount >= 2) ||
-                        (deal.draftExpiresAt && 
-                         (new Date(deal.draftExpiresAt).getTime() - new Date().getTime()) < 3 * 24 * 60 * 60 * 1000)
-                      ).length;
-                      return actionCount > 0 && (
-                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                          {actionCount}
-                        </Badge>
-                      );
-                    })()} 
+                    {sellerDealCategories.dealsNeedingAction.length > 0 && (
+                      <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                        {sellerDealCategories.dealsNeedingAction.length}
+                      </Badge>
+                    )} 
                   </CardTitle>
                   <CardDescription className="text-slate-500">
                     Your deals, actions, and performance
@@ -448,37 +377,8 @@ export function ConsolidatedDashboard() {
             <CardContent>
               <div className="space-y-6">
                 {(() => {
-                  const sellerDeals = getSellerDeals();
-                  const dealsNeedingAction = sellerDeals.filter(deal => {
-                    const now = new Date();
-                    const daysSinceUpdate = deal.lastStatusChange 
-                      ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
-                      : 0;
-                    
-                    return (
-                      deal.status === 'revision_requested' ||
-                      (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
-                      (deal.revisionCount && deal.revisionCount >= 2) ||
-                      (deal.draftExpiresAt && 
-                       (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
-                    );
-                  });
-
-                  const activeDeals = sellerDeals.filter(deal => 
-                    !['signed', 'lost', 'draft'].includes(deal.status)
-                  );
-
-                  const signedThisMonth = sellerDeals.filter(deal => {
-                    if (deal.status !== 'signed' || !deal.lastStatusChange) return false;
-                    const signedDate = new Date(deal.lastStatusChange);
-                    const now = new Date();
-                    return signedDate.getMonth() === now.getMonth() && 
-                           signedDate.getFullYear() === now.getFullYear();
-                  });
-
-                  const pipelineValue = activeDeals.reduce((sum, deal) => 
-                    sum + ((deal as any).annualRevenue || 0), 0
-                  );
+                  const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
+                  const pipelineValue = sellerMetrics.pipelineValue;
 
                   return (
                     <>
@@ -490,24 +390,17 @@ export function ConsolidatedDashboard() {
                             Action Required ({dealsNeedingAction.length})
                           </h4>
                           {dealsNeedingAction.slice(0, 3).map((deal) => (
-                            <div key={deal.id} className="flex items-center justify-between p-3 border border-red-200 bg-red-50 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <div className="p-1 rounded-full bg-red-100">
-                                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-slate-900">{deal.dealName}</p>
-                                  <p className="text-sm text-slate-600">
-                                    {deal.status === 'revision_requested' ? 'Needs revision' :
-                                     deal.revisionCount && deal.revisionCount >= 2 ? `Multiple revisions (${deal.revisionCount})` :
-                                     'Draft expiring soon'} • {deal.advertiserName || deal.agencyName}
-                                  </p>
-                                </div>
-                              </div>
-                              <Button variant="outline" size="sm" onClick={() => navigate(`/deals/${deal.id}`)}>
-                                Fix Now
-                              </Button>
-                            </div>
+                            <DealRow
+                              key={deal.id}
+                              deal={deal}
+                              variant="action"
+                              onClick={() => navigate(`/deals/${deal.id}`)}
+                              actionButton={{
+                                label: "Fix Now",
+                                onClick: () => navigate(`/deals/${deal.id}`)
+                              }}
+                              showValue={false}
+                            />
                           ))}
                         </div>
                       )}
@@ -521,27 +414,13 @@ export function ConsolidatedDashboard() {
                         {activeDeals.length > 0 ? (
                           <>
                             {activeDeals.slice(0, 5).map((deal) => (
-                              <div 
+                              <DealRow
                                 key={deal.id}
-                                className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                                deal={deal}
+                                variant="default"
                                 onClick={() => navigate(`/deals/${deal.id}`)}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
-                                  <div>
-                                    <p className="font-medium text-slate-900">{deal.dealName}</p>
-                                    <p className="text-sm text-slate-500">
-                                      {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <DealStatusBadge status={deal.status as DealStatus} />
-                                  <div className="text-sm font-medium text-slate-700">
-                                    {formatShortCurrency((deal as any).annualRevenue || 0)}
-                                  </div>
-                                </div>
-                              </div>
+                                showValue={true}
+                              />
                             ))}
                             {activeDeals.length > 5 && (
                               <div className="pt-2">
@@ -781,27 +660,13 @@ export function ConsolidatedDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {getFilteredDeals().slice(0, 5).map((deal) => (
-                      <div 
+                      <DealRow
                         key={deal.id}
-                        className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                        deal={deal}
+                        variant="compact"
                         onClick={() => navigate(`/deals/${deal.id}`)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
-                          <div>
-                            <p className="font-medium text-slate-900">{deal.dealName}</p>
-                            <p className="text-sm text-slate-500">
-                              {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <DealStatusBadge status={deal.status as DealStatus} />
-                          <div className="text-sm font-medium text-slate-700">
-                            {formatShortCurrency((deal as any).annualRevenue || (deal as any).totalValue || 0)}
-                          </div>
-                        </div>
-                      </div>
+                        showValue={true}
+                      />
                     ))}
                     {getFilteredDeals().length > 5 && (
                       <div className="pt-3 border-t border-slate-200">
