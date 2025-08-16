@@ -366,20 +366,20 @@ export function RoleBasedDashboard() {
             {priorityItems.length > 0 ? (
               <>
                 <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Action Items & Tools
+                Action Items
                 <Badge variant="secondary">{priorityItems.length}</Badge>
               </>
             ) : (
               <>
                 <PlusCircle className="h-5 w-5" />
-                Quick Tools
+                Workflow Actions
               </>
             )}
           </CardTitle>
           <CardDescription>
             {priorityItems.length > 0 
-              ? "Urgent tasks and essential shortcuts for your workflow"
-              : "Essential tools for your daily workflow"
+              ? "Urgent tasks requiring attention plus essential workflow actions"
+              : "Essential workflow actions for your role"
             }
           </CardDescription>
         </CardHeader>
@@ -426,66 +426,42 @@ export function RoleBasedDashboard() {
               </div>
             )}
 
-            {/* Essential Tools Section */}
+            {/* Essential Actions - Workflow Specific Only */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                {userRole === 'seller' && "Deal Management"}
-                {userRole === 'department_reviewer' && "Review Tools"}
-                {userRole === 'approver' && "Approval Tools"}
-                {userRole === 'admin' && "Admin Tools"}
+                <PlusCircle className="h-4 w-4" />
+                {userRole === 'seller' && "Deal Actions"}
+                {userRole === 'department_reviewer' && "Review Actions"}
+                {userRole === 'approver' && "Approval Actions"}
+                {userRole === 'admin' && "Admin Actions"}
               </h4>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {/* Seller-Specific Actions */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Seller-Specific: Only workflow actions not in top nav */}
                 {userRole === 'seller' && (
                   <>
                     <Button asChild className="h-auto p-4 flex-col gap-2">
                       <Link to="/submit-deal">
                         <PlusCircle className="h-5 w-5" />
-                        <span className="text-sm">New Deal</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/deals">
-                        <Briefcase className="h-5 w-5" />
-                        <span className="text-sm">My Pipeline</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/help">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="text-sm">Get Support</span>
+                        <span className="text-sm">Create New Deal</span>
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
                       <Link to="/testing">
                         <BarChart3 className="h-5 w-5" />
-                        <span className="text-sm">Analytics</span>
+                        <span className="text-sm">Deal Analytics</span>
                       </Link>
                     </Button>
                   </>
                 )}
 
-                {/* Department Reviewer Actions */}
+                {/* Department Reviewer: Focus on review workflow */}
                 {userRole === 'department_reviewer' && (
                   <>
                     <Button asChild className="h-auto p-4 flex-col gap-2">
                       <Link to="/deals">
                         <CheckCircle className="h-5 w-5" />
                         <span className="text-sm">Review Queue</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/deals">
-                        <Scale className="h-5 w-5" />
-                        <span className="text-sm">All Deals</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/help">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="text-sm">Escalate</span>
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
@@ -497,25 +473,13 @@ export function RoleBasedDashboard() {
                   </>
                 )}
 
-                {/* Approver Actions */}
+                {/* Approver: Focus on business decisions */}
                 {userRole === 'approver' && (
                   <>
                     <Button asChild className="h-auto p-4 flex-col gap-2">
                       <Link to="/deals">
                         <CheckCircle className="h-5 w-5" />
-                        <span className="text-sm">Approve</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/deals">
-                        <TrendingUp className="h-5 w-5" />
-                        <span className="text-sm">Pipeline</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/help">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="text-sm">Risk Review</span>
+                        <span className="text-sm">Approve Deals</span>
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
@@ -527,7 +491,7 @@ export function RoleBasedDashboard() {
                   </>
                 )}
 
-                {/* Admin Actions */}
+                {/* Admin: System management only */}
                 {userRole === 'admin' && (
                   <>
                     <Button asChild className="h-auto p-4 flex-col gap-2">
@@ -537,21 +501,9 @@ export function RoleBasedDashboard() {
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/deals">
-                        <Scale className="h-5 w-5" />
-                        <span className="text-sm">All Deals</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
                       <Link to="/testing">
                         <Users className="h-5 w-5" />
                         <span className="text-sm">System Test</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                      <Link to="/help">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="text-sm">Support</span>
                       </Link>
                     </Button>
                   </>
