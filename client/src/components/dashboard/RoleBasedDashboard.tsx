@@ -359,54 +359,208 @@ export function RoleBasedDashboard() {
         </CardContent>
       </Card>
 
-      {/* Priority Action Items */}
-      {priorityItems.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Action Items
-              <Badge variant="secondary">{priorityItems.length}</Badge>
-            </CardTitle>
-            <CardDescription>Items requiring your immediate attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {priorityItems.slice(0, 3).map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-1 rounded-full ${
-                      item.urgencyLevel === 'high' ? 'bg-red-100' : 
-                      item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
-                    }`}>
-                      {item.urgencyLevel === 'high' ? 
-                        <AlertTriangle className="h-4 w-4 text-red-600" /> :
-                        item.urgencyLevel === 'medium' ? 
-                        <Clock className="h-4 w-4 text-amber-600" /> :
-                        <CheckCircle className="h-4 w-4 text-blue-600" />
-                      }
+      {/* Consolidated: Action Items + Quick Tools */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {priorityItems.length > 0 ? (
+              <>
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Action Items & Tools
+                <Badge variant="secondary">{priorityItems.length}</Badge>
+              </>
+            ) : (
+              <>
+                <PlusCircle className="h-5 w-5" />
+                Quick Tools
+              </>
+            )}
+          </CardTitle>
+          <CardDescription>
+            {priorityItems.length > 0 
+              ? "Urgent tasks and essential shortcuts for your workflow"
+              : "Essential tools for your daily workflow"
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Priority Tasks Section (when available) */}
+            {priorityItems.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Needs Your Attention
+                </h4>
+                {priorityItems.slice(0, 3).map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-1 rounded-full ${
+                        item.urgencyLevel === 'high' ? 'bg-red-100' : 
+                        item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
+                      }`}>
+                        {item.urgencyLevel === 'high' ? 
+                          <AlertTriangle className="h-4 w-4 text-red-600" /> :
+                          item.urgencyLevel === 'medium' ? 
+                          <Clock className="h-4 w-4 text-amber-600" /> :
+                          <CheckCircle className="h-4 w-4 text-blue-600" />
+                        }
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">{item.title}</p>
+                        <p className="text-sm text-slate-500">{item.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-slate-900">{item.title}</p>
-                      <p className="text-sm text-slate-500">{item.description}</p>
-                    </div>
+                    <Button variant="outline" size="sm">
+                      {item.actionType === 'convert' ? 'Convert' :
+                       item.actionType === 'approve' ? 'Review' :
+                       item.actionType === 'nudge' ? 'Follow Up' : 'View'}
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm">
-                    {item.actionType === 'convert' ? 'Convert' :
-                     item.actionType === 'approve' ? 'Review' :
-                     item.actionType === 'nudge' ? 'Follow Up' : 'View'}
-                  </Button>
-                </div>
-              ))}
-              {priorityItems.length > 3 && (
-                <p className="text-sm text-slate-500 text-center pt-2">
-                  +{priorityItems.length - 3} more items
-                </p>
-              )}
+                ))}
+                {priorityItems.length > 3 && (
+                  <p className="text-sm text-slate-500 text-center pt-2">
+                    +{priorityItems.length - 3} more items
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Essential Tools Section */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                {userRole === 'seller' && "Deal Management"}
+                {userRole === 'department_reviewer' && "Review Tools"}
+                {userRole === 'approver' && "Approval Tools"}
+                {userRole === 'admin' && "Admin Tools"}
+              </h4>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* Seller-Specific Actions */}
+                {userRole === 'seller' && (
+                  <>
+                    <Button asChild className="h-auto p-4 flex-col gap-2">
+                      <Link to="/submit-deal">
+                        <PlusCircle className="h-5 w-5" />
+                        <span className="text-sm">New Deal</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <Briefcase className="h-5 w-5" />
+                        <span className="text-sm">My Pipeline</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/help">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="text-sm">Get Support</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/testing">
+                        <BarChart3 className="h-5 w-5" />
+                        <span className="text-sm">Analytics</span>
+                      </Link>
+                    </Button>
+                  </>
+                )}
+
+                {/* Department Reviewer Actions */}
+                {userRole === 'department_reviewer' && (
+                  <>
+                    <Button asChild className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="text-sm">Review Queue</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <Scale className="h-5 w-5" />
+                        <span className="text-sm">All Deals</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/help">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="text-sm">Escalate</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/testing">
+                        <Users className="h-5 w-5" />
+                        <span className="text-sm">Team Tools</span>
+                      </Link>
+                    </Button>
+                  </>
+                )}
+
+                {/* Approver Actions */}
+                {userRole === 'approver' && (
+                  <>
+                    <Button asChild className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="text-sm">Approve</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <TrendingUp className="h-5 w-5" />
+                        <span className="text-sm">Pipeline</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/help">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="text-sm">Risk Review</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/testing">
+                        <BarChart3 className="h-5 w-5" />
+                        <span className="text-sm">Performance</span>
+                      </Link>
+                    </Button>
+                  </>
+                )}
+
+                {/* Admin Actions */}
+                {userRole === 'admin' && (
+                  <>
+                    <Button asChild className="h-auto p-4 flex-col gap-2">
+                      <Link to="/admin">
+                        <Users className="h-5 w-5" />
+                        <span className="text-sm">Admin Panel</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/deals">
+                        <Scale className="h-5 w-5" />
+                        <span className="text-sm">All Deals</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/testing">
+                        <Users className="h-5 w-5" />
+                        <span className="text-sm">System Test</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                      <Link to="/help">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="text-sm">Support</span>
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Role-Specific Workflow Section */}
       {userRole !== 'seller' && (
@@ -456,141 +610,7 @@ export function RoleBasedDashboard() {
         </Card>
       )}
 
-      {/* Role-Specific Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            {userRole === 'seller' && "Essential tools for deal management"}
-            {userRole === 'department_reviewer' && "Review and validation tools"}
-            {userRole === 'approver' && "Business approval tools"}
-            {userRole === 'admin' && "System administration tools"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Seller-Specific Actions */}
-            {userRole === 'seller' && (
-              <>
-                <Button asChild className="h-auto p-4 flex-col gap-2">
-                  <Link to="/submit-deal">
-                    <PlusCircle className="h-5 w-5" />
-                    <span className="text-sm">New Deal</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <Briefcase className="h-5 w-5" />
-                    <span className="text-sm">My Pipeline</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/help">
-                    <AlertTriangle className="h-5 w-5" />
-                    <span className="text-sm">Get Support</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/testing">
-                    <BarChart3 className="h-5 w-5" />
-                    <span className="text-sm">Deal Analytics</span>
-                  </Link>
-                </Button>
-              </>
-            )}
 
-            {/* Department Reviewer Actions */}
-            {userRole === 'department_reviewer' && (
-              <>
-                <Button asChild className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <CheckCircle className="h-5 w-5" />
-                    <span className="text-sm">Review Queue</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <Scale className="h-5 w-5" />
-                    <span className="text-sm">All Deals</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/help">
-                    <AlertTriangle className="h-5 w-5" />
-                    <span className="text-sm">Escalate Issue</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/testing">
-                    <Users className="h-5 w-5" />
-                    <span className="text-sm">Team Tools</span>
-                  </Link>
-                </Button>
-              </>
-            )}
-
-            {/* Approver Actions */}
-            {userRole === 'approver' && (
-              <>
-                <Button asChild className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <CheckCircle className="h-5 w-5" />
-                    <span className="text-sm">Approve Deals</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <TrendingUp className="h-5 w-5" />
-                    <span className="text-sm">Pipeline Review</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/help">
-                    <AlertTriangle className="h-5 w-5" />
-                    <span className="text-sm">Risk Review</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/testing">
-                    <BarChart3 className="h-5 w-5" />
-                    <span className="text-sm">Performance</span>
-                  </Link>
-                </Button>
-              </>
-            )}
-
-            {/* Admin Actions */}
-            {userRole === 'admin' && (
-              <>
-                <Button asChild className="h-auto p-4 flex-col gap-2">
-                  <Link to="/admin">
-                    <Users className="h-5 w-5" />
-                    <span className="text-sm">Admin Panel</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/deals">
-                    <Scale className="h-5 w-5" />
-                    <span className="text-sm">All Deals</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/testing">
-                    <Users className="h-5 w-5" />
-                    <span className="text-sm">System Test</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                  <Link to="/help">
-                    <AlertTriangle className="h-5 w-5" />
-                    <span className="text-sm">Support Desk</span>
-                  </Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
