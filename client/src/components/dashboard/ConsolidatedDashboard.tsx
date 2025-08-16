@@ -64,6 +64,23 @@ export function ConsolidatedDashboard() {
     isLoading: priorityLoading 
   } = usePriorityItems(currentUser?.role as UserRole);
 
+  // Always call hooks before any early returns to maintain hook order
+  // Helper function to format currency in shortened format
+  const formatShortCurrency = (amount: number): string => {
+    if (amount === 0) return "$0";
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
+    return `$${amount.toLocaleString()}`;
+  };
+
+  // Use centralized hooks for seller data (always call hooks)
+  const sellerDeals = useSellerDeals(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
+  const sellerMetrics = useSellerMetrics({ 
+    deals, 
+    userEmail: currentUser?.role === 'seller' ? currentUser?.email : undefined 
+  });
+  const sellerDealCategories = useSellerDealCategories(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
+
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -79,22 +96,6 @@ export function ConsolidatedDashboard() {
   const userName = currentUser?.firstName || currentUser?.username || "User";
   const userRole = currentUser?.role as UserRole;
   const userDepartment = currentUser?.department;
-
-  // Helper function to format currency in shortened format
-  const formatShortCurrency = (amount: number): string => {
-    if (amount === 0) return "$0";
-    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
-    return `$${amount.toLocaleString()}`;
-  };
-
-  // Use centralized hooks for seller data
-  const sellerDeals = useSellerDeals(deals, userRole === 'seller' ? currentUser?.email : undefined);
-  const sellerMetrics = useSellerMetrics({ 
-    deals, 
-    userEmail: userRole === 'seller' ? currentUser?.email : undefined 
-  });
-  const sellerDealCategories = useSellerDealCategories(deals, userRole === 'seller' ? currentUser?.email : undefined);
 
   // Role-specific metrics configuration
   const getRoleSpecificMetrics = () => {
