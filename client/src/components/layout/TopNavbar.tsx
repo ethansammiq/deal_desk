@@ -103,147 +103,158 @@ export function TopNavbar() {
 
   return (
     <header className="sticky top-0 bg-white border-b border-slate-200 shadow-sm z-50 bg-gradient-to-r from-[#f8f5ff] to-white">
-      {/* Desktop Navigation - Fixed Width */}
+      {/* Responsive Navigation */}
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between h-16 px-4">
-          {/* Logo and Nav Links Section */}
-          <div className="flex items-center w-full">
-            {/* Logo - Fixed width with enough space for the full title */}
-            <div className="flex-shrink-0 flex items-center w-80">
-              <div className="h-12 w-12 mr-3 flex-shrink-0 flex items-center justify-center">
+          {/* Logo Section - Responsive */}
+          <div className="flex items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <div className="h-8 w-8 md:h-12 md:w-12 mr-2 md:mr-3 flex-shrink-0 flex items-center justify-center">
                 <img 
                   src={companyLogo} 
                   alt="Logo" 
                   className="h-full w-full object-contain" 
                 />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
-                Commercial Deal Desk
+              <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent">
+                <span className="hidden sm:inline">Commercial Deal Desk</span>
+                <span className="sm:hidden">Deal Desk</span>
               </h1>
             </div>
-            
-            {/* Streamlined Navigation - Role-Aware */}
-            <nav className="hidden md:flex md:space-x-3 flex-1 justify-center">
-              {/* Core: Dashboard */}
-              <Link href="/">
-                <div className={cn(
-                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  (location === "/" || location === "/insights")
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Dashboard</span>
-                </div>
-              </Link>
-
-              {/* Core: Deals (Consolidated) */}
-              <Link href="/deals">
-                <div className={cn(
-                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <Briefcase className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Deals</span>
-                </div>
-              </Link>
-
-              {/* Core: Support */}
-              <Link href="/help">
-                <div className={cn(
-                  "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/help"
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <HelpCircleIcon className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Support</span>
-                </div>
-              </Link>
-
-              {/* Admin Only: Analytics */}
-              {(userRole === 'admin' || userRole === 'approver') && (
-                <Link href="/sla-monitoring">
-                  <div className={cn(
-                    "flex items-center justify-center w-32 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                    location === "/sla-monitoring"
-                      ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                      : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                  )}>
-                    <BarChart3 className="flex-shrink-0 w-4 h-4 mr-2" />
-                    <span className="whitespace-nowrap">Analytics</span>
-                  </div>
-                </Link>
-              )}
-            </nav>
           </div>
-          
-          {/* User Profile & Tools - Streamlined */}
-          <div className="hidden md:flex md:items-center md:space-x-3 flex-shrink-0 w-52 justify-end">
-            {/* Admin/Dev Tools */}
-            {(userRole === 'admin' || import.meta.env.DEV) && (
-              <Link href="/testing">
-                <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
-                  <TestTube2 className="w-3 h-3 mr-1" />
-                  Test
-                </button>
+            
+          {/* Navigation - Responsive Breakpoints */}
+          <nav className="hidden lg:flex lg:space-x-3 flex-1 justify-center">
+            {/* Core: Dashboard */}
+            <Link href="/">
+              <div className={cn(
+                "flex items-center justify-center min-w-[120px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                (location === "/" || location === "/insights")
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+              )}>
+                <LayoutDashboardIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Dashboard</span>
+              </div>
+            </Link>
+
+            {/* Core: Deals */}
+            <Link href="/deals">
+              <div className={cn(
+                "flex items-center justify-center min-w-[100px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+              )}>
+                <Briefcase className="flex-shrink-0 w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Deals</span>
+              </div>
+            </Link>
+
+            {/* Core: Support */}
+            <Link href="/help">
+              <div className={cn(
+                "flex items-center justify-center min-w-[100px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                location === "/help"
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+              )}>
+                <HelpCircleIcon className="flex-shrink-0 w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Support</span>
+              </div>
+            </Link>
+
+            {/* Admin Only: Analytics */}
+            {(userRole === 'admin' || userRole === 'approver') && (
+              <Link href="/sla-monitoring">
+                <div className={cn(
+                  "flex items-center justify-center min-w-[110px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  location === "/sla-monitoring"
+                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+                )}>
+                  <BarChart3 className="flex-shrink-0 w-4 h-4 mr-2" />
+                  <span className="whitespace-nowrap">Analytics</span>
+                </div>
               </Link>
             )}
-            
-            {/* Notification Bell */}
-            <NotificationBell />
-            
-            {/* User Profile with Dropdown */}
-            <UserProfileDropdown currentUser={currentUser} />
-          </div>
+          </nav>
           
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center"
-            >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Menu className="h-5 w-5" aria-hidden="true" />
+          {/* User Tools - Responsive */}
+          <div className="flex items-center space-x-2">
+            {/* Desktop Tools */}
+            <div className="hidden lg:flex lg:items-center lg:space-x-3">
+              {/* Admin/Dev Tools */}
+              {(userRole === 'admin' || import.meta.env.DEV) && (
+                <Link href="/testing">
+                  <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
+                    <TestTube2 className="w-3 h-3 mr-1" />
+                    Test
+                  </button>
+                </Link>
               )}
-            </Button>
+              
+              {/* Notification Bell */}
+              <NotificationBell />
+              
+              {/* User Profile with Dropdown */}
+              <UserProfileDropdown currentUser={currentUser} />
+            </div>
+
+            {/* Tablet & Mobile: Compact Profile */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <NotificationBell />
+              <UserProfileDropdown currentUser={currentUser} />
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="inline-flex items-center justify-center"
+              >
+                <span className="sr-only">Open main menu</span>
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <Menu className="h-5 w-5" aria-hidden="true" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Mobile menu, show/hide based on menu state */}
-      <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+      <div className={`${mobileMenuOpen ? 'block' : 'hidden'} lg:hidden`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b border-slate-200">
-          {/* Mobile Logo */}
-          <div className="flex items-center mb-3 px-3">
-            <div className="h-11 w-11 mr-3 flex-shrink-0 flex items-center justify-center">
-              <img 
-                src={companyLogo} 
-                alt="Logo" 
-                className="h-full w-full object-contain" 
-              />
-            </div>
-            <h2 className="text-lg font-bold bg-gradient-to-r from-[#3e0075] to-[#5a0099] bg-clip-text text-transparent whitespace-nowrap">
-              Commercial Deal Desk
-            </h2>
-          </div>
-          <Link href="/dashboard">
+          {/* Mobile Navigation Links */}
+          <Link href="/">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              (location === "/" || location === "/dashboard" || location === "/deals")
+              (location === "/" || location === "/insights")
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
               <div className="flex items-center">
                 <LayoutDashboardIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Insights</span>
+                <span>Dashboard</span>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/deals">
+            <div className={cn(
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
+              (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
+            )}>
+              <div className="flex items-center">
+                <Briefcase className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Deals</span>
               </div>
             </div>
           </Link>
@@ -256,51 +267,41 @@ export function TopNavbar() {
             )}>
               <div className="flex items-center">
                 <HelpCircleIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Support Desk</span>
-              </div>
-            </div>
-          </Link>
-          <Link href="/deal-requests">
-            <div className={cn(
-              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              location === "/deal-requests" || location === "/support" || location === "/submit-deal" 
-                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
-            )}>
-              <div className="flex items-center">
-                <ClipboardPenIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Deal Requests</span>
+                <span>Support</span>
               </div>
             </div>
           </Link>
           
-          {/* Mobile Notifications */}
-          <div className="mt-3 pt-3 border-t border-[#e9ddff]">
-            <div className="px-3 py-2">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-[#3e0075]">Notifications</p>
-                <div className="bg-[#f1e9fd] p-1 rounded-full">
-                  <div className="relative">
-                    <BellIcon className="h-5 w-5 text-[#5a0099]" />
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500" />
-                  </div>
+          {/* Admin Only: Analytics for Mobile */}
+          {(userRole === 'admin' || userRole === 'approver') && (
+            <Link href="/sla-monitoring">
+              <div className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
+                location === "/sla-monitoring"
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
+              )}>
+                <div className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <span>Analytics</span>
                 </div>
               </div>
-              <div className="bg-white p-2 rounded-md border border-[#e9ddff] text-xs text-[#3e0075]">
-                <p className="font-medium">New deal approval request</p>
-                <p className="text-slate-500 mt-1">A new deal has been submitted for your approval</p>
-              </div>
+            </Link>
+          )}
+
+          {/* Mobile Admin Tools */}
+          {(userRole === 'admin' || import.meta.env.DEV) && (
+            <div className="mt-3 pt-3 border-t border-[#e9ddff]">
+              <Link href="/testing">
+                <div className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1 transition-all duration-200">
+                  <div className="flex items-center">
+                    <TestTube2 className="w-5 h-5 mr-2 flex-shrink-0" />
+                    <span>Switch Roles</span>
+                  </div>
+                </div>
+              </Link>
             </div>
-            
-            {/* Mobile user profile */}
-            <div className="flex items-center px-3 py-2 bg-[#f8f5ff] m-2 rounded-lg border border-[#e9ddff]">
-              <UserCircle className="w-8 h-8 text-[#5a0099] flex-shrink-0" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-[#3e0075]">Charlie Far</p>
-                <p className="text-xs text-[#5a0099]">Commercial Manager</p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </header>
