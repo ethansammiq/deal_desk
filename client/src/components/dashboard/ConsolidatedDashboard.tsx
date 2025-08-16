@@ -95,41 +95,40 @@ export function ConsolidatedDashboard() {
 
     switch (userRole) {
       case 'seller':
-        // Since submittedBy doesn't exist in schema, use all deals for seller metrics temporarily
-        const myDeals = deals.length;
-        const myActiveDeals = deals.filter(deal => deal.status !== 'signed' && deal.status !== 'lost').length;
-        const myWinRate = myDeals > 0 ? Math.round((deals.filter(deal => deal.status === 'signed').length / myDeals) * 100) : 0;
+        // Use seller-specific metrics calculation
+        const sellerDeals = getSellerDeals();
+        const sellerMetrics = calculateSellerMetrics(sellerDeals);
         
         return [
           { 
-            label: "My Deals", 
-            value: myDeals.toString(), 
-            description: "All deals",
-            percentage: 100,
-            icon: Briefcase,
-            color: "text-slate-600",
-            bgColor: "bg-slate-100",
-            progressColor: "bg-slate-400"
-          },
-          { 
-            label: "Active Pipeline", 
-            value: myActiveDeals.toString(), 
-            description: "In progress",
-            percentage: myDeals > 0 ? Math.round((myActiveDeals / myDeals) * 100) : 0,
-            icon: Clock,
-            color: "text-amber-600",
-            bgColor: "bg-amber-100",
-            progressColor: "bg-amber-400"
-          },
-          { 
-            label: "Win Rate", 
-            value: `${myWinRate}%`, 
-            description: "Won vs Lost",
-            percentage: myWinRate,
-            icon: Target,
+            label: "Pipeline Value", 
+            value: formatShortCurrency(sellerMetrics.pipelineValue), 
+            description: "Active deals total",
+            percentage: 100, // Always show full bar for pipeline value
+            icon: DollarSign,
             color: "text-green-600",
             bgColor: "bg-green-100",
             progressColor: "bg-green-400"
+          },
+          { 
+            label: "Close Rate", 
+            value: `${sellerMetrics.closeRate}%`, 
+            description: "Submission to signed",
+            percentage: sellerMetrics.closeRate,
+            icon: Target,
+            color: "text-blue-600",
+            bgColor: "bg-blue-100",
+            progressColor: "bg-blue-400"
+          },
+          { 
+            label: "Deals at Risk", 
+            value: sellerMetrics.dealsAtRisk.toString(), 
+            description: "Need attention",
+            percentage: sellerMetrics.totalActiveDeals > 0 ? Math.round((sellerMetrics.dealsAtRisk / sellerMetrics.totalActiveDeals) * 100) : 0,
+            icon: AlertTriangle,
+            color: "text-red-600",
+            bgColor: "bg-red-100",
+            progressColor: "bg-red-400"
           }
         ];
 
@@ -286,12 +285,75 @@ export function ConsolidatedDashboard() {
     const nonDraftDeals = deals.filter(deal => deal.status !== 'draft');
     
     if (userRole === 'seller') {
-      // Sellers see all deals for now (submittedBy not in schema)
-      return nonDraftDeals;
+      // Sellers see only their own deals (filtered by email)
+      return nonDraftDeals.filter(deal => deal.email === currentUser?.email);
     }
     
     // Other roles see all non-draft deals
     return nonDraftDeals;
+  };
+
+  // Get seller-specific deals for metrics
+  const getSellerDeals = () => {
+    if (userRole === 'seller') {
+      return deals.filter(deal => 
+        deal.email === currentUser?.email && 
+        deal.status !== 'draft'
+      );
+    }
+    return deals.filter(deal => deal.status !== 'draft');
+  };
+
+  // Calculate seller-specific metrics
+  const calculateSellerMetrics = (sellerDeals: Deal[]) => {
+    // Pipeline Value - total value of active deals
+    const activeDealValue = sellerDeals
+      .filter(deal => !['signed', 'lost'].includes(deal.status))
+      .reduce((sum, deal) => sum + ((deal as any).annualRevenue || 0), 0);
+
+    // Close Rate - signed deals / total submitted deals
+    const submittedDeals = sellerDeals.filter(deal => 
+      !['draft', 'scoping'].includes(deal.status)
+    );
+    const signedDeals = sellerDeals.filter(deal => deal.status === 'signed');
+    const closeRate = submittedDeals.length > 0 
+      ? Math.round((signedDeals.length / submittedDeals.length) * 100)
+      : 0;
+
+    // Deals at Risk - using refined criteria
+    const getDealsAtRisk = () => {
+      const now = new Date();
+      return sellerDeals.filter(deal => {
+        const daysSinceUpdate = deal.lastStatusChange 
+          ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
+          : 0;
+        
+        return (
+          // IMMEDIATE RISK - Seller must act
+          deal.status === 'revision_requested' ||
+          
+          // STAGNATION RISK - No movement for too long
+          (deal.status === 'under_review' && daysSinceUpdate > 10) ||
+          (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
+          
+          // QUALITY RISK - Multiple revision cycles
+          (deal.revisionCount && deal.revisionCount >= 2) ||
+          
+          // EXPIRATION RISK - Draft about to expire
+          (deal.draftExpiresAt && 
+           (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
+        );
+      });
+    };
+
+    const dealsAtRisk = getDealsAtRisk();
+
+    return {
+      pipelineValue: activeDealValue,
+      closeRate,
+      dealsAtRisk: dealsAtRisk.length,
+      totalActiveDeals: sellerDeals.filter(deal => !['signed', 'lost'].includes(deal.status)).length
+    };
   };
 
   return (
@@ -351,260 +413,409 @@ export function ConsolidatedDashboard() {
           })}
         </div>
 
-        {/* Consolidated Action Items Section */}
-        <Card className="border border-slate-200 shadow-sm bg-white">
-          <CardHeader className="pb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-              <div className="flex-1">
-                <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
-                  Action Items
-                  {(priorityItems.length > 0 || approvalItems.length > 0) && (
-                    <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                      {priorityItems.length + approvalItems.length}
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription className="text-slate-500">
-                  Urgent tasks and essential workflow actions for your role
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Priority Items */}
-              {priorityItems.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Needs Your Attention
-                  </h4>
-                  {priorityItems.slice(0, 3).map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1 rounded-full ${
-                          item.urgencyLevel === 'high' ? 'bg-red-100' : 
-                          item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
-                        }`}>
-                          {item.urgencyLevel === 'high' ? 
-                            <AlertTriangle className="h-4 w-4 text-red-600" /> :
-                            item.urgencyLevel === 'medium' ? 
-                            <Clock className="h-4 w-4 text-amber-600" /> :
-                            <CheckCircle className="h-4 w-4 text-blue-600" />
-                          }
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900">{item.title}</p>
-                          <p className="text-sm text-slate-500">{item.description}</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        {item.actionType === 'convert' ? 'Convert' :
-                         item.actionType === 'approve' ? 'Review' :
-                         item.actionType === 'nudge' ? 'Follow Up' : 'View'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Approval Queue Items (for reviewers/approvers) */}
-              {approvalItems.length > 0 && (userRole === 'department_reviewer' || userRole === 'approver') && (
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    {userRole === 'department_reviewer' ? 'Review Queue' : 'Approval Queue'}
-                  </h4>
-                  {approvalItems.slice(0, 5).map((item: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="p-1 rounded-full bg-blue-100">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900">{item.dealName}</p>
-                          <p className="text-sm text-slate-500">{item.advertiserName || item.agencyName || "N/A"} • {formatShortCurrency(item.annualRevenue || item.totalValue || 0)}</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/deals/${item.dealId}`)}>
-                        Review
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Essential Workflow Actions */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <PlusCircle className="h-4 w-4" />
-                  {userRole === 'seller' && "Deal Actions"}
-                  {userRole === 'department_reviewer' && "Review Actions"}
-                  {userRole === 'approver' && "Approval Actions"}
-                  {userRole === 'admin' && "Admin Actions"}
-                </h4>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Professional Seller Actions */}
-                  {userRole === 'seller' && (
-                    <>
-                      <Button asChild className="h-auto p-6 flex-col gap-3 bg-[#3e0075] hover:bg-[#2d0055] text-white border-0 shadow-sm hover:shadow transition-all duration-200">
-                        <Link to="/request/proposal">
-                          <div className="p-2 bg-white/15 rounded-lg">
-                            <PlusCircle className="h-5 w-5" />
-                          </div>
-                          <span className="font-medium text-sm">Create New Deal</span>
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="h-auto p-6 flex-col gap-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200">
-                        <Link to="/testing">
-                          <div className="p-2 bg-slate-100 rounded-lg">
-                            <BarChart3 className="h-5 w-5 text-slate-600" />
-                          </div>
-                          <span className="font-medium text-sm text-slate-700">Deal Analytics</span>
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-
-                  {/* Department Reviewer Actions */}
-                  {userRole === 'department_reviewer' && (
-                    <>
-                      <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                        <Link to="/deals">
-                          <CheckCircle className="h-5 w-5" />
-                          <span className="text-sm">Review Queue</span>
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                        <Link to="/testing">
-                          <Users className="h-5 w-5" />
-                          <span className="text-sm">Team Tools</span>
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-
-                  {/* Approver Actions */}
-                  {userRole === 'approver' && (
-                    <>
-                      <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                        <Link to="/deals">
-                          <Scale className="h-5 w-5" />
-                          <span className="text-sm">Approval Queue</span>
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                        <Link to="/testing">
-                          <BarChart3 className="h-5 w-5" />
-                          <span className="text-sm">Performance</span>
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-
-                  {/* Admin Actions */}
-                  {userRole === 'admin' && (
-                    <>
-                      <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                        <Link to="/admin">
-                          <Users className="h-5 w-5" />
-                          <span className="text-sm">Admin Panel</span>
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                        <Link to="/testing">
-                          <Users className="h-5 w-5" />
-                          <span className="text-sm">System Test</span>
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Deals Preview - Dashboard Summary */}
-        <Card className="border border-slate-200 shadow-sm bg-white">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        {/* My Pipeline Section - Consolidated for Sellers */}
+        {userRole === 'seller' ? (
+          <Card className="border border-slate-200 shadow-sm bg-white">
+            <CardHeader className="pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-                <div>
-                  <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Recent Deals
+                <div className="flex-1">
+                  <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
+                    My Pipeline
+                    {(() => {
+                      const sellerDeals = getSellerDeals();
+                      const actionCount = sellerDeals.filter(deal => 
+                        deal.status === 'revision_requested' ||
+                        (deal.revisionCount && deal.revisionCount >= 2) ||
+                        (deal.draftExpiresAt && 
+                         (new Date(deal.draftExpiresAt).getTime() - new Date().getTime()) < 3 * 24 * 60 * 60 * 1000)
+                      ).length;
+                      return actionCount > 0 && (
+                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                          {actionCount}
+                        </Badge>
+                      );
+                    })()} 
                   </CardTitle>
                   <CardDescription className="text-slate-500">
-                    Latest activity and deal updates
+                    Your deals, actions, and performance
                   </CardDescription>
                 </div>
               </div>
-              <Button asChild variant="outline" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
-                <Link to="/analytics">
-                  View All Deals
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {getFilteredDeals().length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <FileText className="h-6 w-6 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {(() => {
+                  const sellerDeals = getSellerDeals();
+                  const dealsNeedingAction = sellerDeals.filter(deal => {
+                    const now = new Date();
+                    const daysSinceUpdate = deal.lastStatusChange 
+                      ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
+                      : 0;
+                    
+                    return (
+                      deal.status === 'revision_requested' ||
+                      (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
+                      (deal.revisionCount && deal.revisionCount >= 2) ||
+                      (deal.draftExpiresAt && 
+                       (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
+                    );
+                  });
+
+                  const activeDeals = sellerDeals.filter(deal => 
+                    !['signed', 'lost', 'draft'].includes(deal.status)
+                  );
+
+                  const signedThisMonth = sellerDeals.filter(deal => {
+                    if (deal.status !== 'signed' || !deal.lastStatusChange) return false;
+                    const signedDate = new Date(deal.lastStatusChange);
+                    const now = new Date();
+                    return signedDate.getMonth() === now.getMonth() && 
+                           signedDate.getFullYear() === now.getFullYear();
+                  });
+
+                  const pipelineValue = activeDeals.reduce((sum, deal) => 
+                    sum + ((deal as any).annualRevenue || 0), 0
+                  );
+
+                  return (
+                    <>
+                      {/* Action Required Section */}
+                      {dealsNeedingAction.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-red-500" />
+                            Action Required ({dealsNeedingAction.length})
+                          </h4>
+                          {dealsNeedingAction.slice(0, 3).map((deal) => (
+                            <div key={deal.id} className="flex items-center justify-between p-3 border border-red-200 bg-red-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="p-1 rounded-full bg-red-100">
+                                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-slate-900">{deal.dealName}</p>
+                                  <p className="text-sm text-slate-600">
+                                    {deal.status === 'revision_requested' ? 'Needs revision' :
+                                     deal.revisionCount && deal.revisionCount >= 2 ? `Multiple revisions (${deal.revisionCount})` :
+                                     'Draft expiring soon'} • {deal.advertiserName || deal.agencyName}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/deals/${deal.id}`)}>
+                                Fix Now
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Active Deals Section */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Active Deals ({activeDeals.length})
+                        </h4>
+                        {activeDeals.length > 0 ? (
+                          <>
+                            {activeDeals.slice(0, 5).map((deal) => (
+                              <div 
+                                key={deal.id}
+                                className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                                onClick={() => navigate(`/deals/${deal.id}`)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
+                                  <div>
+                                    <p className="font-medium text-slate-900">{deal.dealName}</p>
+                                    <p className="text-sm text-slate-500">
+                                      {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <DealStatusBadge status={deal.status as DealStatus} />
+                                  <div className="text-sm font-medium text-slate-700">
+                                    {formatShortCurrency((deal as any).annualRevenue || 0)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {activeDeals.length > 5 && (
+                              <div className="pt-2">
+                                <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
+                                  <Link to="/analytics">
+                                    View {activeDeals.length - 5} more active deals →
+                                  </Link>
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-center py-8 border border-slate-200 rounded-lg">
+                            <Briefcase className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                            <p className="text-slate-500 text-sm">No active deals in your pipeline</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Recent Performance Section */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4" />
+                          Recent Performance
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                            <div className="text-lg font-semibold text-green-700">{signedThisMonth.length}</div>
+                            <div className="text-xs text-green-600">Signed This Month</div>
+                          </div>
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                            <div className="text-lg font-semibold text-blue-700">{formatShortCurrency(pipelineValue)}</div>
+                            <div className="text-xs text-blue-600">Pipeline Value</div>
+                          </div>
+                        </div>
+                        <Button asChild className="w-full bg-[#3e0075] hover:bg-[#2d0055] text-white">
+                          <Link to="/request/proposal">
+                            <PlusCircle className="h-4 w-4 mr-2" />
+                            Create New Deal
+                          </Link>
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()} 
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Non-Seller Roles - Keep existing Action Items and Recent Deals structure */
+          <>
+            {/* Consolidated Action Items Section */}
+            <Card className="border border-slate-200 shadow-sm bg-white">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
+                      Action Items
+                      {(priorityItems.length > 0 || approvalItems.length > 0) && (
+                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                          {priorityItems.length + approvalItems.length}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-slate-500">
+                      Urgent tasks and essential workflow actions for your role
+                    </CardDescription>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-slate-700 mb-2">No deals yet</h3>
-                <p className="text-slate-500 text-sm mb-4">Ready to create your first deal?</p>
-                {userRole === 'seller' && (
-                  <Button asChild size="sm" className="bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                    <Link to="/request/proposal">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Create Deal
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Priority Items */}
+                  {priorityItems.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Needs Your Attention
+                      </h4>
+                      {priorityItems.slice(0, 3).map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-1 rounded-full ${
+                              item.urgencyLevel === 'high' ? 'bg-red-100' : 
+                              item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
+                            }`}>
+                              {item.urgencyLevel === 'high' ? 
+                                <AlertTriangle className="h-4 w-4 text-red-600" /> :
+                                item.urgencyLevel === 'medium' ? 
+                                <Clock className="h-4 w-4 text-amber-600" /> :
+                                <CheckCircle className="h-4 w-4 text-blue-600" />
+                              }
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-900">{item.title}</p>
+                              <p className="text-sm text-slate-500">{item.description}</p>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            {item.actionType === 'convert' ? 'Convert' :
+                             item.actionType === 'approve' ? 'Review' :
+                             item.actionType === 'nudge' ? 'Follow Up' : 'View'}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Approval Queue Items (for reviewers/approvers) */}
+                  {approvalItems.length > 0 && (userRole === 'department_reviewer' || userRole === 'approver') && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        {userRole === 'department_reviewer' ? 'Review Queue' : 'Approval Queue'}
+                      </h4>
+                      {approvalItems.slice(0, 5).map((item: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="p-1 rounded-full bg-blue-100">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-900">{item.dealName}</p>
+                              <p className="text-sm text-slate-500">{item.advertiserName || item.agencyName || "N/A"} • {formatShortCurrency(item.annualRevenue || item.totalValue || 0)}</p>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/deals/${item.dealId}`)}>
+                            Review
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Essential Workflow Actions */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <PlusCircle className="h-4 w-4" />
+                      {userRole === 'department_reviewer' && "Review Actions"}
+                      {userRole === 'approver' && "Approval Actions"}
+                      {userRole === 'admin' && "Admin Actions"}
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Department Reviewer Actions */}
+                      {userRole === 'department_reviewer' && (
+                        <>
+                          <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
+                            <Link to="/deals">
+                              <CheckCircle className="h-5 w-5" />
+                              <span className="text-sm">Review Queue</span>
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                            <Link to="/testing">
+                              <Users className="h-5 w-5" />
+                              <span className="text-sm">Team Tools</span>
+                            </Link>
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Approver Actions */}
+                      {userRole === 'approver' && (
+                        <>
+                          <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
+                            <Link to="/deals">
+                              <Scale className="h-5 w-5" />
+                              <span className="text-sm">Approval Queue</span>
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                            <Link to="/testing">
+                              <BarChart3 className="h-5 w-5" />
+                              <span className="text-sm">Performance</span>
+                            </Link>
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Admin Actions */}
+                      {userRole === 'admin' && (
+                        <>
+                          <Button asChild className="h-auto p-4 flex-col gap-2 bg-[#3e0075] hover:bg-[#2d0055] text-white">
+                            <Link to="/admin">
+                              <Users className="h-5 w-5" />
+                              <span className="text-sm">Admin Panel</span>
+                            </Link>
+                          </Button>
+                          <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                            <Link to="/testing">
+                              <Users className="h-5 w-5" />
+                              <span className="text-sm">System Test</span>
+                            </Link>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Deals Preview - Dashboard Summary */}
+            <Card className="border border-slate-200 shadow-sm bg-white">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+                    <div>
+                      <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Recent Deals
+                      </CardTitle>
+                      <CardDescription className="text-slate-500">
+                        Latest activity and deal updates
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button asChild variant="outline" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
+                    <Link to="/analytics">
+                      View All Deals
                     </Link>
                   </Button>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {getFilteredDeals().slice(0, 5).map((deal) => (
-                  <div 
-                    key={deal.id}
-                    className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/deals/${deal.id}`)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
-                      <div>
-                        <p className="font-medium text-slate-900">{deal.dealName}</p>
-                        <p className="text-sm text-slate-500">
-                          {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
-                        </p>
-                      </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {getFilteredDeals().length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <FileText className="h-6 w-6 text-slate-400" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <DealStatusBadge status={deal.status as DealStatus} />
-                      <div className="text-sm font-medium text-slate-700">
-                        {formatShortCurrency((deal as any).annualRevenue || (deal as any).totalValue || 0)}
-                      </div>
-                    </div>
+                    <h3 className="text-base font-medium text-slate-700 mb-2">No deals yet</h3>
+                    <p className="text-slate-500 text-sm mb-4">Ready to review some deals?</p>
                   </div>
-                ))}
-                {getFilteredDeals().length > 5 && (
-                  <div className="pt-3 border-t border-slate-200">
-                    <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
-                      <Link to="/analytics">
-                        View {getFilteredDeals().length - 5} more deals →
-                      </Link>
-                    </Button>
+                ) : (
+                  <div className="space-y-3">
+                    {getFilteredDeals().slice(0, 5).map((deal) => (
+                      <div 
+                        key={deal.id}
+                        className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/deals/${deal.id}`)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-[#3e0075] rounded-full"></div>
+                          <div>
+                            <p className="font-medium text-slate-900">{deal.dealName}</p>
+                            <p className="text-sm text-slate-500">
+                              {deal.advertiserName || deal.agencyName} • {deal.salesChannel}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <DealStatusBadge status={deal.status as DealStatus} />
+                          <div className="text-sm font-medium text-slate-700">
+                            {formatShortCurrency((deal as any).annualRevenue || (deal as any).totalValue || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {getFilteredDeals().length > 5 && (
+                      <div className="pt-3 border-t border-slate-200">
+                        <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
+                          <Link to="/analytics">
+                            View {getFilteredDeals().length - 5} more deals →
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
