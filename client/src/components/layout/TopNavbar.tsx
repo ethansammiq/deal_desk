@@ -13,7 +13,8 @@ import {
   Briefcase,
   LogOut,
   Settings,
-  User
+  User,
+  FileText
 } from "lucide-react";
 import companyLogo from "../../assets/miq-transparent.png";
 import { cn } from "@/lib/utils";
@@ -142,12 +143,25 @@ export function TopNavbar() {
             <Link href="/deals">
               <div className={cn(
                 "flex items-center justify-center min-w-[100px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
+                location === "/deals"
                   ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                   : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
               )}>
                 <Briefcase className="flex-shrink-0 w-4 h-4 mr-2" />
                 <span className="whitespace-nowrap">Deals</span>
+              </div>
+            </Link>
+
+            {/* Core: Deal Requests */}
+            <Link href="/deal-requests">
+              <div className={cn(
+                "flex items-center justify-center min-w-[120px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                (location === "/deal-requests" || location === "/submit-deal")
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+              )}>
+                <FileText className="flex-shrink-0 w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Deal Requests</span>
               </div>
             </Link>
 
