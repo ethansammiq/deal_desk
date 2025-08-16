@@ -89,10 +89,14 @@ export function ConsolidatedDashboard() {
   // Get seller-specific deals for metrics - defined before use
   const getSellerDeals = () => {
     if (userRole === 'seller') {
-      return deals.filter(deal => 
+      console.log('Filtering deals for seller:', currentUser?.email);
+      console.log('Available deals:', deals.map(d => ({ name: d.dealName, email: d.email, status: d.status })));
+      const filtered = deals.filter(deal => 
         deal.email === currentUser?.email && 
         deal.status !== 'draft'
       );
+      console.log('Filtered deals:', filtered.length);
+      return filtered;
     }
     return deals.filter(deal => deal.status !== 'draft');
   };
