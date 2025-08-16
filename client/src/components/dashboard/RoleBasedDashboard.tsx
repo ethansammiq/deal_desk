@@ -456,41 +456,137 @@ export function RoleBasedDashboard() {
         </Card>
       )}
 
-      {/* Quick Actions */}
+      {/* Role-Specific Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks for your role</CardDescription>
+          <CardDescription>
+            {userRole === 'seller' && "Essential tools for deal management"}
+            {userRole === 'department_reviewer' && "Review and validation tools"}
+            {userRole === 'approver' && "Business approval tools"}
+            {userRole === 'admin' && "System administration tools"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {canCreateDeals && (
-              <Button asChild className="h-auto p-4 flex-col gap-2">
-                <Link to="/submit-deal">
-                  <PlusCircle className="h-5 w-5" />
-                  <span className="text-sm">Create Deal</span>
-                </Link>
-              </Button>
+            {/* Seller-Specific Actions */}
+            {userRole === 'seller' && (
+              <>
+                <Button asChild className="h-auto p-4 flex-col gap-2">
+                  <Link to="/submit-deal">
+                    <PlusCircle className="h-5 w-5" />
+                    <span className="text-sm">New Deal</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <Briefcase className="h-5 w-5" />
+                    <span className="text-sm">My Pipeline</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/help">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span className="text-sm">Get Support</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/testing">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-sm">Deal Analytics</span>
+                  </Link>
+                </Button>
+              </>
             )}
-            {canViewAllDeals && (
-              <Button variant="outline" className="h-auto p-4 flex-col gap-2">
-                <FileText className="h-5 w-5" />
-                <span className="text-sm">View All Deals</span>
-              </Button>
+
+            {/* Department Reviewer Actions */}
+            {userRole === 'department_reviewer' && (
+              <>
+                <Button asChild className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="text-sm">Review Queue</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <Scale className="h-5 w-5" />
+                    <span className="text-sm">All Deals</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/help">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span className="text-sm">Escalate Issue</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/testing">
+                    <Users className="h-5 w-5" />
+                    <span className="text-sm">Team Tools</span>
+                  </Link>
+                </Button>
+              </>
             )}
-            {canApproveDeals && (
-              <Button variant="outline" className="h-auto p-4 flex-col gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span className="text-sm">Approve Deals</span>
-              </Button>
+
+            {/* Approver Actions */}
+            {userRole === 'approver' && (
+              <>
+                <Button asChild className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="text-sm">Approve Deals</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="text-sm">Pipeline Review</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/help">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span className="text-sm">Risk Review</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/testing">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-sm">Performance</span>
+                  </Link>
+                </Button>
+              </>
             )}
+
+            {/* Admin Actions */}
             {userRole === 'admin' && (
-              <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
-                <Link to="/admin">
-                  <Users className="h-5 w-5" />
-                  <span className="text-sm">Admin Panel</span>
-                </Link>
-              </Button>
+              <>
+                <Button asChild className="h-auto p-4 flex-col gap-2">
+                  <Link to="/admin">
+                    <Users className="h-5 w-5" />
+                    <span className="text-sm">Admin Panel</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/deals">
+                    <Scale className="h-5 w-5" />
+                    <span className="text-sm">All Deals</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/testing">
+                    <Users className="h-5 w-5" />
+                    <span className="text-sm">System Test</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                  <Link to="/help">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span className="text-sm">Support Desk</span>
+                  </Link>
+                </Button>
+              </>
             )}
           </div>
         </CardContent>
