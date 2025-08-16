@@ -105,7 +105,7 @@ export function TopNavbar() {
   return (
     <header className="sticky top-0 bg-white border-b border-slate-200 shadow-sm z-50 bg-gradient-to-r from-[#f8f5ff] to-white">
       {/* Responsive Navigation */}
-      <div className="max-w-7xl mx-auto">
+      <div>
         <div className="flex justify-between h-16 px-4">
           {/* Logo and Navigation Container */}
           <div className="flex items-center w-full">

@@ -16,7 +16,7 @@ interface BreadcrumbProps {
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
     <div className={cn("bg-white border-b border-slate-200", className)}>
-      <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="px-4 py-3">
         <nav className="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
           {/* Home Icon + Link */}
           <Link href="/" className="text-slate-500 hover:text-slate-700 transition-colors">
