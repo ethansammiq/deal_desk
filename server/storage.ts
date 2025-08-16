@@ -538,6 +538,7 @@ export class MemStorage implements IStorage {
     // Sample deals - removed referenceNumber as it's auto-generated
     const sampleDeals: InsertDeal[] = [
       {
+        email: "john.seller@company.com", // Assign to demo seller
         dealName: "Coca-Cola Q1 2025 Campaign",
         dealType: "grow",
         businessSummary: "Comprehensive digital campaign focusing on growing Coca-Cola's market share in the Southern region, targeting younger demographics.",
@@ -601,6 +602,7 @@ export class MemStorage implements IStorage {
         status: "approved" // Phase 7A: updated status
       },
       {
+        email: "john.seller@company.com", // Assign to demo seller
         dealName: "Droga5 Client Portfolio",
         dealType: "protect",
         businessSummary: "Retention-focused deal to maintain Droga5's existing client portfolio with minimal growth targets but stable margins.",
@@ -619,9 +621,10 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 50000,
         analyticsTier: "silver",
         requiresCustomMarketing: false,
-        status: "negotiating" // Phase 7A: updated status
+        status: "revision_requested" // Changed to show as risky deal
       },
       {
+        email: "john.seller@company.com", // Assign to demo seller
         dealName: "Nike Digital Transformation",
         dealType: "custom",
         businessSummary: "Comprehensive digital transformation project focused on Nike's online retail experience and personalization capabilities.",
@@ -644,6 +647,7 @@ export class MemStorage implements IStorage {
       },
       // Phase 7A: Additional deals to cover all 9 statuses
       {
+        email: "john.seller@company.com", // Assign to demo seller  
         dealName: "Meta Q2 Campaign Scoping",
         dealType: "grow",
         businessSummary: "Initial scoping discussion for Meta's Q2 advertising campaign with focus on mobile-first approach.",
@@ -662,7 +666,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 75000,
         analyticsTier: "gold",
         requiresCustomMarketing: true,
-        status: "scoping" // Phase 7A: scoping status
+        status: "under_review" // Changed for better pipeline view
       },
       {
         dealName: "Amazon Legal Review Contract",
@@ -707,9 +711,10 @@ export class MemStorage implements IStorage {
         status: "contract_sent" // Phase 7A: contract_sent status
       },
       {
-        dealName: "Tesla Growth Scoping",
+        email: "john.seller@company.com", // Assign to demo seller
+        dealName: "Tesla Growth Opportunity",
         dealType: "grow",
-        businessSummary: "High-value growth opportunity that was lost due to pricing concerns and competitive pressure.",
+        businessSummary: "High-value growth opportunity with strong potential, currently in negotiation phase.",
         salesChannel: "client_direct",
         advertiserName: "Tesla",
         region: "west",
@@ -725,7 +730,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 400000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "scoping" // Phase 7A: scoping status for conversion testing
+        status: "negotiating" // Changed from lost to active deal
       }
     ];
     
