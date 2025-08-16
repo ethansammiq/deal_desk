@@ -320,71 +320,99 @@ export function RoleBasedDashboard() {
   const roleMetrics = getRoleSpecificMetrics();
 
   return (
-    <div className="p-6 space-y-8">
-      {/* Welcome Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Welcome back, {userName}</h1>
-          <p className="mt-1 text-slate-500">Here's what's happening with your commercial deals</p>
-        </div>
-        <Badge variant="outline" className="capitalize">
-          {userRole.replace('_', ' ')}
-          {userDepartment && ` - ${userDepartment}`}
-        </Badge>
-      </div>
-
-      {/* Role-Specific Key Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{roleMetrics.title}</CardTitle>
-          <CardDescription>{roleMetrics.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {roleMetrics.metrics.map((metric, index) => {
-              const IconComponent = metric.icon;
-              return (
-                <div key={index} className="flex items-center p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                  <div className={`p-3 ${metric.bgColor} rounded-full mr-4`}>
-                    <IconComponent className={`h-6 w-6 ${metric.color}`} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50">
+      <div className="p-8 space-y-8 max-w-7xl mx-auto">
+        {/* Enhanced Welcome Header with Brand Gradient */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#3e0075] via-[#5a0099] to-[#7c2d9e] rounded-2xl p-8 text-white shadow-xl">
+          <div className="absolute inset-0 bg-black/5 backdrop-blur-sm"></div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-3 text-white">Welcome back, {userName}</h1>
+              <p className="text-white/90 text-lg">Here's what's happening with your commercial deals</p>
+            </div>
+            <div className="text-right">
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-5 py-2 text-sm font-medium">
+                {userRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {userDepartment && (
+                  <div className="text-xs opacity-80 mt-1">
+                    {userDepartment.charAt(0).toUpperCase() + userDepartment.slice(1)} Team
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-slate-900">{metric.value}</div>
-                    <p className="text-sm text-slate-500">{metric.label}</p>
+                )}
+              </Badge>
+            </div>
+          </div>
+          {/* Decorative gradient orbs */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl transform translate-x-32 -translate-y-32"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tl from-white/10 to-transparent rounded-full blur-2xl transform -translate-x-24 translate-y-24"></div>
+        </div>
+
+        {/* Enhanced Key Metrics with Visual Hierarchy */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-8 bg-gradient-to-b from-[#3e0075] to-[#5a0099] rounded-full"></div>
+              <div>
+                <CardTitle className="text-2xl text-slate-900">{roleMetrics.title}</CardTitle>
+                <CardDescription className="text-slate-600 text-base">{roleMetrics.description}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {roleMetrics.metrics.map((metric, index) => {
+                const IconComponent = metric.icon;
+                return (
+                  <div key={index} className="group relative p-6 bg-white rounded-xl border border-slate-200 hover:border-[#3e0075]/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-4 ${metric.bgColor} rounded-xl shadow-sm group-hover:shadow-md transition-shadow`}>
+                        <IconComponent className={`h-7 w-7 ${metric.color}`} />
+                      </div>
+                      <div className="w-2 h-2 bg-gradient-to-r from-[#3e0075] to-[#5a0099] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-3xl font-bold text-slate-900 group-hover:text-[#3e0075] transition-colors">{metric.value}</div>
+                      <p className="text-sm font-medium text-slate-600">{metric.label}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Enhanced Action Items + Quick Tools with Visual Grouping */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="xl:col-span-2">
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${priorityItems.length > 0 ? 'bg-orange-100' : 'bg-blue-100'}`}>
+                    {priorityItems.length > 0 ? (
+                      <AlertTriangle className="h-6 w-6 text-orange-600" />
+                    ) : (
+                      <PlusCircle className="h-6 w-6 text-blue-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl text-slate-900 flex items-center gap-3">
+                      {priorityItems.length > 0 ? 'Action Items' : 'Workflow Actions'}
+                      {priorityItems.length > 0 && (
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">
+                          {priorityItems.length}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-slate-600">
+                      {priorityItems.length > 0 
+                        ? "Urgent tasks requiring attention plus essential workflow actions"
+                        : "Essential workflow actions for your role"
+                      }
+                    </CardDescription>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Consolidated: Action Items + Quick Tools */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {priorityItems.length > 0 ? (
-              <>
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Action Items
-                <Badge variant="secondary">{priorityItems.length}</Badge>
-              </>
-            ) : (
-              <>
-                <PlusCircle className="h-5 w-5" />
-                Workflow Actions
-              </>
-            )}
-          </CardTitle>
-          <CardDescription>
-            {priorityItems.length > 0 
-              ? "Urgent tasks requiring attention plus essential workflow actions"
-              : "Essential workflow actions for your role"
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
             {/* Priority Tasks Section (when available) */}
             {priorityItems.length > 0 && (
               <div className="space-y-3">
@@ -437,19 +465,23 @@ export function RoleBasedDashboard() {
               </h4>
               
               <div className="grid grid-cols-2 gap-4">
-                {/* Seller-Specific: Only workflow actions not in top nav */}
+                {/* Enhanced Seller Actions with Visual Design */}
                 {userRole === 'seller' && (
                   <>
-                    <Button asChild className="h-auto p-4 flex-col gap-2">
+                    <Button asChild className="h-auto p-6 flex-col gap-3 bg-gradient-to-br from-[#3e0075] to-[#5a0099] hover:from-[#2d0055] hover:to-[#4a0088] text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                       <Link to="/submit-deal">
-                        <PlusCircle className="h-5 w-5" />
-                        <span className="text-sm">Create New Deal</span>
+                        <div className="p-2 bg-white/20 rounded-lg">
+                          <PlusCircle className="h-6 w-6" />
+                        </div>
+                        <span className="font-medium">Create New Deal</span>
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-auto p-4 flex-col gap-2">
+                    <Button asChild variant="outline" className="h-auto p-6 flex-col gap-3 border-2 border-slate-200 hover:border-[#3e0075] hover:bg-[#3e0075]/5 transition-all duration-300 transform hover:-translate-y-1">
                       <Link to="/testing">
-                        <BarChart3 className="h-5 w-5" />
-                        <span className="text-sm">Deal Analytics</span>
+                        <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-[#3e0075]/10">
+                          <BarChart3 className="h-6 w-6 text-slate-600" />
+                        </div>
+                        <span className="font-medium text-slate-700">Deal Analytics</span>
                       </Link>
                     </Button>
                   </>
@@ -513,6 +545,8 @@ export function RoleBasedDashboard() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      </div>
 
       {/* Role-Specific Workflow Section */}
       {userRole !== 'seller' && (
@@ -525,13 +559,13 @@ export function RoleBasedDashboard() {
 
       {/* Seller-Specific: Recent Deal Activity with DataTable */}
       {userRole === 'seller' && (
-        <Card>
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
+              <FileText className="h-6 w-6" />
               My Recent Deals
             </CardTitle>
-            <CardDescription>Your latest deal submissions and their current status</CardDescription>
+            <CardDescription className="text-slate-600">Your latest deal submissions and their current status</CardDescription>
           </CardHeader>
           <CardContent>
             {deals.length === 0 ? (
@@ -539,7 +573,7 @@ export function RoleBasedDashboard() {
                 <FileText className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-700 mb-2">No deals yet</h3>
                 <p className="text-slate-500 mb-4">Ready to create your first deal?</p>
-                <Button asChild>
+                <Button asChild className="bg-gradient-to-br from-[#3e0075] to-[#5a0099] hover:from-[#2d0055] hover:to-[#4a0088] text-white border-0">
                   <Link to="/submit-deal">
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Create Deal
@@ -562,7 +596,7 @@ export function RoleBasedDashboard() {
         </Card>
       )}
 
-
+      </div>
     </div>
   );
 }
