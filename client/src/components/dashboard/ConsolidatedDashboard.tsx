@@ -296,8 +296,8 @@ export function ConsolidatedDashboard() {
 
   return (
     <div className="min-h-screen">
-      {/* No breadcrumb on dashboard - it's the home page */}
-      <div className="p-8 space-y-8">
+      <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+        <div className="space-y-8">
         {/* Clean Professional Header */}
         <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm">
           <div className="flex items-center justify-between">
@@ -606,7 +606,7 @@ export function ConsolidatedDashboard() {
             )}
           </CardContent>
         </Card>
-
+        </div>
       </div>
     </div>
   );

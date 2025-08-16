@@ -10,8 +10,8 @@ export default function DealRequests() {
 
   return (
     <div className="min-h-screen">
-
-      <div className="p-8 space-y-8">
+      <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+        <div className="space-y-8">
         <FormSectionHeader
           title="Deal Requests"
           description="Choose the right option for your commercial deal needs"
@@ -205,7 +205,8 @@ export default function DealRequests() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
+        </div>
       </div>
     </div>
   );

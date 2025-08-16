@@ -158,8 +158,8 @@ export default function DealsPage() {
 
   return (
     <div className="min-h-screen">
-
-      <div className="p-8 space-y-8">
+      <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+        <div className="space-y-8">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -298,6 +298,7 @@ export default function DealsPage() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

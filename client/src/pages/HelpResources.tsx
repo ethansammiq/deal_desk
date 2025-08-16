@@ -15,7 +15,8 @@ export default function HelpResources() {
 
   return (
     <div className="min-h-screen">
-      <div className="p-8 space-y-8">
+      <div className="bg-white rounded-lg shadow-sm border border-[#f0e6ff] p-4 sm:p-6">
+        <div className="space-y-8">
         {/* Page Header */}
         <div>
           <h1 className="text-3xl font-semibold text-slate-900">Support & Resources</h1>
@@ -167,6 +168,7 @@ export default function HelpResources() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
