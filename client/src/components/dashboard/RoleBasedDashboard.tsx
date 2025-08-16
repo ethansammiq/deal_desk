@@ -287,12 +287,62 @@ export function RoleBasedDashboard() {
         </Card>
       )}
 
-      {/* Universal Approval Queue */}
-      <UniversalApprovalQueue 
-        userRole={userRole} 
-        userDepartment={userDepartment} 
-        departmentDisplayName={departments.find(d => d.department === userDepartment)?.displayName}
-      />
+      {/* Role-Specific Workflow Section */}
+      {userRole !== 'seller' && (
+        <UniversalApprovalQueue 
+          userRole={userRole} 
+          userDepartment={userDepartment} 
+          departmentDisplayName={departments.find(d => d.department === userDepartment)?.displayName}
+        />
+      )}
+
+      {/* Seller-Specific: Recent Deal Activity */}
+      {userRole === 'seller' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Recent Deals
+            </CardTitle>
+            <CardDescription>Your latest deal submissions and their status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {deals.slice(0, 5).map((deal, index) => (
+                <div key={deal.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900">{deal.dealName || `Deal #${deal.id}`}</p>
+                    <p className="text-sm text-slate-500">
+                      {deal.advertiserName || deal.agencyName || 'Client TBD'} • 
+                      {deal.annualRevenue ? ` $${Math.round(deal.annualRevenue / 1000)}k` : ' Value TBD'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={
+                      deal.status === 'signed' ? 'default' :
+                      deal.status === 'lost' ? 'destructive' :
+                      deal.status === 'under_review' ? 'secondary' : 'outline'
+                    }>
+                      {deal.status.replace('_', ' ')}
+                    </Badge>
+                    <Button variant="ghost" size="sm">
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {deals.length === 0 && (
+                <div className="text-center py-6">
+                  <p className="text-slate-500">No deals yet. Ready to create your first deal?</p>
+                  <Button asChild className="mt-3">
+                    <Link to="/submit-deal">Create Deal</Link>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <Card>
