@@ -30,6 +30,7 @@ This project is a comprehensive deal desk application designed to streamline com
 - **Enhanced Permission System**: Removed approver edit permissions to enforce revision request workflow, clarified "View Deals" vs "View All Deals" distinction, improved testing interface with clear explanations (August 2025)
 - **Role Consolidation**: Merged Legal role into Department Reviewer structure as legal department, added all 6 departments + legal to department selection, fixed role switching persistence (August 2025)
 - **Streamlined Dashboard Experience**: Eliminated redundancy between top navigation and dashboard actions. Dashboard now focuses on urgent tasks and workflow-specific actions not covered by main navigation, reducing cognitive load and UI clutter (August 2025)
+- **Enhanced Header Components**: Evolved notification bell with role-based visibility (hidden for sellers) and real data integration. Upgraded profile button to functional dropdown with role switching, admin access, and logout capability. Removed mock data in favor of authentic implementation patterns (August 2025)
 
 ### Technical Implementation & Design
 The application features an Express.js backend with an in-memory storage solution, defining RESTful API endpoints for deal management. The frontend employs a component-based design with extensive use of reusable components and custom React hooks for encapsulating business logic. UI/UX decisions emphasize consistency through standardized form components, a clear functional layout, and consistent styling across all financial sections.

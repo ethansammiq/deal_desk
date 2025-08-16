@@ -10,7 +10,10 @@ import {
   BellIcon,
   TestTube2,
   BarChart3,
-  Briefcase
+  Briefcase,
+  LogOut,
+  Settings,
+  User
 } from "lucide-react";
 import companyLogo from "../../assets/miq-transparent.png";
 import { cn } from "@/lib/utils";
@@ -18,6 +21,74 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "./NotificationBell";
 import { useUserPermissions } from "@/hooks/useAuth";
+
+// User Profile Dropdown Component
+function UserProfileDropdown({ currentUser }: { currentUser: any }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all"
+      >
+        <div className="flex items-center text-sm">
+          <UserCircle className="flex-shrink-0 w-5 h-5 text-[#5a0099] mr-1.5" />
+          <span className="font-medium text-[#3e0075] whitespace-nowrap">
+            {currentUser?.firstName || currentUser?.username || 'User'}
+          </span>
+          <ChevronDown className="flex-shrink-0 w-4 h-4 ml-1 text-[#5a0099]" />
+        </div>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 border border-[#e9ddff]">
+          <div className="px-4 py-3 border-b border-[#e9ddff]">
+            <p className="text-sm font-medium text-[#3e0075]">
+              {currentUser?.firstName || currentUser?.username || 'User'}
+            </p>
+            <p className="text-xs text-slate-500 capitalize">
+              {currentUser?.role?.replace('_', ' ')}
+              {currentUser?.department && ` • ${currentUser.department}`}
+            </p>
+          </div>
+          
+          <div className="py-1">
+            <Link href="/profile">
+              <button className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]">
+                <User className="w-4 h-4 mr-3" />
+                Profile Settings
+              </button>
+            </Link>
+            
+            {currentUser?.role === 'admin' && (
+              <Link href="/admin">
+                <button className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]">
+                  <Settings className="w-4 h-4 mr-3" />
+                  Admin Panel
+                </button>
+              </Link>
+            )}
+            
+            <Link href="/testing">
+              <button className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]">
+                <TestTube2 className="w-4 h-4 mr-3" />
+                Switch Roles
+              </button>
+            </Link>
+          </div>
+          
+          <div className="py-1 border-t border-[#e9ddff]">
+            <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+              <LogOut className="w-4 h-4 mr-3" />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function TopNavbar() {
   const [location] = useLocation();
@@ -124,14 +195,8 @@ export function TopNavbar() {
             {/* Notification Bell */}
             <NotificationBell />
             
-            {/* User Profile */}
-            <div className="flex items-center bg-[#f8f5ff] p-1.5 pl-3 rounded-full border border-[#e9ddff] shadow-sm hover:shadow transition-all cursor-pointer">
-              <div className="flex items-center text-sm">
-                <UserCircle className="flex-shrink-0 w-5 h-5 text-[#5a0099] mr-1.5" />
-                <span className="font-medium text-[#3e0075] whitespace-nowrap">{currentUser?.firstName || currentUser?.username || 'User'}</span>
-                <ChevronDown className="flex-shrink-0 w-4 h-4 ml-1 text-[#5a0099]" />
-              </div>
-            </div>
+            {/* User Profile with Dropdown */}
+            <UserProfileDropdown currentUser={currentUser} />
           </div>
           
           {/* Mobile menu button */}
