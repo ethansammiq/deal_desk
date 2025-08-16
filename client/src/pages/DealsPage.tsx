@@ -159,7 +159,7 @@ export default function DealsPage() {
   return (
     <div className="min-h-screen">
 
-      <div className="max-w-7xl mx-auto p-8 space-y-8">
+      <div className="p-8 space-y-8">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>

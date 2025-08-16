@@ -15,7 +15,7 @@ export default function HelpResources() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto p-8 space-y-8">
+      <div className="p-8 space-y-8">
         {/* Page Header */}
         <div>
           <h1 className="text-3xl font-semibold text-slate-900">Support & Resources</h1>
