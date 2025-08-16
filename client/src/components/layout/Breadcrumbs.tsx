@@ -5,13 +5,17 @@ import { useLocation } from "wouter";
 // Define the path to title mapping
 const pathToTitle: Record<string, string> = {
   "/": "Home",
-  "/help": "Support Desk",
-  "/support": "Deal Scoping",
-  "/request-support": "Deal Scoping",
-  "/deal-requests": "Deal Requests",
-  "/submit-deal": "Deal Submission",
-  "/dashboard": "Deal Dashboard",
-  "/deals": "Deals"
+  "/dashboard": "Dashboard",
+  "/request": "Requests",
+  "/request/scoping": "Scoping",
+  "/request/proposal": "Proposal", 
+  "/support": "Support",
+  "/analytics": "Analytics",
+  "/testing": "Testing",
+  "/deals": "Deals",
+  "/admin": "Admin Panel",
+  "/department-queues": "Department Queues",
+  "/sla-monitoring": "SLA Monitoring"
 };
 
 // Define breadcrumb structure for hierarchical paths
@@ -30,20 +34,26 @@ export function Breadcrumbs() {
   const getBreadcrumbs = (): BreadcrumbPath[] => {
     // Start with Home
     const breadcrumbs: BreadcrumbPath[] = [
-      { title: "Home", path: "/", id: "home" }
+      { title: "Home", path: "/dashboard", id: "home" }
     ];
     
-    // Deal Scoping has a parent of Deal Requests (clickable)
-    if (location === "/support" || location === "/request-support") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/deal-requests", id: "deal-requests" });
-      breadcrumbs.push({ title: "Deal Scoping", path: "/request-support", isActive: true, id: "deal-scoping" });
+    // Handle nested request paths
+    if (location === "/request/scoping") {
+      breadcrumbs.push({ title: "Requests", path: "/request", id: "requests" });
+      breadcrumbs.push({ title: "Scoping", path: "/request/scoping", isActive: true, id: "scoping" });
       return breadcrumbs;
     }
     
-    // Deal Submission has a parent of Deal Requests (clickable)
-    if (location === "/submit-deal") {
-      breadcrumbs.push({ title: "Deal Requests", path: "/deal-requests", id: "deal-requests" });
-      breadcrumbs.push({ title: "Deal Submission", path: "/submit-deal", isActive: true, id: "deal-submission" });
+    if (location === "/request/proposal") {
+      breadcrumbs.push({ title: "Requests", path: "/request", id: "requests" });
+      breadcrumbs.push({ title: "Proposal", path: "/request/proposal", isActive: true, id: "proposal" });
+      return breadcrumbs;
+    }
+    
+    // Handle deal detail pages
+    if (location.startsWith("/deals/")) {
+      breadcrumbs.push({ title: "Analytics", path: "/analytics", id: "analytics" });
+      breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });
       return breadcrumbs;
     }
     

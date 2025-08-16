@@ -4,15 +4,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CheckSquare, FileText, ArrowRight, HelpCircle, Zap, Clock, Users, BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
-import { Breadcrumb, buildBreadcrumbs } from "@/components/ui/breadcrumb";
 
 export default function DealRequests() {
   const [_, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb items={buildBreadcrumbs('/request')} />
 
       <div className="max-w-6xl mx-auto p-8 space-y-8">
         <FormSectionHeader
