@@ -9,7 +9,7 @@ export default function DealRequests() {
   const [_, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
 
       <div className="max-w-6xl mx-auto p-8 space-y-8">
         <FormSectionHeader
