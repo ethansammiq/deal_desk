@@ -36,9 +36,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gradient-to-b from-[#f8f5ff] to-slate-50">
       <TopNavbar />
       
-      {/* Main Content Area with Fixed Width */}
+      {/* Main Content Area with Full Width */}
       <div className="pt-6 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <Breadcrumbs />
           <div>
             {children}
