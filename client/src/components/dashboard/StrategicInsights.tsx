@@ -58,7 +58,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
       actionLabel: stalledDeals.length === 1 ? 'Contact This Client' : `Follow Up on ${stalledDeals.length} Deals`,
-      actionRoute: `/deals`,
+      actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?highlight=${stalledDeals.map(d => d.id).join(',')}`,
       trend: 'down'
     });
   }
@@ -101,7 +101,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `Average deal value ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(changePercent)}% vs last month. ${actionGuidance}`,
         urgency: changePercent < -25 ? 'high' : 'medium',
         actionLabel: changePercent < -25 ? 'Create High-Value Deal' : 'View Deal History',
-        actionRoute: changePercent < -25 ? '/deal/new' : '/deals?sort=value',
+        actionRoute: changePercent < -25 ? '/request/proposal' : '/analytics',
         trend: changePercent > 0 ? 'up' : 'down'
       });
     }
@@ -173,7 +173,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(closingValue)} in high-value deals advancing. ${actionGuidance}`,
         urgency: 'medium',
         actionLabel: nearClosingDeals.length === 1 ? 'Focus on This Deal' : `Push ${nearClosingDeals.length} High-Value Deals`,
-        actionRoute: `/deals?highlight=${nearClosingDeals.map(d => d.id).join(',')}`,
+        actionRoute: nearClosingDeals.length === 1 ? `/deals/${nearClosingDeals[0].id}` : `/analytics?highlight=${nearClosingDeals.map(d => d.id).join(',')}`,
         trend: 'up',
         dealIds: nearClosingDeals.map(d => d.id)
       });
@@ -190,7 +190,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(totalHighValue)} in high-value pipeline needs acceleration. ${actionGuidance}`,
         urgency: 'medium',
         actionLabel: highValueDeals.length === 1 ? 'Accelerate This Deal' : `Accelerate ${highValueDeals.length} Deals`,
-        actionRoute: highValueDeals.length === 1 ? `/deals/${highValueDeals[0].id}` : `/deals?highlight=${highValueDeals.map(d => d.id).join(',')}`,
+        actionRoute: highValueDeals.length === 1 ? `/deals/${highValueDeals[0].id}` : `/analytics?highlight=${highValueDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
     }
@@ -215,7 +215,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
         urgency: 'high',
         actionLabel: closingOpportunities.length === 1 ? 'Close This Deal' : `Close ${closingOpportunities.length} Approved Deals`,
-        actionRoute: closingOpportunities.length === 1 ? `/deals/${closingOpportunities[0].id}` : `/deals?highlight=${closingOpportunities.map(d => d.id).join(',')}`,
+        actionRoute: closingOpportunities.length === 1 ? `/deals/${closingOpportunities[0].id}` : `/analytics?highlight=${closingOpportunities.map(d => d.id).join(',')}`,
         trend: 'up'
       });
     }
@@ -244,7 +244,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(progressValue)} in deals moving through workflow - keep pushing forward`,
         urgency: 'low',
         actionLabel,
-        actionRoute: `/deals?highlight=${progressingDeals.map(d => d.id).join(',')}`,
+        actionRoute: progressingDeals.length === 1 ? `/deals/${progressingDeals[0].id}` : `/analytics?highlight=${progressingDeals.map(d => d.id).join(',')}`,
         trend: 'up',
         dealIds: progressingDeals.map(d => d.id)
       });
@@ -257,7 +257,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
         urgency: 'medium',
         actionLabel: 'Activate Stagnant Deals',
-        actionRoute: `/deals?highlight=${stagnantDeals.map(d => d.id).join(',')}`,
+        actionRoute: `/analytics?highlight=${stagnantDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
     }
