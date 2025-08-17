@@ -553,7 +553,7 @@ export function ConsolidatedDashboard() {
             <StrategicInsights 
               userRole={userRole}
               deals={deals}
-              userEmail={userRole === 'seller' ? currentUser?.email : undefined}
+              userEmail={currentUser?.email}
             />
 
             {/* Recent Deals Preview - Dashboard Summary */}
