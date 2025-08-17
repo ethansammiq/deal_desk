@@ -173,8 +173,9 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(closingValue)} in high-value deals advancing. ${actionGuidance}`,
         urgency: 'medium',
         actionLabel: nearClosingDeals.length === 1 ? 'Focus on This Deal' : `Push ${nearClosingDeals.length} High-Value Deals`,
-        actionRoute: `/deals`,
-        trend: 'up'
+        actionRoute: `/deals?highlight=${nearClosingDeals.map(d => d.id).join(',')}`,
+        trend: 'up',
+        dealIds: nearClosingDeals.map(d => d.id)
       });
     } else {
       // High-value deals exist but need acceleration
@@ -189,7 +190,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(totalHighValue)} in high-value pipeline needs acceleration. ${actionGuidance}`,
         urgency: 'medium',
         actionLabel: highValueDeals.length === 1 ? 'Accelerate This Deal' : `Accelerate ${highValueDeals.length} Deals`,
-        actionRoute: `/deals`,
+        actionRoute: highValueDeals.length === 1 ? `/deals/${highValueDeals[0].id}` : `/deals?highlight=${highValueDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
     }
@@ -214,7 +215,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
         urgency: 'high',
         actionLabel: closingOpportunities.length === 1 ? 'Close This Deal' : `Close ${closingOpportunities.length} Approved Deals`,
-        actionRoute: `/deals`,
+        actionRoute: closingOpportunities.length === 1 ? `/deals/${closingOpportunities[0].id}` : `/deals?highlight=${closingOpportunities.map(d => d.id).join(',')}`,
         trend: 'up'
       });
     }
@@ -243,8 +244,9 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(progressValue)} in deals moving through workflow - keep pushing forward`,
         urgency: 'low',
         actionLabel,
-        actionRoute: `/deals`,
-        trend: 'up'
+        actionRoute: `/deals?highlight=${progressingDeals.map(d => d.id).join(',')}`,
+        trend: 'up',
+        dealIds: progressingDeals.map(d => d.id)
       });
     } else if (stagnantDeals.length > 0) {
       const stagnantValue = stagnantDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
@@ -255,7 +257,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
         urgency: 'medium',
         actionLabel: 'Activate Stagnant Deals',
-        actionRoute: `/deals`,
+        actionRoute: `/deals?highlight=${stagnantDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
     }
