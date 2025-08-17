@@ -165,20 +165,18 @@ export function TopNavbar() {
               </div>
             </Link>
 
-            {/* Analytics - All roles except seller */}
-            {userRole !== 'seller' && (
-              <Link href="/analytics">
-                <div className={cn(
-                  "flex items-center justify-center min-w-[110px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
-                  location === "/analytics"
-                    ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                    : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
-                )}>
-                  <BarChart3 className="flex-shrink-0 w-4 h-4 mr-2" />
-                  <span className="whitespace-nowrap">Analytics</span>
-                </div>
-              </Link>
-            )}
+            {/* Analytics - Available to all roles */}
+            <Link href="/analytics">
+              <div className={cn(
+                "flex items-center justify-center min-w-[110px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                location === "/analytics"
+                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm"
+              )}>
+                <BarChart3 className="flex-shrink-0 w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Analytics</span>
+              </div>
+            </Link>
             </nav>
           </div>
           
