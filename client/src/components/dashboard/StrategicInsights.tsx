@@ -33,31 +33,44 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. PREDICTIVE RISK INTELLIGENCE - Deals at risk of stalling
+  // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up
   const stalledDeals = sellerDeals.filter(deal => {
     if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
     const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
     
-    // Risk thresholds by status
-    if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true;
-    if (deal.status === 'under_review' && daysSinceUpdate > 5) return true;
-    if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true;
+    // Risk thresholds by status - consolidated all stall scenarios
+    if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true; // External follow-up
+    if (deal.status === 'under_review' && daysSinceUpdate > 5) return true; // Internal follow-up
+    if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true; // Internal follow-up
+    if (deal.status === 'approved' && daysSinceUpdate > 3) return true; // Internal follow-up
+    if (deal.status === 'contract_drafting' && daysSinceUpdate > 5) return true; // Internal follow-up
     return false;
   });
 
   if (stalledDeals.length > 0) {
     const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    const actionGuidance = stalledDeals.length === 1 
-      ? 'Contact client today or schedule follow-up meeting'
-      : `Review each deal and send status updates to all ${stalledDeals.length} prospects`;
+    
+    // Separate external vs internal follow-ups for better guidance
+    const externalDeals = stalledDeals.filter(deal => deal.status === 'negotiating');
+    const internalDeals = stalledDeals.filter(deal => 
+      ['under_review', 'revision_requested', 'approved', 'contract_drafting'].includes(deal.status)
+    );
+    
+    const actionGuidance = externalDeals.length > 0 
+      ? (externalDeals.length === 1 ? 'Contact client to move negotiation forward' : 'Contact clients to accelerate negotiations')
+      : (internalDeals.length === 1 ? 'Follow up internally to move deal forward' : 'Follow up internally on stalled deals');
+    
+    const actionLabel = externalDeals.length > 0 
+      ? (externalDeals.length === 1 ? 'Call Client' : `Call (${externalDeals.length})`)
+      : (internalDeals.length === 1 ? 'Follow Up' : `Follow Up (${stalledDeals.length})`);
     
     insights.push({
-      id: 'stall-risk-prediction',
-      title: 'Deals at Stall Risk',
+      id: 'stall-risk-consolidated',
+      title: 'Deals Need Follow-Up',
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
-      actionLabel: stalledDeals.length === 1 ? 'Call Client' : `Follow Up (${stalledDeals.length})`,
+      actionLabel,
       actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?highlight=${stalledDeals.map(d => d.id).join(',')}`,
       trend: 'down'
     });
@@ -103,74 +116,12 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     }
   }
 
-  // 3. PROCESS BOTTLENECK DETECTION - Status transition timing
-  const statusTimings = new Map<string, number[]>();
-  
-  sellerDeals.forEach(deal => {
-    if (deal.lastStatusChange) {
-      const daysInStatus = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-      if (!statusTimings.has(deal.status)) {
-        statusTimings.set(deal.status, []);
-      }
-      statusTimings.get(deal.status)!.push(daysInStatus);
-    }
-  });
-
-  // Identify bottlenecks
-  statusTimings.forEach((timings, status) => {
-    if (timings.length >= 2) {
-      const avgTime = timings.reduce((sum: number, time: number) => sum + time, 0) / timings.length;
-      const expectedTime = status === 'under_review' ? 3 : status === 'negotiating' ? 7 : 5;
-      
-      if (avgTime > expectedTime * 1.5) { // 50% longer than expected
-        const actionGuidance = status === 'negotiating' 
-          ? 'Schedule calls with prospects to move deals forward'
-          : status === 'under_review'
-          ? 'Contact approvers to expedite review process'
-          : 'Follow up on pending items to accelerate progress';
-        
-        insights.push({
-          id: `bottleneck-${status}`,
-          title: `${status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} Bottleneck`,
-          metric: `${Math.round(avgTime)}d`,
-          description: `Deals averaging ${Math.round(avgTime)} days in ${status} vs ${expectedTime}d target. ${actionGuidance}`,
-          urgency: avgTime > expectedTime * 2 ? 'high' : 'medium',
-          actionLabel: status === 'negotiating' ? 'Call Prospects' : 'Follow Up',
-          actionRoute: `/deals?status=${status}`,
-          trend: 'down'
-        });
-        return; // Only show one bottleneck at a time
-      }
-    }
-  });
+  // REMOVED: Process bottleneck detection is now consolidated into stall risk above
 
   // 4. ONLY SHOW HIGH-VALUE DEALS IF THEY'RE ACTUALLY STUCK/STALLED
   // Remove "progressing well" insights as they don't need action
 
-  // 5. CLOSING VELOCITY INTELLIGENCE - Deals ready for final push
-  if (insights.length < 3) {
-    const closingOpportunities = sellerDeals.filter(deal => 
-      ['approved', 'contract_drafting'].includes(deal.status)
-    );
-    
-    if (closingOpportunities.length > 0) {
-      const closingValue = closingOpportunities.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-      const actionGuidance = closingOpportunities.length === 1 
-        ? 'This deal is approved and ready to close - follow up today'
-        : `${closingOpportunities.length} deals ready to close - schedule final meetings this week`;
-      
-      insights.push({
-        id: 'closing-velocity',
-        title: 'Deals Ready to Close',
-        metric: closingOpportunities.length,
-        description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
-        urgency: 'high',
-        actionLabel: closingOpportunities.length === 1 ? 'Close Deal' : `Close (${closingOpportunities.length})`,
-        actionRoute: closingOpportunities.length === 1 ? `/deals/${closingOpportunities[0].id}` : `/analytics?highlight=${closingOpportunities.map(d => d.id).join(',')}`,
-        trend: 'up'
-      });
-    }
-  }
+  // REMOVED: Closing velocity intelligence consolidated into stall risk above
 
   // 6. ONLY SHOW STAGNANT PIPELINE (ACTIONABLE PROBLEM)
   if (insights.length < 3) {
@@ -239,96 +190,14 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
     });
   }
 
-  // 2. ONLY SHOW OVERWHELMED QUEUE (ACTIONABLE PROBLEM)
-  const pendingQueue = deals.filter(deal => 
-    deal.status === 'submitted' || deal.status === 'under_review'
-  );
+  // REMOVED: Queue overwhelmed - processing normal work isn't actionable within app
 
-  // Only show if queue is genuinely overwhelming (>8 deals)
-  if (pendingQueue.length > 8) {
-    insights.push({
-      id: 'queue-overwhelmed',
-      title: 'Review Queue Overwhelmed',
-      metric: pendingQueue.length,
-      description: `Review queue at ${pendingQueue.length} deals. Consider delegating reviews or working extra hours to prevent bottleneck`,
-      urgency: 'high',
-      actionLabel: `Process (${pendingQueue.length})`,
-      actionRoute: '/analytics',
-      trend: 'up'
-    });
-  }
+  // REMOVED: Velocity declining - optimizing process isn't actionable within app
 
-  // 3. ONLY SHOW DECLINING APPROVAL VELOCITY (ACTIONABLE PROBLEM)
-  const recentApprovals = deals.filter(deal => {
-    if (!deal.lastStatusChange || deal.status !== 'approved') return false;
-    const daysOld = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-    return daysOld <= 7;
-  });
+  // REMOVED: High-value queue priority - no longer needed after consolidation
 
-  const olderApprovals = deals.filter(deal => {
-    if (!deal.lastStatusChange || deal.status !== 'approved') return false;
-    const daysOld = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-    return daysOld > 7 && daysOld <= 14;
-  });
 
-  if (recentApprovals.length > 0 && olderApprovals.length > 0) {
-    const velocityChange = ((recentApprovals.length - olderApprovals.length) / olderApprovals.length) * 100;
-    
-    // Only show if velocity declined significantly (actionable problem)
-    if (velocityChange < -30) {
-      insights.push({
-        id: 'approval-velocity-decline',
-        title: 'Approval Velocity Declining',
-        metric: `${Math.round(velocityChange)}%`,
-        description: `Approval rate decreased ${Math.abs(Math.round(velocityChange))}% this week. Review process may need optimization - consider streamlining steps`,
-        urgency: 'medium',
-        actionLabel: 'Optimize',
-        actionRoute: '/analytics',
-        trend: 'down'
-      });
-    }
-  }
-
-  // 4. HIGH-VALUE QUEUE PRIORITY - Critical deals in queue
-  const highValueInQueue = pendingQueue.filter(deal => (deal.annualRevenue || 0) >= 500000);
-  
-  if (highValueInQueue.length > 0 && insights.length < 3) {
-    const totalHighValue = highValueInQueue.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    const actionGuidance = highValueInQueue.length === 1 
-      ? 'Review this high-value deal first to avoid revenue risk'
-      : 'Process these high-value deals before smaller ones to maximize impact';
-    
-    insights.push({
-      id: 'high-value-queue',
-      title: 'High-Value Deals in Queue',
-      metric: highValueInQueue.length,
-      description: `${formatShortCurrency(totalHighValue)} in high-value deals awaiting review. ${actionGuidance}`,
-      urgency: 'medium',
-      actionLabel: 'Review High-Value First',
-      actionRoute: '/deals?filter=high-value&status=submitted,under_review',
-      trend: 'stable'
-    });
-  }
-
-  // 5. Workflow health indicator (if no critical issues)
-  if (insights.length === 0) {
-    const activeWorkflow = deals.filter(deal => 
-      ['submitted', 'under_review', 'negotiating', 'approved'].includes(deal.status)
-    );
-    
-    if (activeWorkflow.length > 0) {
-      insights.push({
-        id: 'workflow-optimized',
-        title: 'Workflow Operating Efficiently',
-        metric: activeWorkflow.length,
-        description: `${activeWorkflow.length} deal${activeWorkflow.length > 1 ? 's' : ''} flowing smoothly through approval process`,
-        urgency: 'low',
-        actionLabel: 'Monitor Trends',
-        actionRoute: '/analytics',
-        trend: 'stable'
-      });
-    }
-  }
+  // REMOVED: Workflow health indicator - informational only, not actionable
 
   return insights.slice(0, 3); // Max 3 insights
 }
