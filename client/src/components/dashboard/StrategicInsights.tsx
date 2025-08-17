@@ -24,7 +24,7 @@ interface StrategicInsightsProps {
   userEmail?: string;
 }
 
-// Generate Pipeline Health insights for sellers - STRATEGIC level, not immediate actions
+// Phase 2A: Enhanced Pipeline Health Intelligence using existing data
 function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): StrategicInsight[] {
   const sellerDeals = userEmail 
     ? deals.filter(deal => deal.email === userEmail && deal.status !== 'draft')
@@ -33,146 +33,267 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. Pipeline velocity trends (strategic insight)
-  const activeDeals = sellerDeals.filter(deal => 
-    !['signed', 'lost', 'draft'].includes(deal.status)
-  );
-  
-  const negotiatingDeals = sellerDeals.filter(deal => deal.status === 'negotiating');
-  const underReviewDeals = sellerDeals.filter(deal => deal.status === 'under_review');
-  
-  if (negotiatingDeals.length > 0) {
+  // 1. PREDICTIVE RISK INTELLIGENCE - Deals at risk of stalling
+  const stalledDeals = sellerDeals.filter(deal => {
+    if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
+    const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+    
+    // Risk thresholds by status
+    if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true;
+    if (deal.status === 'under_review' && daysSinceUpdate > 5) return true;
+    if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true;
+    return false;
+  });
+
+  if (stalledDeals.length > 0) {
+    const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     insights.push({
-      id: 'negotiation-momentum',
-      title: 'Negotiation Phase Activity',
-      metric: negotiatingDeals.length,
-      description: `${negotiatingDeals.length} deal${negotiatingDeals.length > 1 ? 's' : ''} actively negotiating - momentum building`,
-      urgency: 'low',
-      actionLabel: 'Monitor Progress',
+      id: 'stall-risk-prediction',
+      title: 'Deals at Stall Risk',
+      metric: stalledDeals.length,
+      description: `${formatShortCurrency(totalStalledValue)} in pipeline needs immediate attention to prevent stalling`,
+      urgency: 'high',
+      actionLabel: 'Review At-Risk Deals',
       actionRoute: '/deals',
-      trend: 'up'
+      trend: 'down'
     });
   }
 
-  // 2. Pipeline value concentration (strategic insight)
+  // 2. PERFORMANCE THRESHOLD MONITORING - Pipeline value changes
+  const activeDeals = sellerDeals.filter(deal => 
+    !['signed', 'lost', 'draft'].includes(deal.status)
+  );
+  const currentPipelineValue = activeDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+  
+  // Historical baseline comparison (using deal creation patterns as proxy)
+  const recentDeals = sellerDeals.filter(deal => {
+    if (!deal.createdAt) return false;
+    const daysOld = (now.getTime() - new Date(deal.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld <= 30;
+  });
+  
+  const olderDeals = sellerDeals.filter(deal => {
+    if (!deal.createdAt) return false;
+    const daysOld = (now.getTime() - new Date(deal.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld > 30 && daysOld <= 60;
+  });
+
+  if (olderDeals.length > 0 && recentDeals.length > 0) {
+    const recentAvgValue = recentDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0) / recentDeals.length;
+    const historicalAvgValue = olderDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0) / olderDeals.length;
+    const changePercent = Math.round(((recentAvgValue - historicalAvgValue) / historicalAvgValue) * 100);
+    
+    if (Math.abs(changePercent) >= 20) {
+      insights.push({
+        id: 'pipeline-threshold-alert',
+        title: 'Pipeline Value Trend Alert',
+        metric: `${changePercent > 0 ? '+' : ''}${changePercent}%`,
+        description: `Average deal value ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(changePercent)}% vs last month`,
+        urgency: changePercent < -25 ? 'high' : 'medium',
+        actionLabel: 'Analyze Trend',
+        actionRoute: '/analytics',
+        trend: changePercent > 0 ? 'up' : 'down'
+      });
+    }
+  }
+
+  // 3. PROCESS BOTTLENECK DETECTION - Status transition timing
+  const statusTimings = new Map<string, number[]>();
+  
+  sellerDeals.forEach(deal => {
+    if (deal.lastStatusChange) {
+      const daysInStatus = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+      if (!statusTimings.has(deal.status)) {
+        statusTimings.set(deal.status, []);
+      }
+      statusTimings.get(deal.status)!.push(daysInStatus);
+    }
+  });
+
+  // Identify bottlenecks
+  statusTimings.forEach((timings, status) => {
+    if (timings.length >= 2) {
+      const avgTime = timings.reduce((sum: number, time: number) => sum + time, 0) / timings.length;
+      const expectedTime = status === 'under_review' ? 3 : status === 'negotiating' ? 7 : 5;
+      
+      if (avgTime > expectedTime * 1.5) { // 50% longer than expected
+        insights.push({
+          id: `bottleneck-${status}`,
+          title: `${status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} Bottleneck`,
+          metric: `${Math.round(avgTime)}d`,
+          description: `Deals averaging ${Math.round(avgTime)} days in ${status} vs ${expectedTime}d target`,
+          urgency: avgTime > expectedTime * 2 ? 'high' : 'medium',
+          actionLabel: 'Investigate Delays',
+          actionRoute: '/deals',
+          trend: 'down'
+        });
+        return; // Only show one bottleneck at a time
+      }
+    }
+  });
+
+  // 4. High-value concentration risk (existing logic enhanced)
   const highValueDeals = sellerDeals.filter(deal => {
     const value = deal.annualRevenue || 0;
     return value >= 500000 && !['signed', 'lost'].includes(deal.status);
   });
 
-  if (highValueDeals.length > 0) {
+  if (highValueDeals.length > 0 && insights.length < 3) {
     const totalHighValue = highValueDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     const totalPipelineValue = activeDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     const concentration = Math.round((totalHighValue / totalPipelineValue) * 100);
     
-    insights.push({
-      id: 'value-concentration',
-      title: 'High-Value Pipeline Focus',
-      metric: `${concentration}%`,
-      description: `${highValueDeals.length} deal${highValueDeals.length > 1 ? 's' : ''} >$500K represent ${concentration}% of pipeline value`,
-      urgency: concentration > 70 ? 'medium' : 'low',
-      actionLabel: 'View High-Value Deals',
-      actionRoute: '/deals',
-      trend: concentration > 70 ? 'up' : 'stable'
-    });
-  }
-
-  // 3. Deal progression health (strategic insight)
-  const totalDeals = sellerDeals.filter(deal => !['draft'].includes(deal.status)).length;
-  const progressingDeals = sellerDeals.filter(deal => 
-    ['under_review', 'negotiating', 'approved', 'contract_drafting'].includes(deal.status)
-  ).length;
-  
-  if (totalDeals > 0) {
-    const progressionRate = Math.round((progressingDeals / totalDeals) * 100);
-    insights.push({
-      id: 'progression-health',
-      title: 'Pipeline Progression Rate',
-      metric: `${progressionRate}%`,
-      description: `${progressingDeals} of ${totalDeals} deals advancing through workflow`,
-      urgency: progressionRate < 50 ? 'medium' : 'low',
-      actionLabel: 'Analyze Workflow',
-      actionRoute: '/analytics',
-      trend: progressionRate >= 70 ? 'up' : progressionRate >= 50 ? 'stable' : 'down'
-    });
-  }
-
-  // 4. Recent submission momentum (positive indicator)
-  const recentSubmissions = sellerDeals.filter(deal => {
-    if (!deal.updatedAt) return false;
-    const hoursSinceUpdate = (now.getTime() - new Date(deal.updatedAt).getTime()) / (1000 * 60 * 60);
-    return hoursSinceUpdate <= 72 && deal.status === 'submitted'; // Last 3 days
-  });
-
-  if (recentSubmissions.length > 0 && insights.length < 3) {
-    insights.push({
-      id: 'submission-momentum',
-      title: 'Fresh Submissions This Week',
-      metric: recentSubmissions.length,
-      description: `${recentSubmissions.length} new deal${recentSubmissions.length > 1 ? 's' : ''} submitted for review`,
-      urgency: 'low',
-      actionLabel: 'Track Progress',
-      actionRoute: '/deals',
-      trend: 'up'
-    });
+    if (concentration > 60) { // Only show if high concentration
+      insights.push({
+        id: 'concentration-risk',
+        title: 'High-Value Concentration Risk',
+        metric: `${concentration}%`,
+        description: `${highValueDeals.length} deals >$500K represent ${concentration}% of pipeline value`,
+        urgency: concentration > 80 ? 'high' : 'medium',
+        actionLabel: 'Diversify Pipeline',
+        actionRoute: '/deals',
+        trend: concentration > 80 ? 'up' : 'stable'
+      });
+    }
   }
 
   return insights.slice(0, 3); // Max 3 insights
 }
 
-// Generate Workflow Efficiency insights for reviewers/approvers
+// Helper function for currency formatting
+function formatShortCurrency(amount: number): string {
+  if (amount >= 1000000) {
+    return `$${(amount / 1000000).toFixed(1)}M`;
+  } else if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(0)}K`;
+  } else {
+    return `$${amount.toFixed(0)}`;
+  }
+}
+
+// Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
 function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): StrategicInsight[] {
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. Deals under review count
-  const underReviewDeals = deals.filter(deal => deal.status === 'under_review');
-  
-  if (underReviewDeals.length > 0) {
-    insights.push({
-      id: 'review-queue',
-      title: 'Active Review Queue',
-      metric: underReviewDeals.length,
-      description: `${underReviewDeals.length} deal${underReviewDeals.length > 1 ? 's' : ''} awaiting ${userRole === 'approver' ? 'approval' : 'review'}`,
-      urgency: underReviewDeals.length > 5 ? 'high' : 'medium',
-      actionLabel: 'Process Queue',
-      actionRoute: '/deals'
-    });
-  }
-
-  // 2. Deals in negotiation (collaborative stage)
-  const negotiatingDeals = deals.filter(deal => deal.status === 'negotiating');
-  
-  if (negotiatingDeals.length > 0) {
-    insights.push({
-      id: 'active-negotiations',
-      title: 'Active Negotiations',
-      metric: negotiatingDeals.length,
-      description: `${negotiatingDeals.length} deal${negotiatingDeals.length > 1 ? 's' : ''} in collaborative negotiation`,
-      urgency: 'low',
-      actionLabel: 'Monitor Progress',
-      actionRoute: '/deals'
-    });
-  }
-
-  // 3. Recently submitted deals
-  const recentlySubmitted = deals.filter(deal => {
-    if (deal.status !== 'submitted' || !deal.updatedAt) return false;
-    const hoursSinceSubmission = (now.getTime() - new Date(deal.updatedAt).getTime()) / (1000 * 60 * 60);
-    return hoursSinceSubmission <= 24; // Last 24 hours
+  // 1. PROCESS BOTTLENECK DETECTION - Approval timing analysis
+  const reviewingDeals = deals.filter(deal => deal.status === 'under_review');
+  const stalledReviews = reviewingDeals.filter(deal => {
+    if (!deal.lastStatusChange) return false;
+    const daysSinceReview = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceReview > 3; // Reviews taking longer than 3 days
   });
 
-  if (recentlySubmitted.length > 0) {
+  if (stalledReviews.length > 0) {
+    const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     insights.push({
-      id: 'recent-submissions',
-      title: 'New Submissions Today',
-      metric: recentlySubmitted.length,
-      description: `${recentlySubmitted.length} fresh deal${recentlySubmitted.length > 1 ? 's' : ''} submitted for review`,
-      urgency: 'medium',
-      actionLabel: 'Review New Deals',
+      id: 'review-bottleneck',
+      title: 'Review Process Bottleneck',
+      metric: stalledReviews.length,
+      description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review`,
+      urgency: stalledReviews.length > 3 ? 'high' : 'medium',
+      actionLabel: 'Expedite Reviews',
       actionRoute: '/deals',
-      trend: 'up'
+      trend: 'down'
     });
+  }
+
+  // 2. QUEUE THRESHOLD MONITORING - Workload capacity analysis  
+  const pendingQueue = deals.filter(deal => 
+    deal.status === 'submitted' || deal.status === 'under_review'
+  );
+
+  // Historical queue baseline (using creation patterns)
+  const recentQueue = deals.filter(deal => {
+    if (!deal.createdAt) return false;
+    const daysOld = (now.getTime() - new Date(deal.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld <= 7 && (deal.status === 'submitted' || deal.status === 'under_review');
+  });
+
+  const historicalQueue = deals.filter(deal => {
+    if (!deal.createdAt) return false;
+    const daysOld = (now.getTime() - new Date(deal.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld > 7 && daysOld <= 14 && (deal.status === 'submitted' || deal.status === 'under_review');
+  });
+
+  if (pendingQueue.length > 5 || (recentQueue.length > historicalQueue.length * 1.5)) {
+    insights.push({
+      id: 'queue-capacity-alert',
+      title: 'Queue Capacity Alert',
+      metric: pendingQueue.length,
+      description: `Review queue at ${pendingQueue.length} deals - ${Math.round((recentQueue.length / Math.max(historicalQueue.length, 1)) * 100)}% vs last week`,
+      urgency: pendingQueue.length > 8 ? 'high' : 'medium',
+      actionLabel: 'Manage Workload',
+      actionRoute: '/deals',
+      trend: recentQueue.length > historicalQueue.length ? 'up' : 'stable'
+    });
+  }
+
+  // 3. APPROVAL VELOCITY TRACKING - Time-to-approval analysis
+  const recentApprovals = deals.filter(deal => {
+    if (!deal.lastStatusChange || deal.status !== 'approved') return false;
+    const daysOld = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld <= 7;
+  });
+
+  const olderApprovals = deals.filter(deal => {
+    if (!deal.lastStatusChange || deal.status !== 'approved') return false;
+    const daysOld = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+    return daysOld > 7 && daysOld <= 14;
+  });
+
+  if (recentApprovals.length > 0 && olderApprovals.length > 0) {
+    const velocityChange = ((recentApprovals.length - olderApprovals.length) / olderApprovals.length) * 100;
+    
+    if (Math.abs(velocityChange) >= 25) {
+      insights.push({
+        id: 'approval-velocity',
+        title: 'Approval Velocity Change',
+        metric: `${velocityChange > 0 ? '+' : ''}${Math.round(velocityChange)}%`,
+        description: `Approval rate ${velocityChange > 0 ? 'increased' : 'decreased'} ${Math.abs(Math.round(velocityChange))}% this week`,
+        urgency: velocityChange < -30 ? 'medium' : 'low',
+        actionLabel: 'Analyze Performance',
+        actionRoute: '/analytics',
+        trend: velocityChange > 0 ? 'up' : 'down'
+      });
+    }
+  }
+
+  // 4. HIGH-VALUE QUEUE PRIORITY - Critical deals in queue
+  const highValueInQueue = pendingQueue.filter(deal => (deal.annualRevenue || 0) >= 500000);
+  
+  if (highValueInQueue.length > 0 && insights.length < 3) {
+    const totalHighValue = highValueInQueue.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    insights.push({
+      id: 'high-value-queue',
+      title: 'High-Value Deals in Queue',
+      metric: highValueInQueue.length,
+      description: `${formatShortCurrency(totalHighValue)} in high-value deals awaiting review`,
+      urgency: 'medium',
+      actionLabel: 'Prioritize Review',
+      actionRoute: '/deals',
+      trend: 'stable'
+    });
+  }
+
+  // 5. Workflow health indicator (if no critical issues)
+  if (insights.length === 0) {
+    const activeWorkflow = deals.filter(deal => 
+      ['submitted', 'under_review', 'negotiating', 'approved'].includes(deal.status)
+    );
+    
+    if (activeWorkflow.length > 0) {
+      insights.push({
+        id: 'workflow-optimized',
+        title: 'Workflow Operating Efficiently',
+        metric: activeWorkflow.length,
+        description: `${activeWorkflow.length} deal${activeWorkflow.length > 1 ? 's' : ''} flowing smoothly through approval process`,
+        urgency: 'low',
+        actionLabel: 'Monitor Trends',
+        actionRoute: '/analytics',
+        trend: 'stable'
+      });
+    }
   }
 
   return insights.slice(0, 3); // Max 3 insights
