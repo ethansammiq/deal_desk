@@ -1,206 +1,2190 @@
-import { Router } from 'express';
-import { storage } from './storage';
-import { insertDealSchema, insertCommentSchema } from '@shared/schema';
-import { z } from 'zod';
+import express, { type Express, Request, Response, NextFunction } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { 
+  insertDealSchema, 
+  insertDealScopingRequestSchema,
+  insertDealApprovalSchema,
+  insertApprovalActionSchema,
+  insertApprovalDepartmentSchema,
+  DEAL_STATUSES,
+  DEAL_STATUS_LABELS,
+  type DealStatus,
+  type UserRole,
+  type DepartmentType,
+  type DealApproval,
+  type InsertDealApproval,
+  type ApprovalAction,
+  type InsertApprovalAction,
+  insertUserSchema
+} from "@shared/schema";
+import { fromZodError } from "zod-validation-error";
+import { getCurrentUser, hasPermission, canTransitionToStatus, getAllowedTransitions } from "@shared/auth";
+import { z } from "zod";
+import { canTransitionStatus } from "@shared/status-transitions";
+import { registerChatbotRoutes, ChatMemStorage } from "./chatbot";
+import { 
+  analyzeDeal, 
+  getDealRecommendations, 
+  getMarketAnalysis,
+  generateStructuredResponse 
+} from "./claude-analyzer";
 
-export const router = Router();
+export async function registerRoutes(app: Express): Promise<Server> {
+  // prefix all routes with /api
+  const router = express.Router();
 
-// Health check
-router.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// Workflow Automation Helper Function - Type-safe version
+interface WorkflowStorage {
+  getDealApprovals(dealId: number): Promise<DealApproval[]>;
+  getDeal(dealId: number): Promise<any>;
+  updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<any>;
+}
 
-// Users routes
-router.get('/users', async (req, res) => {
+async function checkAndUpdateDealStatus(dealId: number, storage: WorkflowStorage): Promise<void> {
   try {
-    const users = await storage.getAllUsers();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users' });
-  }
-});
-
-router.get('/users/:id', async (req, res) => {
-  try {
-    const user = await storage.getUserById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch user' });
-  }
-});
-
-// Deals routes
-router.get('/deals', async (req, res) => {
-  try {
-    const { status, sellerId, assignedReviewer } = req.query;
-    const filters: any = {};
+    const approvals = await storage.getDealApprovals(dealId);
+    const deal = await storage.getDeal(dealId);
     
-    if (status) filters.status = status as string;
-    if (sellerId) filters.sellerId = sellerId as string;
-    if (assignedReviewer) filters.assignedReviewer = assignedReviewer as string;
+    if (!deal || !approvals.length) return;
 
-    const deals = await storage.getDeals(Object.keys(filters).length > 0 ? filters : undefined);
-    res.json(deals);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch deals' });
-  }
-});
+    // Check completion status
+    const allApproved = approvals.every((a: DealApproval) => a.status === 'approved');
+    const anyRejected = approvals.some((a: DealApproval) => a.status === 'rejected');
 
-router.get('/deals/:id', async (req, res) => {
-  try {
-    const deal = await storage.getDealById(req.params.id);
-    if (!deal) {
-      return res.status(404).json({ error: 'Deal not found' });
-    }
-    res.json(deal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch deal' });
-  }
-});
-
-router.post('/deals', async (req, res) => {
-  try {
-    const dealData = insertDealSchema.parse(req.body);
-    const deal = await storage.createDeal(dealData);
-    res.status(201).json(deal);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid deal data', details: error.errors });
-    }
-    res.status(500).json({ error: 'Failed to create deal' });
-  }
-});
-
-router.patch('/deals/:id', async (req, res) => {
-  try {
-    const updates = req.body;
-    const deal = await storage.updateDeal(req.params.id, updates);
-    res.json(deal);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Deal not found') {
-      return res.status(404).json({ error: 'Deal not found' });
-    }
-    res.status(500).json({ error: 'Failed to update deal' });
-  }
-});
-
-router.delete('/deals/:id', async (req, res) => {
-  try {
-    await storage.deleteDeal(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete deal' });
-  }
-});
-
-// Comments routes
-router.get('/deals/:dealId/comments', async (req, res) => {
-  try {
-    const comments = await storage.getCommentsByDealId(req.params.dealId);
-    res.json(comments);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch comments' });
-  }
-});
-
-router.post('/deals/:dealId/comments', async (req, res) => {
-  try {
-    const commentData = insertCommentSchema.parse({
-      ...req.body,
-      dealId: req.params.dealId
-    });
-    const comment = await storage.createComment(commentData);
-    res.status(201).json(comment);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid comment data', details: error.errors });
-    }
-    res.status(500).json({ error: 'Failed to create comment' });
-  }
-});
-
-// Deal actions
-router.post('/deals/:id/submit', async (req, res) => {
-  try {
-    const deal = await storage.getDealById(req.params.id);
-    if (!deal) {
-      return res.status(404).json({ error: 'Deal not found' });
+    let newStatus = deal.status;
+    
+    if (anyRejected) {
+      newStatus = 'revision_requested';
+    } else if (allApproved) {
+      newStatus = 'approved';
+    } else {
+      // Check stage progression for intermediate statuses
+      const stages = Array.from(new Set(approvals.map((a: DealApproval) => a.approvalStage))).sort();
+      const completedStages = stages.filter((stage: number) => 
+        approvals.filter((a: DealApproval) => a.approvalStage === stage)
+          .every((a: DealApproval) => a.status === 'approved')
+      );
+      
+      if (completedStages.length === 0) {
+        newStatus = 'under_review';
+      } else if (completedStages.includes(2) && !completedStages.includes(3)) {
+        newStatus = 'negotiating';
+      } else if (completedStages.includes(3)) {
+        newStatus = 'contract_drafting';
+      }
     }
 
-    if (deal.status !== 'draft') {
-      return res.status(400).json({ error: 'Deal can only be submitted from draft status' });
+    // Update deal status if changed
+    if (newStatus !== deal.status) {
+      await storage.updateDealStatus(
+        dealId, 
+        newStatus as DealStatus, 
+        'System Automation',
+        `Status auto-updated based on approval workflow progress`
+      );
+        console.log(`✅ Deal ${dealId} status auto-updated: ${deal.status} → ${newStatus}`);
+      
+      // Send notifications for status change
+      await sendStatusChangeNotification(dealId, deal.status, newStatus, storage);
     }
+  } catch (error) {
+    console.error(`Error in workflow automation for deal ${dealId}:`, error);
+  }
+}
 
-    const updatedDeal = await storage.updateDeal(req.params.id, {
-      status: 'submitted',
-      approvalHistory: [
-        ...(deal.approvalHistory || []),
-        {
-          userId: req.body.userId || 'system',
-          action: 'submitted',
-          timestamp: new Date().toISOString(),
-          comments: req.body.comments
+// Notification System Helper Function - Type-safe version
+interface NotificationStorage extends WorkflowStorage {
+  getDeal(dealId: number): Promise<any>;
+}
+
+async function sendStatusChangeNotification(dealId: number, oldStatus: string, newStatus: string, storage: NotificationStorage): Promise<any[]> {
+  try {
+    const deal = await storage.getDeal(dealId);
+    const approvals = await storage.getDealApprovals(dealId);
+    
+    // Get all relevant stakeholders
+    const notifications: any[] = [];
+    
+    // Notify deal creator
+    if (deal?.createdBy) {
+      notifications.push({
+        userId: deal.createdBy,
+        type: 'deal_status_change',
+        title: `Deal Status Updated`,
+        message: `Your deal "${deal.dealName}" status changed from ${oldStatus} to ${newStatus}`,
+        dealId: dealId,
+        priority: newStatus === 'approved' ? 'high' : 'normal'
+      });
+    }
+    
+    // Notify pending reviewers
+    const pendingApprovals = approvals.filter((a: DealApproval) => a.status === 'pending');
+    for (const approval of pendingApprovals) {
+      if (approval.assignedTo) {
+        notifications.push({
+          userId: approval.assignedTo,
+          type: 'approval_assignment',
+          title: `New Approval Required`,
+          message: `Deal "${deal.dealName}" requires your review (${approval.department} department)`,
+          dealId: dealId,
+          approvalId: approval.id,
+          priority: approval.priority || 'normal'
+        });
+      }
+    }
+    
+    // Log notifications (in production, these would be sent via email/push/webhook)
+    for (const notification of notifications) {
+      console.log(`📧 NOTIFICATION: [${notification.type}] ${notification.title} → User ${notification.userId}`);
+      console.log(`   Message: ${notification.message}`);
+    }
+    
+    return notifications;
+  } catch (error) {
+    console.error(`Error sending notifications for deal ${dealId}:`, error);
+    return [];
+  }
+}
+
+// Approval Assignment Notification Helper - Type-safe version
+async function sendApprovalAssignmentNotifications(dealId: number, approvals: DealApproval[], storage: NotificationStorage): Promise<void> {
+  try {
+    const deal = await storage.getDeal(dealId);
+    
+    for (const approval of approvals) {
+      console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${approval.department} department review`);
+      console.log(`   Stage: ${approval.approvalStage}, Priority: ${approval.priority}, Due: ${approval.dueDate}`);
+    }
+  } catch (error) {
+    console.error(`Error sending approval assignment notifications:`, error);
+  }
+}
+  app.use("/api", router);
+  
+  // Stats endpoint
+  // Phase 7A: Updated stats endpoint for 9-status workflow
+  router.get("/stats", async (req: Request, res: Response) => {
+    try {
+      const realStats = await storage.getDealStats();
+      res.status(200).json(realStats);
+    } catch (error) {
+      console.error("Error fetching deal stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+  
+  // Deals endpoints
+  router.get("/deals", async (req: Request, res: Response) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const filters = status ? { status } : undefined;
+      const deals = await storage.getDeals(filters);
+      
+      // Enhance deals with tier data for accurate value calculation
+      const dealsWithTiers = await Promise.all(
+        deals.map(async (deal) => {
+          if (deal.dealStructure === 'tiered') {
+            const tiers = await storage.getDealTiers(deal.id);
+            return {
+              ...deal,
+              tiers: tiers,
+              // Calculate total tier revenue for display
+              totalTierRevenue: tiers.length > 0 
+                ? tiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)
+                : deal.annualRevenue || 0,
+              // Get Tier 1 revenue specifically
+              tier1Revenue: tiers.find(t => t.tierNumber === 1)?.annualRevenue || deal.annualRevenue || 0
+            };
+          }
+          return deal;
+        })
+      );
+      
+      res.status(200).json(dealsWithTiers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deals" });
+    }
+  });
+  
+  router.get("/deals/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      res.status(200).json(deal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deal" });
+    }
+  });
+  
+  // Phase 7A: Deal status management routes
+  router.put("/deals/:id/status", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const { status, changedBy, comments } = req.body;
+      
+      // Validate status
+      if (!status || !Object.values(DEAL_STATUSES).includes(status)) {
+        return res.status(400).json({ 
+          message: "Invalid status", 
+          validStatuses: Object.values(DEAL_STATUSES) 
+        });
+      }
+      
+      // Validate performedBy
+      if (!changedBy || typeof changedBy !== 'string') {
+        return res.status(400).json({ message: "performedBy is required" });
+      }
+      
+      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, getCurrentUser().id.toString(), comments);
+      
+      if (!updatedDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      res.status(200).json(updatedDeal);
+    } catch (error) {
+      console.error("Error updating deal status:", error);
+      res.status(500).json({ message: "Failed to update deal status" });
+    }
+  });
+  
+  router.get("/deals/:id/history", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      // Verify deal exists
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      const history = await storage.getDealStatusHistory(id);
+      res.status(200).json(history);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deal status history" });
+    }
+  });
+  
+  // Phase 7B: Nudge endpoint for sending reminders/notifications
+  router.post("/deals/:id/nudge", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const { targetRole, message, sender } = req.body;
+      
+      // Validate required fields
+      if (!targetRole || !message || !sender) {
+        return res.status(400).json({ 
+          message: "targetRole, message, and sender are required" 
+        });
+      }
+      
+      // Verify deal exists
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      // Create a status history entry for the nudge
+      const nudgeComment = `NUDGE from ${sender} to ${targetRole}: ${message}`;
+      await storage.createDealStatusHistory({
+        dealId: id,
+        status: deal.status as DealStatus, // Keep current status
+        previousStatus: deal.status,
+        performedBy: getCurrentUser().id,
+        comments: nudgeComment
+      });
+      
+      // In a real system, this would also trigger notifications
+      // For now, we'll just log and return success
+      console.log(`Nudge sent: Deal ${id}, From: ${sender}, To: ${targetRole}, Message: ${message}`);
+      
+      res.status(200).json({ 
+        message: "Nudge sent successfully",
+        targetRole,
+        dealId: id
+      });
+    } catch (error) {
+      console.error("Error sending nudge:", error);
+      res.status(500).json({ message: "Failed to send nudge" });
+    }
+  });
+
+  // Phase 7A: Status constants endpoint
+  router.get("/deal-statuses", async (req: Request, res: Response) => {
+    try {
+      res.status(200).json({
+        statuses: DEAL_STATUSES,
+        labels: DEAL_STATUS_LABELS,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deal statuses" });
+    }
+  });
+
+  // Phase 3: Enhanced status transition validation endpoint
+  router.get("/deals/:id/allowed-transitions", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userRole = req.query.role as string || 'admin';
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const allowedTransitions = getAllowedTransitions(deal.status as any, userRole as any);
+      
+      res.status(200).json({
+        currentStatus: deal.status,
+        allowedTransitions,
+        userRole
+      });
+    } catch (error) {
+      console.error("Error fetching allowed transitions:", error);
+      res.status(500).json({ message: "Failed to fetch allowed transitions" });
+    }
+  });
+
+  // Phase 3: Deal comments endpoints
+  router.get("/deals/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const comments = await storage.getDealComments(dealId);
+      res.status(200).json(comments);
+    } catch (error) {
+      console.error("Error fetching deal comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  router.post("/deals/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.id);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const { content, author, authorRole } = req.body;
+      
+      if (!content?.trim()) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+      
+      if (!author || !authorRole) {
+        return res.status(400).json({ message: "Author and author role are required" });
+      }
+
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const comment = await storage.createDealComment({
+        dealId,
+        content: content.trim(),
+        author,
+        authorRole,
+        createdAt: new Date()
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating deal comment:", error);
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  // Draft management endpoints  
+  router.post("/deals/drafts", async (req: Request, res: Response) => {
+    try {
+      const { name, description, formData, draftId } = req.body;
+      
+      if (!name?.trim()) {
+        return res.status(400).json({ message: "Draft name is required" });
+      }
+      
+      if (!formData) {
+        return res.status(400).json({ message: "Form data is required" });
+      }
+
+      // Check if this is an update to an existing draft
+      if (draftId && !isNaN(parseInt(draftId))) {
+        const existingDraft = await storage.getDeal(parseInt(draftId));
+        if (existingDraft && existingDraft.status === 'draft') {
+          // Update existing draft using the updateDeal method
+          const updatedDraftData = {
+            ...formData,
+            dealName: name,
+            businessSummary: description || formData.businessSummary || "",
+            dealStructure: formData.dealStructure || "tiered",
+            dealType: formData.dealType || "grow",
+            region: formData.region || "west",
+            salesChannel: formData.salesChannel || "client_direct",
+            advertiserName: formData.advertiserName || "",
+            termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
+            termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1,
+            annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0,
+            status: "draft" as const,
+            isDraft: true,
+            draftType: "submission_draft",
+            updatedAt: new Date()
+          };
+
+          const validatedData = insertDealSchema.safeParse(updatedDraftData);
+          if (!validatedData.success) {
+            const errorMessage = fromZodError(validatedData.error);
+            return res.status(400).json({ 
+              message: "Draft validation failed", 
+              errors: errorMessage.message
+            });
+          }
+
+          const updatedDraft = await storage.updateDeal(parseInt(draftId), validatedData.data);
+
+          // Save tier data separately if provided
+          if (formData.dealTiers && Array.isArray(formData.dealTiers) && formData.dealTiers.length > 0) {
+            // Clear existing tiers for this deal
+            await storage.clearDealTiers(parseInt(draftId));
+            // Save new tier data
+            for (const tier of formData.dealTiers) {
+              await storage.createDealTier({
+                dealId: parseInt(draftId),
+                tierNumber: tier.tierNumber,
+                annualRevenue: tier.annualRevenue,
+                annualGrossMargin: tier.annualGrossMargin,
+                categoryName: tier.categoryName,
+                subCategoryName: tier.subCategoryName,
+                incentiveOption: tier.incentiveOption,
+                incentiveValue: tier.incentiveValue,
+                incentiveNotes: tier.incentiveNotes || ""
+              });
+            }
+          }
+
+          return res.status(200).json(updatedDraft);
         }
-      ]
-    });
+      }
 
-    res.json(updatedDeal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to submit deal' });
-  }
-});
+      // Create new draft if no existing draft ID or draft not found
+      const draftDeal = {
+        ...formData,
+        dealName: name,
+        businessSummary: description || formData.businessSummary || "",
+        dealStructure: formData.dealStructure || "tiered",
+        dealType: formData.dealType || "grow",
+        region: formData.region || "west",
+        salesChannel: formData.salesChannel || "client_direct",
+        advertiserName: formData.advertiserName || "",
+        termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
+        termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        // For drafts, provide default values for required fields to avoid validation errors
+        annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1, // Default to 1 to pass positive validation
+        annualGrossMargin: formData.annualGrossMargin && Number(formData.annualGrossMargin) >= 0 ? Number(formData.annualGrossMargin) : 0, // Allow 0 for margins
+        status: "draft" as const,
+        isDraft: true,
+        draftType: "submission_draft"
+      };
 
-router.post('/deals/:id/approve', async (req, res) => {
-  try {
-    const deal = await storage.getDealById(req.params.id);
-    if (!deal) {
-      return res.status(404).json({ error: 'Deal not found' });
+      const validatedData = insertDealSchema.safeParse(draftDeal);
+      if (!validatedData.success) {
+        const errorMessage = fromZodError(validatedData.error);
+        console.error("Draft validation errors:", validatedData.error.errors);
+        console.error("Draft data being validated:", JSON.stringify(draftDeal, null, 2));
+        return res.status(400).json({ 
+          message: "Draft validation failed", 
+          errors: errorMessage.message,
+          details: validatedData.error.errors
+        });
+      }
+
+      const savedDraft = await storage.createDeal(validatedData.data);
+
+      // Save tier data separately if provided
+      if (formData.dealTiers && Array.isArray(formData.dealTiers) && formData.dealTiers.length > 0) {
+        // Save new tier data for the new draft
+        for (const tier of formData.dealTiers) {
+          await storage.createDealTier({
+            dealId: savedDraft.id,
+            tierNumber: tier.tierNumber,
+            annualRevenue: tier.annualRevenue,
+            annualGrossMargin: tier.annualGrossMargin,
+            categoryName: tier.categoryName,
+            subCategoryName: tier.subCategoryName,
+            incentiveOption: tier.incentiveOption,
+            incentiveValue: tier.incentiveValue,
+            incentiveNotes: tier.incentiveNotes || ""
+          });
+        }
+      }
+
+      res.status(201).json(savedDraft);
+    } catch (error) {
+      console.error("Error creating draft:", error);
+      res.status(500).json({ message: "Failed to create draft" });
+    }
+  });
+
+  router.get("/deals/drafts", async (req: Request, res: Response) => {
+    try {
+      // Get all deals with draft status
+      const allDeals = await storage.getDeals();
+      const drafts = allDeals.filter(deal => deal.status === 'draft');
+      res.status(200).json(drafts);
+    } catch (error) {
+      console.error("Error fetching drafts:", error);
+      res.status(500).json({ message: "Failed to fetch drafts" });
+    }
+  });
+
+  router.delete("/deals/drafts/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid draft ID" });
+      }
+
+      const draft = await storage.getDeal(id);
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+
+      if (draft.status !== "draft") {
+        return res.status(400).json({ message: "Only drafts can be deleted via this endpoint" });
+      }
+
+      await storage.deleteDeal(id);
+      res.status(200).json({ message: "Draft deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting draft:", error);
+      res.status(500).json({ message: "Failed to delete draft" });
+    }
+  });
+
+  // Add endpoint to fetch tier data for a specific deal
+  router.get("/deals/:id/tiers", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Get tier data from the dealTiers table
+      const tierData = await storage.getDealTiers(id);
+      res.status(200).json(tierData);
+    } catch (error) {
+      console.error("Error fetching tier data:", error);
+      res.status(500).json({ message: "Failed to fetch tier data" });
+    }
+  });
+  
+  // Deal scoping requests endpoints
+  router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const filters = status ? { status } : undefined;
+      const requests = await storage.getDealScopingRequests(filters);
+      res.status(200).json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch scoping requests" });
+    }
+  });
+
+  router.get("/deal-scoping-requests/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid scoping request ID" });
+      }
+      
+      const request = await storage.getDealScopingRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Scoping request not found" });
+      }
+      
+      res.status(200).json(request);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch scoping request" });
+    }
+  });
+
+
+  
+  router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      console.log("Creating deal scoping request with data:", req.body);
+      
+      // Validate the request data against the schema
+      const validatedData = insertDealScopingRequestSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        console.error("Deal scoping request validation failed:", validatedData.error);
+        const errorMessage = fromZodError(validatedData.error);
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: errorMessage.message 
+        });
+      }
+      
+      // Create the deal scoping request in storage
+      const request = await storage.createDealScopingRequest(validatedData.data);
+      console.log("Deal scoping request created successfully:", request);
+      
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Failed to create deal scoping request:", error);
+      res.status(500).json({ message: "Failed to create deal scoping request" });
+    }
+  });
+
+  // Phase 8: Revision Request API endpoint
+  router.post("/deals/:id/request-revision", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const { revisionReason } = req.body;
+      
+      if (!revisionReason || typeof revisionReason !== 'string' || !revisionReason.trim()) {
+        return res.status(400).json({ message: "Revision reason is required" });
+      }
+
+      // Get the current deal
+      const currentDeal = await storage.getDeal(id);
+      if (!currentDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Validate that deal can be moved to revision_requested status
+      if (!["under_review", "negotiating"].includes(currentDeal.status)) {
+        return res.status(400).json({ 
+          message: "Deal must be in 'under_review' or 'negotiating' status to request revision",
+          currentStatus: currentDeal.status
+        });
+      }
+
+      // Update deal status to revision_requested with revision data
+      const updatedDeal = await storage.updateDealWithRevision(id, {
+        status: "revision_requested" as DealStatus,
+        revisionReason: revisionReason.trim(),
+        revisionCount: (currentDeal.revisionCount || 0) + 1,
+        isRevision: true,
+        lastRevisedAt: new Date(),
+        canEdit: true // Allow seller to edit when revision is requested
+      });
+
+      if (!updatedDeal) {
+        return res.status(500).json({ message: "Failed to update deal with revision request" });
+      }
+
+      res.status(200).json({
+        message: "Revision requested successfully",
+        deal: updatedDeal
+      });
+    } catch (error) {
+      console.error("Error requesting revision:", error);
+      res.status(500).json({ message: "Failed to request revision" });
+    }
+  });
+
+  // Phase 8 Phase 3: Resubmit deal after revisions
+  router.post("/deals/:id/resubmit", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      // Only allow resubmission of deals in revision_requested status
+      if (deal.status !== 'revision_requested') {
+        return res.status(400).json({ message: "Deal is not in revision requested status" });
+      }
+
+      // Update deal status to under_review and increment revision count
+      const updatedDeal = await storage.updateDealWithRevision(id, {
+        status: 'under_review' as DealStatus,
+        // submittedAt field removed as it's not in the schema
+        revisionCount: (deal.revisionCount || 0) + 1,
+        // lastResubmittedAt removed - use lastRevisedAt instead
+      });
+
+      res.status(200).json({
+        message: "Deal resubmitted successfully",
+        deal: updatedDeal
+      });
+    } catch (error) {
+      console.error("Error resubmitting deal:", error);
+      res.status(500).json({ message: "Failed to resubmit deal" });
+    }
+  });
+
+  router.post("/deals", async (req: Request, res: Response) => {
+    try {
+      // Extract dealTiers from request body if present
+      const { dealTiers, ...reqData } = req.body;
+      
+      // Validate the deal data against the schema
+      const validatedData = insertDealSchema.safeParse(reqData);
+      
+      if (!validatedData.success) {
+        const errorMessage = fromZodError(validatedData.error).message;
+        return res.status(400).json({ message: errorMessage });
+      }
+      
+      // Generate a unique reference number (format: DEAL-YYYY-XXX)
+      const year = new Date().getFullYear();
+      const allDeals = await storage.getDeals();
+      const nextSequence = allDeals.length + 1;
+      const referenceNumber = `DEAL-${year}-${String(nextSequence).padStart(3, '0')}`;
+      
+      // Create the deal with the generated reference number
+      // We need to pass both the deal data and reference number to the storage layer
+      // which will handle adding the referenceNumber during creation
+      const newDeal = await storage.createDeal(
+        validatedData.data as any, 
+        referenceNumber
+      );
+      
+      // If this is a tiered deal structure and dealTiers were provided, create them
+      if (validatedData.data.dealStructure === "tiered" && Array.isArray(dealTiers) && dealTiers.length > 0) {
+        // Create each tier and associate it with the new deal
+        for (const tier of dealTiers) {
+          await storage.createDealTier({
+            ...tier,
+            dealId: newDeal.id
+          });
+        }
+      }
+      
+      // Trigger AI analysis for deal optimization recommendations
+      try {
+        const aiAnalysis = await analyzeDeal(newDeal);
+        console.log("AI analysis completed for deal:", newDeal.id);
+        
+        res.status(201).json({ 
+          deal: newDeal, 
+          aiAnalysis: {
+            recommendations: aiAnalysis.recommendations,
+            riskFactors: aiAnalysis.riskFactors,
+            confidence: aiAnalysis.confidence
+          }
+        });
+      } catch (aiError) {
+        console.warn("AI analysis failed, but deal was created:", aiError);
+        res.status(201).json({ deal: newDeal });
+      }
+    } catch (error) {
+      console.error("Error creating deal:", error);
+      res.status(500).json({ message: "Failed to create deal" });
+    }
+  });
+  
+  router.patch("/deals/:id/status", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      // Validate status
+      const statusSchema = z.object({
+        status: z.enum(["pending", "approved", "rejected", "in_progress", "completed"])
+      });
+      
+      const validatedData = statusSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        const errorMessage = fromZodError(validatedData.error).message;
+        return res.status(400).json({ message: errorMessage });
+      }
+      
+      const { status } = validatedData.data;
+      
+      const updatedDeal = await storage.updateDealStatus(id, status as DealStatus, "system");
+      if (!updatedDeal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      res.status(200).json(updatedDeal);
+    } catch (error) {
+      console.error("Error updating deal status:", error);
+      
+      // Attempt to get the deal from storage anyway
+      // This allows the app to continue working even if the Airtable operation fails
+      try {
+        const deal = await storage.getDeal(parseInt(req.params.id));
+        if (deal) {
+          console.log("Retrieved deal after update error. Returning cached version.");
+          return res.json({
+            ...deal,
+            status: req.body.status,
+            updatedAt: new Date()
+          });
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback operation:", fallbackError);
+      }
+      
+      res.status(500).json({ message: "Failed to update deal status" });
+    }
+  });
+  
+  // Deal scoping requests endpoints
+  router.get("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      const filters = req.query.status ? { status: req.query.status as string } : undefined;
+      const requests = await storage.getDealScopingRequests(filters);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching deal scoping requests:", error);
+      // Return an empty array instead of an error to make the client-side handling easier
+      res.json([]);
+    }
+  });
+
+  router.get("/deal-scoping-requests/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const request = await storage.getDealScopingRequest(id);
+      
+      if (!request) {
+        return res.status(404).json({ error: "Deal scoping request not found" });
+      }
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error fetching deal scoping request:", error);
+      res.status(500).json({ error: "Failed to fetch deal scoping request" });
+    }
+  });
+
+  router.post("/deal-scoping-requests", async (req: Request, res: Response) => {
+    try {
+      console.log("Creating deal scoping request with data:", JSON.stringify(req.body, null, 2));
+      
+      // Check if requestTitle is present
+      if (!req.body.requestTitle) {
+        console.log("Adding default requestTitle");
+        req.body.requestTitle = "Deal Scoping Request";
+      }
+      
+      // Set default status if not provided
+      if (!req.body.status) {
+        req.body.status = "pending";
+      }
+      
+      const request = await storage.createDealScopingRequest(req.body);
+      console.log("Created deal scoping request:", JSON.stringify(request, null, 2));
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Error creating deal scoping request:", error);
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(500).json({ error: "Failed to create deal scoping request" });
+    }
+  });
+
+  // Conversion endpoint for scoping requests to deals
+  router.post("/deal-scoping-requests/:id/convert", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid scoping request ID" });
+      }
+
+      const scopingRequest = await storage.getDealScopingRequest(id);
+      if (!scopingRequest) {
+        return res.status(404).json({ message: "Scoping request not found" });
+      }
+
+      // Convert scoping request to deal with all required fields
+      const dealData = {
+        dealName: scopingRequest.requestTitle || "Converted Deal",
+        dealType: (scopingRequest.dealType as "grow" | "protect" | "custom") || "grow",
+        salesChannel: scopingRequest.salesChannel,
+        region: scopingRequest.region,
+        advertiserName: scopingRequest.advertiserName,
+        agencyName: scopingRequest.agencyName,
+        dealStructure: scopingRequest.dealStructure || "flat_commit",
+        growthAmbition: scopingRequest.growthAmbition,
+        growthOpportunityMIQ: scopingRequest.growthOpportunityMIQ,
+        growthOpportunityClient: scopingRequest.growthOpportunityClient,
+        clientAsks: scopingRequest.clientAsks,
+        termStartDate: scopingRequest.termStartDate,
+        termEndDate: scopingRequest.termEndDate,
+        contractTermMonths: scopingRequest.contractTermMonths,
+        status: "submitted" as const,
+        email: scopingRequest.email,
+        // Required fields with default values
+        isRevision: false,
+        hasTradeAMImplications: false,
+        yearlyRevenueGrowthRate: 0,
+        forecastedMargin: 0,
+        yearlyMarginGrowthRate: 0,
+        addedValueBenefitsCost: 0,
+        analyticsTier: "silver",
+        requiresCustomMarketing: false
+      };
+
+      // Generate reference number
+      const year = new Date().getFullYear();
+      const allDeals = await storage.getDeals();
+      const nextSequence = allDeals.length + 1;
+      const referenceNumber = `DEAL-${year}-${String(nextSequence).padStart(3, '0')}`;
+
+      const newDeal = await storage.createDeal({
+        ...dealData,
+        salesChannel: dealData.salesChannel as "holding_company" | "independent_agency" | "client_direct",
+        region: dealData.region as "northeast" | "midwest" | "midatlantic" | "west" | "south"
+      }, referenceNumber);
+
+      res.status(201).json({ 
+        deal: newDeal,
+        dealId: newDeal.id,
+        message: "Scoping request converted to deal successfully" 
+      });
+    } catch (error) {
+      console.error("Error converting scoping request to deal:", error);
+      res.status(500).json({ message: "Failed to convert scoping request" });
+    }
+  });
+
+  router.patch("/deal-scoping-requests/:id/status", async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
     }
 
-    const updatedDeal = await storage.updateDeal(req.params.id, {
-      status: 'approved',
-      approvalHistory: [
-        ...(deal.approvalHistory || []),
-        {
-          userId: req.body.userId || 'system',
-          action: 'approved',
-          timestamp: new Date().toISOString(),
-          comments: req.body.comments
-        }
-      ]
-    });
-
-    res.json(updatedDeal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to approve deal' });
-  }
-});
-
-router.post('/deals/:id/reject', async (req, res) => {
-  try {
-    const deal = await storage.getDealById(req.params.id);
-    if (!deal) {
-      return res.status(404).json({ error: 'Deal not found' });
+    try {
+      const request = await storage.updateDealScopingRequestStatus(id, status);
+      
+      if (!request) {
+        return res.status(404).json({ error: "Deal scoping request not found" });
+      }
+      
+      res.json(request);
+    } catch (error) {
+      console.error("Error updating deal scoping request status:", error);
+      res.status(500).json({ error: "Failed to update deal scoping request status" });
     }
+  });
 
-    const updatedDeal = await storage.updateDeal(req.params.id, {
-      status: 'rejected',
-      approvalHistory: [
-        ...(deal.approvalHistory || []),
-        {
-          userId: req.body.userId || 'system',
-          action: 'rejected',
-          timestamp: new Date().toISOString(),
-          comments: req.body.comments || 'Deal rejected'
+  // Advertisers endpoints
+  router.get("/advertisers", async (req: Request, res: Response) => {
+    try {
+      const advertisers = await storage.getAdvertisers();
+      res.status(200).json(advertisers);
+    } catch (error) {
+      console.error("Error fetching advertisers:", error);
+      res.status(500).json({ message: "Failed to fetch advertisers" });
+    }
+  });
+
+  // Agencies endpoints
+  router.get("/agencies", async (req: Request, res: Response) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const filters = type ? { type } : undefined;
+      const agencies = await storage.getAgencies(filters);
+      res.status(200).json(agencies);
+    } catch (error) {
+      console.error("Error fetching agencies:", error);
+      res.status(500).json({ message: "Failed to fetch agencies" });
+    }
+  });
+  
+  // Incentive values endpoints
+  router.get("/deals/:dealId/incentives", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const incentives = await storage.getIncentiveValues(dealId);
+      res.status(200).json(incentives);
+    } catch (error) {
+      console.error("Error fetching incentives:", error);
+      res.status(500).json({ message: "Failed to fetch incentives" });
+    }
+  });
+  
+  router.post("/deals/:dealId/incentives", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      const incentiveData = {
+        ...req.body,
+        dealId
+      };
+      
+      const incentive = await storage.createIncentiveValue(incentiveData);
+      res.status(201).json(incentive);
+    } catch (error) {
+      console.error("Error creating incentive:", error);
+      res.status(500).json({ message: "Failed to create incentive" });
+    }
+  });
+  
+  router.patch("/deals/:dealId/incentives/:id", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(dealId) || isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const incentive = await storage.updateIncentiveValue(id, req.body);
+      if (!incentive) {
+        return res.status(404).json({ message: "Incentive value not found" });
+      }
+      
+      res.status(200).json(incentive);
+    } catch (error) {
+      console.error("Error updating incentive:", error);
+      res.status(500).json({ message: "Failed to update incentive" });
+    }
+  });
+  
+  router.delete("/deals/:dealId/incentives/:id", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(dealId) || isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const success = await storage.deleteIncentiveValue(id);
+      if (!success) {
+        return res.status(404).json({ message: "Incentive value not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting incentive:", error);
+      res.status(500).json({ message: "Failed to delete incentive" });
+    }
+  });
+
+  // Claude AI endpoints
+  router.post("/ai/analyze-deal", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const analysis = await analyzeDeal(dealData);
+      res.status(200).json(analysis);
+    } catch (error) {
+      console.error("Error analyzing deal with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze deal", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/deal-recommendations", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const recommendations = await getDealRecommendations(dealData);
+      res.status(200).json(recommendations);
+    } catch (error) {
+      console.error("Error getting deal recommendations with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to get deal recommendations", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/market-analysis", async (req: Request, res: Response) => {
+    try {
+      const dealData = req.body;
+      const marketAnalysis = await getMarketAnalysis(dealData);
+      res.status(200).json(marketAnalysis);
+    } catch (error) {
+      console.error("Error getting market analysis with Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to get market analysis", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  router.post("/ai/query", async (req: Request, res: Response) => {
+    try {
+      const { query, systemPrompt } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Query is required" });
+      }
+      
+      const response = await generateStructuredResponse(query, systemPrompt);
+      res.status(200).json(response);
+    } catch (error) {
+      console.error("Error querying Claude:", error);
+      res.status(500).json({ 
+        message: "Failed to query Claude", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Phase 7B: User management and role-based routes
+  router.get("/users", async (req: Request, res: Response) => {
+    try {
+      const role = req.query.role as string | undefined;
+      let users: any[] = [];
+      
+      if (role) {
+        users = await storage.getUsersByRole(role);
+      } else {
+        // For now, return all users (in production, add proper auth check)
+        users = [];
+      }
+      
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  router.get("/users/current", async (req: Request, res: Response) => {
+    try {
+      // Phase 7B: Mock current user with role switching support
+      // Check for role override in query params (for demo role switching)
+      const demoRole = req.query.role as string || "seller";
+      const demoDepartment = req.query.department as string || "trading";
+      
+      const roleConfigs = {
+        seller: {
+          id: 1,
+          username: "demo_seller",
+          email: "john.seller@company.com",
+          role: "seller",
+          firstName: "John",
+          lastName: "Seller",
+          department: "sales"
+        },
+        approver: {
+          id: 2,
+          username: "demo_approver", 
+          email: "approver@company.com",
+          role: "approver",
+          firstName: "Sarah",
+          lastName: "Chen",
+          department: "operations"
+        },
+        department_reviewer: {
+          id: 3,
+          username: `${demoDepartment}_reviewer`,
+          email: `${demoDepartment}@company.com`,
+          role: "department_reviewer",
+          firstName: demoDepartment.charAt(0).toUpperCase() + demoDepartment.slice(1),
+          lastName: "Reviewer",
+          department: demoDepartment
+        },
+        admin: {
+          id: 4,
+          username: "demo_admin",
+          email: "admin@company.com",
+          role: "admin",
+          firstName: "Alex",
+          lastName: "Administrator",
+          department: "it"
         }
-      ]
-    });
+      };
+      
+      // Return the requested role or default to seller
+      const selectedRole = ["seller", "approver", "department_reviewer", "admin"].includes(demoRole) ? demoRole : "seller";
+      res.status(200).json(roleConfigs[selectedRole as keyof typeof roleConfigs]);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      res.status(500).json({ message: "Failed to fetch current user" });
+    }
+  });
 
-    res.json(updatedDeal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to reject deal' });
-  }
-});
+  router.put("/users/:id/role", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      if (!role || !["seller", "approver", "legal", "admin"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const user = await storage.updateUserRole(id, role);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(200).json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Phase 7B: Enhanced deal status route with role-based permissions
+  router.get("/deals/:id/allowed-transitions", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const deal = await storage.getDeal(id);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+      
+      // Get current user role (mock for now)
+      const currentUser = getCurrentUser();
+      const allowedTransitions = getAllowedTransitions(currentUser.role, deal.status as DealStatus);
+      
+      res.status(200).json({ allowedTransitions });
+    } catch (error) {
+      console.error("Error fetching allowed transitions:", error);
+      res.status(500).json({ message: "Failed to fetch allowed transitions" });
+    }
+  });
+
+  // ============================================================================
+  // MULTI-LAYERED APPROVAL SYSTEM ENDPOINTS
+  // ============================================================================
+
+  // Get all approvals for a specific deal
+  router.get("/deals/:dealId/approvals", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const approvals = await storage.getDealApprovals(dealId);
+      
+      // Enhance approvals with action history
+      const approvalsWithActions = await Promise.all(
+        approvals.map(async (approval) => {
+          const actions = await storage.getApprovalActions(approval.id);
+          return {
+            ...approval,
+            actions
+          };
+        })
+      );
+
+      res.status(200).json(approvalsWithActions);
+    } catch (error) {
+      console.error("Error fetching deal approvals:", error);
+      res.status(500).json({ message: "Failed to fetch deal approvals" });
+    }
+  });
+
+  // Create a new approval requirement for a deal
+  router.post("/deals/:dealId/approvals", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      // Validate request body using Zod schema
+      const validationResult = insertDealApprovalSchema.safeParse({
+        ...req.body,
+        dealId
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: "Invalid approval data",
+          errors: fromZodError(validationResult.error).toString()
+        });
+      }
+
+      const approval = await storage.createDealApproval(validationResult.data);
+      res.status(201).json(approval);
+    } catch (error) {
+      console.error("Error creating deal approval:", error);
+      res.status(500).json({ message: "Failed to create deal approval" });
+    }
+  });
+
+  // Update an approval status (approve/reject/request revision)
+  router.patch("/deals/:dealId/approvals/:approvalId", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      const approvalId = parseInt(req.params.approvalId);
+      
+      if (isNaN(dealId) || isNaN(approvalId)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const { status, comments } = req.body;
+
+      // Validate status
+      if (!["pending", "approved", "rejected", "revision_requested"].includes(status)) {
+        return res.status(400).json({ message: "Invalid approval status" });
+      }
+
+      // Update the approval - remove reviewedBy field (not in schema)
+      const updatedApproval = await storage.updateDealApproval(approvalId, {
+        status,
+        comments
+      });
+
+      if (!updatedApproval) {
+        return res.status(404).json({ message: "Approval not found" });
+      }
+
+      // Create an action record for this approval decision
+      const currentUser = getCurrentUser();
+      await storage.createApprovalAction({
+        approvalId,
+        actionType: status === 'approved' ? 'approve' : 
+                   status === 'rejected' ? 'reject' : 'request_revision',
+        performedBy: currentUser.id,
+        comments: comments || null
+      });
+
+      // AUTO-TRIGGER WORKFLOW AUTOMATION: Check if deal status should be updated
+      if (status === 'approved' || status === 'rejected') {
+        await checkAndUpdateDealStatus(dealId, storage);
+      }
+
+      res.status(200).json(updatedApproval);
+    } catch (error) {
+      console.error("Error updating approval:", error);
+      res.status(500).json({ message: "Failed to update approval" });
+    }
+  });
+
+  // Get all approval departments
+  router.get("/approval-departments", async (req: Request, res: Response) => {
+    try {
+      const departments = await storage.getApprovalDepartments();
+      res.status(200).json(departments);
+    } catch (error) {
+      console.error("Error fetching approval departments:", error);
+      res.status(500).json({ message: "Failed to fetch approval departments" });
+    }
+  });
+
+  // Get specific approval department
+  router.get("/approval-departments/:departmentName", async (req: Request, res: Response) => {
+    try {
+      const departmentName = req.params.departmentName as DepartmentType;
+      
+      if (!["finance", "trading", "creative", "marketing", "product", "solutions"].includes(departmentName)) {
+        return res.status(400).json({ message: "Invalid department name" });
+      }
+
+      const department = await storage.getApprovalDepartment(departmentName);
+      
+      if (!department) {
+        return res.status(404).json({ message: "Department not found" });
+      }
+
+      res.status(200).json(department);
+    } catch (error) {
+      console.error("Error fetching approval department:", error);
+      res.status(500).json({ message: "Failed to fetch approval department" });
+    }
+  });
+
+  // Initiate multi-stage approval workflow for a deal
+  router.post("/deals/:dealId/initiate-approval", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      // Get the deal to determine approval requirements
+      const deal = await storage.getDeal(dealId);
+      if (!deal) {
+        return res.status(404).json({ message: "Deal not found" });
+      }
+
+      const { incentiveTypes, dealValue, initiatedBy } = req.body;
+
+      // Create approval requirements based on deal characteristics
+      const approvalRequirements = [];
+
+      // STREAMLINED 2-STAGE APPROVAL PIPELINE
+      
+      // Stage 1: Technical Review (All 6 departments in parallel)
+      // All departments review deals for technical feasibility and compliance
+      const stage1Departments: DepartmentType[] = ['trading', 'finance', 'creative', 'marketing', 'product', 'solutions'];
+      
+      for (const dept of stage1Departments) {
+        approvalRequirements.push({
+          dealId,
+          approvalStage: 1, // Technical review stage
+          department: dept,
+          requiredRole: 'department_reviewer',
+          status: 'pending' as const,
+          priority: 'normal' as const,
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days for technical review
+        });
+      }
+
+      // Stage 2: Business Approval (Executive decision after all technical reviews complete)
+      const executiveThreshold = 500000; // $500K threshold for executive approval
+      if (dealValue >= executiveThreshold) {
+        approvalRequirements.push({
+          dealId,
+          approvalStage: 2, // Business approval stage
+          department: 'finance' as const, // Executive oversight through finance
+          requiredRole: 'approver', // Business approver level
+          status: 'pending' as const,
+          priority: dealValue >= 1000000 ? 'high' as const : 'normal' as const,
+          dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days for executive decision
+        });
+      }
+
+      // Create all approval requirements  
+      const createdApprovals = await Promise.all(
+        approvalRequirements.map((req: InsertDealApproval) => storage.createDealApproval(req))
+      );
+
+      // Create initial action record
+      if (initiatedBy && createdApprovals.length > 0) {
+        await storage.createApprovalAction({
+          approvalId: createdApprovals[0].id,
+          actionType: 'initiate' as const,
+          performedBy: initiatedBy,
+          comments: `Approval workflow initiated for deal: ${deal.dealName}`
+        });
+      }
+
+      // NOTIFICATION SYSTEM: Send assignment notifications to reviewers
+      await sendApprovalAssignmentNotifications(dealId, createdApprovals, storage);
+
+      res.status(201).json({
+        message: "Approval workflow initiated successfully",
+        approvals: createdApprovals,
+        workflow: {
+          totalStages: Math.max(...createdApprovals.map(a => a.approvalStage)),
+          parallelStage1: createdApprovals.filter(a => a.approvalStage === 1).length,
+          sequentialStages: createdApprovals.filter(a => a.approvalStage > 1).length,
+          estimatedDuration: "7-14 business days"
+        }
+      });
+    } catch (error) {
+      console.error("Error initiating approval workflow:", error);
+      res.status(500).json({ message: "Failed to initiate approval workflow" });
+    }
+  });
+
+  // Get approval workflow status for a deal
+  router.get("/deals/:dealId/approval-status", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+
+      const approvals = await storage.getDealApprovals(dealId);
+      
+      // Group approvals by stage
+      const stageGroups = approvals.reduce((groups, approval) => {
+        const stage = approval.approvalStage;
+        if (!groups[stage]) groups[stage] = [];
+        groups[stage].push(approval);
+        return groups;
+      }, {} as Record<number, typeof approvals>);
+
+      // Calculate progress
+      const totalApprovals = approvals.length;
+      const completedApprovals = approvals.filter(a => 
+        a.status === 'approved' || a.status === 'rejected'
+      ).length;
+      const progressPercentage = totalApprovals > 0 
+        ? Math.round((completedApprovals / totalApprovals) * 100)
+        : 0;
+
+      // Determine current stage
+      let currentStage = 1;
+      for (const stage of Object.keys(stageGroups).map(Number).sort()) {
+        const stageApprovals = stageGroups[stage];
+        const allStageComplete = stageApprovals.every(a => 
+          a.status === 'approved' || a.status === 'rejected'
+        );
+        if (!allStageComplete) {
+          currentStage = stage;
+          break;
+        }
+        currentStage = stage + 1;
+      }
+
+      res.status(200).json({
+        dealId,
+        approvals,
+        stageGroups,
+        currentStage,
+        progressPercentage,
+        isComplete: completedApprovals === totalApprovals,
+        pendingApprovals: approvals.filter(a => a.status === 'pending'),
+        blockedStages: Object.keys(stageGroups).map(Number).filter(stage => 
+          stage > currentStage
+        )
+      });
+    } catch (error) {
+      console.error("Error fetching approval status:", error);
+      res.status(500).json({ message: "Failed to fetch approval status" });
+    }
+  });
+
+  // Initialize and register chatbot routes
+  const chatStorage = new ChatMemStorage();
+  registerChatbotRoutes(app, {
+    basePath: '/api',
+    storage: chatStorage,
+    welcomeMessage: "Hi there! I'm your Deal Assistant. How can I help you with deals and incentives today?"
+  });
+
+  const httpServer = createServer(app);
+  // Universal Approval Queue - Role-Based Queues for All Users
+  router.get("/approvals/pending", async (req: Request, res: Response) => {
+    try {
+      // Get current user context from query params
+      const userRole = req.query.role as string || "seller";
+      const userDepartment = req.query.department as string;
+      
+      // Fetch all deals to build role-specific queues
+      const allDeals = await storage.getDeals();
+      
+      // Role-specific queue generation
+      const generateRoleQueue = (role: string, department?: string) => {
+        switch (role) {
+          case "seller":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "revision_requested" || 
+                  deal.status === "draft" ||
+                  (deal.status === "submitted" && deal.createdBy === 1) // Mock seller ID
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "deal_action",
+                  title: deal.status === "revision_requested" ? 
+                    `Revision Required: ${deal.dealName}` : 
+                    `Continue Working: ${deal.dealName}`,
+                  description: deal.status === "revision_requested" ? 
+                    deal.revisionReason || "Revision feedback received" :
+                    "Complete deal submission or review progress",
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: deal.status === "revision_requested" ? "urgent" : "normal",
+                  dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: deal.status === "revision_requested" ? "address_revision" : "complete_submission",
+                  isOverdue: false
+                })),
+              queueType: "seller_actions",
+              summary: "Your active deals and revision requests"
+            };
+            
+          case "approver":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "negotiating" || 
+                  deal.status === "pending_approval" ||
+                  deal.status === "under_review"
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "business_approval",
+                  title: `Business Approval: ${deal.dealName}`,
+                  description: `Review deal terms and provide business approval decision`,
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: deal.dealValue > 1000000 ? "high" : "normal",
+                  dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "business_approval",
+                  stage: "Stage 2: Business Approval",
+                  isOverdue: false
+                })),
+              queueType: "business_approvals",
+              summary: "Deals pending your business approval"
+            };
+            
+          case "department_reviewer":
+            return {
+              items: allDeals
+                .filter(deal => 
+                  deal.status === "submitted" || 
+                  deal.status === "under_review"
+                )
+                .map(deal => ({
+                  id: deal.id,
+                  type: "technical_review",
+                  title: `${department?.charAt(0).toUpperCase()}${department?.slice(1)} Review: ${deal.dealName}`,
+                  description: department === 'legal' ? 
+                    "Legal compliance review and contract validation" :
+                    `Technical validation from ${department} perspective`,
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: department === 'legal' ? "high" : "normal",
+                  dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "department_review",
+                  stage: "Stage 1: Technical Review",
+                  department: department,
+                  reviewType: department === 'legal' ? 'legal_compliance' : 'technical_validation',
+                  isOverdue: false
+                })),
+              queueType: "department_reviews",
+              summary: `${department?.charAt(0).toUpperCase()}${department?.slice(1)} department reviews`
+            };
+            
+          case "admin":
+            const allItems = [
+              ...allDeals
+                .filter(deal => deal.status === "submitted")
+                .map(deal => ({
+                  id: deal.id,
+                  type: "system_oversight",
+                  title: `System Review: ${deal.dealName}`,
+                  description: "Administrative oversight and system monitoring",
+                  dealId: deal.id,
+                  dealName: deal.dealName,
+                  clientName: deal.clientName,
+                  priority: "normal",
+                  dueDate: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+                  dealValue: deal.dealValue,
+                  status: deal.status,
+                  actionRequired: "system_review",
+                  isOverdue: false
+                }))
+            ];
+            
+            return {
+              items: allItems,
+              queueType: "admin_oversight",
+              summary: "System administration and oversight tasks"
+            };
+            
+          default:
+            return {
+              items: [],
+              queueType: "empty",
+              summary: "No pending items"
+            };
+        }
+      };
+      
+      const queueData = generateRoleQueue(userRole, userDepartment);
+      
+      // Calculate metrics
+      const metrics = {
+        totalPending: queueData.items.length,
+        urgentTasks: queueData.items.filter(item => item.priority === "urgent").length,
+        highPriorityTasks: queueData.items.filter(item => item.priority === "high").length,
+        overdueTasks: queueData.items.filter(item => item.isOverdue).length,
+        avgDealValue: queueData.items.length > 0 ? 
+          queueData.items.reduce((sum, item) => sum + (item.dealValue || 0), 0) / queueData.items.length : 0,
+        completedToday: Math.floor(Math.random() * 5), // Mock data
+        currentLoad: Math.min(100, (queueData.items.length / 10) * 100) // Mock capacity calculation
+      };
+      
+      res.status(200).json({
+        ...queueData,
+        metrics,
+        userContext: {
+          role: userRole,
+          department: userDepartment,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error fetching pending approvals:", error);
+      res.status(500).json({ message: "Failed to fetch pending approvals" });
+    }
+  });
+
+  // Department Queue Dashboard endpoints (Enhanced)
+  router.get("/department-queue/:department", async (req: Request, res: Response) => {
+    try {
+      const { department } = req.params;
+      
+      // Enhanced queue data with real deal integration
+      const allDeals = await storage.getDeals();
+      const departmentDeals = allDeals.filter(deal => 
+        deal.status === "submitted" || deal.status === "under_review"
+      );
+      
+      const queueData = {
+        items: departmentDeals.map((deal, index) => ({
+          id: deal.id,
+          dealId: deal.id,
+          dealName: deal.dealName,
+          clientName: deal.clientName,
+          priority: department === 'legal' ? "high" : index % 3 === 0 ? "urgent" : "normal",
+          dueDate: new Date(Date.now() + ((index + 1) * 12 * 60 * 60 * 1000)).toISOString(),
+          createdAt: deal.createdAt,
+          assignedTo: index + 1,
+          assignedToName: `${department.charAt(0).toUpperCase()}${department.slice(1)} Reviewer`,
+          dealValue: deal.dealValue,
+          stage: 1,
+          isOverdue: index > 5, // Mock some overdue items
+          daysSinceCreated: Math.floor((Date.now() - new Date(deal.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+        })),
+        metrics: {
+          totalPending: departmentDeals.length,
+          overdueTasks: Math.floor(departmentDeals.length * 0.2),
+          avgProcessingTime: department === 'legal' ? 8.5 : 5.2,
+          completedToday: Math.floor(Math.random() * 5),
+          departmentCapacity: 20,
+          currentLoad: Math.min(100, (departmentDeals.length / 15) * 100)
+        }
+      };
+      
+      res.json(queueData);
+    } catch (error) {
+      console.error("Error fetching department queue:", error);
+      res.status(500).json({ message: "Failed to fetch department queue" });
+    }
+  });
+
+  router.get("/department-workload-distribution", async (req: Request, res: Response) => {
+    try {
+      // Mock workload distribution data
+      const mockDistribution = [
+        {
+          department: "trading",
+          displayName: "Trading",
+          pendingCount: 5,
+          overdueCount: 1,
+          avgProcessingTime: 4.5,
+          loadPercentage: 62
+        },
+        {
+          department: "finance",
+          displayName: "Finance", 
+          pendingCount: 8,
+          overdueCount: 2,
+          avgProcessingTime: 6.2,
+          loadPercentage: 85
+        },
+        {
+          department: "creative",
+          displayName: "Creative",
+          pendingCount: 3,
+          overdueCount: 0,
+          avgProcessingTime: 3.1,
+          loadPercentage: 42
+        },
+        {
+          department: "marketing",
+          displayName: "Marketing",
+          pendingCount: 6,
+          overdueCount: 1,
+          avgProcessingTime: 5.8,
+          loadPercentage: 78
+        }
+      ];
+      
+      res.json(mockDistribution);
+    } catch (error) {
+      console.error("Error fetching workload distribution:", error);
+      res.status(500).json({ message: "Failed to fetch workload distribution" });
+    }
+  });
+
+  // SLA Monitoring endpoints
+  router.get("/sla-metrics/:timeframe", async (req: Request, res: Response) => {
+    try {
+      const { timeframe } = req.params;
+      
+      // Mock SLA metrics - in production, calculate from actual data
+      const mockMetrics = {
+        totalApprovals: 156,
+        onTimeCompletions: 142,
+        overdueItems: 8,
+        avgCompletionTime: 5.2,
+        slaComplianceRate: 91.0,
+        criticalBreaches: 3,
+        upcomingDeadlines: 12
+      };
+      
+      res.json(mockMetrics);
+    } catch (error) {
+      console.error("Error fetching SLA metrics:", error);
+      res.status(500).json({ message: "Failed to fetch SLA metrics" });
+    }
+  });
+
+  router.get("/sla-items/:department", async (req: Request, res: Response) => {
+    try {
+      const { department } = req.params;
+      
+      // Mock SLA items with real-time countdown data
+      const mockItems = [
+        {
+          id: 1,
+          dealId: 1,
+          dealName: "Tesla Growth Campaign",
+          department: "trading",
+          priority: "high",
+          dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 8,
+          timeRemaining: 2,
+          riskLevel: "warning",
+          assignedTo: "John Smith",
+          clientName: "Tesla Inc.",
+          dealValue: 2500000
+        },
+        {
+          id: 2,
+          dealId: 2,
+          dealName: "Netflix Brand Partnership", 
+          department: "finance",
+          priority: "urgent",
+          dueDate: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 24,
+          timeRemaining: -1,
+          riskLevel: "overdue",
+          assignedTo: "Sarah Johnson",
+          clientName: "Netflix",
+          dealValue: 5000000
+        },
+        {
+          id: 3,
+          dealId: 3,
+          dealName: "Microsoft Partnership",
+          department: "creative",
+          priority: "normal",
+          dueDate: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          slaTarget: 24,
+          timeRemaining: 18,
+          riskLevel: "safe",
+          assignedTo: "Mike Chen",
+          clientName: "Microsoft",
+          dealValue: 1800000
+        }
+      ];
+      
+      res.json(mockItems);
+    } catch (error) {
+      console.error("Error fetching SLA items:", error);
+      res.status(500).json({ message: "Failed to fetch SLA items" });
+    }
+  });
+
+  router.get("/department-sla-performance", async (req: Request, res: Response) => {
+    try {
+      // Mock department SLA performance data
+      const mockPerformance = [
+        {
+          department: "trading",
+          displayName: "Trading",
+          complianceRate: 94.2,
+          avgCompletionTime: 5.8,
+          overdueCount: 1,
+          slaTarget: 8,
+          trend: "up",
+          riskItems: 2
+        },
+        {
+          department: "finance",
+          displayName: "Finance", 
+          complianceRate: 87.5,
+          avgCompletionTime: 18.5,
+          overdueCount: 3,
+          slaTarget: 24,
+          trend: "down",
+          riskItems: 5
+        },
+        {
+          department: "creative",
+          displayName: "Creative",
+          complianceRate: 96.8,
+          avgCompletionTime: 4.2,
+          overdueCount: 0,
+          slaTarget: 6,
+          trend: "up",
+          riskItems: 1
+        },
+        {
+          department: "marketing",
+          displayName: "Marketing",
+          complianceRate: 89.1,
+          avgCompletionTime: 7.3,
+          overdueCount: 2,
+          slaTarget: 12,
+          trend: "stable",
+          riskItems: 3
+        }
+      ];
+      
+      res.json(mockPerformance);
+    } catch (error) {
+      console.error("Error fetching department SLA performance:", error);
+      res.status(500).json({ message: "Failed to fetch department SLA performance" });
+    }
+  });
+
+  // User Management API endpoints
+  router.get("/admin/users", async (req: Request, res: Response) => {
+    try {
+      // Mock user data - in production, fetch from actual user table
+      const mockUsers = [
+        {
+          id: 1,
+          username: "demo_seller",
+          email: "seller@company.com", 
+          firstName: "Demo",
+          lastName: "Seller",
+          role: "seller",
+          department: null,
+          isActive: true,
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 2,
+          username: "demo_approver",
+          email: "approver@company.com",
+          firstName: "Demo", 
+          lastName: "Approver",
+          role: "approver",
+          department: null,
+          isActive: true,
+          createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 3,
+          username: "trading_reviewer",
+          email: "trading@company.com",
+          firstName: "Trading",
+          lastName: "Reviewer", 
+          role: "department_reviewer",
+          department: "trading",
+          isActive: true,
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 4,
+          username: "finance_reviewer", 
+          email: "finance@company.com",
+          firstName: "Finance",
+          lastName: "Reviewer",
+          role: "department_reviewer", 
+          department: "finance",
+          isActive: true,
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 5,
+          username: "creative_reviewer",
+          email: "creative@company.com", 
+          firstName: "Creative",
+          lastName: "Reviewer",
+          role: "department_reviewer",
+          department: "creative", 
+          isActive: true,
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      res.json(mockUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  router.get("/admin/available-roles", async (req: Request, res: Response) => {
+    try {
+      const availableRoles = [
+        { role: "seller", description: "Creates and manages deal submissions" },
+        { role: "department_reviewer", description: "Technical review within assigned department" },
+        { role: "approver", description: "Business approval authority across all deals" },
+        { role: "legal", description: "Legal review and contract management" },
+        { role: "admin", description: "Full system access and user management" }
+      ];
+      
+      res.json(availableRoles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch available roles" });
+    }
+  });
+
+  router.post("/admin/users/:userId/assign-role", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { role, department, reason } = req.body;
+      
+      // Validate input
+      if (!role) {
+        return res.status(400).json({ message: "Role is required" });
+      }
+      
+      if (role === 'department_reviewer' && !department) {
+        return res.status(400).json({ message: "Department is required for department_reviewer role" });
+      }
+      
+      // In production: Update user in database
+      console.log(`Assigning role ${role} to user ${userId}`, { department, reason });
+      
+      res.json({ 
+        message: "Role assigned successfully",
+        userId: parseInt(userId),
+        role,
+        department,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error assigning role:", error);
+      res.status(500).json({ message: "Failed to assign role" });
+    }
+  });
+
+  // Deal loss tracking endpoints
+  router.post("/deals/:dealId/mark-lost", async (req: Request, res: Response) => {
+    try {
+      const { dealId } = req.params;
+      const { lostReason, lostReasonDetails, competitorName, estimatedLostValue, lessonsLearned } = req.body;
+      
+      if (!lostReason) {
+        return res.status(400).json({ message: "Lost reason is required" });
+      }
+      
+      // In production: Create loss tracking record and update deal status
+      const lossTracking = {
+        id: Math.floor(Math.random() * 1000),
+        dealId: parseInt(dealId),
+        lostReason,
+        lostReasonDetails,
+        lostAt: new Date().toISOString(),
+        lostBy: 1, // Current user ID
+        competitorName,
+        estimatedLostValue: estimatedLostValue ? parseFloat(estimatedLostValue) : null,
+        lessonsLearned
+      };
+      
+      console.log("Deal marked as lost:", lossTracking);
+      
+      res.json({
+        message: "Deal marked as lost successfully",
+        lossTracking
+      });
+    } catch (error) {
+      console.error("Error marking deal as lost:", error);
+      res.status(500).json({ message: "Failed to mark deal as lost" });
+    }
+  });
+
+  router.get("/deals/loss-analytics", async (req: Request, res: Response) => {
+    try {
+      // Mock loss analytics data
+      const mockAnalytics = {
+        totalLostDeals: 45,
+        totalLostValue: 12500000,
+        topLossReasons: [
+          { reason: "competitive_loss", count: 15, percentage: 33.3 },
+          { reason: "client_budget_cut", count: 12, percentage: 26.7 },
+          { reason: "pricing_mismatch", count: 8, percentage: 17.8 },
+          { reason: "technical_unfeasibility", count: 5, percentage: 11.1 },
+          { reason: "other", count: 5, percentage: 11.1 }
+        ],
+        lossRateByMonth: [
+          { month: "Jan", lostDeals: 8, totalDeals: 45, rate: 17.8 },
+          { month: "Feb", lostDeals: 6, totalDeals: 38, rate: 15.8 },
+          { month: "Mar", lostDeals: 12, totalDeals: 52, rate: 23.1 },
+          { month: "Apr", lostDeals: 9, totalDeals: 41, rate: 22.0 },
+          { month: "May", lostDeals: 10, totalDeals: 48, rate: 20.8 }
+        ]
+      };
+      
+      res.json(mockAnalytics);
+    } catch (error) {
+      console.error("Error fetching loss analytics:", error);
+      res.status(500).json({ message: "Failed to fetch loss analytics" });
+    }
+  });
+
+  return httpServer;
+}
