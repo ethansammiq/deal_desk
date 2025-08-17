@@ -454,16 +454,9 @@ export function ConsolidatedDashboard() {
             />
           </>
         ) : (
-          /* Non-Seller Roles - Strategic Insights Focus */
+          /* Non-Seller Roles - Quick Actions + Strategic Insights */
           <>
-            {/* Strategic Insights Section - Unified across all roles */}
-            <StrategicInsights 
-              userRole={userRole}
-              deals={deals}
-              userEmail={currentUser?.email}
-            />
-
-            {/* Essential Quick Actions Section - Simplified */}
+            {/* Essential Quick Actions Section - Primary workflow for reviewers/approvers */}
             <Card className="border border-slate-200 shadow-sm bg-white">
               <CardHeader className="pb-6">
                 <div className="flex items-center gap-3">
@@ -549,14 +542,12 @@ export function ConsolidatedDashboard() {
               </CardContent>
             </Card>
 
-            {/* Strategic Insights Section - Phase 1 Implementation */}
+            {/* Strategic Insights Section - Workflow Efficiency Intelligence */}
             <StrategicInsights 
               userRole={userRole}
               deals={deals}
               userEmail={currentUser?.email}
             />
-
-            {/* Recent Deals Preview - Dashboard Summary */}
             <Card className="border border-slate-200 shadow-sm bg-white">
               <CardHeader>
                 <div className="flex items-center justify-between">
