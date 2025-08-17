@@ -30,6 +30,31 @@ export default function DealsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
+  // Helper to identify deals that need attention (for highlighting)
+  const getDealsNeedingAttention = (deals: Deal[]) => {
+    const now = new Date();
+    const stalledDeals = deals.filter(deal => {
+      if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
+      const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true;
+      if (deal.status === 'under_review' && daysSinceUpdate > 5) return true;
+      if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true;
+      return false;
+    });
+    
+    const highValueDeals = deals.filter(deal => {
+      const value = deal.annualRevenue || 0;
+      return value >= 500000 && !['signed', 'lost'].includes(deal.status);
+    });
+    
+    const closingOpportunities = deals.filter(deal => 
+      ['approved', 'contract_drafting'].includes(deal.status)
+    );
+    
+    return { stalledDeals, highValueDeals, closingOpportunities };
+  };
+  
   // Fetch deals
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ["/api/deals"],
@@ -44,6 +69,9 @@ export default function DealsPage() {
     return `$${amount.toLocaleString()}`;
   };
 
+  // Identify priority deals for highlighting
+  const priorityDeals = getDealsNeedingAttention(deals);
+
   // Deal table columns with comprehensive information
   const dealColumns: ColumnDef<Deal>[] = [
     {
@@ -51,9 +79,18 @@ export default function DealsPage() {
       header: "Deal Name",
       cell: ({ row }) => {
         const deal = row.original;
+        const isStalled = priorityDeals.stalledDeals.some((d: Deal) => d.id === deal.id);
+        const isHighValue = priorityDeals.highValueDeals.some((d: Deal) => d.id === deal.id);
+        const isClosing = priorityDeals.closingOpportunities.some((d: Deal) => d.id === deal.id);
+        
         return (
-          <div>
-            <div className="font-medium text-slate-900">{deal.dealName}</div>
+          <div className={`${isStalled ? 'pl-3 border-l-4 border-red-400' : isClosing ? 'pl-3 border-l-4 border-green-500' : isHighValue ? 'pl-3 border-l-4 border-blue-500' : ''}`}>
+            <div className="font-medium text-slate-900 flex items-center gap-2">
+              {deal.dealName}
+              {isStalled && <Badge variant="destructive" className="text-xs">Stalled</Badge>}
+              {isClosing && <Badge variant="default" className="text-xs bg-green-600">Ready to Close</Badge>}
+              {isHighValue && <Badge variant="secondary" className="text-xs">High-Value</Badge>}
+            </div>
             <div className="text-sm text-slate-500">#{deal.referenceNumber}</div>
           </div>
         );
