@@ -1,127 +1,25 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { PageLoading } from "@/components/ui/loading-states";
-import { lazy, Suspense } from "react";
-import { TopNavbar } from "@/components/layout/TopNavbar";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { ChatProvider } from "@/lib/chat-context";
-import FloatingChatbot from "@/components/FloatingChatbot";
-import { PageTransition } from "@/components/ui/page-transition";
-import { SmartSearch } from "@/components/SmartSearch";
-
-// Lazy load pages for better performance
-const NotFound = lazy(() => import("@/pages/not-found"));
-const UnifiedDashboard = lazy(() => import("@/pages/UnifiedDashboard"));
-const RoleBasedDashboard = lazy(() => import("@/components/dashboard/RoleBasedDashboard").then(m => ({ default: m.RoleBasedDashboard })));
-const ConsolidatedDashboard = lazy(() => import("@/components/dashboard/ConsolidatedDashboard").then(m => ({ default: m.ConsolidatedDashboard })));
-const DealsPage = lazy(() => import("@/pages/DealsPage"));
-const DealDetails = lazy(() => import("@/pages/DealDetails"));
-const SubmitDeal = lazy(() => import("@/pages/SubmitDeal"));
-const RequestSupport = lazy(() => import("@/pages/RequestSupport"));
-const HelpResources = lazy(() => import("@/pages/HelpResources"));
-const DealRequests = lazy(() => import("@/pages/DealRequests"));
-const Testing = lazy(() => import("@/pages/Testing"));
-const DepartmentQueues = lazy(() => import("@/pages/DepartmentQueues"));
-const SLAMonitoring = lazy(() => import("@/pages/SLAMonitoring"));
-const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
-const LoginPage = lazy(() => import("@/pages/LoginPage"));
-
-// Legacy routes disabled - components archived as .legacy files
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f8f5ff] to-slate-50">
-      <TopNavbar />
-      
-      {/* Main Content Area with Full Width */}
-      <div className="pt-6 pb-8">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs />
-          <div>
-            {children}
-          </div>
-        </div>
-      </div>
-      
-      {/* Floating chatbot UI - with full customization options */}
-      <FloatingChatbot 
-        title="DealGenie" 
-        subtitle="Ask me about deals & approvals"
-        primaryColor="#3e0075" // Deep purple to match our theme
-        bubblePosition="bottom-right" 
-        bubbleSize="medium" 
-        showTimestamps={true}
-      />
-    </div>
-  );
-}
-
-function Router() {
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<PageLoading title="Loading page..." />}>
-        <Switch>
-          <Route path="/" component={LoginPage} />
-          <Route>
-            <AppLayout>
-              <Switch>
-                <Route path="/dashboard" component={ConsolidatedDashboard} />
-                <Route path="/request" component={DealRequests} />
-                <Route path="/request/scoping" component={RequestSupport} />
-                <Route path="/request/proposal" component={SubmitDeal} />
-                <Route path="/support" component={HelpResources} />
-                <Route path="/analytics" component={DealsPage} />
-                <Route path="/deals/:id" component={DealDetails} />
-                <Route path="/testing" component={Testing} />
-                <Route path="/department-queues" component={DepartmentQueues} />
-                <Route path="/sla-monitoring" component={SLAMonitoring} />
-                <Route path="/admin" component={AdminPanel} />
-                {/* Legacy routes archived - components moved to .legacy files */}
-                {/* Fallback to 404 */}
-                <Route component={NotFound} />
-              </Switch>
-            </AppLayout>
-          </Route>
-        </Switch>
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Route, Switch } from 'wouter';
+import { queryClient } from '@/lib/queryClient';
+import { Dashboard } from '@/pages/Dashboard';
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ChatProvider config={{
-          apiBasePath: '/api',
-          // Custom welcome message for the chatbot
-          welcomeMessage: "👋 Welcome to the Commercial Deal Desk! I'm DealGenie, your AI assistant. I'm here to help you navigate the commercial deal process, understand incentive programs, and guide you through deal submission and approval workflows. How can I assist you today?",
-          // Default suggested questions
-          defaultSuggestedQuestions: [
-            "What is the deal process workflow?",
-            "What financial incentives are available?",
-            "How do I submit a new deal?",
-            "What documentation is required?",
-            "What are the eligibility requirements?",
-            "How are urgent deals handled?"
-          ],
-          // Enable conversation persistence across page refreshes
-          persistConversation: true,
-          // Maximum number of messages to keep in history
-          maxHistoryLength: 30,
-          // Number of characters before showing auto-suggestions
-          autoSuggestThreshold: 3,
-          // AI model to use - 'simple' for keyword matching or 'advanced' for more detailed responses
-          aiModel: 'advanced'
-        }}>
-          <Router />
-          <Toaster />
-        </ChatProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-background">
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route>
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
+                <p className="text-muted-foreground">The page you're looking for doesn't exist.</p>
+              </div>
+            </div>
+          </Route>
+        </Switch>
+      </div>
+    </QueryClientProvider>
   );
 }
 
