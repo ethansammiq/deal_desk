@@ -482,92 +482,32 @@ export function ConsolidatedDashboard() {
             />
           </>
         ) : (
-          /* Non-Seller Roles - Keep existing Action Items and Recent Deals structure */
+          /* Non-Seller Roles - Strategic Insights Focus */
           <>
-            {/* Consolidated Action Items Section */}
+            {/* Strategic Insights Section - Unified across all roles */}
+            <StrategicInsights 
+              userRole={userRole}
+              deals={deals}
+              userEmail={currentUser?.email}
+            />
+
+            {/* Essential Quick Actions Section - Simplified */}
             <Card className="border border-slate-200 shadow-sm bg-white">
               <CardHeader className="pb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
                   <div className="flex-1">
                     <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
-                      Action Items
-                      {(priorityItems.length > 0 || approvalItems.length > 0) && (
-                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                          {priorityItems.length + approvalItems.length}
-                        </Badge>
-                      )}
+                      Quick Actions
                     </CardTitle>
                     <CardDescription className="text-slate-500">
-                      Urgent tasks and essential workflow actions for your role
+                      Essential workflow tools for your role
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {/* Priority Items */}
-                  {priorityItems.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Needs Your Attention
-                      </h4>
-                      {priorityItems.slice(0, 3).map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-1 rounded-full ${
-                              item.urgencyLevel === 'high' ? 'bg-red-100' : 
-                              item.urgencyLevel === 'medium' ? 'bg-amber-100' : 'bg-blue-100'
-                            }`}>
-                              {item.urgencyLevel === 'high' ? 
-                                <AlertTriangle className="h-4 w-4 text-red-600" /> :
-                                item.urgencyLevel === 'medium' ? 
-                                <Clock className="h-4 w-4 text-amber-600" /> :
-                                <CheckCircle className="h-4 w-4 text-blue-600" />
-                              }
-                            </div>
-                            <div>
-                              <p className="font-medium text-slate-900">{item.title}</p>
-                              <p className="text-sm text-slate-500">{item.description}</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            {item.actionType === 'convert' ? 'Convert' :
-                             item.actionType === 'approve' ? 'Review' :
-                             item.actionType === 'nudge' ? 'Follow Up' : 'View'}
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Approval Queue Items (for reviewers/approvers) */}
-                  {approvalItems.length > 0 && (userRole === 'department_reviewer' || userRole === 'approver') && (
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        {userRole === 'department_reviewer' ? 'Review Queue' : 'Approval Queue'}
-                      </h4>
-                      {approvalItems.slice(0, 5).map((item: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="p-1 rounded-full bg-blue-100">
-                              <FileText className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-slate-900">{item.dealName}</p>
-                              <p className="text-sm text-slate-500">{item.advertiserName || item.agencyName || "N/A"} • {formatShortCurrency(item.annualRevenue || item.totalValue || 0)}</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/deals/${item.dealId}`)}>
-                            Review
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
+                <div>
                   {/* Essential Workflow Actions */}
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
