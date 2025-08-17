@@ -366,11 +366,6 @@ export function ConsolidatedDashboard() {
                 <div className="flex-1">
                   <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
                     My Pipeline
-                    {sellerDealCategories.dealsNeedingAction.length > 0 && (
-                      <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                        {sellerDealCategories.dealsNeedingAction.length}
-                      </Badge>
-                    )} 
                   </CardTitle>
                   <CardDescription className="text-slate-500">
                     Your deals, actions, and performance
@@ -386,30 +381,7 @@ export function ConsolidatedDashboard() {
 
                   return (
                     <>
-                      {/* Action Required Section */}
-                      {dealsNeedingAction.length > 0 && (
-                        <div className="space-y-3">
-                          <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-red-500" />
-                            Action Required ({dealsNeedingAction.length})
-                          </h4>
-                          {dealsNeedingAction.slice(0, 3).map((deal) => (
-                            <DealRow
-                              key={deal.id}
-                              deal={deal}
-                              variant="action"
-                              onClick={() => navigate(`/deals/${deal.id}`)}
-                              actionButton={{
-                                label: "Fix Now",
-                                onClick: () => navigate(`/deals/${deal.id}`)
-                              }}
-                              showValue={false}
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Active Deals Section */}
+                      {/* Active Deals Section - Primary focus for sellers */}
                       <div className="space-y-3">
                         <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                           <Clock className="h-4 w-4" />
