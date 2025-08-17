@@ -10,6 +10,7 @@ import { useSellerMetrics, useSellerDealCategories, useSellerDeals } from "@/hoo
 import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { DealRow } from "./DealRow";
+import { StrategicInsights } from "./StrategicInsights";
 import type { Deal, UserRole, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
@@ -354,9 +355,11 @@ export function ConsolidatedDashboard() {
           })}
         </div>
 
-        {/* My Pipeline Section - Consolidated for Sellers */}
+        {/* Role-Specific Dashboard Sections */}
         {userRole === 'seller' ? (
-          <Card className="border border-slate-200 shadow-sm bg-white">
+          <>
+            {/* My Pipeline Section - Consolidated for Sellers */}
+            <Card className="border border-slate-200 shadow-sm bg-white">
             <CardHeader className="pb-6">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
@@ -470,6 +473,14 @@ export function ConsolidatedDashboard() {
               </div>
             </CardContent>
           </Card>
+
+            {/* Strategic Insights Section - Phase 1 Implementation for Sellers */}
+            <StrategicInsights 
+              userRole={userRole}
+              deals={deals}
+              userEmail={currentUser?.email}
+            />
+          </>
         ) : (
           /* Non-Seller Roles - Keep existing Action Items and Recent Deals structure */
           <>
@@ -625,6 +636,13 @@ export function ConsolidatedDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Strategic Insights Section - Phase 1 Implementation */}
+            <StrategicInsights 
+              userRole={userRole}
+              deals={deals}
+              userEmail={userRole === 'seller' ? currentUser?.email : undefined}
+            />
 
             {/* Recent Deals Preview - Dashboard Summary */}
             <Card className="border border-slate-200 shadow-sm bg-white">
