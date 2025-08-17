@@ -148,7 +148,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     }
   });
 
-  // 4. High-value concentration risk (existing logic enhanced)
+  // 4. HIGH-VALUE OPPORTUNITY INTELLIGENCE - Focus on maximizing existing deals
   const highValueDeals = sellerDeals.filter(deal => {
     const value = deal.annualRevenue || 0;
     return value >= 500000 && !['signed', 'lost'].includes(deal.status);
@@ -156,23 +156,103 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
 
   if (highValueDeals.length > 0 && insights.length < 3) {
     const totalHighValue = highValueDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    const totalPipelineValue = activeDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    const concentration = Math.round((totalHighValue / totalPipelineValue) * 100);
+    const nearClosingDeals = highValueDeals.filter(deal => 
+      ['approved', 'contract_drafting', 'negotiating'].includes(deal.status)
+    );
     
-    if (concentration > 60) { // Only show if high concentration
-      const actionGuidance = concentration > 80 
-        ? 'Focus on smaller deals ($100K-$300K) to reduce risk'
-        : 'Add 2-3 mid-size deals to balance pipeline risk';
+    if (nearClosingDeals.length > 0) {
+      const closingValue = nearClosingDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = nearClosingDeals.length === 1 
+        ? 'This high-value deal is close to closing - prioritize it for maximum impact'
+        : 'These high-value deals are progressing well - focus efforts here for biggest wins';
       
       insights.push({
-        id: 'concentration-risk',
-        title: 'High-Value Concentration Risk',
-        metric: `${concentration}%`,
-        description: `${highValueDeals.length} deals >$500K represent ${concentration}% of pipeline value. ${actionGuidance}`,
-        urgency: concentration > 80 ? 'high' : 'medium',
-        actionLabel: 'Create New Deal',
-        actionRoute: '/deal/new',
-        trend: concentration > 80 ? 'up' : 'stable'
+        id: 'high-value-opportunity',
+        title: 'High-Value Deals Progressing',
+        metric: nearClosingDeals.length,
+        description: `${formatShortCurrency(closingValue)} in high-value deals advancing. ${actionGuidance}`,
+        urgency: 'medium',
+        actionLabel: 'Prioritize High-Value',
+        actionRoute: '/deals?filter=high-value&status=negotiating,approved',
+        trend: 'up'
+      });
+    } else {
+      // High-value deals exist but need acceleration
+      const actionGuidance = highValueDeals.length === 1 
+        ? 'Push this high-value deal through approval to maximize quarterly impact'
+        : 'Accelerate these high-value deals - they represent your biggest commission opportunity';
+      
+      insights.push({
+        id: 'high-value-acceleration',
+        title: 'High-Value Deals Need Push',
+        metric: highValueDeals.length,
+        description: `${formatShortCurrency(totalHighValue)} in high-value pipeline needs acceleration. ${actionGuidance}`,
+        urgency: 'medium',
+        actionLabel: 'Accelerate High-Value',
+        actionRoute: '/deals?filter=high-value',
+        trend: 'stable'
+      });
+    }
+  }
+
+  // 5. CLOSING VELOCITY INTELLIGENCE - Deals ready for final push
+  if (insights.length < 3) {
+    const closingOpportunities = sellerDeals.filter(deal => 
+      ['approved', 'contract_drafting'].includes(deal.status)
+    );
+    
+    if (closingOpportunities.length > 0) {
+      const closingValue = closingOpportunities.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = closingOpportunities.length === 1 
+        ? 'This deal is approved and ready to close - follow up today'
+        : `${closingOpportunities.length} deals ready to close - schedule final meetings this week`;
+      
+      insights.push({
+        id: 'closing-velocity',
+        title: 'Deals Ready to Close',
+        metric: closingOpportunities.length,
+        description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
+        urgency: 'high',
+        actionLabel: 'Close Approved Deals',
+        actionRoute: '/deals?status=approved,contract_drafting',
+        trend: 'up'
+      });
+    }
+  }
+
+  // 6. PIPELINE MOMENTUM INTELLIGENCE - Overall progress indicator  
+  if (insights.length < 3) {
+    const progressingDeals = sellerDeals.filter(deal => 
+      ['under_review', 'negotiating', 'approved', 'contract_drafting'].includes(deal.status)
+    );
+    const stagnantDeals = sellerDeals.filter(deal => 
+      deal.status === 'submitted' && deal.lastStatusChange && 
+      (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24) > 2
+    );
+    
+    if (progressingDeals.length > stagnantDeals.length && progressingDeals.length > 0) {
+      const progressValue = progressingDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      insights.push({
+        id: 'pipeline-momentum',
+        title: 'Strong Pipeline Momentum',
+        metric: progressingDeals.length,
+        description: `${formatShortCurrency(progressValue)} in deals moving through workflow - keep pushing forward`,
+        urgency: 'low',
+        actionLabel: 'View Active Deals',
+        actionRoute: '/deals?status=negotiating,under_review,approved',
+        trend: 'up'
+      });
+    } else if (stagnantDeals.length > 0) {
+      const stagnantValue = stagnantDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      insights.push({
+        id: 'pipeline-stagnation',
+        title: 'Pipeline Needs Activation',
+        metric: stagnantDeals.length,
+        description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
+        urgency: 'medium',
+        actionLabel: 'Activate Stagnant Deals',
+        actionRoute: '/deals?status=submitted',
+        trend: 'stable'
       });
     }
   }
