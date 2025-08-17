@@ -49,7 +49,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     const actionGuidance = stalledDeals.length === 1 
       ? 'Contact client today or schedule follow-up meeting'
-      : 'Review each deal and send status updates to all prospects';
+      : `Review each deal and send status updates to all ${stalledDeals.length} prospects`;
     
     insights.push({
       id: 'stall-risk-prediction',
@@ -57,7 +57,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
-      actionLabel: 'View Stalled Deals',
+      actionLabel: stalledDeals.length === 1 ? 'Contact This Client' : `Follow Up on ${stalledDeals.length} Deals`,
       actionRoute: '/deals?filter=stalled',
       trend: 'down'
     });
@@ -172,7 +172,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: nearClosingDeals.length,
         description: `${formatShortCurrency(closingValue)} in high-value deals advancing. ${actionGuidance}`,
         urgency: 'medium',
-        actionLabel: 'Prioritize High-Value',
+        actionLabel: nearClosingDeals.length === 1 ? 'Focus on This Deal' : `Push ${nearClosingDeals.length} High-Value Deals`,
         actionRoute: '/deals?filter=high-value&status=negotiating,approved',
         trend: 'up'
       });
@@ -188,7 +188,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: highValueDeals.length,
         description: `${formatShortCurrency(totalHighValue)} in high-value pipeline needs acceleration. ${actionGuidance}`,
         urgency: 'medium',
-        actionLabel: 'Accelerate High-Value',
+        actionLabel: highValueDeals.length === 1 ? 'Accelerate This Deal' : `Accelerate ${highValueDeals.length} Deals`,
         actionRoute: '/deals?filter=high-value',
         trend: 'stable'
       });
@@ -213,7 +213,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: closingOpportunities.length,
         description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
         urgency: 'high',
-        actionLabel: 'Close Approved Deals',
+        actionLabel: closingOpportunities.length === 1 ? 'Close This Deal' : `Close ${closingOpportunities.length} Approved Deals`,
         actionRoute: '/deals?status=approved,contract_drafting',
         trend: 'up'
       });
@@ -232,13 +232,17 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     
     if (progressingDeals.length > stagnantDeals.length && progressingDeals.length > 0) {
       const progressValue = progressingDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionLabel = progressingDeals.length === 1 
+        ? 'Monitor This Deal'
+        : `Check Status on ${progressingDeals.length} Deals`;
+      
       insights.push({
         id: 'pipeline-momentum',
         title: 'Strong Pipeline Momentum',
         metric: progressingDeals.length,
         description: `${formatShortCurrency(progressValue)} in deals moving through workflow - keep pushing forward`,
         urgency: 'low',
-        actionLabel: 'View Active Deals',
+        actionLabel,
         actionRoute: '/deals?status=negotiating,under_review,approved',
         trend: 'up'
       });
