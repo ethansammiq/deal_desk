@@ -245,23 +245,24 @@ export function TopNavbar() {
             </div>
           </Link>
           
-          <Link href="/deals">
+          <Link href="/request">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              (location === "/deals" || location === "/deal-requests" || location === "/submit-deal")
+              (location === "/request" || location === "/request/scoping" || location === "/request/proposal")
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
               <div className="flex items-center">
-                <Briefcase className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Deals</span>
+                <FileText className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Requests</span>
               </div>
             </div>
           </Link>
-          <Link href="/help">
+          
+          <Link href="/support">
             <div className={cn(
               "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-              location === "/help" 
+              location === "/support" 
                 ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
                 : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
             )}>
@@ -272,22 +273,20 @@ export function TopNavbar() {
             </div>
           </Link>
           
-          {/* Admin Only: Analytics for Mobile */}
-          {(userRole === 'admin' || userRole === 'approver') && (
-            <Link href="/sla-monitoring">
-              <div className={cn(
-                "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
-                location === "/sla-monitoring"
-                  ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
-                  : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
-              )}>
-                <div className="flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2 flex-shrink-0" />
-                  <span>Analytics</span>
-                </div>
+          {/* Analytics - Available to all roles */}
+          <Link href="/analytics">
+            <div className={cn(
+              "block px-3 py-2 rounded-md text-base font-medium transition-all duration-200",
+              location === "/analytics"
+                ? "bg-[#f1e9fd] text-[#3e0075] shadow-sm" 
+                : "text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1"
+            )}>
+              <div className="flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>Analytics</span>
               </div>
-            </Link>
-          )}
+            </div>
+          </Link>
 
           {/* Mobile Admin Tools */}
           {(userRole === 'admin' || import.meta.env.DEV) && (
