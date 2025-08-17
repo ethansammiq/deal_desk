@@ -24,7 +24,7 @@ interface StrategicInsightsProps {
   userEmail?: string;
 }
 
-// Generate Pipeline Health insights for sellers
+// Generate Pipeline Health insights for sellers - STRATEGIC level, not immediate actions
 function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): StrategicInsight[] {
   const sellerDeals = userEmail 
     ? deals.filter(deal => deal.email === userEmail && deal.status !== 'draft')
@@ -33,78 +33,87 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. Deals stuck in negotiating >7 days
-  const stuckInNegotiating = sellerDeals.filter(deal => {
-    if (deal.status !== 'negotiating' || !deal.lastStatusChange) return false;
-    const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-    return daysSinceUpdate > 7;
-  });
-
-  if (stuckInNegotiating.length > 0) {
-    insights.push({
-      id: 'stuck-negotiating',
-      title: 'Deals Stuck in Negotiation',
-      metric: stuckInNegotiating.length,
-      description: `${stuckInNegotiating.length} deal${stuckInNegotiating.length > 1 ? 's' : ''} stalled >7 days`,
-      urgency: 'high',
-      actionLabel: 'Review Stalled Deals',
-      actionRoute: '/deals',
-      dealIds: stuckInNegotiating.map(d => d.id)
-    });
-  }
-
-  // 2. High-value deals needing attention
-  const highValueDeals = sellerDeals.filter(deal => {
-    const value = deal.annualRevenue || 0;
-    return value >= 500000 && ['revision_requested', 'negotiating'].includes(deal.status);
-  });
-
-  if (highValueDeals.length > 0) {
-    const totalValue = highValueDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    insights.push({
-      id: 'high-value-attention',
-      title: 'High-Value Deals Need Focus',
-      metric: `$${Math.round(totalValue / 1000000 * 10) / 10}M`,
-      description: `${highValueDeals.length} deal${highValueDeals.length > 1 ? 's' : ''} >$500K requiring action`,
-      urgency: 'medium',
-      actionLabel: 'Review High-Value Deals',
-      actionRoute: '/deals',
-      dealIds: highValueDeals.map(d => d.id)
-    });
-  }
-
-  // 3. Revision requests needing response
-  const revisionRequests = sellerDeals.filter(deal => deal.status === 'revision_requested');
-  
-  if (revisionRequests.length > 0) {
-    insights.push({
-      id: 'revision-requests',
-      title: 'Revision Requests Pending',
-      metric: revisionRequests.length,
-      description: `Response needed to continue ${revisionRequests.length} deal${revisionRequests.length > 1 ? 's' : ''}`,
-      urgency: 'medium',
-      actionLabel: 'Address Revisions',
-      actionRoute: '/deals',
-      dealIds: revisionRequests.map(d => d.id)
-    });
-  }
-
-  // 4. Pipeline velocity insight (positive when available)
+  // 1. Pipeline velocity trends (strategic insight)
   const activeDeals = sellerDeals.filter(deal => 
     !['signed', 'lost', 'draft'].includes(deal.status)
   );
   
-  if (activeDeals.length > 0 && insights.length === 0) {
-    // Only show when no urgent issues
+  const negotiatingDeals = sellerDeals.filter(deal => deal.status === 'negotiating');
+  const underReviewDeals = sellerDeals.filter(deal => deal.status === 'under_review');
+  
+  if (negotiatingDeals.length > 0) {
     insights.push({
-      id: 'pipeline-health',
-      title: 'Pipeline Running Smoothly',
-      metric: activeDeals.length,
-      description: `${activeDeals.length} active deal${activeDeals.length > 1 ? 's' : ''} progressing well`,
+      id: 'negotiation-momentum',
+      title: 'Negotiation Phase Activity',
+      metric: negotiatingDeals.length,
+      description: `${negotiatingDeals.length} deal${negotiatingDeals.length > 1 ? 's' : ''} actively negotiating - momentum building`,
       urgency: 'low',
-      actionLabel: 'View Pipeline',
+      actionLabel: 'Monitor Progress',
       actionRoute: '/deals',
-      trend: 'stable'
+      trend: 'up'
+    });
+  }
+
+  // 2. Pipeline value concentration (strategic insight)
+  const highValueDeals = sellerDeals.filter(deal => {
+    const value = deal.annualRevenue || 0;
+    return value >= 500000 && !['signed', 'lost'].includes(deal.status);
+  });
+
+  if (highValueDeals.length > 0) {
+    const totalHighValue = highValueDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const totalPipelineValue = activeDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const concentration = Math.round((totalHighValue / totalPipelineValue) * 100);
+    
+    insights.push({
+      id: 'value-concentration',
+      title: 'High-Value Pipeline Focus',
+      metric: `${concentration}%`,
+      description: `${highValueDeals.length} deal${highValueDeals.length > 1 ? 's' : ''} >$500K represent ${concentration}% of pipeline value`,
+      urgency: concentration > 70 ? 'medium' : 'low',
+      actionLabel: 'View High-Value Deals',
+      actionRoute: '/deals',
+      trend: concentration > 70 ? 'up' : 'stable'
+    });
+  }
+
+  // 3. Deal progression health (strategic insight)
+  const totalDeals = sellerDeals.filter(deal => !['draft'].includes(deal.status)).length;
+  const progressingDeals = sellerDeals.filter(deal => 
+    ['under_review', 'negotiating', 'approved', 'contract_drafting'].includes(deal.status)
+  ).length;
+  
+  if (totalDeals > 0) {
+    const progressionRate = Math.round((progressingDeals / totalDeals) * 100);
+    insights.push({
+      id: 'progression-health',
+      title: 'Pipeline Progression Rate',
+      metric: `${progressionRate}%`,
+      description: `${progressingDeals} of ${totalDeals} deals advancing through workflow`,
+      urgency: progressionRate < 50 ? 'medium' : 'low',
+      actionLabel: 'Analyze Workflow',
+      actionRoute: '/analytics',
+      trend: progressionRate >= 70 ? 'up' : progressionRate >= 50 ? 'stable' : 'down'
+    });
+  }
+
+  // 4. Recent submission momentum (positive indicator)
+  const recentSubmissions = sellerDeals.filter(deal => {
+    if (!deal.updatedAt) return false;
+    const hoursSinceUpdate = (now.getTime() - new Date(deal.updatedAt).getTime()) / (1000 * 60 * 60);
+    return hoursSinceUpdate <= 72 && deal.status === 'submitted'; // Last 3 days
+  });
+
+  if (recentSubmissions.length > 0 && insights.length < 3) {
+    insights.push({
+      id: 'submission-momentum',
+      title: 'Fresh Submissions This Week',
+      metric: recentSubmissions.length,
+      description: `${recentSubmissions.length} new deal${recentSubmissions.length > 1 ? 's' : ''} submitted for review`,
+      urgency: 'low',
+      actionLabel: 'Track Progress',
+      actionRoute: '/deals',
+      trend: 'up'
     });
   }
 
