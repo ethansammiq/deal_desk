@@ -462,61 +462,6 @@ export function ConsolidatedDashboard() {
               deals={deals}
               userEmail={currentUser?.email}
             />
-            <Card className="border border-slate-200 shadow-sm bg-white">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-                    <div>
-                      <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        Recent Deals
-                      </CardTitle>
-                      <CardDescription className="text-slate-500">
-                        Latest activity and deal updates
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <Button asChild variant="outline" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
-                    <Link to="/analytics">
-                      View All Deals
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {getFilteredDeals().length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <FileText className="h-6 w-6 text-slate-400" />
-                    </div>
-                    <h3 className="text-base font-medium text-slate-700 mb-2">No deals yet</h3>
-                    <p className="text-slate-500 text-sm mb-4">Ready to review some deals?</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {getFilteredDeals().slice(0, 5).map((deal) => (
-                      <DealRow
-                        key={deal.id}
-                        deal={deal}
-                        variant="compact"
-                        onClick={() => navigate(`/deals/${deal.id}`)}
-                        showValue={true}
-                      />
-                    ))}
-                    {getFilteredDeals().length > 5 && (
-                      <div className="pt-3 border-t border-slate-200">
-                        <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
-                          <Link to="/analytics">
-                            View {getFilteredDeals().length - 5} more deals →
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </>
         )}
       </div>
