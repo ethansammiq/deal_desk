@@ -57,7 +57,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
-      actionLabel: stalledDeals.length === 1 ? 'Contact This Client' : `Follow Up on ${stalledDeals.length} Deals`,
+      actionLabel: stalledDeals.length === 1 ? 'Call Client' : `Follow Up (${stalledDeals.length})`,
       actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?highlight=${stalledDeals.map(d => d.id).join(',')}`,
       trend: 'down'
     });
@@ -100,7 +100,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: `${changePercent > 0 ? '+' : ''}${changePercent}%`,
         description: `Average deal value ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(changePercent)}% vs last month. ${actionGuidance}`,
         urgency: changePercent < -25 ? 'high' : 'medium',
-        actionLabel: changePercent < -25 ? 'Create High-Value Deal' : 'View Deal History',
+        actionLabel: changePercent < -25 ? 'Add Deal' : 'View History',
         actionRoute: changePercent < -25 ? '/request/proposal' : '/analytics',
         trend: changePercent > 0 ? 'up' : 'down'
       });
@@ -139,7 +139,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
           metric: `${Math.round(avgTime)}d`,
           description: `Deals averaging ${Math.round(avgTime)} days in ${status} vs ${expectedTime}d target. ${actionGuidance}`,
           urgency: avgTime > expectedTime * 2 ? 'high' : 'medium',
-          actionLabel: status === 'negotiating' ? 'Contact Prospects' : 'Follow Up',
+          actionLabel: status === 'negotiating' ? 'Call Prospects' : 'Follow Up',
           actionRoute: `/deals?status=${status}`,
           trend: 'down'
         });
@@ -172,7 +172,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: nearClosingDeals.length,
         description: `${formatShortCurrency(closingValue)} in high-value deals advancing. ${actionGuidance}`,
         urgency: 'medium',
-        actionLabel: nearClosingDeals.length === 1 ? 'Focus on This Deal' : `Push ${nearClosingDeals.length} High-Value Deals`,
+        actionLabel: nearClosingDeals.length === 1 ? 'Focus Deal' : `Push (${nearClosingDeals.length})`,
         actionRoute: nearClosingDeals.length === 1 ? `/deals/${nearClosingDeals[0].id}` : `/analytics?highlight=${nearClosingDeals.map(d => d.id).join(',')}`,
         trend: 'up',
         dealIds: nearClosingDeals.map(d => d.id)
@@ -189,7 +189,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: highValueDeals.length,
         description: `${formatShortCurrency(totalHighValue)} in high-value pipeline needs acceleration. ${actionGuidance}`,
         urgency: 'medium',
-        actionLabel: highValueDeals.length === 1 ? 'Accelerate This Deal' : `Accelerate ${highValueDeals.length} Deals`,
+        actionLabel: highValueDeals.length === 1 ? 'Accelerate' : `Accelerate (${highValueDeals.length})`,
         actionRoute: highValueDeals.length === 1 ? `/deals/${highValueDeals[0].id}` : `/analytics?highlight=${highValueDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
@@ -214,7 +214,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: closingOpportunities.length,
         description: `${formatShortCurrency(closingValue)} in approved deals ready for final close. ${actionGuidance}`,
         urgency: 'high',
-        actionLabel: closingOpportunities.length === 1 ? 'Close This Deal' : `Close ${closingOpportunities.length} Approved Deals`,
+        actionLabel: closingOpportunities.length === 1 ? 'Close Deal' : `Close (${closingOpportunities.length})`,
         actionRoute: closingOpportunities.length === 1 ? `/deals/${closingOpportunities[0].id}` : `/analytics?highlight=${closingOpportunities.map(d => d.id).join(',')}`,
         trend: 'up'
       });
@@ -234,8 +234,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     if (progressingDeals.length > stagnantDeals.length && progressingDeals.length > 0) {
       const progressValue = progressingDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
       const actionLabel = progressingDeals.length === 1 
-        ? 'Monitor This Deal'
-        : `Check Status on ${progressingDeals.length} Deals`;
+        ? 'Monitor'
+        : `Check (${progressingDeals.length})`;
       
       insights.push({
         id: 'pipeline-momentum',
@@ -256,7 +256,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         metric: stagnantDeals.length,
         description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
         urgency: 'medium',
-        actionLabel: 'Activate Stagnant Deals',
+        actionLabel: `Activate (${stagnantDeals.length})`,
         actionRoute: `/analytics?highlight=${stagnantDeals.map(d => d.id).join(',')}`,
         trend: 'stable'
       });
@@ -302,7 +302,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       metric: stalledReviews.length,
       description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
       urgency: stalledReviews.length > 3 ? 'high' : 'medium',
-      actionLabel: 'Review Delayed Deals',
+      actionLabel: stalledReviews.length === 1 ? 'Review Deal' : `Review (${stalledReviews.length})`,
       actionRoute: '/deals?filter=delayed',
       trend: 'down'
     });
@@ -337,7 +337,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       metric: pendingQueue.length,
       description: `Review queue at ${pendingQueue.length} deals - ${Math.round((recentQueue.length / Math.max(historicalQueue.length, 1)) * 100)}% vs last week. ${actionGuidance}`,
       urgency: pendingQueue.length > 8 ? 'high' : 'medium',
-      actionLabel: 'Process Queue',
+      actionLabel: `Process (${pendingQueue.length})`,
       actionRoute: '/deals?status=submitted,under_review',
       trend: recentQueue.length > historicalQueue.length ? 'up' : 'stable'
     });
@@ -370,7 +370,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
         metric: `${velocityChange > 0 ? '+' : ''}${Math.round(velocityChange)}%`,
         description: `Approval rate ${velocityChange > 0 ? 'increased' : 'decreased'} ${Math.abs(Math.round(velocityChange))}% this week. ${actionGuidance}`,
         urgency: velocityChange < -30 ? 'medium' : 'low',
-        actionLabel: velocityChange > 0 ? 'View Recent Approvals' : 'Optimize Process',
+        actionLabel: velocityChange > 0 ? 'View Approvals' : 'Optimize',
         actionRoute: velocityChange > 0 ? '/deals?status=approved' : '/deals?status=under_review',
         trend: velocityChange > 0 ? 'up' : 'down'
       });
