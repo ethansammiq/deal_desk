@@ -47,14 +47,18 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
 
   if (stalledDeals.length > 0) {
     const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const actionGuidance = stalledDeals.length === 1 
+      ? 'Contact client today or schedule follow-up meeting'
+      : 'Review each deal and send status updates to all prospects';
+    
     insights.push({
       id: 'stall-risk-prediction',
       title: 'Deals at Stall Risk',
       metric: stalledDeals.length,
-      description: `${formatShortCurrency(totalStalledValue)} in pipeline needs immediate attention to prevent stalling`,
+      description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
-      actionLabel: 'Review At-Risk Deals',
-      actionRoute: '/deals',
+      actionLabel: 'View Stalled Deals',
+      actionRoute: '/deals?filter=stalled',
       trend: 'down'
     });
   }
@@ -84,14 +88,20 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const changePercent = Math.round(((recentAvgValue - historicalAvgValue) / historicalAvgValue) * 100);
     
     if (Math.abs(changePercent) >= 20) {
+      const actionGuidance = changePercent > 0 
+        ? 'Continue targeting larger accounts to maintain momentum'
+        : changePercent < -25 
+          ? 'Focus on qualifying higher-value prospects this week'
+          : 'Review recent wins to identify successful deal patterns';
+      
       insights.push({
         id: 'pipeline-threshold-alert',
         title: 'Pipeline Value Trend Alert',
         metric: `${changePercent > 0 ? '+' : ''}${changePercent}%`,
-        description: `Average deal value ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(changePercent)}% vs last month`,
+        description: `Average deal value ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(changePercent)}% vs last month. ${actionGuidance}`,
         urgency: changePercent < -25 ? 'high' : 'medium',
-        actionLabel: 'Analyze Trend',
-        actionRoute: '/analytics',
+        actionLabel: changePercent < -25 ? 'Create High-Value Deal' : 'View Deal History',
+        actionRoute: changePercent < -25 ? '/deal/new' : '/deals?sort=value',
         trend: changePercent > 0 ? 'up' : 'down'
       });
     }
@@ -117,14 +127,20 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       const expectedTime = status === 'under_review' ? 3 : status === 'negotiating' ? 7 : 5;
       
       if (avgTime > expectedTime * 1.5) { // 50% longer than expected
+        const actionGuidance = status === 'negotiating' 
+          ? 'Schedule calls with prospects to move deals forward'
+          : status === 'under_review'
+          ? 'Contact approvers to expedite review process'
+          : 'Follow up on pending items to accelerate progress';
+        
         insights.push({
           id: `bottleneck-${status}`,
           title: `${status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} Bottleneck`,
           metric: `${Math.round(avgTime)}d`,
-          description: `Deals averaging ${Math.round(avgTime)} days in ${status} vs ${expectedTime}d target`,
+          description: `Deals averaging ${Math.round(avgTime)} days in ${status} vs ${expectedTime}d target. ${actionGuidance}`,
           urgency: avgTime > expectedTime * 2 ? 'high' : 'medium',
-          actionLabel: 'Investigate Delays',
-          actionRoute: '/deals',
+          actionLabel: status === 'negotiating' ? 'Contact Prospects' : 'Follow Up',
+          actionRoute: `/deals?status=${status}`,
           trend: 'down'
         });
         return; // Only show one bottleneck at a time
@@ -144,14 +160,18 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const concentration = Math.round((totalHighValue / totalPipelineValue) * 100);
     
     if (concentration > 60) { // Only show if high concentration
+      const actionGuidance = concentration > 80 
+        ? 'Focus on smaller deals ($100K-$300K) to reduce risk'
+        : 'Add 2-3 mid-size deals to balance pipeline risk';
+      
       insights.push({
         id: 'concentration-risk',
         title: 'High-Value Concentration Risk',
         metric: `${concentration}%`,
-        description: `${highValueDeals.length} deals >$500K represent ${concentration}% of pipeline value`,
+        description: `${highValueDeals.length} deals >$500K represent ${concentration}% of pipeline value. ${actionGuidance}`,
         urgency: concentration > 80 ? 'high' : 'medium',
-        actionLabel: 'Diversify Pipeline',
-        actionRoute: '/deals',
+        actionLabel: 'Create New Deal',
+        actionRoute: '/deal/new',
         trend: concentration > 80 ? 'up' : 'stable'
       });
     }
@@ -186,14 +206,18 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
 
   if (stalledReviews.length > 0) {
     const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const actionGuidance = stalledReviews.length === 1 
+      ? 'Review the delayed deal today to prevent further stalling'
+      : 'Block 2 hours to clear review backlog and prevent seller frustration';
+    
     insights.push({
       id: 'review-bottleneck',
       title: 'Review Process Bottleneck',
       metric: stalledReviews.length,
-      description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review`,
+      description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
       urgency: stalledReviews.length > 3 ? 'high' : 'medium',
-      actionLabel: 'Expedite Reviews',
-      actionRoute: '/deals',
+      actionLabel: 'Review Delayed Deals',
+      actionRoute: '/deals?filter=delayed',
       trend: 'down'
     });
   }
@@ -217,14 +241,18 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
   });
 
   if (pendingQueue.length > 5 || (recentQueue.length > historicalQueue.length * 1.5)) {
+    const actionGuidance = pendingQueue.length > 8 
+      ? 'Consider delegating reviews or working extra hours to prevent bottleneck'
+      : 'Prioritize high-value deals and process smaller deals in batches';
+    
     insights.push({
       id: 'queue-capacity-alert',
       title: 'Queue Capacity Alert',
       metric: pendingQueue.length,
-      description: `Review queue at ${pendingQueue.length} deals - ${Math.round((recentQueue.length / Math.max(historicalQueue.length, 1)) * 100)}% vs last week`,
+      description: `Review queue at ${pendingQueue.length} deals - ${Math.round((recentQueue.length / Math.max(historicalQueue.length, 1)) * 100)}% vs last week. ${actionGuidance}`,
       urgency: pendingQueue.length > 8 ? 'high' : 'medium',
-      actionLabel: 'Manage Workload',
-      actionRoute: '/deals',
+      actionLabel: 'Process Queue',
+      actionRoute: '/deals?status=submitted,under_review',
       trend: recentQueue.length > historicalQueue.length ? 'up' : 'stable'
     });
   }
@@ -246,14 +274,18 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
     const velocityChange = ((recentApprovals.length - olderApprovals.length) / olderApprovals.length) * 100;
     
     if (Math.abs(velocityChange) >= 25) {
+      const actionGuidance = velocityChange > 0 
+        ? 'Great momentum! Maintain current review pace to support sales team'
+        : 'Review process may need optimization - consider streamlining steps';
+      
       insights.push({
         id: 'approval-velocity',
         title: 'Approval Velocity Change',
         metric: `${velocityChange > 0 ? '+' : ''}${Math.round(velocityChange)}%`,
-        description: `Approval rate ${velocityChange > 0 ? 'increased' : 'decreased'} ${Math.abs(Math.round(velocityChange))}% this week`,
+        description: `Approval rate ${velocityChange > 0 ? 'increased' : 'decreased'} ${Math.abs(Math.round(velocityChange))}% this week. ${actionGuidance}`,
         urgency: velocityChange < -30 ? 'medium' : 'low',
-        actionLabel: 'Analyze Performance',
-        actionRoute: '/analytics',
+        actionLabel: velocityChange > 0 ? 'View Recent Approvals' : 'Optimize Process',
+        actionRoute: velocityChange > 0 ? '/deals?status=approved' : '/deals?status=under_review',
         trend: velocityChange > 0 ? 'up' : 'down'
       });
     }
@@ -264,14 +296,18 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
   
   if (highValueInQueue.length > 0 && insights.length < 3) {
     const totalHighValue = highValueInQueue.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const actionGuidance = highValueInQueue.length === 1 
+      ? 'Review this high-value deal first to avoid revenue risk'
+      : 'Process these high-value deals before smaller ones to maximize impact';
+    
     insights.push({
       id: 'high-value-queue',
       title: 'High-Value Deals in Queue',
       metric: highValueInQueue.length,
-      description: `${formatShortCurrency(totalHighValue)} in high-value deals awaiting review`,
+      description: `${formatShortCurrency(totalHighValue)} in high-value deals awaiting review. ${actionGuidance}`,
       urgency: 'medium',
-      actionLabel: 'Prioritize Review',
-      actionRoute: '/deals',
+      actionLabel: 'Review High-Value First',
+      actionRoute: '/deals?filter=high-value&status=submitted,under_review',
       trend: 'stable'
     });
   }
