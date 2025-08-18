@@ -24,9 +24,6 @@ import {
   Search,
   Filter,
   FileText,
-  MoreHorizontal,
-  Eye,
-  Edit2,
   BarChart3
 } from "lucide-react";
 
@@ -90,21 +87,18 @@ export default function DealsPage() {
         const badgeInfo = classifiedDeal?.badgeInfo;
         
         return (
-          <div className={`${
-            isHighlighted 
-              ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
-              : badgeInfo?.className 
-                ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
-                : ''
-          }`}>
-            <div className="font-medium text-slate-900 flex items-center gap-2">
+          <div 
+            className={`cursor-pointer ${
+              isHighlighted 
+                ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
+                : badgeInfo?.className 
+                  ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
+                  : ''
+            }`}
+            onClick={() => navigate(`/deals/${deal.id}`)}
+          >
+            <div className="font-medium text-slate-900">
               {deal.dealName}
-              {/* Phase 2: Enhanced Flow Intelligence badges with improved visibility */}
-              {badgeInfo && (
-                <Badge variant={badgeInfo.variant} className="text-xs font-medium">
-                  {badgeInfo.label}
-                </Badge>
-              )}
             </div>
             <div className="text-sm text-slate-500">#{deal.referenceNumber}</div>
           </div>
@@ -115,7 +109,10 @@ export default function DealsPage() {
       accessorKey: "advertiserName",
       header: "Client",
       cell: ({ row }) => (
-        <div>
+        <div 
+          className="cursor-pointer"
+          onClick={() => navigate(`/deals/${row.original.id}`)}
+        >
           <div className="font-medium text-slate-700">
             {row.original.advertiserName || row.original.agencyName || "N/A"}
           </div>
@@ -127,7 +124,11 @@ export default function DealsPage() {
       accessorKey: "salesChannel",
       header: "Channel",
       cell: ({ row }) => (
-        <Badge variant="outline" className="font-normal">
+        <Badge 
+          variant="outline" 
+          className="font-normal cursor-pointer"
+          onClick={() => navigate(`/deals/${row.original.id}`)}
+        >
           {getSalesChannelDisplayName(row.original.salesChannel)}
         </Badge>
       ),
@@ -136,7 +137,12 @@ export default function DealsPage() {
       accessorKey: "region",
       header: "Region",
       cell: ({ row }) => (
-        <div className="text-slate-600">{getRegionDisplayName(row.original.region)}</div>
+        <div 
+          className="text-slate-600 cursor-pointer"
+          onClick={() => navigate(`/deals/${row.original.id}`)}
+        >
+          {getRegionDisplayName(row.original.region)}
+        </div>
       ),
     },
     {
@@ -146,7 +152,10 @@ export default function DealsPage() {
         const deal = row.original as any;
         const value = deal.annualRevenue || deal.totalValue || 0;
         return (
-          <div className="font-medium text-slate-900">
+          <div 
+            className="font-medium text-slate-900 cursor-pointer"
+            onClick={() => navigate(`/deals/${row.original.id}`)}
+          >
             {formatShortCurrency(value)}
           </div>
         );
@@ -157,7 +166,37 @@ export default function DealsPage() {
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status as DealStatus;
-        return <DealStatusBadge status={status} />;
+        return (
+          <div 
+            className="cursor-pointer"
+            onClick={() => navigate(`/deals/${row.original.id}`)}
+          >
+            <DealStatusBadge status={status} />
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "dealInsight",
+      header: "Deal Insight", 
+      cell: ({ row }) => {
+        const deal = row.original;
+        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
+        const badgeInfo = classifiedDeal?.badgeInfo;
+        
+        if (!badgeInfo) {
+          return (
+            <Badge variant="secondary" className="text-xs font-medium text-slate-600 bg-slate-100">
+              On Track
+            </Badge>
+          );
+        }
+        
+        return (
+          <Badge variant={badgeInfo.variant} className="text-xs font-medium">
+            {badgeInfo.label}
+          </Badge>
+        );
       },
     },
     {
@@ -166,45 +205,12 @@ export default function DealsPage() {
       cell: ({ row }) => {
         const updatedAt = row.original.updatedAt;
         const dateString = updatedAt ? new Date(updatedAt).toLocaleDateString() : "";
-        return <div className="text-sm text-slate-500">{dateString}</div>;
-      },
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const deal = row.original;
-        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
-        const needsAttention = classifiedDeal?.classification.flowStatus === 'needs_attention';
-        
         return (
-          <div className="flex items-center gap-2">
-            {needsAttention && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8 px-2 text-orange-700 border-orange-200 hover:bg-orange-50 text-xs"
-                onClick={() => {
-                  // Phase 2: Contextual action based on deal status
-                  if (deal.status === 'negotiating') {
-                    window.open(`mailto:client@company.com?subject=Follow up on ${deal.dealName}&body=Hi, I wanted to follow up on our ongoing negotiation for ${deal.dealName}. Could we schedule a quick call to move this forward?`);
-                  } else {
-                    // Internal follow-up for other statuses
-                    alert(`Following up on ${deal.dealName} - deal has been in ${deal.status} status for ${classifiedDeal?.classification.daysInStatus} days`);
-                  }
-                }}
-              >
-                Follow Up
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/deals/${deal.id}`)}
-              className="h-8 w-8 p-0"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
+          <div 
+            className="text-sm text-slate-500 cursor-pointer"
+            onClick={() => navigate(`/deals/${row.original.id}`)}
+          >
+            {dateString}
           </div>
         );
       },

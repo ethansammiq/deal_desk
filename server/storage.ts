@@ -833,6 +833,9 @@ export class MemStorage implements IStorage {
     // Add some older timestamps to test Strategic Insights
     this.addDemoStrategicInsightsData();
     
+    // Update existing deals with flow intelligence for testing
+    this.updateFlowIntelligenceForExistingDeals();
+    
     // Add sample tiers for tiered deals
     const tiersByDealId = {
       1: [ // For "Coca-Cola Q1 2025 Campaign"
@@ -1213,6 +1216,27 @@ export class MemStorage implements IStorage {
     // Sort by newest first (using id as proxy for creation date)
     return deals.sort((a, b) => b.id - a.id);
   }
+
+  // Update existing deals with flow intelligence for proper testing
+  private updateFlowIntelligenceForExistingDeals(): void {
+    const now = new Date();
+    
+    this.deals.forEach((deal, id) => {
+      // Skip if flowIntelligence already set
+      if (deal.flowIntelligence) return;
+      
+      // Calculate flow intelligence for each deal
+      const flowIntelligence = this.calculateFlowIntelligence(deal, deal.status, now);
+      
+      // Update the deal
+      this.deals.set(id, {
+        ...deal,
+        flowIntelligence
+      });
+    });
+    
+    console.log("Flow intelligence updated for existing deals");
+  }
   
   async createDeal(insertDeal: InsertDeal, referenceNumber?: string): Promise<Deal> {
     const id = this.dealCurrentId++;
@@ -1227,13 +1251,18 @@ export class MemStorage implements IStorage {
       ? Math.round((new Date(insertDeal.termEndDate).getTime() - new Date(insertDeal.termStartDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
+    // Calculate initial flow intelligence
+    const dealStatus = insertDeal.status || "submitted";
+    const flowIntelligence = this.calculateFlowIntelligence({ ...insertDeal, lastStatusChange: now } as Deal, dealStatus, now);
+
     // Create a new deal with the provided data and default values
     const deal: Deal = {
       ...insertDeal,
       id,
-      status: insertDeal.status || "submitted", // Phase 7A: Use provided status or default
+      status: dealStatus, // Phase 7A: Use provided status or default
       lastStatusChange: now, // Phase 7A: Track status change time
       priority: insertDeal.priority || "medium", // Phase 7A: Default priority
+      flowIntelligence, // Phase 7A: Calculate flow intelligence
       createdAt: now,
       updatedAt: now,
       referenceNumber: dealReferenceNumber,
@@ -1273,7 +1302,7 @@ export class MemStorage implements IStorage {
     return updatedDeal;
   }
   
-  // Phase 7A: Enhanced updateDealStatus with status history tracking
+  // Phase 7A: Enhanced updateDealStatus with status history tracking and flow intelligence
   async updateDealStatus(id: number, status: DealStatus, changedBy: string, comments?: string): Promise<Deal | undefined> {
     const deal = this.deals.get(id);
     if (!deal) return undefined;
@@ -1281,12 +1310,16 @@ export class MemStorage implements IStorage {
     const previousStatus = deal.status;
     const now = new Date();
     
+    // Calculate flow intelligence based on new status and timing
+    const flowIntelligence = this.calculateFlowIntelligence(deal, status, now);
+    
     // Update the deal
     const updatedDeal: Deal = {
       ...deal,
       status,
       lastStatusChange: now,
       updatedAt: now,
+      flowIntelligence,
     };
     
     this.deals.set(id, updatedDeal);
@@ -1301,6 +1334,34 @@ export class MemStorage implements IStorage {
     });
     
     return updatedDeal;
+  }
+
+  // Phase 7A: Calculate flow intelligence based on deal timing and status
+  private calculateFlowIntelligence(deal: Deal, status: DealStatus, currentTime: Date): "on_track" | "needs_attention" | null {
+    if (!deal.lastStatusChange) return "on_track";
+    
+    const daysSinceLastChange = Math.floor((currentTime.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Define timing thresholds for different statuses
+    const thresholds: Record<string, number> = {
+      submitted: 3,
+      under_review: 5,
+      revision_requested: 7,
+      negotiating: 10,
+      approved: 5,
+      contract_drafting: 7,
+      client_review: 10,
+      scoping: 7
+    };
+    
+    const threshold = thresholds[status] || 7; // Default 7 days
+    
+    // Terminal statuses are always on track
+    if (['signed', 'lost'].includes(status)) {
+      return "on_track";
+    }
+    
+    return daysSinceLastChange > threshold ? "needs_attention" : "on_track";
   }
 
   async updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined> {
