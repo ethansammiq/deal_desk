@@ -198,7 +198,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
         description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
         priority: insightPriority,
         actionLabel: 'Review',
-        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=delayed',
+        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=needs_attention',
         trend: 'down'
       });
     }
@@ -233,7 +233,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
         description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
         priority: insightPriority,
         actionLabel: 'Review',
-        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=delayed',
+        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=needs_attention',
         trend: 'down'
       });
     }
