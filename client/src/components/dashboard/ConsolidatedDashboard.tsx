@@ -56,7 +56,7 @@ export function ConsolidatedDashboard() {
 
   // Fetch approval queue items for reviewers/approvers
   const { data: approvalData } = useQuery({
-    queryKey: [`/api/approvals/pending?department=${currentUser?.department}`],
+    queryKey: [`/api/approvals/pending?role=${currentUser?.role}&department=${currentUser?.department}`],
     enabled: (currentUser?.role === 'department_reviewer' || currentUser?.role === 'approver') && !!currentUser?.department,
     staleTime: 30000
   });
