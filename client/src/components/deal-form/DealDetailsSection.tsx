@@ -108,42 +108,8 @@ export function DealDetailsSection({
           required={true}
         />
 
-        {/* Deal Structure - Conditional */}
-        {showDealStructure && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="dealStructure"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Deal Structure <span className="text-red-500">*</span>
-                </FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setDealStructure(value as "tiered" | "flat_commit" | "");
-                  }}
-                  value={field.value || ""}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose tiered or flat commit structure" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="tiered">Tiered Revenue</SelectItem>
-                    <SelectItem value="flat_commit">Flat Commit</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  The revenue structure for this deal
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+        {/* Date Range Selection */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
             name="contractTermMonths"
@@ -194,40 +160,77 @@ export function DealDetailsSection({
               );
             }}
           />
+        </div>
+
+        {/* Deal Structure - Conditional */}
+        {showDealStructure && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="dealStructure"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal Structure <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setDealStructure(value as "tiered" | "flat_commit" | "");
+                  }}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose tiered or flat commit structure" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="tiered">Tiered Revenue</SelectItem>
+                    <SelectItem value="flat_commit">Flat Commit</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  The revenue structure for this deal
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Priority Selection - Only show in SubmitDeal form (when showDealStructure is true and required) */}
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Deal Priority <span className="text-red-500">*</span>
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || "medium"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select deal priority" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Set business priority based on: <strong>Critical</strong> - Major strategic account or competitive threat; 
+                  <strong>High</strong> - Significant revenue impact; <strong>Medium</strong> - Standard opportunity; 
+                  <strong>Low</strong> - Opportunistic deal
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           </div>
         )}
-
-        {/* Priority Selection - Only for SubmitDeal form */}
-        <FormField
-          control={form.control}
-          name="priority"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Deal Priority <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || "medium"}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select deal priority" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Set business priority based on: <strong>Critical</strong> - Major strategic account or competitive threat; 
-                <strong>High</strong> - Significant revenue impact; <strong>Medium</strong> - Standard opportunity; 
-                <strong>Low</strong> - Opportunistic deal
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         {/* Date Range Selection */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
