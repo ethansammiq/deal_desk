@@ -23,6 +23,7 @@ interface StrategicInsightsProps {
   userRole: UserRole;
   deals: Deal[];
   userEmail?: string;
+  userDepartment?: string;
 }
 
 // Phase 2A: Enhanced Pipeline Health Intelligence using existing data
@@ -158,11 +159,11 @@ function formatShortCurrency(amount: number): string {
 }
 
 // Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
-function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): StrategicInsight[] {
+function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, userDepartment?: string): StrategicInsight[] {
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. PROCESS BOTTLENECK DETECTION - Approval timing analysis
+  // 1. PROCESS BOTTLENECK DETECTION - Department-specific approval timing analysis
   const reviewingDeals = deals.filter(deal => 
     deal.status === 'under_review' || deal.status === 'submitted'
   );
@@ -210,10 +211,10 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
 }
 
 // Main component
-export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsightsProps) {
+export function StrategicInsights({ userRole, deals, userEmail, userDepartment }: StrategicInsightsProps) {
   const insights = userRole === 'seller' 
     ? generatePipelineHealthInsights(deals, userEmail)
-    : generateWorkflowEfficiencyInsights(deals, userRole);
+    : generateWorkflowEfficiencyInsights(deals, userRole, userDepartment);
 
   // Don't render if no insights (normal operation when all deals are progressing well)
   if (insights.length === 0) {

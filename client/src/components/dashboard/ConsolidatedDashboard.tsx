@@ -148,8 +148,10 @@ export function ConsolidatedDashboard() {
 
       case 'department_reviewer':
       case 'approver':
-        // Shared metrics for both reviewer and approver roles
-        const pendingReviews = deals.filter(deal => deal.status === 'under_review' || deal.status === 'submitted').length;
+        // Department-aware metrics using approval queue data
+        const pendingReviews = currentUser?.role === 'department_reviewer' 
+          ? approvalItems?.filter(item => item.type === 'technical_review').length || 0
+          : approvalItems?.filter(item => item.type === 'business_approval').length || 0;
         const pendingApprovals = deals.filter(deal => deal.status === 'approved').length;
         
         return [
@@ -495,6 +497,7 @@ export function ConsolidatedDashboard() {
               userRole={userRole}
               deals={deals}
               userEmail={currentUser?.email}
+              userDepartment={currentUser?.department}
             />
           </>
         ) : (
@@ -505,6 +508,7 @@ export function ConsolidatedDashboard() {
               userRole={userRole}
               deals={deals}
               userEmail={currentUser?.email}
+              userDepartment={currentUser?.department}
             />
           </>
         )}
