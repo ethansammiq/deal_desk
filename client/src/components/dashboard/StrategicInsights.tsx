@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Clock, TrendingUp, TrendingDown, Minus, ExternalLink } from 'lucide-react';
-import { Deal, UserRole } from '@shared/schema';
+import { Deal, UserRole, DealPriority } from '@shared/schema';
 import { Link } from 'wouter';
 import { classifyDealFlow } from "@/utils/dealClassification";
 
@@ -15,7 +15,7 @@ interface StrategicInsight {
   trend?: 'up' | 'down' | 'stable';
   actionLabel: string;
   actionRoute: string;
-  urgency: 'low' | 'medium' | 'high';
+  priority: DealPriority; // Use actual deal priority instead of custom urgency
   dealIds?: number[]; // For linking to specific deals
 }
 
@@ -56,12 +56,12 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const revisionDeals = stalledDeals.filter(deal => deal.status === 'revision_requested');
     
     let actionGuidance = '';
-    let priorityLevel = 'medium';
+    let insightPriority: DealPriority = 'medium';
     
     // Determine guidance based on deal mix and priority
     const highPriorityDeals = stalledDeals.filter(deal => deal.priority === 'critical' || deal.priority === 'high');
     if (highPriorityDeals.length > 0) {
-      priorityLevel = 'high';
+      insightPriority = 'high';
     }
     
     if (revisionDeals.length > 0) {
@@ -83,7 +83,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       title: 'Deals Need Attention',
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
-      urgency: priorityLevel as 'low' | 'medium' | 'high',
+      priority: insightPriority,
       actionLabel: 'Review',
       actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?filter=needs_attention`,
       trend: 'down'
@@ -117,15 +117,15 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     
     // Only show if it's a significant decline requiring action
     if (changePercent < -25) {
-      // Use priority-based urgency instead of fixed 'high'
-      const urgencyLevel = Math.abs(changePercent) > 40 ? 'high' : 'medium';
+      // Use priority-based logic instead of fixed 'high'
+      const insightPriority: DealPriority = Math.abs(changePercent) > 40 ? 'high' : 'medium';
       
       insights.push({
         id: 'pipeline-value-decline',
         title: 'Deal Value Declining',
         metric: `${changePercent}%`,
         description: `Average deal value decreased ${Math.abs(changePercent)}% vs last month. Focus on qualifying higher-value prospects this week`,
-        urgency: urgencyLevel,
+        priority: insightPriority,
         actionLabel: 'Review',
         actionRoute: '/request/proposal',
         trend: 'down'
@@ -171,11 +171,11 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       ? 'Review the delayed deal today to prevent further stalling'
       : 'Block 2 hours to clear review backlog and prevent seller frustration';
     
-    // Determine urgency based on priority levels of stalled deals
+    // Determine priority based on priority levels of stalled deals
     const highPriorityStalled = stalledReviews.filter(deal => 
       deal.priority === 'critical' || deal.priority === 'high'
     );
-    const urgencyLevel = highPriorityStalled.length > 0 ? 'high' : 
+    const insightPriority: DealPriority = highPriorityStalled.length > 0 ? 'high' : 
                         stalledReviews.length > 3 ? 'medium' : 'low';
     
     insights.push({
@@ -183,7 +183,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       title: 'Review Process Bottleneck',
       metric: stalledReviews.length,
       description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
-      urgency: urgencyLevel,
+      priority: insightPriority,
       actionLabel: 'Review',
       actionRoute: '/analytics?filter=delayed',
       trend: 'down'
@@ -214,19 +214,27 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
   }
 
   // Use Priority-based styling for consistency with deal priority labels
-  const getPriorityColor = (urgency: string) => {
-    switch (urgency) {
-      case 'high': return 'border-red-200 bg-red-50'; // Critical/High priority styling
-      case 'medium': return 'border-amber-200 bg-amber-50'; // Medium priority styling  
-      default: return 'border-slate-200 bg-slate-50'; // Low priority styling
+  const getPriorityColor = (priority: DealPriority) => {
+    switch (priority) {
+      case 'critical':
+      case 'high': 
+        return 'border-red-200 bg-red-50'; // Critical/High priority styling
+      case 'medium': 
+        return 'border-amber-200 bg-amber-50'; // Medium priority styling  
+      default: 
+        return 'border-slate-200 bg-slate-50'; // Low priority styling
     }
   };
 
-  const getPriorityBadge = (urgency: string) => {
-    switch (urgency) {
-      case 'high': return 'destructive'; // Red for high urgency
-      case 'medium': return 'secondary'; // Gray for medium urgency
-      default: return 'outline'; // Outline for low urgency
+  const getPriorityBadge = (priority: DealPriority) => {
+    switch (priority) {
+      case 'critical':
+      case 'high': 
+        return 'destructive'; // Red for high priority
+      case 'medium': 
+        return 'secondary'; // Gray for medium priority
+      default: 
+        return 'outline'; // Outline for low priority
     }
   };
 
@@ -246,7 +254,7 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
           <div>
             <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
               {userRole === 'seller' ? 'Pipeline Health Intelligence' : 'Workflow Efficiency Intelligence'}
-              {insights.some(i => i.urgency === 'high') && (
+              {insights.some(i => i.priority === 'high' || i.priority === 'critical') && (
                 <Badge variant="destructive" className="text-xs">
                   Action Required
                 </Badge>
@@ -266,7 +274,7 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
           {insights.map((insight) => (
             <div 
               key={insight.id}
-              className={`p-4 border rounded-lg transition-all hover:shadow-sm ${getPriorityColor(insight.urgency)}`}
+              className={`p-4 border rounded-lg transition-all hover:shadow-sm ${getPriorityColor(insight.priority)}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -275,8 +283,8 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
                       <h4 className="font-semibold text-slate-900">{insight.title}</h4>
                       {insight.trend && getTrendIcon(insight.trend)}
                     </div>
-                    <Badge variant={getPriorityBadge(insight.urgency)} className="text-xs">
-                      {insight.urgency}
+                    <Badge variant={getPriorityBadge(insight.priority)} className="text-xs">
+                      {insight.priority.charAt(0).toUpperCase() + insight.priority.slice(1)}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4">
