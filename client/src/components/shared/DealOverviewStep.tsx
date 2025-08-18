@@ -20,6 +20,7 @@ interface DealOverviewStepProps {
   layout?: "tabs" | "cards"; // tabs for Deal Scoping, cards for Deal Submission
   includeEmail?: boolean;
   showNavigation?: boolean;
+  variant?: "submitDeal" | "requestSupport"; // Form type for conditional fields
 }
 
 export function DealOverviewStep({
@@ -33,6 +34,7 @@ export function DealOverviewStep({
   layout = "cards",
   includeEmail = false,
   showNavigation = true,
+  variant = "requestSupport",
 }: DealOverviewStepProps) {
   
   if (layout === "tabs") {
@@ -74,10 +76,10 @@ export function DealOverviewStep({
               showClientInfo={false} // Client info shown separately above
               nextStep={nextStep}
               showBusinessSummary={false}
-
               showNavigationButton={showNavigation}
               title=""
               description=""
+              variant={variant}
             />
           </div>
         </div>
@@ -117,8 +119,8 @@ export function DealOverviewStep({
         showClientInfo={false} // Client info shown separately above
         nextStep={nextStep}
         showBusinessSummary={true}
-
         showNavigationButton={showNavigation}
+        variant={variant}
       />
     </>
   );
