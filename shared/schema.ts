@@ -239,6 +239,9 @@ export const deals = pgTable("deals", {
   lastStatusChange: timestamp("last_status_change").defaultNow(),
   priority: text("priority", { enum: ["critical", "high", "medium", "low"] }).notNull().default("medium"), // Seller-defined priority
   
+  // Phase 1 Flow Intelligence: Algorithm-controlled timing classification
+  flowIntelligence: text("flow_intelligence", { enum: ["on_track", "accelerated", "delayed", "stalled"] }), // Computed field, nullable for backward compatibility
+  
   // System fields
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -313,6 +316,21 @@ export const DEAL_PRIORITY_LABELS = {
   high: "High",
   medium: "Medium", 
   low: "Low"
+} as const;
+
+// Phase 1 Flow Intelligence: Timing-based classification constants  
+export const FLOW_STATUSES = {
+  ON_TRACK: "on_track",
+  ACCELERATED: "accelerated", 
+  DELAYED: "delayed",
+  STALLED: "stalled"
+} as const;
+
+export const FLOW_STATUS_LABELS = {
+  on_track: "On Track",
+  accelerated: "Accelerated", 
+  delayed: "Delayed",
+  stalled: "Stalled"
 } as const;
 
 export type DealPriority = keyof typeof DEAL_PRIORITY_LABELS;

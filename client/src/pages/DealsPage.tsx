@@ -100,12 +100,8 @@ export default function DealsPage() {
           }`}>
             <div className="font-medium text-slate-900 flex items-center gap-2">
               {deal.dealName}
-              {isHighlighted && (
-                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
-                  Highlighted
-                </Badge>
-              )}
-              {badgeInfo && !isHighlighted && (
+              {/* Phase 1 Flow Intelligence: Only show Flow Intelligence badges, no "Highlighted" */}
+              {badgeInfo && (
                 <Badge variant={badgeInfo.variant} className="text-xs">
                   {badgeInfo.text}
                 </Badge>

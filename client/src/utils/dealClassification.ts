@@ -5,7 +5,8 @@ import type { Deal, DealPriority } from "@shared/schema";
 // 2. Priority (seller-defined) - in deal.priority  
 // 3. Flow Intelligence (timing-based) - calculated here
 
-export type FlowIntelligence = 'on_track' | 'at_risk' | 'delayed' | 'stalled';
+// Phase 1 Flow Intelligence: Core types from proposal  
+export type FlowIntelligence = 'on_track' | 'accelerated' | 'delayed' | 'stalled';
 
 export interface DealFlowClassification {
   flowStatus: FlowIntelligence;
@@ -16,14 +17,15 @@ export interface DealFlowClassification {
 }
 
 // Flow Intelligence timing thresholds
+// Phase 1 Flow Intelligence: Exact thresholds from proposal
 const FLOW_THRESHOLDS = {
-  scoping: { normal: 5, atRisk: 4, delayed: 6, stalled: 10 },
-  submitted: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
-  under_review: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
-  revision_requested: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
-  approved: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
-  negotiating: { normal: 7, atRisk: 5, delayed: 8, stalled: 14 },
-  contract_drafting: { normal: 5, atRisk: 4, delayed: 6, stalled: 10 },
+  scoping: { normal: 5, delayed: 6, stalled: 10 }, // Not in proposal, keeping current
+  submitted: { normal: 2, delayed: 3, stalled: 6 }, // Proposal: 0-2 (on_track), 3-5 (delayed), 6+ (stalled)  
+  under_review: { normal: 5, delayed: 6, stalled: 11 }, // Proposal: 0-5 (on_track), 6-10 (delayed), 11+ (stalled)
+  revision_requested: { normal: 3, delayed: 4, stalled: 8 }, // Proposal: 0-3 (on_track), 4-7 (delayed), 8+ (stalled)
+  approved: { normal: 7, delayed: 8, stalled: 15 }, // Proposal: 0-7 (on_track), 8-14 (delayed), 15+ (stalled)
+  negotiating: { normal: 7, delayed: 8, stalled: 14 }, // Using reasonable thresholds
+  contract_drafting: { normal: 5, delayed: 6, stalled: 10 }, // Using reasonable thresholds
 } as const;
 
 export function classifyDealFlow(deal: Deal): DealFlowClassification {
@@ -74,15 +76,8 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
-  if (daysInStatus >= thresholds.atRisk) {
-    return {
-      flowStatus: 'at_risk',
-      reason: `Deal approaching delay in ${deal.status} (${daysInStatus}/${thresholds.normal} days)`,
-      daysInStatus,
-      actionRequired: true,
-      urgencyLevel: 'attention'
-    };
-  }
+  // Phase 1: Remove at_risk classification, use simple on_track for now
+  // Phase 3 will implement accelerated detection
 
   return {
     flowStatus: 'on_track',
@@ -101,9 +96,7 @@ export function getDelayedDeals(deals: Deal[]): Deal[] {
   });
 }
 
-export function getAtRiskDeals(deals: Deal[]): Deal[] {
-  return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'at_risk');
-}
+// Phase 1: Removed at_risk classification - will be replaced with accelerated in Phase 3
 
 export function getStalledDeals(deals: Deal[]): Deal[] {
   return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'stalled');
@@ -120,6 +113,7 @@ export function isDealDelayed(deal: Deal): boolean {
 }
 
 // UI helpers for Flow Intelligence
+// Phase 1 Flow Intelligence: Badge info for the 4 core statuses
 export function getFlowBadgeInfo(deal: Deal) {
   const flow = classifyDealFlow(deal);
   
@@ -136,14 +130,15 @@ export function getFlowBadgeInfo(deal: Deal) {
         variant: 'destructive' as const,
         color: 'border-red-400'
       };
-    case 'at_risk':
+    case 'accelerated':
       return {
-        text: 'At Risk',
+        text: 'Accelerated',
         variant: 'secondary' as const,
-        color: 'border-orange-400'
+        color: 'border-blue-500'
       };
+    case 'on_track':
     default:
-      return null;
+      return null; // Don't show badge for on_track deals
   }
 }
 
@@ -177,13 +172,22 @@ export function getPriorityBadgeInfo(priority: DealPriority) {
   }
 }
 
-// Filter categories for Flow Intelligence
+// Phase 1 Flow Intelligence: Filter categories for the new system
 export const FLOW_FILTER_CATEGORIES = [
   { value: 'all', label: 'All Deals', count: (deals: Deal[]) => deals.length },
-  { value: 'delayed', label: 'Delayed + Stalled', count: getDelayedDeals },
-  { value: 'at_risk', label: 'At Risk', count: getAtRiskDeals },
-  { value: 'stalled', label: 'Stalled', count: getStalledDeals },
+  { value: 'delayed', label: 'Delayed + Stalled', count: (deals: Deal[]) => getDelayedDeals(deals).length + getStalledDeals(deals).length },
+  { value: 'stalled', label: 'Stalled Only', count: (deals: Deal[]) => getStalledDeals(deals).length },
+  { value: 'on_track', label: 'On Track', count: getOnTrackDeals },
 ] as const;
+
+// Helper functions for Flow Intelligence filtering
+function getOnTrackDeals(deals: Deal[]): number {
+  return deals.filter(deal => {
+    if (['signed', 'lost', 'draft'].includes(deal.status)) return false;
+    const flow = classifyDealFlow(deal);
+    return flow.flowStatus === 'on_track';
+  }).length;
+}
 
 // Filter categories for Priority
 export const PRIORITY_FILTER_CATEGORIES = [
