@@ -770,7 +770,7 @@ export class MemStorage implements IStorage {
       {
         email: "seller@company.com",
         dealName: "Amazon Prime Video - Draft Campaign",
-        dealType: "new",
+        dealType: "grow",
         businessSummary: "Exploring new partnership opportunities with Amazon Prime Video for streaming advertising placement. This is a draft deal being developed.",
         salesChannel: "client_direct",
         advertiserName: "Amazon",
@@ -791,7 +791,7 @@ export class MemStorage implements IStorage {
         dealName: "Microsoft Azure - Scoping Request",
         dealType: "grow",
         businessSummary: "Initial scoping for expanding Microsoft Azure advertising partnership. Currently gathering requirements and exploring growth opportunities.",
-        salesChannel: "partner_referral",
+        salesChannel: "client_direct",
         advertiserName: "Microsoft",
         region: "west", 
         dealStructure: "tiered",
