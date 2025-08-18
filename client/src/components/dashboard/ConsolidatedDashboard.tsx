@@ -464,7 +464,7 @@ export function ConsolidatedDashboard() {
                                     )}
                                     <Button 
                                       size="sm"
-                                      onClick={() => navigate(isDraft ? `/deals/${deal.id}` : `/deals/${deal.id}`)}
+                                      onClick={() => navigate(isDraft ? `/deals/${deal.id}` : `/request/proposal?from-scoping=${deal.id}`)}
                                       className="bg-[#3e0075] hover:bg-[#2d0055] text-white"
                                     >
                                       <ActionIcon className="h-4 w-4 mr-2" />

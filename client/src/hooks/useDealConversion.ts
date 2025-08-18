@@ -27,7 +27,7 @@ export function useDealConversion() {
       });
 
       // Navigate to deal submission form with pre-filled data from the scoping deal
-      navigate(`/submit-deal?from-scoping=${data.dealId}`);
+      navigate(`/request/proposal?from-scoping=${data.dealId}`);
     },
     onError: (error: Error) => {
       toast({
