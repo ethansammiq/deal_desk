@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, Clock, TrendingUp, TrendingDown, Minus, ExternalLink } from 'lucide-react';
 import { Deal, UserRole } from '@shared/schema';
 import { Link } from 'wouter';
-import { getDelayedDeals, getCriticalDeals, getHighValueDeals, classifyDeal } from "@/utils/dealClassification";
+import { classifyDealFlow } from "@/utils/dealClassification";
 
 interface StrategicInsight {
   id: string;
@@ -37,17 +37,11 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const now = new Date();
 
   // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up
+  // Import flow classification to ensure consistency
   const stalledDeals = sellerDeals.filter(deal => {
-    if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
-    const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-    
-    // Risk thresholds by status - consolidated all stall scenarios  
-    if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true; // External follow-up
-    if (deal.status === 'under_review' && daysSinceUpdate > 5) return true; // Internal follow-up
-    if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true; // Internal follow-up
-    if (deal.status === 'approved' && daysSinceUpdate > 3) return true; // Internal follow-up
-    if (deal.status === 'contract_drafting' && daysSinceUpdate > 5) return true; // Internal follow-up
-    return false;
+    if (['signed', 'lost', 'draft'].includes(deal.status)) return false;
+    const flow = classifyDealFlow(deal);
+    return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
   });
 
   if (stalledDeals.length > 0) {
