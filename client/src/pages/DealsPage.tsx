@@ -225,7 +225,7 @@ export default function DealsPage() {
       deal.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchesStatus = true;
-    if (statusFilter === "delayed") {
+    if (statusFilter === "delayed" || statusFilter === "needs_attention") {
       matchesStatus = flow.flowStatus === 'needs_attention';
     } else if (statusFilter === "critical") {
       matchesStatus = deal.priority === 'critical';
@@ -239,7 +239,7 @@ export default function DealsPage() {
   // Get unique statuses for filter + add Flow Intelligence categories
   const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
   const categoryCounts = {
-    delayed: getDelayedDeals(deals).length,
+    needs_attention: deals.filter(deal => classifyDealFlow(deal).flowStatus === 'needs_attention').length,
     critical: deals.filter(deal => deal.priority === 'critical').length,
   };
 
@@ -272,18 +272,18 @@ export default function DealsPage() {
         </div>
 
         {/* Active Filter Banner */}
-        {(["delayed", "critical"].includes(statusFilter) || highlightedDeals.length > 0) && (
+        {(["delayed", "critical", "needs_attention"].includes(statusFilter) || highlightedDeals.length > 0) && (
           <Card className="border border-purple-200 bg-purple-50">
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-800">
-                    {statusFilter === "delayed" && "Showing delayed deals (exceeded normal timing thresholds)"}
+                    {(statusFilter === "delayed" || statusFilter === "needs_attention") && "Showing deals that need follow-up (exceeding timing thresholds)"}
                     {statusFilter === "critical" && "Showing critical priority deals (seller-defined)"}
-                    {highlightedDeals.length > 0 && !["delayed", "critical"].includes(statusFilter) && 
+                    {highlightedDeals.length > 0 && !["delayed", "critical", "needs_attention"].includes(statusFilter) && 
                       `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
-                    {["delayed", "critical"].includes(statusFilter) && highlightedDeals.length > 0 && 
+                    {["delayed", "critical", "needs_attention"].includes(statusFilter) && highlightedDeals.length > 0 && 
                       " + highlighting specific deals"}
                   </span>
                 </div>
@@ -340,9 +340,9 @@ export default function DealsPage() {
                         🔴 Critical ({categoryCounts.critical})
                       </SelectItem>
                     )}
-                    {categoryCounts.delayed > 0 && (
-                      <SelectItem value="delayed">
-                        ⚠️ Delayed ({categoryCounts.delayed})
+                    {categoryCounts.needs_attention > 0 && (
+                      <SelectItem value="needs_attention">
+                        🕐 Needs Follow-Up ({categoryCounts.needs_attention})
                       </SelectItem>
                     )}
                     <SelectItem disabled value="divider">—————————</SelectItem>

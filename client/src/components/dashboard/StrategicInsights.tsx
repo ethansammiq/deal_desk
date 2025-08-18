@@ -68,7 +68,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
       actionLabel,
-      actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?highlight=${stalledDeals.map(d => d.id).join(',')}`,
+      actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?filter=needs_attention`,
       trend: 'down'
     });
   }
@@ -136,7 +136,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
         urgency: 'medium',
         actionLabel: `Activate (${stagnantDeals.length})`,
-        actionRoute: `/analytics?highlight=${stagnantDeals.map(d => d.id).join(',')}`,
+        actionRoute: `/analytics?filter=needs_attention`,
         trend: 'stable'
       });
     }
