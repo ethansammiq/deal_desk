@@ -189,20 +189,20 @@ export default function DealsPage() {
       header: "Deal Insight", 
       cell: ({ row }) => {
         const deal = row.original;
-        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
-        const badgeInfo = classifiedDeal?.badgeInfo;
+        // Use backend-calculated flowIntelligence for consistency
+        const flowIntelligence = deal.flowIntelligence || 'on_track';
         
-        if (!badgeInfo) {
+        if (flowIntelligence === 'needs_attention') {
           return (
-            <Badge variant="secondary" className="text-xs font-medium text-slate-600 bg-slate-100">
-              On Track
+            <Badge variant="destructive" className="text-xs font-medium">
+              Needs Attention
             </Badge>
           );
         }
         
         return (
-          <Badge variant={badgeInfo.variant} className="text-xs font-medium">
-            {badgeInfo.label}
+          <Badge variant="secondary" className="text-xs font-medium text-slate-600 bg-slate-100">
+            On Track
           </Badge>
         );
       },

@@ -36,12 +36,11 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up
-  // Import flow classification to ensure consistency
+  // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up  
+  // Use backend-calculated flowIntelligence for consistency
   const stalledDeals = sellerDeals.filter(deal => {
     if (['signed', 'lost', 'draft'].includes(deal.status)) return false;
-    const flow = classifyDealFlow(deal);
-    return flow.flowStatus === 'needs_attention';
+    return deal.flowIntelligence === 'needs_attention';
   });
 
   if (stalledDeals.length > 0) {
