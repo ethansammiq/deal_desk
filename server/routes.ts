@@ -1214,53 +1214,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
 
   router.get("/users/current", async (req: Request, res: Response) => {
     try {
-      // Phase 7B: Mock current user with role switching support
-      // Check for role override in query params (for demo role switching)
-      const demoRole = req.query.role as string || "seller";
-      const demoDepartment = req.query.department as string || "trading";
-      
-      const roleConfigs = {
-        seller: {
-          id: 1,
-          username: "demo_seller",
-          email: "john.seller@company.com",
-          role: "seller",
-          firstName: "John",
-          lastName: "Seller",
-          department: "sales"
-        },
-        approver: {
-          id: 2,
-          username: "demo_approver", 
-          email: "approver@company.com",
-          role: "approver",
-          firstName: "Sarah",
-          lastName: "Chen",
-          department: "operations"
-        },
-        department_reviewer: {
-          id: 3,
-          username: `${demoDepartment}_reviewer`,
-          email: `${demoDepartment}@company.com`,
-          role: "department_reviewer",
-          firstName: demoDepartment.charAt(0).toUpperCase() + demoDepartment.slice(1),
-          lastName: "Reviewer",
-          department: demoDepartment
-        },
-        admin: {
-          id: 4,
-          username: "demo_admin",
-          email: "admin@company.com",
-          role: "admin",
-          firstName: "Alex",
-          lastName: "Administrator",
-          department: "it"
-        }
-      };
-      
-      // Return the requested role or default to seller
-      const selectedRole = ["seller", "approver", "department_reviewer", "admin"].includes(demoRole) ? demoRole : "seller";
-      res.status(200).json(roleConfigs[selectedRole as keyof typeof roleConfigs]);
+      const role = (req.query.role as string) || 'seller';
+      const department = req.query.department as string;
+      const currentUser = getCurrentUser(role, department);
+      res.status(200).json(currentUser);
     } catch (error) {
       console.error("Error fetching current user:", error);
       res.status(500).json({ message: "Failed to fetch current user" });

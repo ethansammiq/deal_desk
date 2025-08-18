@@ -62,7 +62,7 @@ export function getCurrentUser(): CurrentUser {
     seller: {
       id: 1,
       username: "demo_seller",
-      email: "john.seller@company.com",
+      email: "seller@company.com",
       role: "seller" as UserRole,
       firstName: "John",
       lastName: "Seller",
