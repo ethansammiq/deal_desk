@@ -74,6 +74,7 @@ export function DealOverviewStep({
               showClientInfo={false} // Client info shown separately above
               nextStep={nextStep}
               showBusinessSummary={false}
+              showPriorityField={false} // Disable Priority field for deal scoping
               showNavigationButton={showNavigation}
               title=""
               description=""
@@ -116,6 +117,7 @@ export function DealOverviewStep({
         showClientInfo={false} // Client info shown separately above
         nextStep={nextStep}
         showBusinessSummary={true}
+        showPriorityField={true} // Enable Priority field for SubmitDeal
         showNavigationButton={showNavigation}
       />
     </>
