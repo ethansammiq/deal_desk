@@ -43,9 +43,11 @@ export default function DealsPage() {
     
     // Apply filter if provided
     if (filter) {
-      // Check if it's a flow intelligence filter
-      if (filter === 'needs_attention' || filter === 'on_track') {
-        setDealInsightFilter(filter);
+      // Check if it's a flow intelligence filter (including legacy "delayed" filter)
+      if (filter === 'needs_attention' || filter === 'on_track' || filter === 'delayed') {
+        // Map legacy "delayed" filter to "needs_attention"
+        const mappedFilter = filter === 'delayed' ? 'needs_attention' : filter;
+        setDealInsightFilter(mappedFilter);
         setStatusFilter("all"); // Clear status filter when using insight filter
       } else {
         setStatusFilter(filter);
