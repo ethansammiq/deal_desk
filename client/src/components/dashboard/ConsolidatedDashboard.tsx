@@ -27,8 +27,11 @@ import {
   AlertTriangle,
   Clock,
   DollarSign,
-  Target
+  Target,
+  Play,
+  ArrowRight
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function ConsolidatedDashboard() {
   const { currentUser, canCreateDeals, canViewAllDeals, canApproveDeals, canAccessLegalReview } = useUserPermissions();
@@ -369,87 +372,129 @@ export function ConsolidatedDashboard() {
                     My Pipeline
                   </CardTitle>
                   <CardDescription className="text-slate-500">
-                    Your deals, actions, and performance
+                    Quick snapshot of your pipeline and actions needed
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {(() => {
-                  const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
-                  const pipelineValue = sellerMetrics.pipelineValue;
+              {(() => {
+                const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
+                
+                // Get upcoming deals (draft + scoping)
+                const upcomingDeals = sellerDeals.filter(deal => 
+                  deal.status === 'draft' || deal.status === 'scoping'
+                );
+                
+                // Get true active deals (submitted but not signed/lost)
+                const trueActiveDeals = sellerDeals.filter(deal => 
+                  !['draft', 'scoping', 'signed', 'lost', 'canceled'].includes(deal.status)
+                );
 
-                  return (
-                    <>
-                      {/* Active Deals Section - Primary focus for sellers */}
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          Active Deals ({activeDeals.length})
-                        </h4>
-                        {activeDeals.length > 0 ? (
-                          <>
-                            {activeDeals.slice(0, 5).map((deal) => (
-                              <div key={deal.id} className={`${
-                                // Phase 2: Enhanced styling for needs attention deals in dashboard
-                                classifyDealFlow(deal).flowStatus === 'needs_attention' 
-                                  ? 'ring-1 ring-orange-200 bg-orange-50/20 rounded-lg p-2' 
-                                  : ''
-                              }`}>
-                                <DealRow
-                                  deal={deal}
-                                  variant="default"
-                                  onClick={() => navigate(`/deals/${deal.id}`)}
-                                  showValue={true}
-                                />
-                              </div>
-                            ))}
-                            {activeDeals.length > 5 && (
-                              <div className="pt-2">
-                                <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
-                                  <Link to="/analytics">
-                                    View {activeDeals.length - 5} more active deals →
-                                  </Link>
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="text-center py-8 border border-slate-200 rounded-lg">
-                            <Briefcase className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                            <p className="text-slate-500 text-sm">No active deals in your pipeline</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Recent Performance Section */}
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4" />
-                          Recent Performance
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-                            <div className="text-lg font-semibold text-green-700">{signedThisMonth.length}</div>
-                            <div className="text-xs text-green-600">Signed This Month</div>
-                          </div>
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
-                            <div className="text-lg font-semibold text-blue-700">{formatShortCurrency(pipelineValue)}</div>
-                            <div className="text-xs text-blue-600">Pipeline Value</div>
-                          </div>
+                return (
+                  <Tabs defaultValue="active" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="active" className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Active Deals ({trueActiveDeals.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="upcoming" className="flex items-center gap-2">
+                        <Play className="h-4 w-4" />
+                        Upcoming Deals ({upcomingDeals.length})
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="active" className="space-y-3">
+                      {trueActiveDeals.length > 0 ? (
+                        <>
+                          {trueActiveDeals.slice(0, 5).map((deal) => (
+                            <div key={deal.id} className={`${
+                              // Enhanced styling for needs attention deals with clearer indication
+                              classifyDealFlow(deal).flowStatus === 'needs_attention' 
+                                ? 'ring-1 ring-orange-200 bg-orange-50/30 rounded-lg p-2 relative' 
+                                : ''
+                            }`}>
+                              {classifyDealFlow(deal).flowStatus === 'needs_attention' && (
+                                <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-2 py-1 rounded-full z-10">
+                                  Needs Follow-up
+                                </div>
+                              )}
+                              <DealRow
+                                deal={deal}
+                                variant="default"
+                                onClick={() => navigate(`/deals/${deal.id}`)}
+                                showValue={true}
+                              />
+                            </div>
+                          ))}
+                          {trueActiveDeals.length > 5 && (
+                            <div className="pt-2">
+                              <Button asChild variant="ghost" className="w-full text-[#3e0075] hover:bg-[#f8f5ff]">
+                                <Link to="/analytics">
+                                  View {trueActiveDeals.length - 5} more active deals →
+                                </Link>
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-center py-12 text-slate-500">
+                          <Clock className="h-12 w-12 mx-auto mb-3 text-slate-400" />
+                          <p className="text-sm font-medium">No active deals</p>
+                          <p className="text-xs text-slate-400 mt-1">Deals you've submitted will appear here</p>
                         </div>
-                        <Button asChild className="w-full bg-[#3e0075] hover:bg-[#2d0055] text-white">
-                          <Link to="/request/proposal">
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            Create New Deal
-                          </Link>
-                        </Button>
-                      </div>
-                    </>
-                  );
-                })()} 
-              </div>
+                      )}
+                    </TabsContent>
+                    
+                    <TabsContent value="upcoming" className="space-y-3">
+                      {upcomingDeals.length > 0 ? (
+                        <>
+                          {upcomingDeals.map((deal) => {
+                            const isDraft = deal.status === 'draft';
+                            const actionLabel = isDraft ? 'Resume Draft' : 'Convert Deal';
+                            const actionIcon = isDraft ? Play : ArrowRight;
+                            const ActionIcon = actionIcon;
+                            
+                            return (
+                              <div key={deal.id} className="border rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-slate-900">{deal.dealName || deal.advertiserName || 'New Deal'}</div>
+                                    <div className="text-sm text-slate-600">
+                                      {deal.advertiserName || deal.agencyName || 'Client TBD'} • {isDraft ? 'Draft' : 'Scoping'}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {deal.growthAmbition && (
+                                      <div className="text-sm font-medium text-slate-700">
+                                        {formatShortCurrency(deal.growthAmbition)}
+                                      </div>
+                                    )}
+                                    <Button 
+                                      size="sm"
+                                      onClick={() => navigate(isDraft ? `/deals/${deal.id}` : `/deals/${deal.id}`)}
+                                      className="bg-[#3e0075] hover:bg-[#2d0055] text-white"
+                                    >
+                                      <ActionIcon className="h-4 w-4 mr-2" />
+                                      {actionLabel}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      ) : (
+                        <div className="text-center py-12 text-slate-500">
+                          <Play className="h-12 w-12 mx-auto mb-3 text-slate-400" />
+                          <p className="text-sm font-medium">No upcoming deals</p>
+                          <p className="text-xs text-slate-400 mt-1">Drafts and scoping deals will appear here</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                );
+              })()}
             </CardContent>
           </Card>
 
