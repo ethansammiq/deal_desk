@@ -1368,41 +1368,34 @@ export class MemStorage implements IStorage {
       return 'needs_attention';
     }
 
-    // 4. Expiring draft - deadline urgency
-    if (deal.draftExpiresAt) {
-      const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
-      const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
-      if (daysToExpiry < 3) {
-        return 'needs_attention';
-      }
-    }
 
-    // 5. Priority escalation - critical/high priority deals stuck too long
+
+    // 4. Priority escalation - critical/high priority deals stuck too long
     if ((deal.priority === 'critical' || deal.priority === 'high') && daysInStatus > 1) {
       return 'needs_attention';
     }
 
-    // 6. Stalled submissions - submitted deals not moving to review
+    // 5. Stalled submissions - submitted deals not moving to review
     if (status === 'submitted' && daysInStatus > 3) {
       return 'needs_attention';
     }
 
-    // 7. Extended approvals - approved deals not moving to execution
+    // 6. Extended approvals - approved deals not moving to execution
     if (status === 'approved' && daysInStatus > 5) {
       return 'needs_attention';
     }
 
-    // 8. Contract drafting delays - legal bottleneck detection
+    // 7. Contract drafting delays - legal bottleneck detection
     if (status === 'contract_drafting' && daysInStatus > 4) {
       return 'needs_attention';
     }
 
-    // 9. Client review timeout - external dependency management
+    // 8. Client review timeout - external dependency management
     if (status === 'client_review' && daysInStatus > 7) {
       return 'needs_attention';
     }
 
-    // 10. High-value deal monitoring - deals over threshold need special attention
+    // 9. High-value deal monitoring - deals over threshold need special attention
     if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
       return 'needs_attention';
     }

@@ -55,12 +55,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     );
     const revisionDeals = stalledDeals.filter(deal => deal.status === 'revision_requested');
     const highRevisionDeals = stalledDeals.filter(deal => deal.revisionCount && deal.revisionCount >= 2);
-    const expiringDeals = stalledDeals.filter(deal => {
-      if (!deal.draftExpiresAt) return false;
-      const now = new Date();
-      const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
-      return Math.floor(timeToExpiry / (1000 * 60 * 60 * 24)) < 3;
-    });
+
     
     let actionGuidance = '';
     let insightPriority: DealPriority = 'medium';
@@ -76,11 +71,6 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       actionGuidance = revisionDeals.length === 1 
         ? 'Address revision feedback and resubmit deal'
         : 'Address revision feedback on multiple deals';
-    } else if (expiringDeals.length > 0) {
-      actionGuidance = expiringDeals.length === 1
-        ? 'Deal expires soon - immediate action required'
-        : 'Multiple deals expiring soon - urgent attention needed';
-      insightPriority = 'high'; // Force high priority for expiring deals
     } else if (highRevisionDeals.length > 0) {
       actionGuidance = highRevisionDeals.length === 1
         ? 'Deal has multiple revisions - review strategy'

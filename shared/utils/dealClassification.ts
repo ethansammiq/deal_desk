@@ -117,24 +117,9 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 4. Expiring draft - deadline urgency
-  if (deal.draftExpiresAt) {
-    const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
-    const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
-    if (daysToExpiry < 3) {
-      return {
-        flowStatus: 'needs_attention',
-        reason: daysToExpiry <= 0 
-          ? 'Draft has expired - immediate action required'
-          : `Draft expires in ${daysToExpiry} day${daysToExpiry === 1 ? '' : 's'} - urgent attention needed`,
-        daysInStatus,
-        actionRequired: true,
-        urgencyLevel: 'urgent'
-      };
-    }
-  }
 
-  // 5. Priority escalation - critical/high priority deals stuck too long
+
+  // 4. Priority escalation - critical/high priority deals stuck too long
   if ((deal.priority === 'critical' || deal.priority === 'high') && daysInStatus > 1) {
     // High priority deals get shorter tolerance regardless of status
     return {
@@ -146,7 +131,7 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 6. Stalled submissions - submitted deals not moving to review
+  // 5. Stalled submissions - submitted deals not moving to review
   if (deal.status === 'submitted' && daysInStatus > 3) {
     return {
       flowStatus: 'needs_attention',
@@ -157,7 +142,7 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 7. Extended approvals - approved deals not moving to execution
+  // 6. Extended approvals - approved deals not moving to execution
   if (deal.status === 'approved' && daysInStatus > 5) {
     return {
       flowStatus: 'needs_attention',
@@ -168,7 +153,7 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 8. Contract drafting delays - legal bottleneck detection
+  // 7. Contract drafting delays - legal bottleneck detection
   if (deal.status === 'contract_drafting' && daysInStatus > 4) {
     return {
       flowStatus: 'needs_attention',
@@ -179,7 +164,7 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 9. Client review timeout - external dependency management
+  // 8. Client review timeout - external dependency management
   if (deal.status === 'client_review' && daysInStatus > 7) {
     return {
       flowStatus: 'needs_attention',
@@ -190,7 +175,7 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
     };
   }
 
-  // 10. High-value deal monitoring - deals over threshold need special attention
+  // 9. High-value deal monitoring - deals over threshold need special attention
   if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
     return {
       flowStatus: 'needs_attention',
