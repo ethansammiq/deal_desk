@@ -5,8 +5,8 @@ import type { Deal, DealPriority } from "@shared/schema";
 // 2. Priority (seller-defined) - in deal.priority  
 // 3. Flow Intelligence (timing-based) - calculated here
 
-// Revised Flow Intelligence: Simplified 3-status system based on user feedback
-export type FlowIntelligence = 'on_track' | 'needs_attention' | 'accelerated';
+// Ultra-Simplified Flow Intelligence: 2-status system for streamlined logic
+export type FlowIntelligence = 'on_track' | 'needs_attention';
 
 export interface DealFlowClassification {
   flowStatus: FlowIntelligence;
@@ -66,7 +66,7 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
-  // TODO Phase 3: Implement accelerated detection for deals moving unusually fast
+  // Ultra-Simplified: All normal progression is "on_track"
   
   return {
     flowStatus: 'on_track',
@@ -111,12 +111,6 @@ export function getFlowBadgeInfo(deal: Deal) {
         text: 'Needs Attention',
         variant: 'destructive' as const,
         color: 'border-orange-500'
-      };
-    case 'accelerated':
-      return {
-        text: 'Accelerated',
-        variant: 'secondary' as const,
-        color: 'border-green-500'
       };
     case 'on_track':
     default:

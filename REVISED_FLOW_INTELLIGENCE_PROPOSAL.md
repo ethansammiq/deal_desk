@@ -27,20 +27,27 @@
 - **stalled**: "Schedule intervention call" (calendar integration)  
 - **accelerated**: "Review for early approval" (workflow action)
 
-## Recommended Approach: **Option A (Simplified)**
+## **Final Recommended Approach: 2-Status System**
 
-### Timing Thresholds (Simplified)
+**Based on user feedback: Remove unused "accelerated" status for streamlined logic**
+
+### Timing Thresholds (Ultra-Simplified)
 ```
 submitted: 0-2 days (on_track), 3+ days (needs_attention)
-under_review: 0-5 days (on_track), 6+ days (needs_attention)
+under_review: 0-5 days (on_track), 6+ days (needs_attention) 
 revision_requested: 0-3 days (on_track), 4+ days (needs_attention)
 approved: 0-7 days (on_track), 8+ days (needs_attention)
 ```
 
 ### Actionable Intelligence
-- **needs_attention**: Clear single action category
-- **accelerated**: Focus on recognition rather than intervention
-- **on_track**: No action required, positive reinforcement
+- **needs_attention**: Single clear action category for follow-up
+- **on_track**: Normal progression, no action required
+
+### Benefits of 2-Status System
+- Eliminates unused "accelerated" logic throughout codebase
+- Cleaner conditional statements and UI components
+- Simpler mental model for users
+- Easier to maintain and extend
 
 ## Implementation Strategy
 
