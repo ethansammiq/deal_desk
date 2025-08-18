@@ -30,6 +30,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     ? deals.filter(deal => deal.email === userEmail && deal.status !== 'draft')
     : deals.filter(deal => deal.status !== 'draft');
 
+
+
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
@@ -38,7 +40,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
     const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
     
-    // Risk thresholds by status - consolidated all stall scenarios
+    // Risk thresholds by status - consolidated all stall scenarios  
     if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true; // External follow-up
     if (deal.status === 'under_review' && daysSinceUpdate > 5) return true; // Internal follow-up
     if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true; // Internal follow-up
@@ -161,11 +163,15 @@ function formatShortCurrency(amount: number): string {
 
 // Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
 function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): StrategicInsight[] {
+
+
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
   // 1. PROCESS BOTTLENECK DETECTION - Approval timing analysis
-  const reviewingDeals = deals.filter(deal => deal.status === 'under_review');
+  const reviewingDeals = deals.filter(deal => 
+    deal.status === 'under_review' || deal.status === 'submitted'
+  );
   const stalledReviews = reviewingDeals.filter(deal => {
     if (!deal.lastStatusChange) return false;
     const daysSinceReview = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
@@ -208,8 +214,9 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
     ? generatePipelineHealthInsights(deals, userEmail)
     : generateWorkflowEfficiencyInsights(deals, userRole);
 
+  // Don't render if no insights (normal operation when all deals are progressing well)
   if (insights.length === 0) {
-    return null; // Don't render if no insights
+    return null;
   }
 
   const getUrgencyColor = (urgency: string) => {

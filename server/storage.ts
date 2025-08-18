@@ -188,6 +188,40 @@ export class MemStorage implements IStorage {
     // Initialize approval departments
     this.initApprovalDepartments();
   }
+
+  // Add demo data with older timestamps for Strategic Insights testing
+  private addDemoStrategicInsightsData() {
+    // Create timestamps that are old enough to trigger insights
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    
+    // Update some deals with older timestamps to trigger different insights
+    
+    // Deal 6 (under_review) - make it stalled (5 days old)
+    const deal6 = this.deals.get(6);
+    if (deal6) {
+      this.deals.set(6, { ...deal6, lastStatusChange: fiveDaysAgo });
+    }
+    
+    // Deal 4 (revision_requested) - make it stalled (5 days old)  
+    const deal4 = this.deals.get(4);
+    if (deal4) {
+      this.deals.set(4, { ...deal4, lastStatusChange: fiveDaysAgo });
+    }
+    
+    // Deal 9 (negotiating) - make it stalled for seller (10 days old)
+    const deal9 = this.deals.get(9);
+    if (deal9) {
+      this.deals.set(9, { ...deal9, lastStatusChange: tenDaysAgo });
+    }
+    
+    // Deal 3 (approved) - make it stalled (5 days old)
+    const deal3 = this.deals.get(3);
+    if (deal3) {
+      this.deals.set(3, { ...deal3, lastStatusChange: fiveDaysAgo });
+    }
+  }
   
   // Initialize with sample data for demo purposes
   private initSampleData() {
@@ -738,6 +772,9 @@ export class MemStorage implements IStorage {
     sampleDeals.forEach(deal => {
       this.createDeal(deal);
     });
+    
+    // Add some older timestamps to test Strategic Insights
+    this.addDemoStrategicInsightsData();
     
     // Add sample tiers for tiered deals
     const tiersByDealId = {
