@@ -27,11 +27,10 @@ interface StrategicInsightsProps {
 
 // Phase 2A: Enhanced Pipeline Health Intelligence using existing data
 function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): StrategicInsight[] {
+  // Step 1: Exclude both 'draft' and 'scoping' status for seller insights
   const sellerDeals = userEmail 
-    ? deals.filter(deal => deal.email === userEmail && deal.status !== 'draft')
-    : deals.filter(deal => deal.status !== 'draft');
-
-
+    ? deals.filter(deal => deal.email === userEmail && !['draft', 'scoping'].includes(deal.status))
+    : deals.filter(deal => !['draft', 'scoping'].includes(deal.status));
 
   const insights: StrategicInsight[] = [];
   const now = new Date();
@@ -39,31 +38,52 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up  
   // Use backend-calculated flowIntelligence for consistency
   const stalledDeals = sellerDeals.filter(deal => {
-    if (['signed', 'lost', 'draft'].includes(deal.status)) return false;
+    // Step 2: Also exclude 'scoping' from flowIntelligence check
+    if (['signed', 'lost', 'draft', 'scoping'].includes(deal.status)) return false;
     return deal.flowIntelligence === 'needs_attention';
   });
 
   if (stalledDeals.length > 0) {
     const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     
-    // Separate external vs internal follow-ups for better guidance
-    const externalDeals = stalledDeals.filter(deal => deal.status === 'negotiating');
-    const internalDeals = stalledDeals.filter(deal => 
-      ['under_review', 'revision_requested', 'approved', 'contract_drafting'].includes(deal.status)
+    // Enhanced contextual guidance based on deal types
+    const externalDeals = stalledDeals.filter(deal => 
+      ['negotiating', 'client_review'].includes(deal.status)
     );
+    const internalDeals = stalledDeals.filter(deal => 
+      ['under_review', 'submitted', 'approved', 'contract_drafting'].includes(deal.status)
+    );
+    const revisionDeals = stalledDeals.filter(deal => deal.status === 'revision_requested');
     
-    const actionGuidance = externalDeals.length > 0 
-      ? (externalDeals.length === 1 ? 'Contact client to move negotiation forward' : 'Contact clients to accelerate negotiations')
-      : (internalDeals.length === 1 ? 'Internal attention needed to move deal forward' : 'Internal attention needed on stalled deals');
+    let actionGuidance = '';
+    let priorityLevel = 'medium';
     
-    // Streamlined: Single "Review" action for all insights
+    // Determine guidance based on deal mix and priority
+    const highPriorityDeals = stalledDeals.filter(deal => deal.priority === 'critical' || deal.priority === 'high');
+    if (highPriorityDeals.length > 0) {
+      priorityLevel = 'high';
+    }
+    
+    if (revisionDeals.length > 0) {
+      actionGuidance = revisionDeals.length === 1 
+        ? 'Address revision feedback and resubmit deal'
+        : 'Address revision feedback on multiple deals';
+    } else if (externalDeals.length > 0) {
+      actionGuidance = externalDeals.length === 1 
+        ? 'Contact client to move deal forward' 
+        : 'Contact clients to accelerate progress';
+    } else {
+      actionGuidance = internalDeals.length === 1 
+        ? 'Follow up internally to move deal forward' 
+        : 'Follow up internally on stalled deals';
+    }
     
     insights.push({
       id: 'stall-risk-consolidated',
       title: 'Deals Need Attention',
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
-      urgency: 'high',
+      urgency: priorityLevel as 'low' | 'medium' | 'high',
       actionLabel: 'Review',
       actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?filter=needs_attention`,
       trend: 'down'
@@ -97,12 +117,15 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     
     // Only show if it's a significant decline requiring action
     if (changePercent < -25) {
+      // Use priority-based urgency instead of fixed 'high'
+      const urgencyLevel = Math.abs(changePercent) > 40 ? 'high' : 'medium';
+      
       insights.push({
         id: 'pipeline-value-decline',
         title: 'Deal Value Declining',
         metric: `${changePercent}%`,
         description: `Average deal value decreased ${Math.abs(changePercent)}% vs last month. Focus on qualifying higher-value prospects this week`,
-        urgency: 'high',
+        urgency: urgencyLevel,
         actionLabel: 'Review',
         actionRoute: '/request/proposal',
         trend: 'down'
@@ -110,34 +133,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     }
   }
 
-  // REMOVED: Process bottleneck detection is now consolidated into stall risk above
-
-  // 4. ONLY SHOW HIGH-VALUE DEALS IF THEY'RE ACTUALLY STUCK/STALLED
-  // Remove "progressing well" insights as they don't need action
-
-  // REMOVED: Closing velocity intelligence consolidated into stall risk above
-
-  // 6. ONLY SHOW STAGNANT PIPELINE (ACTIONABLE PROBLEM)
-  if (insights.length < 3) {
-    const stagnantDeals = sellerDeals.filter(deal => 
-      deal.status === 'submitted' && deal.lastStatusChange && 
-      (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24) > 2
-    );
-    
-    if (stagnantDeals.length > 0) {
-      const stagnantValue = stagnantDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-      insights.push({
-        id: 'pipeline-stagnation',
-        title: 'Pipeline Needs Activation',
-        metric: stagnantDeals.length,
-        description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - attention needed to maintain momentum`,
-        urgency: 'medium',
-        actionLabel: 'Review',
-        actionRoute: `/analytics?filter=needs_attention`,
-        trend: 'stable'
-      });
-    }
-  }
+  // REMOVED: Pipeline Needs Activation insight per feedback
+  // Seller should follow up internally if submitted deals don't move within 2-3 days
 
   return insights.slice(0, 3); // Max 3 insights
 }
@@ -155,8 +152,6 @@ function formatShortCurrency(amount: number): string {
 
 // Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
 function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): StrategicInsight[] {
-
-
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
@@ -176,12 +171,19 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       ? 'Review the delayed deal today to prevent further stalling'
       : 'Block 2 hours to clear review backlog and prevent seller frustration';
     
+    // Determine urgency based on priority levels of stalled deals
+    const highPriorityStalled = stalledReviews.filter(deal => 
+      deal.priority === 'critical' || deal.priority === 'high'
+    );
+    const urgencyLevel = highPriorityStalled.length > 0 ? 'high' : 
+                        stalledReviews.length > 3 ? 'medium' : 'low';
+    
     insights.push({
       id: 'review-bottleneck',
       title: 'Review Process Bottleneck',
       metric: stalledReviews.length,
       description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
-      urgency: stalledReviews.length > 3 ? 'high' : 'medium',
+      urgency: urgencyLevel,
       actionLabel: 'Review',
       actionRoute: '/analytics?filter=delayed',
       trend: 'down'
@@ -211,19 +213,20 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
     return null;
   }
 
-  const getUrgencyColor = (urgency: string) => {
+  // Use Priority-based styling for consistency with deal priority labels
+  const getPriorityColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'border-red-200 bg-red-50';
-      case 'medium': return 'border-amber-200 bg-amber-50';
-      default: return 'border-green-200 bg-green-50';
+      case 'high': return 'border-red-200 bg-red-50'; // Critical/High priority styling
+      case 'medium': return 'border-amber-200 bg-amber-50'; // Medium priority styling  
+      default: return 'border-slate-200 bg-slate-50'; // Low priority styling
     }
   };
 
-  const getUrgencyBadge = (urgency: string) => {
+  const getPriorityBadge = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      default: return 'outline';
+      case 'high': return 'destructive'; // Red for high urgency
+      case 'medium': return 'secondary'; // Gray for medium urgency
+      default: return 'outline'; // Outline for low urgency
     }
   };
 
@@ -263,7 +266,7 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
           {insights.map((insight) => (
             <div 
               key={insight.id}
-              className={`p-4 border rounded-lg transition-all hover:shadow-sm ${getUrgencyColor(insight.urgency)}`}
+              className={`p-4 border rounded-lg transition-all hover:shadow-sm ${getPriorityColor(insight.urgency)}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -272,7 +275,7 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
                       <h4 className="font-semibold text-slate-900">{insight.title}</h4>
                       {insight.trend && getTrendIcon(insight.trend)}
                     </div>
-                    <Badge variant={getUrgencyBadge(insight.urgency)} className="text-xs">
+                    <Badge variant={getPriorityBadge(insight.urgency)} className="text-xs">
                       {insight.urgency}
                     </Badge>
                   </div>
