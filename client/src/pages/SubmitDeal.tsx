@@ -1027,6 +1027,46 @@ export default function SubmitDeal() {
                     includeEmail={false}
                     showNavigation={true}
                   />
+                  
+                  {/* Priority field - only for SubmitDeal form */}
+                  <div className="border-t pt-6 mt-8">
+                    <FormSectionHeader
+                      title="Deal Priority"
+                      description="Set business priority to help with approval routing and resource allocation"
+                    />
+                    <div className="mt-6">
+                      <FormField
+                        control={form.control}
+                        name="priority"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Deal Priority <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || "medium"}>
+                              <FormControl>
+                                <SelectTrigger className="w-full max-w-md">
+                                  <SelectValue placeholder="Select deal priority" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="critical">Critical</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="low">Low</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Set business priority based on: <strong>Critical</strong> - Major strategic account or competitive threat; 
+                              <strong>High</strong> - Significant revenue impact; <strong>Medium</strong> - Standard opportunity; 
+                              <strong>Low</strong> - Opportunistic deal
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="business-context" className="space-y-0">
