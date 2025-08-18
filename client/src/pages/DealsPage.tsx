@@ -70,6 +70,16 @@ export default function DealsPage() {
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
   });
 
+  // Fetch approval queue for department reviewers to filter deals appropriately
+  const { data: approvalData } = useQuery({
+    queryKey: [`/api/approvals/pending?role=${currentUser?.role}&department=${currentUser?.department}`],
+    enabled: currentUser?.role === 'department_reviewer' && !!currentUser?.department,
+    staleTime: 30000
+  });
+  
+  const approvalItems = (approvalData as any)?.items || [];
+  const departmentDealIds = new Set(approvalItems.map((item: any) => item.dealId));
+
   // Helper to format currency in shortened format
   const formatShortCurrency = (amount: number): string => {
     if (amount === 0) return "$0";
@@ -265,8 +275,16 @@ export default function DealsPage() {
       matchesUser = deal.email === currentUser.email;
     }
     
+    // Department-specific filtering for department reviewers
+    // Department reviewers should only see deals that require their department's review
+    let matchesDepartment = true;
+    if (currentUser?.role === 'department_reviewer' && currentUser?.department) {
+      // Use actual approval queue data to determine which deals this department should see
+      matchesDepartment = departmentDealIds.has(deal.id);
+    }
+    
     // Filter out draft deals, but include scoping deals for partnership team analytics
-    return matchesSearch && matchesStatus && matchesInsight && matchesUser && deal.status !== 'draft';
+    return matchesSearch && matchesStatus && matchesInsight && matchesUser && matchesDepartment && deal.status !== 'draft';
   });
 
   // Get unique statuses for filter - include all statuses except draft
