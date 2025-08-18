@@ -13,6 +13,16 @@ import type { Deal, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
 import { 
+  classifyDeal, 
+  getDealBadgeInfo, 
+  getDelayedDeals, 
+  getHighValueDeals, 
+  getClosingDeals, 
+  getCriticalDeals,
+  FILTER_CATEGORIES,
+  type DealCategory 
+} from "@/utils/dealClassification";
+import { 
   Briefcase, 
   PlusCircle, 
   Search,
@@ -49,30 +59,7 @@ export default function DealsPage() {
     }
   }, [location]);
   
-  // Helper to identify deals that need attention (for highlighting)
-  const getDealsNeedingAttention = (deals: Deal[]) => {
-    const now = new Date();
-    const stalledDeals = deals.filter(deal => {
-      if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
-      const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true;
-      if (deal.status === 'under_review' && daysSinceUpdate > 5) return true;
-      if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true;
-      return false;
-    });
-    
-    const highValueDeals = deals.filter(deal => {
-      const value = deal.annualRevenue || 0;
-      return value >= 500000 && !['signed', 'lost'].includes(deal.status);
-    });
-    
-    const closingOpportunities = deals.filter(deal => 
-      ['approved', 'contract_drafting'].includes(deal.status)
-    );
-    
-    return { stalledDeals, highValueDeals, closingOpportunities };
-  };
+  // No longer needed - replaced by unified classification system
   
   // Fetch deals
   const { data: deals = [], isLoading } = useQuery({
@@ -88,8 +75,12 @@ export default function DealsPage() {
     return `$${amount.toLocaleString()}`;
   };
 
-  // Identify priority deals for highlighting
-  const priorityDeals = getDealsNeedingAttention(deals);
+  // Classify deals using unified system
+  const classifiedDeals = deals.map(deal => ({
+    ...deal,
+    classification: classifyDeal(deal),
+    badgeInfo: getDealBadgeInfo(deal)
+  }));
 
   // Deal table columns with comprehensive information
   const dealColumns: ColumnDef<Deal>[] = [
@@ -98,30 +89,30 @@ export default function DealsPage() {
       header: "Deal Name",
       cell: ({ row }) => {
         const deal = row.original;
-        const isStalled = priorityDeals.stalledDeals.some((d: Deal) => d.id === deal.id);
-        const isHighValue = priorityDeals.highValueDeals.some((d: Deal) => d.id === deal.id);
-        const isClosing = priorityDeals.closingOpportunities.some((d: Deal) => d.id === deal.id);
-        
+        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
         const isHighlighted = highlightedDeals.includes(deal.id);
+        const badgeInfo = classifiedDeal?.badgeInfo;
         
         return (
           <div className={`${
             isHighlighted 
               ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
-              : isStalled 
-                ? 'pl-3 border-l-4 border-red-400' 
-                : isClosing 
-                  ? 'pl-3 border-l-4 border-green-500' 
-                  : isHighValue 
-                    ? 'pl-3 border-l-4 border-blue-500' 
-                    : ''
+              : badgeInfo?.color 
+                ? `pl-3 border-l-4 ${badgeInfo.color}` 
+                : ''
           }`}>
             <div className="font-medium text-slate-900 flex items-center gap-2">
               {deal.dealName}
-              {isHighlighted && <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">Highlighted</Badge>}
-              {isStalled && <Badge variant="destructive" className="text-xs">Stalled</Badge>}
-              {isClosing && <Badge variant="default" className="text-xs bg-green-600">Ready to Close</Badge>}
-              {isHighValue && <Badge variant="secondary" className="text-xs">High-Value</Badge>}
+              {isHighlighted && (
+                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+                  Highlighted
+                </Badge>
+              )}
+              {badgeInfo && !isHighlighted && (
+                <Badge variant={badgeInfo.variant} className="text-xs">
+                  {badgeInfo.text}
+                </Badge>
+              )}
             </div>
             <div className="text-sm text-slate-500">#{deal.referenceNumber}</div>
           </div>
@@ -207,26 +198,12 @@ export default function DealsPage() {
     },
   ];
 
-  // Define "delayed" deals (matching Strategic Insights logic)
-  const getDelayedDeals = (dealList: Deal[]) => {
-    const now = new Date();
-    return dealList.filter(deal => {
-      if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
-      const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-      
-      // Same thresholds as Strategic Insights
-      if (deal.status === 'under_review' && daysSinceUpdate > 3) return true; // Review delayed >3 days
-      if (deal.status === 'submitted' && daysSinceUpdate > 3) return true; // Submitted delayed >3 days
-      if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true; // Negotiation stalled >7 days
-      if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true; // Revision delayed >3 days
-      if (deal.status === 'approved' && daysSinceUpdate > 3) return true; // Post-approval delay >3 days
-      if (deal.status === 'contract_drafting' && daysSinceUpdate > 5) return true; // Contract delay >5 days
-      return false;
-    });
-  };
+  // No longer needed - using unified classification system
 
-  // Filter deals based on search and status
+  // Filter deals based on search and status using unified classification
   const filteredDeals = deals.filter(deal => {
+    const classification = classifyDeal(deal);
+    
     const matchesSearch = !searchTerm || 
       deal.dealName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -235,9 +212,14 @@ export default function DealsPage() {
     
     let matchesStatus = true;
     if (statusFilter === "delayed") {
-      // Special filter for delayed deals
-      const delayedDeals = getDelayedDeals(deals);
-      matchesStatus = delayedDeals.some(d => d.id === deal.id);
+      matchesStatus = classification.category === 'delayed';
+    } else if (statusFilter === "high_value") {
+      matchesStatus = classification.category === 'high_value' || 
+                    (classification.category === 'delayed' && (deal.annualRevenue || 0) >= 500000);
+    } else if (statusFilter === "closing") {
+      matchesStatus = classification.category === 'closing';
+    } else if (statusFilter === "critical") {
+      matchesStatus = classification.priority === 'critical';
     } else if (statusFilter !== "all") {
       matchesStatus = deal.status === statusFilter;
     }
@@ -245,9 +227,14 @@ export default function DealsPage() {
     return matchesSearch && matchesStatus && deal.status !== 'draft';
   });
 
-  // Get unique statuses for filter + add special filters
+  // Get unique statuses for filter + add unified filter categories
   const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
-  const delayedCount = getDelayedDeals(deals).length;
+  const categoryCounts = {
+    delayed: getDelayedDeals(deals).length,
+    high_value: getHighValueDeals(deals).length,
+    closing: getClosingDeals(deals).length,
+    critical: getCriticalDeals(deals).length,
+  };
 
   const userRole = currentUser?.role;
 
@@ -278,16 +265,21 @@ export default function DealsPage() {
         </div>
 
         {/* Active Filter Banner */}
-        {(statusFilter === "delayed" || highlightedDeals.length > 0) && (
+        {(["delayed", "critical", "closing", "high_value"].includes(statusFilter) || highlightedDeals.length > 0) && (
           <Card className="border border-purple-200 bg-purple-50">
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-800">
-                    {statusFilter === "delayed" && "Showing delayed deals (>3 days in current status)"}
-                    {highlightedDeals.length > 0 && !statusFilter.includes("delayed") && `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
-                    {statusFilter === "delayed" && highlightedDeals.length > 0 && " + highlighting specific deals"}
+                    {statusFilter === "delayed" && "Showing delayed deals (exceeded normal timing thresholds)"}
+                    {statusFilter === "critical" && "Showing critical deals (high-value + delayed)"}
+                    {statusFilter === "closing" && "Showing deals ready to close (approved or in contracting)"}
+                    {statusFilter === "high_value" && "Showing high-value deals ($500K+)"}
+                    {highlightedDeals.length > 0 && !["delayed", "critical", "closing", "high_value"].includes(statusFilter) && 
+                      `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
+                    {["delayed", "critical", "closing", "high_value"].includes(statusFilter) && highlightedDeals.length > 0 && 
+                      " + highlighting specific deals"}
                   </span>
                 </div>
                 <Button 
@@ -338,11 +330,27 @@ export default function DealsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    {delayedCount > 0 && (
-                      <SelectItem value="delayed">
-                        🔴 Delayed ({delayedCount})
+                    {categoryCounts.critical > 0 && (
+                      <SelectItem value="critical">
+                        🔴 Critical ({categoryCounts.critical})
                       </SelectItem>
                     )}
+                    {categoryCounts.delayed > 0 && (
+                      <SelectItem value="delayed">
+                        ⚠️ Delayed ({categoryCounts.delayed})
+                      </SelectItem>
+                    )}
+                    {categoryCounts.closing > 0 && (
+                      <SelectItem value="closing">
+                        🎯 Ready to Close ({categoryCounts.closing})
+                      </SelectItem>
+                    )}
+                    {categoryCounts.high_value > 0 && (
+                      <SelectItem value="high_value">
+                        💰 High-Value ({categoryCounts.high_value})
+                      </SelectItem>
+                    )}
+                    <SelectItem disabled value="divider">—————————</SelectItem>
                     {uniqueStatuses.map(status => (
                       <SelectItem key={status} value={status}>
                         {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}

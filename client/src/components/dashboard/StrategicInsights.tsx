@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, Clock, TrendingUp, TrendingDown, Minus, ExternalLink } from 'lucide-react';
 import { Deal, UserRole } from '@shared/schema';
 import { Link } from 'wouter';
+import { getDelayedDeals, getCriticalDeals, getHighValueDeals, classifyDeal } from "@/utils/dealClassification";
 
 interface StrategicInsight {
   id: string;
