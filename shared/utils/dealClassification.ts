@@ -59,7 +59,7 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
   if (daysInStatus >= thresholds.needsAttention) {
     return {
       flowStatus: 'needs_attention',
-      reason: `Deal needs follow-up after ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
+      reason: `Deal needs attention after ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
       daysInStatus,
       actionRequired: true,
       urgencyLevel: 'attention'
@@ -93,7 +93,7 @@ export function getFlowBadgeInfo(deal: Deal) {
     case 'needs_attention':
       return {
         variant: 'destructive' as const,
-        label: 'Needs Follow-up',
+        label: 'Needs Attention',
         className: 'bg-orange-100 text-orange-800 border-orange-200'
       };
     case 'on_track':
