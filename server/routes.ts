@@ -446,7 +446,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       }
       
       // Check if already converted
-      if (scopingDeal.convertedDealId) {
+      if (scopingDeal.convertedDealId || scopingDeal.convertedAt) {
         return res.status(400).json({ message: "Scoping deal has already been converted" });
       }
       
