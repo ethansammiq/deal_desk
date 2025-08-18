@@ -284,12 +284,33 @@ export function StrategicInsights({ userRole, deals, userEmail }: StrategicInsig
                     <p className="text-sm text-slate-600">{insight.description}</p>
                   </div>
                 </div>
-                <Button asChild variant="outline" size="sm" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
-                  <Link to={insight.actionRoute}>
-                    {insight.actionLabel}
-                    <ExternalLink className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  {/* Phase 2: Quick Action Button for needs_attention deals */}
+                  {insight.id === 'stall-risk-consolidated' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-orange-700 border-orange-200 hover:bg-orange-50"
+                      onClick={() => {
+                        // Quick action: Batch follow-up for stalled deals
+                        const dealCount = typeof insight.metric === 'number' ? insight.metric : 0;
+                        if (dealCount === 1) {
+                          alert(`Opening follow-up for 1 deal that needs attention`);
+                        } else {
+                          alert(`Preparing batch follow-up for ${dealCount} deals that need attention`);
+                        }
+                      }}
+                    >
+                      Quick Follow-Up
+                    </Button>
+                  )}
+                  <Button asChild variant="outline" size="sm" className="border-[#3e0075] text-[#3e0075] hover:bg-[#3e0075] hover:text-white">
+                    <Link to={insight.actionRoute}>
+                      {insight.actionLabel}
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

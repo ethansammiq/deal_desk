@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { AlertTriangle, Clock } from "lucide-react";
 import type { Deal, DealStatus } from "@shared/schema";
+import { classifyDealFlow } from "@/utils/dealClassification";
 
 interface DealRowProps {
   deal: Deal;
@@ -99,6 +100,25 @@ export function DealRow({
               {formatShortCurrency((deal as any).annualRevenue || 0)}
             </div>
           </>
+        )}
+        {/* Phase 2: Flow Intelligence quick action for needs_attention deals */}
+        {classifyDealFlow(deal).flowStatus === 'needs_attention' && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 px-2 text-orange-700 border-orange-200 hover:bg-orange-50 text-xs mr-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Smart contextual action
+              if (deal.status === 'negotiating') {
+                window.open(`mailto:client@company.com?subject=Follow up on ${deal.dealName}`);
+              } else {
+                alert(`Following up on ${deal.dealName} - ${classifyDealFlow(deal).daysInStatus} days in ${deal.status}`);
+              }
+            }}
+          >
+            Follow Up
+          </Button>
         )}
         {actionButton && (
           <Button 

@@ -95,14 +95,14 @@ export default function DealsPage() {
             isHighlighted 
               ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
               : badgeInfo?.color 
-                ? `pl-3 border-l-4 ${badgeInfo.color}` 
+                ? `pl-3 border-l-4 ${badgeInfo.color} bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
                 : ''
           }`}>
             <div className="font-medium text-slate-900 flex items-center gap-2">
               {deal.dealName}
-              {/* Phase 1 Flow Intelligence: Only show Flow Intelligence badges, no "Highlighted" */}
+              {/* Phase 2: Enhanced Flow Intelligence badges with improved visibility */}
               {badgeInfo && (
-                <Badge variant={badgeInfo.variant} className="text-xs">
+                <Badge variant={badgeInfo.variant} className="text-xs font-medium">
                   {badgeInfo.text}
                 </Badge>
               )}
@@ -175,8 +175,29 @@ export default function DealsPage() {
       header: "",
       cell: ({ row }) => {
         const deal = row.original;
+        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
+        const needsAttention = classifiedDeal?.classification.flowStatus === 'needs_attention';
+        
         return (
           <div className="flex items-center gap-2">
+            {needsAttention && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-2 text-orange-700 border-orange-200 hover:bg-orange-50 text-xs"
+                onClick={() => {
+                  // Phase 2: Contextual action based on deal status
+                  if (deal.status === 'negotiating') {
+                    window.open(`mailto:client@company.com?subject=Follow up on ${deal.dealName}&body=Hi, I wanted to follow up on our ongoing negotiation for ${deal.dealName}. Could we schedule a quick call to move this forward?`);
+                  } else {
+                    // Internal follow-up for other statuses
+                    alert(`Following up on ${deal.dealName} - deal has been in ${deal.status} status for ${classifiedDeal?.classification.daysInStatus} days`);
+                  }
+                }}
+              >
+                Follow Up
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -205,7 +226,7 @@ export default function DealsPage() {
     
     let matchesStatus = true;
     if (statusFilter === "delayed") {
-      matchesStatus = flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
+      matchesStatus = flow.flowStatus === 'needs_attention';
     } else if (statusFilter === "critical") {
       matchesStatus = deal.priority === 'critical';
     } else if (statusFilter !== "all") {
