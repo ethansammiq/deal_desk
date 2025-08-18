@@ -765,6 +765,44 @@ export class MemStorage implements IStorage {
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
         status: "negotiating" // Changed from lost to active deal
+      },
+      // Draft deal for testing draft editing flow
+      {
+        email: "seller@company.com",
+        dealName: "Amazon Prime Video - Draft Campaign",
+        dealType: "new",
+        businessSummary: "Exploring new partnership opportunities with Amazon Prime Video for streaming advertising placement. This is a draft deal being developed.",
+        salesChannel: "client_direct",
+        advertiserName: "Amazon",
+        region: "west",
+        dealStructure: "flat_commit",
+        termStartDate: "2025-04-01",
+        termEndDate: "2026-03-31",
+        contractTermMonths: 12,
+        annualRevenue: 850000,
+        yearlyRevenueGrowthRate: 25,
+        annualGrossMargin: 19,
+        priority: "medium",
+        status: "draft"
+      },
+      // Scoping deal for testing scoping flow
+      {
+        email: "seller@company.com", 
+        dealName: "Microsoft Azure - Scoping Request",
+        dealType: "grow",
+        businessSummary: "Initial scoping for expanding Microsoft Azure advertising partnership. Currently gathering requirements and exploring growth opportunities.",
+        salesChannel: "partner_referral",
+        advertiserName: "Microsoft",
+        region: "west", 
+        dealStructure: "tiered",
+        termStartDate: "2025-05-01",
+        termEndDate: "2026-04-30",
+        contractTermMonths: 12,
+        annualRevenue: 1200000,
+        yearlyRevenueGrowthRate: 30,
+        annualGrossMargin: 22,
+        priority: "high",
+        status: "scoping"
       }
     ];
     
