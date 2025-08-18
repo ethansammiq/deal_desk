@@ -1225,16 +1225,13 @@ export class MemStorage implements IStorage {
     const now = new Date();
     
     this.deals.forEach((deal, id) => {
-      // Always recalculate flowIntelligence to use new comprehensive logic
-      import('../shared/utils/dealClassification').then(({ classifyDealFlow }) => {
-        const classification = classifyDealFlow(deal);
-        const flowIntelligence = classification.flowStatus;
-        
-        // Update the deal
-        this.deals.set(id, {
-          ...deal,
-          flowIntelligence
-        });
+      // Use backend calculateFlowIntelligence method for consistency
+      const flowIntelligence = this.calculateFlowIntelligence(deal, deal.status, now);
+      
+      // Update the deal
+      this.deals.set(id, {
+        ...deal,
+        flowIntelligence
       });
     });
     
