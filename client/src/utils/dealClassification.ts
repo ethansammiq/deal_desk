@@ -5,8 +5,8 @@ import type { Deal, DealPriority } from "@shared/schema";
 // 2. Priority (seller-defined) - in deal.priority  
 // 3. Flow Intelligence (timing-based) - calculated here
 
-// Phase 1 Flow Intelligence: Core types from proposal  
-export type FlowIntelligence = 'on_track' | 'accelerated' | 'delayed' | 'stalled';
+// Revised Flow Intelligence: Simplified 3-status system based on user feedback
+export type FlowIntelligence = 'on_track' | 'needs_attention' | 'accelerated';
 
 export interface DealFlowClassification {
   flowStatus: FlowIntelligence;
@@ -17,15 +17,15 @@ export interface DealFlowClassification {
 }
 
 // Flow Intelligence timing thresholds
-// Phase 1 Flow Intelligence: Exact thresholds from proposal
+// Revised Flow Intelligence: Simplified thresholds for 3-status system
 const FLOW_THRESHOLDS = {
-  scoping: { normal: 5, delayed: 6, stalled: 10 }, // Not in proposal, keeping current
-  submitted: { normal: 2, delayed: 3, stalled: 6 }, // Proposal: 0-2 (on_track), 3-5 (delayed), 6+ (stalled)  
-  under_review: { normal: 5, delayed: 6, stalled: 11 }, // Proposal: 0-5 (on_track), 6-10 (delayed), 11+ (stalled)
-  revision_requested: { normal: 3, delayed: 4, stalled: 8 }, // Proposal: 0-3 (on_track), 4-7 (delayed), 8+ (stalled)
-  approved: { normal: 7, delayed: 8, stalled: 15 }, // Proposal: 0-7 (on_track), 8-14 (delayed), 15+ (stalled)
-  negotiating: { normal: 7, delayed: 8, stalled: 14 }, // Using reasonable thresholds
-  contract_drafting: { normal: 5, delayed: 6, stalled: 10 }, // Using reasonable thresholds
+  scoping: { normal: 5, needsAttention: 6 }, // Simplified: on_track vs needs_attention
+  submitted: { normal: 2, needsAttention: 3 }, // 0-2 days (on_track), 3+ days (needs_attention)  
+  under_review: { normal: 5, needsAttention: 6 }, // 0-5 days (on_track), 6+ days (needs_attention)
+  revision_requested: { normal: 3, needsAttention: 4 }, // 0-3 days (on_track), 4+ days (needs_attention)
+  approved: { normal: 7, needsAttention: 8 }, // 0-7 days (on_track), 8+ days (needs_attention)
+  negotiating: { normal: 7, needsAttention: 8 }, // Using consistent pattern
+  contract_drafting: { normal: 5, needsAttention: 6 }, // Using consistent pattern
 } as const;
 
 export function classifyDealFlow(deal: Deal): DealFlowClassification {
@@ -55,30 +55,19 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
-  // Determine flow status based on timing
-  if (daysInStatus >= thresholds.stalled) {
+  // Revised Flow Intelligence: Simplified decision logic
+  if (daysInStatus >= thresholds.needsAttention) {
     return {
-      flowStatus: 'stalled',
-      reason: `Deal stalled for ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
+      flowStatus: 'needs_attention',
+      reason: `Deal needs follow-up after ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
       daysInStatus,
       actionRequired: true,
-      urgencyLevel: 'urgent'
+      urgencyLevel: 'attention'
     };
   }
+
+  // TODO Phase 3: Implement accelerated detection for deals moving unusually fast
   
-  if (daysInStatus >= thresholds.delayed) {
-    return {
-      flowStatus: 'delayed',
-      reason: `Deal delayed ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
-      daysInStatus,
-      actionRequired: true,
-      urgencyLevel: 'urgent'
-    };
-  }
-
-  // Phase 1: Remove at_risk classification, use simple on_track for now
-  // Phase 3 will implement accelerated detection
-
   return {
     flowStatus: 'on_track',
     reason: `Deal progressing normally in ${deal.status} (${daysInStatus}/${thresholds.normal} days)`,
@@ -88,28 +77,27 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
   };
 }
 
-// Filter functions for Flow Intelligence views
+// Filter functions for Revised Flow Intelligence
 export function getDelayedDeals(deals: Deal[]): Deal[] {
   return deals.filter(deal => {
     const flow = classifyDealFlow(deal);
-    return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
+    return flow.flowStatus === 'needs_attention';
   });
 }
 
-// Phase 1: Removed at_risk classification - will be replaced with accelerated in Phase 3
-
+// Revised: Combined delayed/stalled into needs_attention
 export function getStalledDeals(deals: Deal[]): Deal[] {
-  return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'stalled');
+  return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'needs_attention');
 }
 
 export function getDealsByPriority(deals: Deal[], priority: DealPriority): Deal[] {
   return deals.filter(deal => deal.priority === priority);
 }
 
-// Check if a deal matches the delayed filter criteria
+// Revised: Check if a deal needs attention (previously delayed/stalled)
 export function isDealDelayed(deal: Deal): boolean {
   const flow = classifyDealFlow(deal);
-  return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
+  return flow.flowStatus === 'needs_attention';
 }
 
 // UI helpers for Flow Intelligence
@@ -118,23 +106,17 @@ export function getFlowBadgeInfo(deal: Deal) {
   const flow = classifyDealFlow(deal);
   
   switch (flow.flowStatus) {
-    case 'stalled':
+    case 'needs_attention':
       return {
-        text: 'Stalled',
+        text: 'Needs Attention',
         variant: 'destructive' as const,
-        color: 'border-red-600'
-      };
-    case 'delayed':
-      return {
-        text: 'Delayed',
-        variant: 'destructive' as const,
-        color: 'border-red-400'
+        color: 'border-orange-500'
       };
     case 'accelerated':
       return {
         text: 'Accelerated',
         variant: 'secondary' as const,
-        color: 'border-blue-500'
+        color: 'border-green-500'
       };
     case 'on_track':
     default:
@@ -172,11 +154,10 @@ export function getPriorityBadgeInfo(priority: DealPriority) {
   }
 }
 
-// Phase 1 Flow Intelligence: Filter categories for the new system
+// Revised Flow Intelligence: Simplified filter categories 
 export const FLOW_FILTER_CATEGORIES = [
   { value: 'all', label: 'All Deals', count: (deals: Deal[]) => deals.length },
-  { value: 'delayed', label: 'Delayed + Stalled', count: (deals: Deal[]) => getDelayedDeals(deals).length + getStalledDeals(deals).length },
-  { value: 'stalled', label: 'Stalled Only', count: (deals: Deal[]) => getStalledDeals(deals).length },
+  { value: 'needs_attention', label: 'Need Attention', count: (deals: Deal[]) => getDelayedDeals(deals).length },
   { value: 'on_track', label: 'On Track', count: getOnTrackDeals },
 ] as const;
 

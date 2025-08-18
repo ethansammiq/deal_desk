@@ -41,7 +41,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const stalledDeals = sellerDeals.filter(deal => {
     if (['signed', 'lost', 'draft'].includes(deal.status)) return false;
     const flow = classifyDealFlow(deal);
-    return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
+    return flow.flowStatus === 'needs_attention';
   });
 
   if (stalledDeals.length > 0) {
