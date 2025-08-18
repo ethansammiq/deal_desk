@@ -24,6 +24,7 @@ interface StrategicInsightsProps {
   deals: Deal[];
   userEmail?: string;
   userDepartment?: string;
+  approvalItems?: any[]; // Department-filtered approval queue items
 }
 
 // Phase 2A: Enhanced Pipeline Health Intelligence using existing data
@@ -159,43 +160,83 @@ function formatShortCurrency(amount: number): string {
 }
 
 // Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
-function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, userDepartment?: string): StrategicInsight[] {
+function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, userDepartment?: string, approvalItems?: any[]): StrategicInsight[] {
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
-  // 1. PROCESS BOTTLENECK DETECTION - Department-specific approval timing analysis
-  const reviewingDeals = deals.filter(deal => 
-    deal.status === 'under_review' || deal.status === 'submitted'
-  );
-  const stalledReviews = reviewingDeals.filter(deal => {
-    if (!deal.lastStatusChange) return false;
-    const daysSinceReview = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
-    return daysSinceReview > 3; // Reviews taking longer than 3 days
-  });
-
-  if (stalledReviews.length > 0) {
-    const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-    const actionGuidance = stalledReviews.length === 1 
-      ? 'Review the delayed deal today to prevent further stalling'
-      : 'Block 2 hours to clear review backlog and prevent seller frustration';
+  // 1. PROCESS BOTTLENECK DETECTION - Use department-filtered approval queue data
+  // This ensures consistency with the metrics that show 0 pending reviews for Creative
+  if (userRole === 'department_reviewer' && approvalItems) {
+    // Only look at deals that are actually in this department's queue
+    const departmentReviewItems = approvalItems.filter(item => item.type === 'technical_review');
+    const departmentDealIds = departmentReviewItems.map(item => item.dealId);
+    const reviewingDeals = deals.filter(deal => departmentDealIds.includes(deal.id));
     
-    // Determine priority based on priority levels of stalled deals
-    const highPriorityStalled = stalledReviews.filter(deal => 
-      deal.priority === 'critical' || deal.priority === 'high'
-    );
-    const insightPriority: DealPriority = highPriorityStalled.length > 0 ? 'high' : 
-                        stalledReviews.length > 3 ? 'medium' : 'low';
-    
-    insights.push({
-      id: 'review-bottleneck',
-      title: 'Review Process Bottleneck',
-      metric: stalledReviews.length,
-      description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
-      priority: insightPriority,
-      actionLabel: 'Review',
-      actionRoute: '/analytics?filter=delayed',
-      trend: 'down'
+    const stalledReviews = reviewingDeals.filter(deal => {
+      if (!deal.lastStatusChange) return false;
+      const daysSinceReview = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+      return daysSinceReview > 3; // Reviews taking longer than 3 days
     });
+
+    if (stalledReviews.length > 0) {
+      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = stalledReviews.length === 1 
+        ? 'Review the delayed deal today to prevent further stalling'
+        : 'Block 2 hours to clear review backlog and prevent seller frustration';
+      
+      // Determine priority based on priority levels of stalled deals
+      const highPriorityStalled = stalledReviews.filter(deal => 
+        deal.priority === 'critical' || deal.priority === 'high'
+      );
+      const insightPriority: DealPriority = highPriorityStalled.length > 0 ? 'high' : 
+                          stalledReviews.length > 3 ? 'medium' : 'low';
+      
+      insights.push({
+        id: 'review-bottleneck',
+        title: 'Review Process Bottleneck',
+        metric: stalledReviews.length,
+        description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
+        priority: insightPriority,
+        actionLabel: 'Review',
+        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=delayed',
+        trend: 'down'
+      });
+    }
+  } else {
+    // For approvers, use the existing logic but filtered by business approvals
+    const reviewingDeals = deals.filter(deal => 
+      deal.status === 'under_review' || deal.status === 'submitted'
+    );
+    const stalledReviews = reviewingDeals.filter(deal => {
+      if (!deal.lastStatusChange) return false;
+      const daysSinceReview = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+      return daysSinceReview > 3; // Reviews taking longer than 3 days
+    });
+
+    if (stalledReviews.length > 0) {
+      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = stalledReviews.length === 1 
+        ? 'Review the delayed deal today to prevent further stalling'
+        : 'Block 2 hours to clear review backlog and prevent seller frustration';
+      
+      // Determine priority based on priority levels of stalled deals
+      const highPriorityStalled = stalledReviews.filter(deal => 
+        deal.priority === 'critical' || deal.priority === 'high'
+      );
+      const insightPriority: DealPriority = highPriorityStalled.length > 0 ? 'high' : 
+                          stalledReviews.length > 3 ? 'medium' : 'low';
+      
+      insights.push({
+        id: 'review-bottleneck',
+        title: 'Review Process Bottleneck',
+        metric: stalledReviews.length,
+        description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
+        priority: insightPriority,
+        actionLabel: 'Review',
+        actionRoute: stalledReviews.length === 1 ? `/deals/${stalledReviews[0].id}` : '/analytics?filter=delayed',
+        trend: 'down'
+      });
+    }
   }
 
   // REMOVED: Queue overwhelmed - processing normal work isn't actionable within app
@@ -211,10 +252,10 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
 }
 
 // Main component
-export function StrategicInsights({ userRole, deals, userEmail, userDepartment }: StrategicInsightsProps) {
+export function StrategicInsights({ userRole, deals, userEmail, userDepartment, approvalItems }: StrategicInsightsProps) {
   const insights = userRole === 'seller' 
     ? generatePipelineHealthInsights(deals, userEmail)
-    : generateWorkflowEfficiencyInsights(deals, userRole, userDepartment);
+    : generateWorkflowEfficiencyInsights(deals, userRole, userDepartment, approvalItems);
 
   // Don't render if no insights (normal operation when all deals are progressing well)
   if (insights.length === 0) {

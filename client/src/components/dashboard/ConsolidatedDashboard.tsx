@@ -498,6 +498,7 @@ export function ConsolidatedDashboard() {
               deals={deals}
               userEmail={currentUser?.email}
               userDepartment={currentUser?.department}
+              approvalItems={approvalItems}
             />
           </>
         ) : (
@@ -509,6 +510,7 @@ export function ConsolidatedDashboard() {
               deals={deals}
               userEmail={currentUser?.email}
               userDepartment={currentUser?.department}
+              approvalItems={approvalItems}
             />
           </>
         )}
