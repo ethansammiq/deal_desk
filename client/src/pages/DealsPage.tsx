@@ -76,12 +76,23 @@ export default function DealsPage() {
     return `$${amount.toLocaleString()}`;
   };
 
-  // Classify deals using unified system
-  const classifiedDeals = deals.map(deal => ({
-    ...deal,
-    classification: classifyDealFlow(deal),
-    badgeInfo: getFlowBadgeInfo(deal)
-  }));
+  // Classify deals using unified system - use backend flowIntelligence for consistency
+  const classifiedDeals = deals.map(deal => {
+    // Use backend flowIntelligence instead of recalculating
+    const classification = {
+      flowStatus: deal.flowIntelligence || 'on_track',
+      reason: deal.flowIntelligence === 'needs_attention' ? 'Needs attention' : 'On track',
+      daysInStatus: 0,
+      actionRequired: deal.flowIntelligence === 'needs_attention',
+      urgencyLevel: deal.flowIntelligence === 'needs_attention' ? 'attention' : 'normal'
+    };
+    
+    return {
+      ...deal,
+      classification,
+      badgeInfo: getFlowBadgeInfo(deal)
+    };
+  });
 
   // Deal table columns with comprehensive information
   const dealColumns: ColumnDef<Deal>[] = [
@@ -227,10 +238,8 @@ export default function DealsPage() {
 
   // No longer needed - using unified classification system
 
-  // Filter deals based on search and status using new Flow Intelligence system
+  // Filter deals based on search and status using unified backend flowIntelligence
   const filteredDeals = deals.filter(deal => {
-    const flow = classifyDealFlow(deal);
-    
     const matchesSearch = !searchTerm || 
       deal.dealName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -242,11 +251,10 @@ export default function DealsPage() {
       matchesStatus = deal.status === statusFilter;
     }
 
-    // Deal Insight filtering based on flow intelligence
+    // Deal Insight filtering based on flow intelligence - use backend flowIntelligence field for consistency
     let matchesInsight = true;
     if (dealInsightFilter !== "all") {
-      const flow = classifyDealFlow(deal);
-      matchesInsight = flow.flowStatus === dealInsightFilter;
+      matchesInsight = deal.flowIntelligence === dealInsightFilter;
     }
     
     // Filter out draft deals, but include scoping deals for partnership team analytics
