@@ -256,9 +256,15 @@ export default function DealsPage() {
     if (dealInsightFilter !== "all") {
       matchesInsight = deal.flowIntelligence === dealInsightFilter;
     }
+
+    // User permission filtering - sellers only see their deals, others see all deals
+    let matchesUser = true;
+    if (!canViewAllDeals && currentUser) {
+      matchesUser = deal.email === currentUser.email;
+    }
     
     // Filter out draft deals, but include scoping deals for partnership team analytics
-    return matchesSearch && matchesStatus && matchesInsight && deal.status !== 'draft';
+    return matchesSearch && matchesStatus && matchesInsight && matchesUser && deal.status !== 'draft';
   });
 
   // Get unique statuses for filter - include all statuses except draft
