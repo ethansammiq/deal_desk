@@ -446,8 +446,17 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         if (existingDraft && existingDraft.status === 'draft') {
           // Update existing draft using the updateDeal method
           const currentUser = getCurrentUser(); // Get current user context
+          
+          // Filter out scoping-specific fields that don't belong in deal submission drafts
+          const {
+            growthAmbition, // Remove scoping-only field
+            convertedDealId, // Remove scoping metadata
+            convertedAt, // Remove scoping metadata
+            ...cleanFormData
+          } = formData;
+          
           const updatedDraftData = {
-            ...formData,
+            ...cleanFormData,
             dealName: name,
             businessSummary: description || formData.businessSummary || "",
             dealStructure: formData.dealStructure || "tiered",
@@ -503,8 +512,17 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
 
       // Create new draft if no existing draft ID or draft not found
       const currentUser = getCurrentUser(); // Get current user context
+      
+      // Filter out scoping-specific fields that don't belong in deal submission drafts
+      const {
+        growthAmbition, // Remove scoping-only field
+        convertedDealId, // Remove scoping metadata
+        convertedAt, // Remove scoping metadata
+        ...cleanFormData
+      } = formData;
+      
       const draftDeal = {
-        ...formData,
+        ...cleanFormData,
         dealName: name,
         businessSummary: description || formData.businessSummary || "",
         dealStructure: formData.dealStructure || "tiered",
