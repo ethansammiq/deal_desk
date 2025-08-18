@@ -1,4 +1,5 @@
 import { Deal, type DealStatus, type UserRole } from "@shared/schema";
+import { classifyDealFlow } from "../utils/dealClassification";
 
 export interface PriorityItem {
   id: string;
@@ -44,8 +45,8 @@ export const needsAttention = (deal: Deal, userRole: UserRole): boolean => {
     case 'approver':
       return deal.status === 'under_review' || deal.status === 'revision_requested';
     
-    case 'legal':
-      return deal.status === 'contract_drafting' || deal.status === 'approved';
+    case 'department_reviewer':
+      return deal.status === 'under_review' || deal.status === 'revision_requested';
     
     case 'admin':
       return deal.status === 'draft' || deal.status !== 'draft'; // Admin can see all including drafts
@@ -55,17 +56,18 @@ export const needsAttention = (deal: Deal, userRole: UserRole): boolean => {
   }
 };
 
-// Calculate urgency level based on days in status and deal characteristics
+// Calculate urgency level using Flow Intelligence + deal value
 export const calculateUrgency = (deal: Deal, daysInStatus: number): 'high' | 'medium' | 'low' => {
   const dealValue = getDealValue(deal);
+  const flowClassification = classifyDealFlow(deal);
   
-  // High urgency criteria
-  if (daysInStatus >= 7 || dealValue >= 1000000) {
+  // High urgency: Flow Intelligence flags as needs_attention OR high value deals
+  if (flowClassification.flowStatus === 'needs_attention' || dealValue >= 1000000) {
     return 'high';
   }
   
-  // Medium urgency criteria
-  if (daysInStatus >= 3 || dealValue >= 500000) {
+  // Medium urgency: Approaching threshold or medium value deals
+  if (dealValue >= 500000) {
     return 'medium';
   }
   
@@ -97,13 +99,13 @@ export const getActionTypeAndLabel = (deal: Deal, userRole: UserRole): { actionT
     }
   }
   
-  // Legal actions
-  if (userRole === 'legal') {
-    if (deal.status === 'legal_review') {
-      return { actionType: 'legal_review', actionLabel: 'Legal Review' };
+  // Department Reviewer actions
+  if (userRole === 'department_reviewer') {
+    if (deal.status === 'under_review') {
+      return { actionType: 'review', actionLabel: 'Review Deal' };
     }
-    if (deal.status === 'approved') {
-      return { actionType: 'contract', actionLabel: 'Send Contract' };
+    if (deal.status === 'revision_requested') {
+      return { actionType: 'review', actionLabel: 'Re-review Changes' };
     }
   }
   
