@@ -15,10 +15,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { 
   classifyDealFlow, 
   getFlowBadgeInfo, 
-  getDelayedDeals, 
-  isDealDelayed,
-  FLOW_FILTER_CATEGORIES
+  getDelayedDeals
 } from "@/utils/dealClassification";
+import { getSalesChannelDisplayName, getRegionDisplayName } from "@shared/constants";
 import { 
   Briefcase, 
   PlusCircle, 
@@ -94,8 +93,8 @@ export default function DealsPage() {
           <div className={`${
             isHighlighted 
               ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
-              : badgeInfo?.color 
-                ? `pl-3 border-l-4 ${badgeInfo.color} bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
+              : badgeInfo?.className 
+                ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
                 : ''
           }`}>
             <div className="font-medium text-slate-900 flex items-center gap-2">
@@ -103,7 +102,7 @@ export default function DealsPage() {
               {/* Phase 2: Enhanced Flow Intelligence badges with improved visibility */}
               {badgeInfo && (
                 <Badge variant={badgeInfo.variant} className="text-xs font-medium">
-                  {badgeInfo.text}
+                  {badgeInfo.label}
                 </Badge>
               )}
             </div>
@@ -129,7 +128,7 @@ export default function DealsPage() {
       header: "Channel",
       cell: ({ row }) => (
         <Badge variant="outline" className="font-normal">
-          {row.original.salesChannel || "Direct"}
+          {getSalesChannelDisplayName(row.original.salesChannel)}
         </Badge>
       ),
     },
@@ -137,7 +136,7 @@ export default function DealsPage() {
       accessorKey: "region",
       header: "Region",
       cell: ({ row }) => (
-        <div className="text-slate-600">{row.original.region || "US"}</div>
+        <div className="text-slate-600">{getRegionDisplayName(row.original.region)}</div>
       ),
     },
     {

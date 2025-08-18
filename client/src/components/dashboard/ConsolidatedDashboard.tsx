@@ -14,6 +14,7 @@ import { StrategicInsights } from "./StrategicInsights";
 import { classifyDealFlow } from "@/utils/dealClassification";
 import type { Deal, UserRole, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
+import { getSalesChannelDisplayName, getRegionDisplayName } from "@shared/constants";
 import { ColumnDef } from "@tanstack/react-table";
 import { 
   Briefcase, 
@@ -249,14 +250,14 @@ export function ConsolidatedDashboard() {
       accessorKey: "salesChannel",
       header: "Channel",
       cell: ({ row }) => (
-        <div className="text-slate-600">{row.original.salesChannel || "Direct"}</div>
+        <div className="text-slate-600">{getSalesChannelDisplayName(row.original.salesChannel)}</div>
       ),
     },
     {
       accessorKey: "region",
       header: "Region",
       cell: ({ row }) => (
-        <div className="text-slate-600">{row.original.region || "US"}</div>
+        <div className="text-slate-600">{getRegionDisplayName(row.original.region)}</div>
       ),
     },
     {

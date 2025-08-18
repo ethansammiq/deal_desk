@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { AlertTriangle, Clock } from "lucide-react";
 import type { Deal, DealStatus } from "@shared/schema";
+import { getSalesChannelDisplayName } from "@shared/constants";
 
 
 interface DealRowProps {
@@ -73,7 +74,7 @@ export function DealRow({
              deal.revisionCount && deal.revisionCount >= 2 ? `Multiple revisions (${deal.revisionCount})` :
              'Draft expiring soon';
     }
-    return deal.salesChannel;
+    return getSalesChannelDisplayName(deal.salesChannel);
   };
 
   return (
