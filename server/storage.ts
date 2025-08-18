@@ -803,6 +803,25 @@ export class MemStorage implements IStorage {
         annualGrossMargin: 22,
         priority: "high",
         status: "scoping"
+      },
+      // Lost deal for testing complete status spectrum
+      {
+        email: "seller@company.com",
+        dealName: "Oracle Database Migration - Lost",
+        dealType: "grow",
+        businessSummary: "Oracle database migration project that was lost to competitor due to pricing.",
+        salesChannel: "client_direct",
+        advertiserName: "Oracle",
+        region: "west",
+        dealStructure: "flat_commit",
+        termStartDate: "2025-03-01",
+        termEndDate: "2026-02-28",
+        contractTermMonths: 12,
+        annualRevenue: 750000,
+        yearlyRevenueGrowthRate: 15,
+        annualGrossMargin: 20,
+        priority: "medium",
+        status: "lost"
       }
     ];
     
