@@ -198,6 +198,7 @@ export class MemStorage implements IStorage {
     const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
     const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
     const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
     
     // Update some deals with older timestamps to trigger different insights
     
@@ -223,6 +224,19 @@ export class MemStorage implements IStorage {
     const deal3 = this.deals.get(3);
     if (deal3) {
       this.deals.set(3, { ...deal3, lastStatusChange: fiveDaysAgo });
+    }
+
+    // Add some test deals specifically for Finance department testing
+    // Deal 1: Finance team should review - stalled for 4 days (will trigger strategic insight)
+    const deal1 = this.deals.get(1);
+    if (deal1 && deal1.status === 'submitted') {
+      this.deals.set(1, { ...deal1, lastStatusChange: fourDaysAgo });
+    }
+    
+    // Deal 2: Finance team should review - stalled for 5 days (will trigger strategic insight)  
+    const deal2 = this.deals.get(2);
+    if (deal2 && deal2.status === 'under_review') {
+      this.deals.set(2, { ...deal2, lastStatusChange: fiveDaysAgo });
     }
   }
   
