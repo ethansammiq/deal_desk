@@ -84,7 +84,7 @@ export function useSellerMetrics({ deals, userEmail }: UseSellerMetricsProps): S
   }, [deals, userEmail]);
 }
 
-// Helper function for deal filtering (can be used in components)
+// Helper function for deal filtering (can be used in components) - excludes drafts
 export function useSellerDeals(deals: Deal[], userEmail?: string) {
   return useMemo(() => {
     if (!userEmail) {
@@ -93,6 +93,21 @@ export function useSellerDeals(deals: Deal[], userEmail?: string) {
     return deals.filter(deal => 
       deal.email === userEmail && 
       deal.status !== 'draft'
+    );
+  }, [deals, userEmail]);
+}
+
+// Helper function for My Pipeline - includes drafts and scoping deals for seller
+export function useSellerPipelineDeals(deals: Deal[], userEmail?: string) {
+  return useMemo(() => {
+    if (!userEmail) {
+      return deals;
+    }
+    // For pipeline, include ALL deals belonging to this seller (including drafts)
+    // Handle the case where draft deals might have null email initially
+    return deals.filter(deal => 
+      deal.email === userEmail || 
+      (deal.status === 'draft' && (!deal.email || deal.email === userEmail))
     );
   }, [deals, userEmail]);
 }

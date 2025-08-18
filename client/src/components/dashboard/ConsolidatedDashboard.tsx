@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
-import { useSellerMetrics, useSellerDealCategories, useSellerDeals } from "@/hooks/useSellerMetrics";
+import { useSellerMetrics, useSellerDealCategories, useSellerDeals, useSellerPipelineDeals } from "@/hooks/useSellerMetrics";
 import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { DealRow } from "./DealRow";
@@ -86,6 +86,7 @@ export function ConsolidatedDashboard() {
     userEmail: currentUser?.role === 'seller' ? currentUser?.email : undefined 
   });
   const sellerDealCategories = useSellerDealCategories(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
+  const sellerPipelineDeals = useSellerPipelineDeals(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
 
   if (!currentUser) {
     return (
@@ -382,13 +383,13 @@ export function ConsolidatedDashboard() {
               {(() => {
                 const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
                 
-                // Get upcoming deals (draft + scoping)
-                const upcomingDeals = sellerDeals.filter(deal => 
+                // Get upcoming deals (draft + scoping) from pipeline deals
+                const upcomingDeals = sellerPipelineDeals.filter(deal => 
                   deal.status === 'draft' || deal.status === 'scoping'
                 );
                 
                 // Get true active deals (submitted but not signed/lost)
-                const trueActiveDeals = sellerDeals.filter(deal => 
+                const trueActiveDeals = sellerPipelineDeals.filter(deal => 
                   !['draft', 'scoping', 'signed', 'lost', 'canceled'].includes(deal.status)
                 );
 

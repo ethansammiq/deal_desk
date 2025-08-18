@@ -445,6 +445,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         const existingDraft = await storage.getDeal(parseInt(draftId));
         if (existingDraft && existingDraft.status === 'draft') {
           // Update existing draft using the updateDeal method
+          const currentUser = getCurrentUser(); // Get current user context
           const updatedDraftData = {
             ...formData,
             dealName: name,
@@ -454,6 +455,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
             region: formData.region || "west",
             salesChannel: formData.salesChannel || "client_direct",
             advertiserName: formData.advertiserName || "",
+            email: currentUser.email, // Ensure email is set for draft updates too
             termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
             termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             annualRevenue: formData.annualRevenue && Number(formData.annualRevenue) > 0 ? Number(formData.annualRevenue) : 1,
@@ -500,6 +502,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       }
 
       // Create new draft if no existing draft ID or draft not found
+      const currentUser = getCurrentUser(); // Get current user context
       const draftDeal = {
         ...formData,
         dealName: name,
@@ -509,6 +512,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         region: formData.region || "west",
         salesChannel: formData.salesChannel || "client_direct",
         advertiserName: formData.advertiserName || "",
+        email: currentUser.email, // Associate draft with current user
         termStartDate: formData.termStartDate || new Date().toISOString().split('T')[0],
         termEndDate: formData.termEndDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         // For drafts, provide default values for required fields to avoid validation errors
