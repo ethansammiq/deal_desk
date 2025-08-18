@@ -11,6 +11,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { DealRow } from "./DealRow";
 import { StrategicInsights } from "./StrategicInsights";
+import { classifyDealFlow } from "@/utils/dealClassification";
 import type { Deal, UserRole, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
