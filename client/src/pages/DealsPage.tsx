@@ -13,14 +13,11 @@ import type { Deal, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { ColumnDef } from "@tanstack/react-table";
 import { 
-  classifyDeal, 
-  getDealBadgeInfo, 
+  classifyDealFlow, 
+  getFlowBadgeInfo, 
   getDelayedDeals, 
-  getHighValueDeals, 
-  getClosingDeals, 
-  getCriticalDeals,
-  FILTER_CATEGORIES,
-  type DealCategory 
+  isDealDelayed,
+  FLOW_FILTER_CATEGORIES
 } from "@/utils/dealClassification";
 import { 
   Briefcase, 
@@ -78,8 +75,8 @@ export default function DealsPage() {
   // Classify deals using unified system
   const classifiedDeals = deals.map(deal => ({
     ...deal,
-    classification: classifyDeal(deal),
-    badgeInfo: getDealBadgeInfo(deal)
+    classification: classifyDealFlow(deal),
+    badgeInfo: getFlowBadgeInfo(deal)
   }));
 
   // Deal table columns with comprehensive information
@@ -200,9 +197,9 @@ export default function DealsPage() {
 
   // No longer needed - using unified classification system
 
-  // Filter deals based on search and status using unified classification
+  // Filter deals based on search and status using new Flow Intelligence system
   const filteredDeals = deals.filter(deal => {
-    const classification = classifyDeal(deal);
+    const flow = classifyDealFlow(deal);
     
     const matchesSearch = !searchTerm || 
       deal.dealName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -212,14 +209,9 @@ export default function DealsPage() {
     
     let matchesStatus = true;
     if (statusFilter === "delayed") {
-      matchesStatus = classification.category === 'delayed';
-    } else if (statusFilter === "high_value") {
-      matchesStatus = classification.category === 'high_value' || 
-                    (classification.category === 'delayed' && (deal.annualRevenue || 0) >= 500000);
-    } else if (statusFilter === "closing") {
-      matchesStatus = classification.category === 'closing';
+      matchesStatus = flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
     } else if (statusFilter === "critical") {
-      matchesStatus = classification.priority === 'critical';
+      matchesStatus = deal.priority === 'critical';
     } else if (statusFilter !== "all") {
       matchesStatus = deal.status === statusFilter;
     }
@@ -227,13 +219,11 @@ export default function DealsPage() {
     return matchesSearch && matchesStatus && deal.status !== 'draft';
   });
 
-  // Get unique statuses for filter + add unified filter categories
+  // Get unique statuses for filter + add Flow Intelligence categories
   const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
   const categoryCounts = {
     delayed: getDelayedDeals(deals).length,
-    high_value: getHighValueDeals(deals).length,
-    closing: getClosingDeals(deals).length,
-    critical: getCriticalDeals(deals).length,
+    critical: deals.filter(deal => deal.priority === 'critical').length,
   };
 
   const userRole = currentUser?.role;
@@ -265,7 +255,7 @@ export default function DealsPage() {
         </div>
 
         {/* Active Filter Banner */}
-        {(["delayed", "critical", "closing", "high_value"].includes(statusFilter) || highlightedDeals.length > 0) && (
+        {(["delayed", "critical"].includes(statusFilter) || highlightedDeals.length > 0) && (
           <Card className="border border-purple-200 bg-purple-50">
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
@@ -273,12 +263,10 @@ export default function DealsPage() {
                   <Filter className="h-4 w-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-800">
                     {statusFilter === "delayed" && "Showing delayed deals (exceeded normal timing thresholds)"}
-                    {statusFilter === "critical" && "Showing critical deals (high-value + delayed)"}
-                    {statusFilter === "closing" && "Showing deals ready to close (approved or in contracting)"}
-                    {statusFilter === "high_value" && "Showing high-value deals ($500K+)"}
-                    {highlightedDeals.length > 0 && !["delayed", "critical", "closing", "high_value"].includes(statusFilter) && 
+                    {statusFilter === "critical" && "Showing critical priority deals (seller-defined)"}
+                    {highlightedDeals.length > 0 && !["delayed", "critical"].includes(statusFilter) && 
                       `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
-                    {["delayed", "critical", "closing", "high_value"].includes(statusFilter) && highlightedDeals.length > 0 && 
+                    {["delayed", "critical"].includes(statusFilter) && highlightedDeals.length > 0 && 
                       " + highlighting specific deals"}
                   </span>
                 </div>
@@ -338,16 +326,6 @@ export default function DealsPage() {
                     {categoryCounts.delayed > 0 && (
                       <SelectItem value="delayed">
                         ⚠️ Delayed ({categoryCounts.delayed})
-                      </SelectItem>
-                    )}
-                    {categoryCounts.closing > 0 && (
-                      <SelectItem value="closing">
-                        🎯 Ready to Close ({categoryCounts.closing})
-                      </SelectItem>
-                    )}
-                    {categoryCounts.high_value > 0 && (
-                      <SelectItem value="high_value">
-                        💰 High-Value ({categoryCounts.high_value})
                       </SelectItem>
                     )}
                     <SelectItem disabled value="divider">—————————</SelectItem>

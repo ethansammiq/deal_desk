@@ -237,7 +237,7 @@ export const deals = pgTable("deals", {
   
   // Phase 7A: Workflow fields
   lastStatusChange: timestamp("last_status_change").defaultNow(),
-  priority: text("priority").default("medium"), // "low", "medium", "high"
+  priority: text("priority", { enum: ["critical", "high", "medium", "low"] }).notNull().default("medium"), // Seller-defined priority
   
   // System fields
   createdAt: timestamp("created_at").defaultNow(),
@@ -299,6 +299,23 @@ export const DRAFT_TYPES = {
 export type DraftType = typeof DRAFT_TYPES[keyof typeof DRAFT_TYPES];
 
 export type DealStatus = keyof typeof DEAL_STATUS_LABELS;
+
+// Priority Level Constants
+export const DEAL_PRIORITIES = {
+  CRITICAL: "critical",
+  HIGH: "high", 
+  MEDIUM: "medium",
+  LOW: "low"
+} as const;
+
+export const DEAL_PRIORITY_LABELS = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium", 
+  low: "Low"
+} as const;
+
+export type DealPriority = keyof typeof DEAL_PRIORITY_LABELS;
 
 export const insertDealSchema = createInsertSchema(deals)
   .omit({ 
@@ -366,7 +383,7 @@ export const insertDealSchema = createInsertSchema(deals)
       "lost"
     ]).default("draft"),
     draftType: z.enum(["scoping_draft", "submission_draft"]).optional(),
-    priority: z.enum(["low", "medium", "high"]).default("medium").optional(),
+    priority: z.enum(["critical", "high", "medium", "low"]).default("medium"),
     
     // Phase 8: Revision management validation
     isRevision: z.boolean().default(false),

@@ -1,34 +1,32 @@
-import type { Deal } from "@shared/schema";
+import type { Deal, DealPriority } from "@shared/schema";
 
-// Unified Deal Classification System
-// This centralizes all deal categorization logic to avoid confusion
+// Updated 3-Tier Deal Classification System
+// 1. Stage Status (workflow states) - in deal.status
+// 2. Priority (seller-defined) - in deal.priority  
+// 3. Flow Intelligence (timing-based) - calculated here
 
-export type DealPriority = 'critical' | 'high' | 'medium' | 'normal';
-export type DealCategory = 'delayed' | 'high_value' | 'closing' | 'normal';
+export type FlowIntelligence = 'on_track' | 'at_risk' | 'delayed' | 'stalled';
 
-export interface DealClassification {
-  priority: DealPriority;
-  category: DealCategory;
+export interface DealFlowClassification {
+  flowStatus: FlowIntelligence;
   reason: string;
   daysInStatus: number;
   actionRequired: boolean;
+  urgencyLevel: 'normal' | 'attention' | 'urgent';
 }
 
-// Unified timing thresholds for all delay detection
-const DELAY_THRESHOLDS = {
-  scoping: 5,           // 5 days to scope
-  submitted: 3,         // 3 days for initial review
-  under_review: 3,      // 3 days for department review
-  revision_requested: 3, // 3 days to address revisions
-  approved: 3,          // 3 days to start contracting
-  negotiating: 7,       // 7 days for negotiations
-  contract_drafting: 5, // 5 days for contract completion
+// Flow Intelligence timing thresholds
+const FLOW_THRESHOLDS = {
+  scoping: { normal: 5, atRisk: 4, delayed: 6, stalled: 10 },
+  submitted: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
+  under_review: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
+  revision_requested: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
+  approved: { normal: 3, atRisk: 2, delayed: 4, stalled: 7 },
+  negotiating: { normal: 7, atRisk: 5, delayed: 8, stalled: 14 },
+  contract_drafting: { normal: 5, atRisk: 4, delayed: 6, stalled: 10 },
 } as const;
 
-// High-value threshold
-const HIGH_VALUE_THRESHOLD = 500000;
-
-export function classifyDeal(deal: Deal): DealClassification {
+export function classifyDealFlow(deal: Deal): DealFlowClassification {
   const now = new Date();
   const lastUpdate = deal.lastStatusChange ? new Date(deal.lastStatusChange) : new Date(deal.createdAt || now);
   const daysInStatus = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
@@ -36,123 +34,162 @@ export function classifyDeal(deal: Deal): DealClassification {
   // Skip classification for terminal states
   if (['signed', 'lost', 'canceled', 'draft'].includes(deal.status)) {
     return {
-      priority: 'normal',
-      category: 'normal',
+      flowStatus: 'on_track',
       reason: `Deal is ${deal.status}`,
       daysInStatus,
-      actionRequired: false
+      actionRequired: false,
+      urgencyLevel: 'normal'
     };
   }
 
-  const dealValue = deal.annualRevenue || 0;
-  const isHighValue = dealValue >= HIGH_VALUE_THRESHOLD;
-  const threshold = DELAY_THRESHOLDS[deal.status as keyof typeof DELAY_THRESHOLDS];
-  const isDelayed = threshold && daysInStatus > threshold;
-
-  // Determine category and priority
-  if (isDelayed && isHighValue) {
+  const thresholds = FLOW_THRESHOLDS[deal.status as keyof typeof FLOW_THRESHOLDS];
+  if (!thresholds) {
     return {
-      priority: 'critical',
-      category: 'delayed',
-      reason: `High-value deal delayed ${daysInStatus} days in ${deal.status}`,
+      flowStatus: 'on_track',
+      reason: 'Status not tracked for flow intelligence',
       daysInStatus,
-      actionRequired: true
+      actionRequired: false,
+      urgencyLevel: 'normal'
+    };
+  }
+
+  // Determine flow status based on timing
+  if (daysInStatus >= thresholds.stalled) {
+    return {
+      flowStatus: 'stalled',
+      reason: `Deal stalled for ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'urgent'
     };
   }
   
-  if (isDelayed) {
+  if (daysInStatus >= thresholds.delayed) {
     return {
-      priority: 'high',
-      category: 'delayed',
-      reason: `Deal delayed ${daysInStatus} days in ${deal.status}`,
+      flowStatus: 'delayed',
+      reason: `Deal delayed ${daysInStatus} days in ${deal.status} (expected: ${thresholds.normal} days)`,
       daysInStatus,
-      actionRequired: true
+      actionRequired: true,
+      urgencyLevel: 'urgent'
     };
   }
 
-  if (['approved', 'contract_drafting'].includes(deal.status)) {
+  if (daysInStatus >= thresholds.atRisk) {
     return {
-      priority: isHighValue ? 'high' : 'medium',
-      category: 'closing',
-      reason: `Ready to close${isHighValue ? ' (high-value)' : ''}`,
+      flowStatus: 'at_risk',
+      reason: `Deal approaching delay in ${deal.status} (${daysInStatus}/${thresholds.normal} days)`,
       daysInStatus,
-      actionRequired: true
-    };
-  }
-
-  if (isHighValue) {
-    return {
-      priority: 'medium',
-      category: 'high_value',
-      reason: `High-value deal in progress`,
-      daysInStatus,
-      actionRequired: false
+      actionRequired: true,
+      urgencyLevel: 'attention'
     };
   }
 
   return {
-    priority: 'normal',
-    category: 'normal',
-    reason: 'Progressing normally',
+    flowStatus: 'on_track',
+    reason: `Deal progressing normally in ${deal.status} (${daysInStatus}/${thresholds.normal} days)`,
     daysInStatus,
-    actionRequired: false
+    actionRequired: false,
+    urgencyLevel: 'normal'
   };
 }
 
-// Filter functions for different views
+// Filter functions for Flow Intelligence views
 export function getDelayedDeals(deals: Deal[]): Deal[] {
-  return deals.filter(deal => classifyDeal(deal).category === 'delayed');
-}
-
-export function getHighValueDeals(deals: Deal[]): Deal[] {
   return deals.filter(deal => {
-    const classification = classifyDeal(deal);
-    return classification.category === 'high_value' || 
-           (classification.category === 'delayed' && deal.annualRevenue && deal.annualRevenue >= HIGH_VALUE_THRESHOLD);
+    const flow = classifyDealFlow(deal);
+    return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
   });
 }
 
-export function getClosingDeals(deals: Deal[]): Deal[] {
-  return deals.filter(deal => classifyDeal(deal).category === 'closing');
+export function getAtRiskDeals(deals: Deal[]): Deal[] {
+  return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'at_risk');
 }
 
-export function getCriticalDeals(deals: Deal[]): Deal[] {
-  return deals.filter(deal => classifyDeal(deal).priority === 'critical');
+export function getStalledDeals(deals: Deal[]): Deal[] {
+  return deals.filter(deal => classifyDealFlow(deal).flowStatus === 'stalled');
 }
 
-// UI helpers
-export function getDealBadgeInfo(deal: Deal) {
-  const classification = classifyDeal(deal);
+export function getDealsByPriority(deals: Deal[], priority: DealPriority): Deal[] {
+  return deals.filter(deal => deal.priority === priority);
+}
+
+// Check if a deal matches the delayed filter criteria
+export function isDealDelayed(deal: Deal): boolean {
+  const flow = classifyDealFlow(deal);
+  return flow.flowStatus === 'delayed' || flow.flowStatus === 'stalled';
+}
+
+// UI helpers for Flow Intelligence
+export function getFlowBadgeInfo(deal: Deal) {
+  const flow = classifyDealFlow(deal);
   
-  switch (classification.category) {
+  switch (flow.flowStatus) {
+    case 'stalled':
+      return {
+        text: 'Stalled',
+        variant: 'destructive' as const,
+        color: 'border-red-600'
+      };
     case 'delayed':
       return {
-        text: classification.priority === 'critical' ? 'Critical' : 'Delayed',
+        text: 'Delayed',
         variant: 'destructive' as const,
         color: 'border-red-400'
       };
-    case 'closing':
+    case 'at_risk':
       return {
-        text: 'Ready to Close',
-        variant: 'default' as const,
-        color: 'border-green-500'
-      };
-    case 'high_value':
-      return {
-        text: 'High-Value',
+        text: 'At Risk',
         variant: 'secondary' as const,
-        color: 'border-blue-500'
+        color: 'border-orange-400'
       };
     default:
       return null;
   }
 }
 
-// Filter categories for dropdown
-export const FILTER_CATEGORIES = [
+// UI helpers for Priority
+export function getPriorityBadgeInfo(priority: DealPriority) {
+  switch (priority) {
+    case 'critical':
+      return {
+        text: 'Critical',
+        variant: 'destructive' as const,
+        color: 'border-red-600'
+      };
+    case 'high':
+      return {
+        text: 'High',
+        variant: 'secondary' as const,
+        color: 'border-orange-500'
+      };
+    case 'medium':
+      return {
+        text: 'Medium',
+        variant: 'outline' as const,
+        color: 'border-blue-400'
+      };
+    case 'low':
+      return {
+        text: 'Low',
+        variant: 'outline' as const,
+        color: 'border-gray-400'
+      };
+  }
+}
+
+// Filter categories for Flow Intelligence
+export const FLOW_FILTER_CATEGORIES = [
   { value: 'all', label: 'All Deals', count: (deals: Deal[]) => deals.length },
-  { value: 'delayed', label: 'Delayed', count: getDelayedDeals },
-  { value: 'high_value', label: 'High-Value', count: getHighValueDeals },
-  { value: 'closing', label: 'Ready to Close', count: getClosingDeals },
-  { value: 'critical', label: 'Critical', count: getCriticalDeals },
+  { value: 'delayed', label: 'Delayed + Stalled', count: getDelayedDeals },
+  { value: 'at_risk', label: 'At Risk', count: getAtRiskDeals },
+  { value: 'stalled', label: 'Stalled', count: getStalledDeals },
+] as const;
+
+// Filter categories for Priority
+export const PRIORITY_FILTER_CATEGORIES = [
+  { value: 'all', label: 'All Priorities', count: (deals: Deal[]) => deals.length },
+  { value: 'critical', label: 'Critical', count: (deals: Deal[]) => getDealsByPriority(deals, 'critical') },
+  { value: 'high', label: 'High', count: (deals: Deal[]) => getDealsByPriority(deals, 'high') },
+  { value: 'medium', label: 'Medium', count: (deals: Deal[]) => getDealsByPriority(deals, 'medium') },
+  { value: 'low', label: 'Low', count: (deals: Deal[]) => getDealsByPriority(deals, 'low') },
 ] as const;

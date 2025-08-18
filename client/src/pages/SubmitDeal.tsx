@@ -128,6 +128,11 @@ const dealFormSchema = z.object({
   growthOpportunityClient: z.string().min(1, "Growth Opportunity (Client) is required"),
   clientAsks: z.string().min(1, "Client Asks is required"),
   
+  // Priority field (required for SubmitDeal only)
+  priority: z.enum(["critical", "high", "medium", "low"], {
+    required_error: "Priority is required for deal submission"
+  }),
+  
   // Optional fields that may come from shared components
   // Note: growthAmbition removed - only exists in scoping form
   contractTermMonths: z.number().optional(),
@@ -237,6 +242,9 @@ export default function SubmitDeal() {
 
       // Contact information
       email: "",
+      
+      // Priority (required for SubmitDeal)
+      priority: "medium",
 
       // Status
       status: "submitted",
