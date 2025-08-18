@@ -36,29 +36,11 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const now = new Date();
 
   // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up  
-  // Combine flowIntelligence with business risk criteria for comprehensive detection
+  // Use enhanced flowIntelligence that includes both timing and business risk criteria
   const stalledDeals = sellerDeals.filter(deal => {
     // Step 2: Also exclude 'scoping' from flowIntelligence check
     if (['signed', 'lost', 'draft', 'scoping'].includes(deal.status)) return false;
-    
-    // FlowIntelligence timing-based detection
-    const hasFlowIssue = deal.flowIntelligence === 'needs_attention';
-    
-    // Business risk criteria (matching Deals at Risk logic)
-    const now = new Date();
-    const daysSinceUpdate = deal.lastStatusChange 
-      ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
-      : 0;
-    
-    const hasBusinessRisk = (
-      deal.status === 'revision_requested' ||           // Always needs seller action
-      (deal.status === 'negotiating' && daysSinceUpdate > 7) || // Extended negotiation
-      (deal.revisionCount && deal.revisionCount >= 2) || // Quality concern
-      (deal.draftExpiresAt && 
-       (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000) // Deadline concern
-    );
-    
-    return hasFlowIssue || hasBusinessRisk;
+    return deal.flowIntelligence === 'needs_attention';
   });
 
   if (stalledDeals.length > 0) {
@@ -76,7 +58,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const expiringDeals = stalledDeals.filter(deal => {
       if (!deal.draftExpiresAt) return false;
       const now = new Date();
-      return (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000;
+      const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
+      return Math.floor(timeToExpiry / (1000 * 60 * 60 * 24)) < 3;
     });
     
     let actionGuidance = '';

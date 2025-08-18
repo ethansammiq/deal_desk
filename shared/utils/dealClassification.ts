@@ -44,6 +44,13 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
+  // Enhanced Flow Intelligence: Check business risk criteria first
+  const businessRiskCheck = checkBusinessRisk(deal, now, daysInStatus);
+  if (businessRiskCheck) {
+    return businessRiskCheck;
+  }
+
+  // Standard timing-based flow intelligence
   const thresholds = FLOW_THRESHOLDS[deal.status as keyof typeof FLOW_THRESHOLDS];
   if (!thresholds) {
     return {
@@ -55,7 +62,7 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
-  // Revised Flow Intelligence: Simplified decision logic
+  // Timing-based decision logic
   if (daysInStatus >= thresholds.needsAttention) {
     return {
       flowStatus: 'needs_attention',
@@ -66,8 +73,6 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     };
   }
 
-  // Ultra-Simplified: All normal progression is "on_track"
-  
   return {
     flowStatus: 'on_track',
     reason: `Deal progressing normally in ${deal.status} (${daysInStatus}/${thresholds.normal} days)`,
@@ -75,6 +80,61 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
     actionRequired: false,
     urgencyLevel: 'normal'
   };
+}
+
+// Business risk detection logic - unified for consistency across application
+function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlowClassification | null {
+  // 1. Revision requested - always needs seller attention
+  if (deal.status === 'revision_requested') {
+    return {
+      flowStatus: 'needs_attention',
+      reason: 'Revision requested - seller action required to address feedback and resubmit',
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 2. Extended negotiations (>7 days) - business concern  
+  if (deal.status === 'negotiating' && daysInStatus > 7) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Negotiation extended beyond normal timeframe (${daysInStatus} days) - client follow-up needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 3. High revision count - quality/process concern
+  if (deal.revisionCount && deal.revisionCount >= 2) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Deal has ${deal.revisionCount} revisions - review strategy and approach`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 4. Expiring draft - deadline urgency
+  if (deal.draftExpiresAt) {
+    const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
+    const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
+    if (daysToExpiry < 3) {
+      return {
+        flowStatus: 'needs_attention',
+        reason: daysToExpiry <= 0 
+          ? 'Draft has expired - immediate action required'
+          : `Draft expires in ${daysToExpiry} day${daysToExpiry === 1 ? '' : 's'} - urgent attention needed`,
+        daysInStatus,
+        actionRequired: true,
+        urgencyLevel: 'urgent'
+      };
+    }
+  }
+
+  return null; // No business risk detected
 }
 
 // Legacy function for compatibility - finds delayed deals using old logic
