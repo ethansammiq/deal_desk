@@ -427,10 +427,50 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
+  // Scoping deal conversion endpoint
+  router.post("/deals/:id/convert-to-deal", async (req: Request, res: Response) => {
+    try {
+      const scopingId = parseInt(req.params.id);
+      
+      if (isNaN(scopingId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const scopingDeal = await storage.getDeal(scopingId);
+      if (!scopingDeal) {
+        return res.status(404).json({ message: "Scoping deal not found" });
+      }
+      
+      if (scopingDeal.status !== "scoping") {
+        return res.status(400).json({ message: "Deal is not a scoping request" });
+      }
+      
+      // Check if already converted
+      if (scopingDeal.convertedDealId) {
+        return res.status(400).json({ message: "Scoping deal has already been converted" });
+      }
+      
+      // Mark the scoping deal as converted (but keep status as scoping for now)
+      const updatedScopingDeal = await storage.updateDeal(scopingId, {
+        convertedAt: new Date().toISOString()
+        // Keep status as "scoping" - will be filtered out by convertedAt check
+      });
+      
+      res.status(200).json({
+        message: "Scoping deal marked as converted",
+        scopingDeal: updatedScopingDeal,
+        scopingId
+      });
+    } catch (error) {
+      console.error("Error converting scoping deal:", error);
+      res.status(500).json({ message: "Failed to convert scoping deal" });
+    }
+  });
+
   // Draft management endpoints  
   router.post("/deals/drafts", async (req: Request, res: Response) => {
     try {
-      const { name, description, formData, draftId } = req.body;
+      const { name, description, formData, draftId, sourceScopingId } = req.body;
       
       if (!name?.trim()) {
         return res.status(400).json({ message: "Draft name is required" });
@@ -568,6 +608,18 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       }
 
       const savedDraft = await storage.createDeal(validatedData.data);
+
+      // If this draft came from a scoping conversion, link them together
+      if (sourceScopingId && !isNaN(parseInt(sourceScopingId))) {
+        try {
+          await storage.updateDeal(parseInt(sourceScopingId), {
+            convertedDealId: savedDraft.id
+          });
+        } catch (error) {
+          console.warn('Could not link scoping deal to draft:', error);
+          // Don't fail the draft creation if linking fails
+        }
+      }
 
       // Save tier data separately if provided
       if (formData.dealTiers && Array.isArray(formData.dealTiers) && formData.dealTiers.length > 0) {

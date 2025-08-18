@@ -383,9 +383,9 @@ export function ConsolidatedDashboard() {
               {(() => {
                 const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
                 
-                // Get upcoming deals (draft + scoping) from pipeline deals
+                // Get upcoming deals (draft + scoping, but not converted) from pipeline deals
                 const upcomingDeals = sellerPipelineDeals.filter(deal => 
-                  deal.status === 'draft' || deal.status === 'scoping'
+                  deal.status === 'draft' || (deal.status === 'scoping' && !deal.convertedAt)
                 );
                 
                 // Get true active deals (submitted but not signed/lost)

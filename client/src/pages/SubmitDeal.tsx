@@ -335,7 +335,8 @@ export default function SubmitDeal() {
         body: JSON.stringify({
           name: draftName,
           description,
-          formData
+          formData,
+          sourceScopingId: fromScopingId ? parseInt(fromScopingId) : undefined
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -724,12 +725,13 @@ export default function SubmitDeal() {
 
   // Draft saving mutation with business rules
   const saveDraftMutation = useMutation({
-    mutationFn: async ({ name, description, formData, step, draftId }: { 
+    mutationFn: async ({ name, description, formData, step, draftId, sourceScopingId }: { 
       name: string; 
       description?: string; 
       formData: any;
       step: number;
       draftId?: number;
+      sourceScopingId?: number;
     }) => {
       // Business Rule: One draft per advertiser/agency per seller account
       const requestData = {
@@ -739,6 +741,7 @@ export default function SubmitDeal() {
         currentStep: step,
         advertiserName: formData.advertiserName,
         agencyName: formData.agencyName,
+        sourceScopingId,
         salesChannel: formData.salesChannel,
         draftId: draftId // Pass draftId for updates
       };
@@ -966,7 +969,8 @@ export default function SubmitDeal() {
                 dealTiers: dealTiers // Include tier data in formData
               },
               step: currentTabIndex >= 0 ? currentTabIndex : 0,
-              draftId: draftId ? parseInt(draftId) : undefined // Pass draftId for updates
+              draftId: draftId ? parseInt(draftId) : undefined, // Pass draftId for updates
+              sourceScopingId: fromScopingId ? parseInt(fromScopingId) : undefined // Link to original scoping deal
             });
           }}
           disabled={saveDraftMutation.isPending}

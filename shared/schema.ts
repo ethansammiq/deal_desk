@@ -254,6 +254,7 @@ export const deals = pgTable("deals", {
 export const DEAL_STATUSES = {
   DRAFT: "draft",
   SCOPING: "scoping",
+  CONVERTED: "converted", // For scoping deals that have been converted to submissions
   SUBMITTED: "submitted", 
   UNDER_REVIEW: "under_review",
   REVISION_REQUESTED: "revision_requested",
@@ -268,6 +269,7 @@ export const DEAL_STATUSES = {
 export const DEAL_STATUS_LABELS = {
   draft: "Draft",
   scoping: "Scoping",
+  converted: "Converted", // Hidden from UI - used for tracking
   submitted: "Submitted",
   under_review: "Under Review", 
   revision_requested: "Revision Requested",
@@ -386,6 +388,7 @@ export const insertDealSchema = createInsertSchema(deals)
     status: z.enum([
       "draft",
       "scoping", 
+      "converted", // For scoping deals that have been converted to submissions
       "submitted", 
       "under_review",
       "revision_requested", 
