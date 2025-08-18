@@ -270,7 +270,7 @@ export default function UnifiedDashboard() {
     const nudgeMessages = {
       approver: "Please review this deal for approval. It has been waiting for your attention.",
       legal: "This deal is ready for legal review. Please review the contract terms.",
-      seller: "Please follow up on this deal or provide additional information."
+      seller: "Please give this deal attention or provide additional information."
     };
     
     const message = nudgeMessages[target as keyof typeof nudgeMessages] || "Please check on this deal.";

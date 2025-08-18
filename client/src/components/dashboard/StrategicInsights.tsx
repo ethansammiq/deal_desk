@@ -55,13 +55,13 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     
     const actionGuidance = externalDeals.length > 0 
       ? (externalDeals.length === 1 ? 'Contact client to move negotiation forward' : 'Contact clients to accelerate negotiations')
-      : (internalDeals.length === 1 ? 'Follow up internally to move deal forward' : 'Follow up internally on stalled deals');
+      : (internalDeals.length === 1 ? 'Internal attention needed to move deal forward' : 'Internal attention needed on stalled deals');
     
     // Streamlined: Single "Review" action for all insights
     
     insights.push({
       id: 'stall-risk-consolidated',
-      title: 'Deals Need Follow-Up',
+      title: 'Deals Need Attention',
       metric: stalledDeals.length,
       description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
       urgency: 'high',
@@ -131,7 +131,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
         id: 'pipeline-stagnation',
         title: 'Pipeline Needs Activation',
         metric: stagnantDeals.length,
-        description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - follow up to maintain momentum`,
+        description: `${formatShortCurrency(stagnantValue)} in deals awaiting review - attention needed to maintain momentum`,
         urgency: 'medium',
         actionLabel: 'Review',
         actionRoute: `/analytics?filter=needs_attention`,
