@@ -187,6 +187,9 @@ export class MemStorage implements IStorage {
     
     // Initialize approval departments
     this.initApprovalDepartments();
+    
+    // Add demo data with older timestamps for testing insights
+    this.addDemoStrategicInsightsData();
   }
 
   // Add demo data with older timestamps for Strategic Insights testing

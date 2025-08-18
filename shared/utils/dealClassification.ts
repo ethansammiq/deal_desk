@@ -19,13 +19,13 @@ export interface DealFlowClassification {
 // Flow Intelligence timing thresholds
 // Revised Flow Intelligence: Simplified thresholds for 3-status system
 const FLOW_THRESHOLDS = {
-  scoping: { normal: 5, needsAttention: 6 }, // Simplified: on_track vs needs_attention
-  submitted: { normal: 2, needsAttention: 3 }, // 0-2 days (on_track), 3+ days (needs_attention)  
-  under_review: { normal: 5, needsAttention: 6 }, // 0-5 days (on_track), 6+ days (needs_attention)
-  revision_requested: { normal: 3, needsAttention: 4 }, // 0-3 days (on_track), 4+ days (needs_attention)
-  approved: { normal: 7, needsAttention: 8 }, // 0-7 days (on_track), 8+ days (needs_attention)
-  negotiating: { normal: 7, needsAttention: 8 }, // Using consistent pattern
-  contract_drafting: { normal: 5, needsAttention: 6 }, // Using consistent pattern
+  scoping: { normal: 3, needsAttention: 4 }, // Simplified: on_track vs needs_attention
+  submitted: { normal: 1, needsAttention: 2 }, // 0-1 days (on_track), 2+ days (needs_attention)  
+  under_review: { normal: 2, needsAttention: 3 }, // 0-2 days (on_track), 3+ days (needs_attention)
+  revision_requested: { normal: 2, needsAttention: 3 }, // 0-2 days (on_track), 3+ days (needs_attention)
+  approved: { normal: 3, needsAttention: 4 }, // 0-3 days (on_track), 4+ days (needs_attention)
+  negotiating: { normal: 3, needsAttention: 4 }, // Using consistent pattern
+  contract_drafting: { normal: 2, needsAttention: 3 }, // Using consistent pattern
 } as const;
 
 export function classifyDealFlow(deal: Deal): DealFlowClassification {

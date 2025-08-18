@@ -32,6 +32,7 @@ export default function DealsPage() {
   const [location, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dealInsightFilter, setDealInsightFilter] = useState<string>("all");
   const [highlightedDeals, setHighlightedDeals] = useState<number[]>([]);
   
   // Parse URL parameters on mount and location change
@@ -42,7 +43,14 @@ export default function DealsPage() {
     
     // Apply filter if provided
     if (filter) {
-      setStatusFilter(filter);
+      // Check if it's a flow intelligence filter
+      if (filter === 'needs_attention' || filter === 'on_track') {
+        setDealInsightFilter(filter);
+        setStatusFilter("all"); // Clear status filter when using insight filter
+      } else {
+        setStatusFilter(filter);
+        setDealInsightFilter("all"); // Clear insight filter when using status filter
+      }
     }
     
     // Parse highlighted deal IDs
@@ -233,9 +241,16 @@ export default function DealsPage() {
     if (statusFilter !== "all") {
       matchesStatus = deal.status === statusFilter;
     }
+
+    // Deal Insight filtering based on flow intelligence
+    let matchesInsight = true;
+    if (dealInsightFilter !== "all") {
+      const flow = classifyDealFlow(deal);
+      matchesInsight = flow.flowStatus === dealInsightFilter;
+    }
     
     // Filter out draft deals, but include scoping deals for partnership team analytics
-    return matchesSearch && matchesStatus && deal.status !== 'draft';
+    return matchesSearch && matchesStatus && matchesInsight && deal.status !== 'draft';
   });
 
   // Get unique statuses for filter - include all statuses except draft
@@ -271,7 +286,7 @@ export default function DealsPage() {
         </div>
 
         {/* Active Filter Banner */}
-        {(statusFilter !== "all" || highlightedDeals.length > 0) && (
+        {(statusFilter !== "all" || dealInsightFilter !== "all" || highlightedDeals.length > 0) && (
           <Card className="border border-purple-200 bg-purple-50">
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
@@ -279,9 +294,10 @@ export default function DealsPage() {
                   <Filter className="h-4 w-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-800">
                     {statusFilter !== "all" && `Showing ${statusFilter.replace('_', ' ')} deals`}
-                    {highlightedDeals.length > 0 && statusFilter === "all" && 
+                    {dealInsightFilter !== "all" && `Showing ${dealInsightFilter === 'needs_attention' ? 'needs attention' : dealInsightFilter.replace('_', ' ')} deals`}
+                    {highlightedDeals.length > 0 && statusFilter === "all" && dealInsightFilter === "all" && 
                       `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
-                    {statusFilter !== "all" && highlightedDeals.length > 0 && 
+                    {(statusFilter !== "all" || dealInsightFilter !== "all") && highlightedDeals.length > 0 && 
                       " + highlighting specific deals"}
                   </span>
                 </div>
@@ -290,6 +306,7 @@ export default function DealsPage() {
                   size="sm"
                   onClick={() => {
                     setStatusFilter("all");
+                    setDealInsightFilter("all");
                     setHighlightedDeals([]);
                     navigate("/analytics");
                   }}
@@ -338,6 +355,20 @@ export default function DealsPage() {
                         {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Deal Insight Filter */}
+              <div className="lg:w-64">
+                <Select value={dealInsightFilter} onValueChange={setDealInsightFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by insight" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Insights</SelectItem>
+                    <SelectItem value="needs_attention">Needs Attention</SelectItem>
+                    <SelectItem value="on_track">On Track</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
