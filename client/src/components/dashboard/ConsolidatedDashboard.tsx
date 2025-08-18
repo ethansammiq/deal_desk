@@ -408,17 +408,7 @@ export function ConsolidatedDashboard() {
                       {trueActiveDeals.length > 0 ? (
                         <>
                           {trueActiveDeals.slice(0, 5).map((deal) => (
-                            <div key={deal.id} className={`${
-                              // Enhanced styling for needs attention deals with clearer indication
-                              classifyDealFlow(deal).flowStatus === 'needs_attention' 
-                                ? 'ring-1 ring-orange-200 bg-orange-50/30 rounded-lg p-2 relative' 
-                                : ''
-                            }`}>
-                              {classifyDealFlow(deal).flowStatus === 'needs_attention' && (
-                                <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-2 py-1 rounded-full z-10">
-                                  Needs Follow-up
-                                </div>
-                              )}
+                            <div key={deal.id}>
                               <DealRow
                                 deal={deal}
                                 variant="default"
