@@ -475,6 +475,11 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
             updatedAt: new Date()
           };
 
+          // Explicitly remove any remaining scoping fields that might have slipped through
+          delete updatedDraftData.growthAmbition;
+          delete updatedDraftData.convertedDealId;
+          delete updatedDraftData.convertedAt;
+
           const validatedData = insertDealSchema.safeParse(updatedDraftData);
           if (!validatedData.success) {
             const errorMessage = fromZodError(validatedData.error);
@@ -540,6 +545,15 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         isDraft: true,
         draftType: "submission_draft"
       };
+
+      // Explicitly remove any remaining scoping fields that might have slipped through
+      delete draftDeal.growthAmbition;
+      delete draftDeal.convertedDealId;
+      delete draftDeal.convertedAt;
+
+      // Debug log to confirm growthAmbition is not in the final object
+      console.log("Draft data after filtering - contains growthAmbition?", 'growthAmbition' in draftDeal);
+      console.log("Draft keys:", Object.keys(draftDeal).filter(key => key.includes('growth')));
 
       const validatedData = insertDealSchema.safeParse(draftDeal);
       if (!validatedData.success) {
