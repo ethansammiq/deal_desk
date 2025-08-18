@@ -721,7 +721,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 580000,
         analyticsTier: "platinum",
         requiresCustomMarketing: true,
-        status: "legal_review" // Phase 7A: legal_review status
+        status: "contract_drafting" // Phase 7A: contract_drafting status (formerly legal_review)
       },
       {
         dealName: "Disney Contract Sent",
@@ -742,7 +742,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 200000,
         analyticsTier: "gold",
         requiresCustomMarketing: false,
-        status: "contract_sent" // Phase 7A: contract_sent status
+        status: "client_review" // Phase 7A: client_review status (formerly contract_sent)
       },
       {
         email: "seller@company.com", // Assign to demo seller
@@ -1518,14 +1518,14 @@ export class MemStorage implements IStorage {
     const underReviewCount = deals.filter(deal => deal.status === "under_review").length;
     const negotiatingCount = deals.filter(deal => deal.status === "negotiating").length;
     const approvedCount = deals.filter(deal => deal.status === "approved").length;
-    const legalReviewCount = deals.filter(deal => deal.status === "legal_review").length;
-    const contractSentCount = deals.filter(deal => deal.status === "contract_sent").length;
+    const contractDraftingCount = deals.filter(deal => deal.status === "contract_drafting").length;
+    const clientReviewCount = deals.filter(deal => deal.status === "client_review").length;
     const completedDeals = deals.filter(deal => deal.status === "signed").length;
     const lostDeals = deals.filter(deal => deal.status === "lost").length;
     
     // Active deals = all statuses except signed and lost
     const activeDeals = scopingCount + submittedCount + underReviewCount + 
-                       negotiatingCount + approvedCount + legalReviewCount + contractSentCount;
+                       negotiatingCount + approvedCount + contractDraftingCount + clientReviewCount;
     
     const totalDeals = deals.length;
     
@@ -1544,8 +1544,8 @@ export class MemStorage implements IStorage {
       underReviewCount,
       negotiatingCount,
       approvedCount,
-      legalReviewCount,
-      contractSentCount
+      legalReviewCount: contractDraftingCount, // Backwards compatibility 
+      contractSentCount: clientReviewCount // Backwards compatibility
     };
   }
 
