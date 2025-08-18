@@ -1225,16 +1225,16 @@ export class MemStorage implements IStorage {
     const now = new Date();
     
     this.deals.forEach((deal, id) => {
-      // Skip if flowIntelligence already set
-      if (deal.flowIntelligence) return;
-      
-      // Calculate flow intelligence for each deal
-      const flowIntelligence = this.calculateFlowIntelligence(deal, deal.status, now);
-      
-      // Update the deal
-      this.deals.set(id, {
-        ...deal,
-        flowIntelligence
+      // Always recalculate flowIntelligence to use new comprehensive logic
+      import('../shared/utils/dealClassification').then(({ classifyDealFlow }) => {
+        const classification = classifyDealFlow(deal);
+        const flowIntelligence = classification.flowStatus;
+        
+        // Update the deal
+        this.deals.set(id, {
+          ...deal,
+          flowIntelligence
+        });
       });
     });
     
@@ -1254,8 +1254,9 @@ export class MemStorage implements IStorage {
       ? Math.round((new Date(insertDeal.termEndDate).getTime() - new Date(insertDeal.termStartDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
-    // Calculate initial flow intelligence
+    // Calculate initial flow intelligence using comprehensive system
     const dealStatus = insertDeal.status || "submitted";
+    // Use old calculation method for synchronous creation, will be updated by updateFlowIntelligenceForExistingDeals
     const flowIntelligence = this.calculateFlowIntelligence({ ...insertDeal, lastStatusChange: now } as Deal, dealStatus, now);
 
     // Create a new deal with the provided data and default values
@@ -1341,30 +1342,88 @@ export class MemStorage implements IStorage {
 
   // Phase 7A: Calculate flow intelligence based on deal timing and status
   private calculateFlowIntelligence(deal: Deal, status: DealStatus, currentTime: Date): "on_track" | "needs_attention" | null {
-    if (!deal.lastStatusChange) return "on_track";
+    const now = currentTime;
+    const lastUpdate = deal.lastStatusChange ? new Date(deal.lastStatusChange) : new Date(deal.createdAt || now);
+    const daysInStatus = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
     
-    const daysSinceLastChange = Math.floor((currentTime.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Define timing thresholds for different statuses
-    const thresholds: Record<string, number> = {
-      submitted: 3,
-      under_review: 5,
-      revision_requested: 7,
-      negotiating: 10,
-      approved: 5,
-      contract_drafting: 7,
-      client_review: 10,
-      scoping: 7
-    };
-    
-    const threshold = thresholds[status] || 7; // Default 7 days
-    
-    // Terminal statuses are always on track
-    if (['signed', 'lost'].includes(status)) {
+    // Terminal states
+    if (['signed', 'lost', 'canceled', 'draft'].includes(status)) {
       return "on_track";
     }
+
+    // BUSINESS RISK CRITERIA - Check first for immediate attention
     
-    return daysSinceLastChange > threshold ? "needs_attention" : "on_track";
+    // 1. Revision requested - always needs seller attention
+    if (status === 'revision_requested') {
+      return 'needs_attention';
+    }
+
+    // 2. Extended negotiations (>7 days) - business concern  
+    if (status === 'negotiating' && daysInStatus > 7) {
+      return 'needs_attention';
+    }
+
+    // 3. High revision count - quality/process concern
+    if (deal.revisionCount && deal.revisionCount >= 2) {
+      return 'needs_attention';
+    }
+
+    // 4. Expiring draft - deadline urgency
+    if (deal.draftExpiresAt) {
+      const timeToExpiry = new Date(deal.draftExpiresAt).getTime() - now.getTime();
+      const daysToExpiry = Math.floor(timeToExpiry / (1000 * 60 * 60 * 24));
+      if (daysToExpiry < 3) {
+        return 'needs_attention';
+      }
+    }
+
+    // 5. Priority escalation - critical/high priority deals stuck too long
+    if ((deal.priority === 'critical' || deal.priority === 'high') && daysInStatus > 1) {
+      return 'needs_attention';
+    }
+
+    // 6. Stalled submissions - submitted deals not moving to review
+    if (status === 'submitted' && daysInStatus > 3) {
+      return 'needs_attention';
+    }
+
+    // 7. Extended approvals - approved deals not moving to execution
+    if (status === 'approved' && daysInStatus > 5) {
+      return 'needs_attention';
+    }
+
+    // 8. Contract drafting delays - legal bottleneck detection
+    if (status === 'contract_drafting' && daysInStatus > 4) {
+      return 'needs_attention';
+    }
+
+    // 9. Client review timeout - external dependency management
+    if (status === 'client_review' && daysInStatus > 7) {
+      return 'needs_attention';
+    }
+
+    // 10. High-value deal monitoring - deals over threshold need special attention
+    if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
+      return 'needs_attention';
+    }
+
+    // TIMING THRESHOLDS - Standard flow intelligence  
+    const thresholds: Record<string, number> = {
+      submitted: 2,
+      under_review: 3, 
+      scoping: 3,
+      negotiating: 4,
+      approved: 2,
+      contract_drafting: 3,
+      client_review: 4
+    };
+    
+    const threshold = thresholds[status];
+    if (threshold && daysInStatus >= threshold) {
+      return 'needs_attention';
+    }
+    
+    return "on_track";
   }
 
   async updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined> {

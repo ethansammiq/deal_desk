@@ -41,20 +41,10 @@ export function useSellerMetrics({ deals, userEmail }: UseSellerMetricsProps): S
       ? Math.round((signedDeals.length / submittedDeals.length) * 100)
       : 0;
 
-    // Calculate Deals at Risk - multiple criteria for risk assessment
+    // Calculate Deals at Risk - use flowIntelligence for consistency with Strategic Insights
     const dealsAtRisk = sellerDeals.filter(deal => {
-      const now = new Date();
-      const daysSinceUpdate = deal.lastStatusChange 
-        ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
-        : 0;
-      
-      return (
-        deal.status === 'revision_requested' ||
-        (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
-        (deal.revisionCount && deal.revisionCount >= 2) ||
-        (deal.draftExpiresAt && 
-         (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000)
-      );
+      // Use the same logic as Strategic Insights - flowIntelligence field
+      return deal.flowIntelligence === 'needs_attention';
     }).length;
 
     // Calculate signed deals this month
