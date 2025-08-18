@@ -45,7 +45,8 @@ export interface CurrentUser {
 
 // Phase 7B: Mock current user for development with role switching support
 export function getCurrentUser(): CurrentUser {
-  // Check if we're in browser environment for localStorage
+  // For backend, always return the default seller with consistent email
+  // Role switching is handled at the frontend level
   let demoRole: UserRole = "seller";
   if (typeof window !== 'undefined' && window.localStorage) {
     demoRole = (localStorage.getItem('demo_user_role') as UserRole) || "seller";
@@ -61,7 +62,7 @@ export function getCurrentUser(): CurrentUser {
     seller: {
       id: 1,
       username: "demo_seller",
-      email: "seller@company.com",
+      email: "john.seller@company.com",
       role: "seller" as UserRole,
       firstName: "John",
       lastName: "Seller",

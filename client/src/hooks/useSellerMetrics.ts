@@ -104,11 +104,18 @@ export function useSellerPipelineDeals(deals: Deal[], userEmail?: string) {
       return deals;
     }
     // For pipeline, include ALL deals belonging to this seller (including drafts)
-    // Handle the case where draft deals might have null email initially
-    return deals.filter(deal => 
-      deal.email === userEmail || 
-      (deal.status === 'draft' && (!deal.email || deal.email === userEmail))
-    );
+    console.log('Pipeline filtering - userEmail:', userEmail);
+    console.log('All deals:', deals.map(d => ({ id: d.id, email: d.email, status: d.status, name: d.dealName })));
+    
+    const filtered = deals.filter(deal => {
+      const matches = deal.email === userEmail || 
+        (deal.status === 'draft' && (!deal.email || deal.email === userEmail));
+      console.log(`Deal ${deal.id} (${deal.dealName}): email=${deal.email}, status=${deal.status}, matches=${matches}`);
+      return matches;
+    });
+    
+    console.log('Filtered pipeline deals:', filtered.map(d => ({ id: d.id, email: d.email, status: d.status, name: d.dealName })));
+    return filtered;
   }, [deals, userEmail]);
 }
 
