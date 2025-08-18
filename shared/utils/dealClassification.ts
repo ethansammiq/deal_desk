@@ -82,7 +82,7 @@ export function classifyDealFlow(deal: Deal): DealFlowClassification {
   };
 }
 
-// Business risk detection logic - unified for consistency across application
+// Comprehensive business risk detection logic - unified source for all components
 function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlowClassification | null {
   // 1. Revision requested - always needs seller attention
   if (deal.status === 'revision_requested') {
@@ -132,6 +132,73 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
         urgencyLevel: 'urgent'
       };
     }
+  }
+
+  // 5. Priority escalation - critical/high priority deals stuck too long
+  if ((deal.priority === 'critical' || deal.priority === 'high') && daysInStatus > 1) {
+    // High priority deals get shorter tolerance regardless of status
+    return {
+      flowStatus: 'needs_attention',
+      reason: `${deal.priority.charAt(0).toUpperCase() + deal.priority.slice(1)} priority deal delayed ${daysInStatus} days - escalation needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'urgent'
+    };
+  }
+
+  // 6. Stalled submissions - submitted deals not moving to review
+  if (deal.status === 'submitted' && daysInStatus > 3) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Deal submitted ${daysInStatus} days ago but not yet under review - internal follow-up needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 7. Extended approvals - approved deals not moving to execution
+  if (deal.status === 'approved' && daysInStatus > 5) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Deal approved ${daysInStatus} days ago but not progressing - execution follow-up needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 8. Contract drafting delays - legal bottleneck detection
+  if (deal.status === 'contract_drafting' && daysInStatus > 4) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Contract drafting delayed ${daysInStatus} days - legal team follow-up needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 9. Client review timeout - external dependency management
+  if (deal.status === 'client_review' && daysInStatus > 7) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `Deal in client review for ${daysInStatus} days - client follow-up needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'attention'
+    };
+  }
+
+  // 10. High-value deal monitoring - deals over threshold need special attention
+  if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
+    return {
+      flowStatus: 'needs_attention',
+      reason: `High-value deal ($${(deal.annualRevenue / 1000000).toFixed(1)}M) delayed ${daysInStatus} days - executive attention needed`,
+      daysInStatus,
+      actionRequired: true,
+      urgencyLevel: 'urgent'
+    };
   }
 
   return null; // No business risk detected
