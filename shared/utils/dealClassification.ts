@@ -84,3 +84,24 @@ export function getDelayedDeals(deals: Deal[]): Deal[] {
     return flow.flowStatus === 'needs_attention';
   });
 }
+
+// Badge styling info for flow intelligence
+export function getFlowBadgeInfo(deal: Deal) {
+  const flow = classifyDealFlow(deal);
+  
+  switch (flow.flowStatus) {
+    case 'needs_attention':
+      return {
+        variant: 'destructive' as const,
+        label: 'Needs Follow-up',
+        className: 'bg-orange-100 text-orange-800 border-orange-200'
+      };
+    case 'on_track':
+    default:
+      return {
+        variant: 'secondary' as const,
+        label: 'On Track',
+        className: 'bg-green-100 text-green-800 border-green-200'
+      };
+  }
+}
