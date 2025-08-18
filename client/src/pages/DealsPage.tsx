@@ -232,10 +232,12 @@ export default function DealsPage() {
       matchesStatus = deal.status === statusFilter;
     }
     
+    // Filter out draft deals, but include scoping deals for partnership team analytics
     return matchesSearch && matchesStatus && deal.status !== 'draft';
   });
 
   // Get unique statuses for filter + add Flow Intelligence categories
+  // Include scoping deals for partnership team analytics
   const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
   const categoryCounts = {
     needs_attention: deals.filter(deal => classifyDealFlow(deal).flowStatus === 'needs_attention').length,
