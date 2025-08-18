@@ -150,7 +150,7 @@ export default function DealDetails() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/deals/${deal.id}/edit`)}
+                    onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
                   >
                     Edit Deal
                   </Button>
@@ -342,9 +342,20 @@ export default function DealDetails() {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button className="w-full" variant="outline">
-                    Edit Deal
-                  </Button>
+                  {/* Edit Deal - Navigate to submission form for drafts */}
+                  {deal.status === 'draft' ? (
+                    <Button 
+                      className="w-full" 
+                      variant="default"
+                      onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
+                    >
+                      Continue Draft
+                    </Button>
+                  ) : (
+                    <Button className="w-full" variant="outline" disabled>
+                      Edit Deal
+                    </Button>
+                  )}
                   <Button className="w-full" variant="outline">
                     View History
                   </Button>

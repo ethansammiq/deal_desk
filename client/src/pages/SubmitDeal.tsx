@@ -155,7 +155,7 @@ export default function SubmitDeal() {
   // Check for pre-fill from scoping request or draft loading
   const urlParams = new URLSearchParams(window.location.search);
   const fromScopingId = urlParams.get('from-scoping');
-  const draftId = urlParams.get('draft');
+  const draftId = urlParams.get('draftId');
   const [isPreFilling, setIsPreFilling] = useState(!!fromScopingId || !!draftId);
   const [scopingDealData, setScopingDealData] = useState<any>(null);
   const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
