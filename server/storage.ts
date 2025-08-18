@@ -230,7 +230,7 @@ export class MemStorage implements IStorage {
       {
         username: "john_seller",
         password: "password123",
-        email: "john.seller@company.com",
+        email: "seller@company.com",
         role: "seller",
         firstName: "John",
         lastName: "Seller",
@@ -572,7 +572,7 @@ export class MemStorage implements IStorage {
     // Sample deals - removed referenceNumber as it's auto-generated
     const sampleDeals: InsertDeal[] = [
       {
-        email: "john.seller@company.com", // Assign to demo seller
+        email: "seller@company.com", // Assign to demo seller
         dealName: "Coca-Cola Q1 2025 Campaign",
         dealType: "grow",
         businessSummary: "Comprehensive digital campaign focusing on growing Coca-Cola's market share in the Southern region, targeting younger demographics.",
@@ -636,7 +636,7 @@ export class MemStorage implements IStorage {
         status: "approved" // Phase 7A: updated status
       },
       {
-        email: "john.seller@company.com", // Assign to demo seller
+        email: "seller@company.com", // Assign to demo seller
         dealName: "Droga5 Client Portfolio",
         dealType: "protect",
         businessSummary: "Retention-focused deal to maintain Droga5's existing client portfolio with minimal growth targets but stable margins.",
@@ -658,7 +658,7 @@ export class MemStorage implements IStorage {
         status: "revision_requested" // Changed to show as risky deal
       },
       {
-        email: "john.seller@company.com", // Assign to demo seller
+        email: "seller@company.com", // Assign to demo seller
         dealName: "Nike Digital Transformation",
         dealType: "custom",
         businessSummary: "Comprehensive digital transformation project focused on Nike's online retail experience and personalization capabilities.",
@@ -681,7 +681,7 @@ export class MemStorage implements IStorage {
       },
       // Phase 7A: Additional deals to cover all 9 statuses
       {
-        email: "john.seller@company.com", // Assign to demo seller  
+        email: "seller@company.com", // Assign to demo seller  
         dealName: "Meta Q2 Campaign Scoping",
         dealType: "grow",
         businessSummary: "Initial scoping discussion for Meta's Q2 advertising campaign with focus on mobile-first approach.",
@@ -745,7 +745,7 @@ export class MemStorage implements IStorage {
         status: "contract_sent" // Phase 7A: contract_sent status
       },
       {
-        email: "john.seller@company.com", // Assign to demo seller
+        email: "seller@company.com", // Assign to demo seller
         dealName: "Tesla Growth Opportunity",
         dealType: "grow",
         businessSummary: "High-value growth opportunity with strong potential, currently in negotiation phase.",
