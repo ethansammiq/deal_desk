@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUserPermissions } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,9 +26,28 @@ import {
 
 export default function DealsPage() {
   const { currentUser, canCreateDeals, canViewAllDeals } = useUserPermissions();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [highlightedDeals, setHighlightedDeals] = useState<number[]>([]);
+  
+  // Parse URL parameters on mount and location change
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const filter = params.get('filter');
+    const highlight = params.get('highlight');
+    
+    // Apply filter if provided
+    if (filter) {
+      setStatusFilter(filter);
+    }
+    
+    // Parse highlighted deal IDs
+    if (highlight) {
+      const dealIds = highlight.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      setHighlightedDeals(dealIds);
+    }
+  }, [location]);
   
   // Helper to identify deals that need attention (for highlighting)
   const getDealsNeedingAttention = (deals: Deal[]) => {
@@ -83,10 +102,23 @@ export default function DealsPage() {
         const isHighValue = priorityDeals.highValueDeals.some((d: Deal) => d.id === deal.id);
         const isClosing = priorityDeals.closingOpportunities.some((d: Deal) => d.id === deal.id);
         
+        const isHighlighted = highlightedDeals.includes(deal.id);
+        
         return (
-          <div className={`${isStalled ? 'pl-3 border-l-4 border-red-400' : isClosing ? 'pl-3 border-l-4 border-green-500' : isHighValue ? 'pl-3 border-l-4 border-blue-500' : ''}`}>
+          <div className={`${
+            isHighlighted 
+              ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
+              : isStalled 
+                ? 'pl-3 border-l-4 border-red-400' 
+                : isClosing 
+                  ? 'pl-3 border-l-4 border-green-500' 
+                  : isHighValue 
+                    ? 'pl-3 border-l-4 border-blue-500' 
+                    : ''
+          }`}>
             <div className="font-medium text-slate-900 flex items-center gap-2">
               {deal.dealName}
+              {isHighlighted && <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">Highlighted</Badge>}
               {isStalled && <Badge variant="destructive" className="text-xs">Stalled</Badge>}
               {isClosing && <Badge variant="default" className="text-xs bg-green-600">Ready to Close</Badge>}
               {isHighValue && <Badge variant="secondary" className="text-xs">High-Value</Badge>}
@@ -175,6 +207,24 @@ export default function DealsPage() {
     },
   ];
 
+  // Define "delayed" deals (matching Strategic Insights logic)
+  const getDelayedDeals = (dealList: Deal[]) => {
+    const now = new Date();
+    return dealList.filter(deal => {
+      if (!deal.lastStatusChange || ['signed', 'lost', 'draft'].includes(deal.status)) return false;
+      const daysSinceUpdate = (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24);
+      
+      // Same thresholds as Strategic Insights
+      if (deal.status === 'under_review' && daysSinceUpdate > 3) return true; // Review delayed >3 days
+      if (deal.status === 'submitted' && daysSinceUpdate > 3) return true; // Submitted delayed >3 days
+      if (deal.status === 'negotiating' && daysSinceUpdate > 7) return true; // Negotiation stalled >7 days
+      if (deal.status === 'revision_requested' && daysSinceUpdate > 3) return true; // Revision delayed >3 days
+      if (deal.status === 'approved' && daysSinceUpdate > 3) return true; // Post-approval delay >3 days
+      if (deal.status === 'contract_drafting' && daysSinceUpdate > 5) return true; // Contract delay >5 days
+      return false;
+    });
+  };
+
   // Filter deals based on search and status
   const filteredDeals = deals.filter(deal => {
     const matchesSearch = !searchTerm || 
@@ -183,13 +233,21 @@ export default function DealsPage() {
       deal.agencyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === "all" || deal.status === statusFilter;
+    let matchesStatus = true;
+    if (statusFilter === "delayed") {
+      // Special filter for delayed deals
+      const delayedDeals = getDelayedDeals(deals);
+      matchesStatus = delayedDeals.some(d => d.id === deal.id);
+    } else if (statusFilter !== "all") {
+      matchesStatus = deal.status === statusFilter;
+    }
     
     return matchesSearch && matchesStatus && deal.status !== 'draft';
   });
 
-  // Get unique statuses for filter
+  // Get unique statuses for filter + add special filters
   const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
+  const delayedCount = getDelayedDeals(deals).length;
 
   const userRole = currentUser?.role;
 
@@ -218,6 +276,36 @@ export default function DealsPage() {
             </Button>
           )}
         </div>
+
+        {/* Active Filter Banner */}
+        {(statusFilter === "delayed" || highlightedDeals.length > 0) && (
+          <Card className="border border-purple-200 bg-purple-50">
+            <CardContent className="py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-800">
+                    {statusFilter === "delayed" && "Showing delayed deals (>3 days in current status)"}
+                    {highlightedDeals.length > 0 && !statusFilter.includes("delayed") && `Highlighting ${highlightedDeals.length} specific deal${highlightedDeals.length === 1 ? '' : 's'}`}
+                    {statusFilter === "delayed" && highlightedDeals.length > 0 && " + highlighting specific deals"}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setHighlightedDeals([]);
+                    navigate("/analytics");
+                  }}
+                  className="text-purple-600 hover:text-purple-700"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters and Search */}
         <Card className="border border-slate-200 shadow-sm bg-white">
@@ -250,6 +338,11 @@ export default function DealsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
+                    {delayedCount > 0 && (
+                      <SelectItem value="delayed">
+                        🔴 Delayed ({delayedCount})
+                      </SelectItem>
+                    )}
                     {uniqueStatuses.map(status => (
                       <SelectItem key={status} value={status}>
                         {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
