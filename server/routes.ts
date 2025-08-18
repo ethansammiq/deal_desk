@@ -2231,5 +2231,92 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
+  // Scoping deals analytics endpoint for partnership team
+  router.get("/analytics/scoping", async (req: Request, res: Response) => {
+    try {
+      const deals = await storage.getAllDeals();
+      
+      // Filter all scoping deals (both active and converted)
+      const allScopingDeals = deals.filter(deal => 
+        deal.status === 'scoping' || deal.convertedAt || deal.convertedDealId
+      );
+      
+      const activeScopingDeals = deals.filter(deal => 
+        deal.status === 'scoping' && !deal.convertedAt && !deal.convertedDealId
+      );
+      
+      const convertedScopingDeals = deals.filter(deal => 
+        deal.status === 'scoping' && (deal.convertedAt || deal.convertedDealId)
+      );
+
+      // Calculate conversion metrics
+      const totalScopingRequests = allScopingDeals.length;
+      const conversionRate = totalScopingRequests > 0 
+        ? Math.round((convertedScopingDeals.length / totalScopingRequests) * 100) 
+        : 0;
+
+      // Calculate average values for converted deals
+      const convertedDealsWithValue = convertedScopingDeals.filter(deal => deal.annualRevenue > 0);
+      const totalConvertedValue = convertedDealsWithValue.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const avgConvertedValue = convertedDealsWithValue.length > 0 
+        ? totalConvertedValue / convertedDealsWithValue.length 
+        : 0;
+
+      // Group by sales channel for insights
+      const scopingByChannel = allScopingDeals.reduce((acc, deal) => {
+        const channel = deal.salesChannel || 'unknown';
+        acc[channel] = (acc[channel] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Group by region for insights
+      const scopingByRegion = allScopingDeals.reduce((acc, deal) => {
+        const region = deal.region || 'unknown';
+        acc[region] = (acc[region] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Recent conversion timeline (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const recentConversions = convertedScopingDeals.filter(deal => {
+        if (!deal.convertedAt) return false;
+        const convertedDate = new Date(deal.convertedAt);
+        return convertedDate >= thirtyDaysAgo;
+      }).length;
+
+      res.json({
+        overview: {
+          totalScopingRequests,
+          activeScopingDeals: activeScopingDeals.length,
+          convertedScopingDeals: convertedScopingDeals.length,
+          conversionRate,
+          avgConvertedValue: Math.round(avgConvertedValue),
+          recentConversions
+        },
+        breakdown: {
+          bySalesChannel: scopingByChannel,
+          byRegion: scopingByRegion
+        },
+        dealDetails: allScopingDeals.map(deal => ({
+          id: deal.id,
+          dealName: deal.dealName || deal.advertiserName || 'Unnamed Deal',
+          salesChannel: deal.salesChannel,
+          region: deal.region,
+          status: deal.status,
+          convertedAt: deal.convertedAt,
+          convertedDealId: deal.convertedDealId,
+          annualRevenue: deal.annualRevenue || 0,
+          createdAt: deal.createdAt,
+          email: deal.email
+        }))
+      });
+    } catch (error) {
+      console.error("Error fetching scoping analytics:", error);
+      res.status(500).json({ message: "Failed to fetch scoping analytics" });
+    }
+  });
+
   return httpServer;
 }

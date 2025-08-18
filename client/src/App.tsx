@@ -28,6 +28,7 @@ const DepartmentQueues = lazy(() => import("@/pages/DepartmentQueues"));
 const SLAMonitoring = lazy(() => import("@/pages/SLAMonitoring"));
 const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const ScopingAnalytics = lazy(() => import("@/pages/ScopingAnalytics"));
 
 // Legacy routes disabled - components archived as .legacy files
 
@@ -74,6 +75,7 @@ function Router() {
                 <Route path="/request/proposal" component={SubmitDeal} />
                 <Route path="/support" component={HelpResources} />
                 <Route path="/analytics" component={DealsPage} />
+                <Route path="/analytics/scoping" component={ScopingAnalytics} />
                 <Route path="/deals/:id" component={DealDetails} />
                 <Route path="/testing" component={Testing} />
                 <Route path="/department-queues" component={DepartmentQueues} />
