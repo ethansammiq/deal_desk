@@ -36,17 +36,35 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const now = new Date();
 
   // 1. CONSOLIDATED STALL RISK INTELLIGENCE - All deals needing follow-up  
-  // Use backend-calculated flowIntelligence for consistency
+  // Combine flowIntelligence with business risk criteria for comprehensive detection
   const stalledDeals = sellerDeals.filter(deal => {
     // Step 2: Also exclude 'scoping' from flowIntelligence check
     if (['signed', 'lost', 'draft', 'scoping'].includes(deal.status)) return false;
-    return deal.flowIntelligence === 'needs_attention';
+    
+    // FlowIntelligence timing-based detection
+    const hasFlowIssue = deal.flowIntelligence === 'needs_attention';
+    
+    // Business risk criteria (matching Deals at Risk logic)
+    const now = new Date();
+    const daysSinceUpdate = deal.lastStatusChange 
+      ? (now.getTime() - new Date(deal.lastStatusChange).getTime()) / (1000 * 60 * 60 * 24)
+      : 0;
+    
+    const hasBusinessRisk = (
+      deal.status === 'revision_requested' ||           // Always needs seller action
+      (deal.status === 'negotiating' && daysSinceUpdate > 7) || // Extended negotiation
+      (deal.revisionCount && deal.revisionCount >= 2) || // Quality concern
+      (deal.draftExpiresAt && 
+       (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000) // Deadline concern
+    );
+    
+    return hasFlowIssue || hasBusinessRisk;
   });
 
   if (stalledDeals.length > 0) {
     const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
     
-    // Enhanced contextual guidance based on deal types
+    // Enhanced contextual guidance based on deal types and risk factors
     const externalDeals = stalledDeals.filter(deal => 
       ['negotiating', 'client_review'].includes(deal.status)
     );
@@ -54,6 +72,12 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       ['under_review', 'submitted', 'approved', 'contract_drafting'].includes(deal.status)
     );
     const revisionDeals = stalledDeals.filter(deal => deal.status === 'revision_requested');
+    const highRevisionDeals = stalledDeals.filter(deal => deal.revisionCount && deal.revisionCount >= 2);
+    const expiringDeals = stalledDeals.filter(deal => {
+      if (!deal.draftExpiresAt) return false;
+      const now = new Date();
+      return (new Date(deal.draftExpiresAt).getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000;
+    });
     
     let actionGuidance = '';
     let insightPriority: DealPriority = 'medium';
@@ -64,10 +88,20 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       insightPriority = 'high';
     }
     
+    // Prioritize guidance based on urgency and type
     if (revisionDeals.length > 0) {
       actionGuidance = revisionDeals.length === 1 
         ? 'Address revision feedback and resubmit deal'
         : 'Address revision feedback on multiple deals';
+    } else if (expiringDeals.length > 0) {
+      actionGuidance = expiringDeals.length === 1
+        ? 'Deal expires soon - immediate action required'
+        : 'Multiple deals expiring soon - urgent attention needed';
+      insightPriority = 'high'; // Force high priority for expiring deals
+    } else if (highRevisionDeals.length > 0) {
+      actionGuidance = highRevisionDeals.length === 1
+        ? 'Deal has multiple revisions - review strategy'
+        : 'Multiple deals with revision issues - review approach';
     } else if (externalDeals.length > 0) {
       actionGuidance = externalDeals.length === 1 
         ? 'Contact client to move deal forward' 
