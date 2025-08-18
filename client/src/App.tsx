@@ -73,7 +73,7 @@ function Router() {
                 <Route path="/request/scoping" component={RequestSupport} />
                 <Route path="/request/proposal" component={SubmitDeal} />
                 <Route path="/support" component={HelpResources} />
-                <Route path="/deals" component={DealsPage} />
+                <Route path="/analytics" component={DealsPage} />
                 <Route path="/deals/:id" component={DealDetails} />
                 <Route path="/testing" component={Testing} />
                 <Route path="/department-queues" component={DepartmentQueues} />

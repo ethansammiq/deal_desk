@@ -191,7 +191,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole): 
       description: `${formatShortCurrency(totalStalledValue)} in deals delayed >3 days in review. ${actionGuidance}`,
       urgency: stalledReviews.length > 3 ? 'high' : 'medium',
       actionLabel: stalledReviews.length === 1 ? 'Review Deal' : `Review (${stalledReviews.length})`,
-      actionRoute: '/deals?filter=delayed',
+      actionRoute: '/analytics?filter=delayed',
       trend: 'down'
     });
   }
