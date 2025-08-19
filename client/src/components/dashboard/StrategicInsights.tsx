@@ -58,45 +58,84 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     // Note: revision_requested is now handled within approval system, not as deal status
     const highRevisionDeals = stalledDeals.filter(deal => deal.revisionCount && deal.revisionCount >= 2);
 
-    
-    let actionGuidance = '';
-    let insightPriority: DealPriority = 'medium';
-    
-    // Determine guidance based on deal mix and priority
+    // Determine priority based on deal mix
     const highPriorityDeals = stalledDeals.filter(deal => deal.priority === 'critical' || deal.priority === 'high');
-    if (highPriorityDeals.length > 0) {
-      insightPriority = 'high';
-    }
+    const insightPriority: DealPriority = highPriorityDeals.length > 0 ? 'high' : 'medium';
     
-    // Prioritize guidance based on urgency and type
-    if (highRevisionDeals.length > 0) {
-      actionGuidance = highRevisionDeals.length === 1 
-        ? 'Deal has multiple revision requests - needs immediate attention'
-        : 'Multiple deals have repeated revision requests';
-    } else if (highRevisionDeals.length > 0) {
-      actionGuidance = highRevisionDeals.length === 1
-        ? 'Deal has multiple revisions - review strategy'
-        : 'Multiple deals with revision issues - review approach';
+    // ENHANCED: Create separate insights for client vs internal follow-up
+    if (externalDeals.length > 0 && internalDeals.length > 0) {
+      // Mixed scenario - create combined insight with clear breakdown
+      const externalValue = externalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const internalValue = internalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      
+      insights.push({
+        id: 'stall-risk-combined',
+        title: 'Deals Need Attention',
+        metric: stalledDeals.length,
+        description: `${externalDeals.length} client follow-up (${formatShortCurrency(externalValue)}) + ${internalDeals.length} internal follow-up (${formatShortCurrency(internalValue)})`,
+        priority: insightPriority,
+        actionLabel: 'Review All',
+        actionRoute: `/analytics?filter=needs_attention`,
+        dealIds: stalledDeals.map(d => d.id),
+        trend: 'down'
+      });
     } else if (externalDeals.length > 0) {
-      actionGuidance = externalDeals.length === 1 
-        ? 'Contact client to move deal forward' 
+      // Client follow-up only
+      const externalValue = externalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = externalDeals.length === 1 
+        ? 'Contact client today to move deal forward' 
         : 'Contact clients to accelerate progress';
-    } else {
-      actionGuidance = internalDeals.length === 1 
+        
+      insights.push({
+        id: 'stall-risk-client',
+        title: 'Client Follow-Up Required',
+        metric: externalDeals.length,
+        description: `${formatShortCurrency(externalValue)} in client negotiations stalling. ${actionGuidance}`,
+        priority: insightPriority,
+        actionLabel: 'Contact Client',
+        actionRoute: externalDeals.length === 1 ? `/deals/${externalDeals[0].id}` : `/analytics?filter=needs_attention`,
+        dealIds: externalDeals.map(d => d.id),
+        trend: 'down'
+      });
+    } else if (internalDeals.length > 0) {
+      // Internal follow-up only
+      const internalValue = internalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = internalDeals.length === 1 
         ? 'Follow up internally to move deal forward' 
-        : 'Follow up internally on stalled deals';
+        : 'Follow up with internal teams on stalled deals';
+        
+      insights.push({
+        id: 'stall-risk-internal',
+        title: 'Internal Follow-Up Required',
+        metric: internalDeals.length,
+        description: `${formatShortCurrency(internalValue)} in internal pipeline stalling. ${actionGuidance}`,
+        priority: insightPriority,
+        actionLabel: 'Follow Up',
+        actionRoute: internalDeals.length === 1 ? `/deals/${internalDeals[0].id}` : `/analytics?filter=needs_attention`,
+        dealIds: internalDeals.map(d => d.id),
+        trend: 'down'
+      });
     }
     
-    insights.push({
-      id: 'stall-risk-consolidated',
-      title: 'Deals Need Attention',
-      metric: stalledDeals.length,
-      description: `${formatShortCurrency(totalStalledValue)} in pipeline stalling. ${actionGuidance}`,
-      priority: insightPriority,
-      actionLabel: 'Review',
-      actionRoute: stalledDeals.length === 1 ? `/deals/${stalledDeals[0].id}` : `/analytics?filter=needs_attention`,
-      trend: 'down'
-    });
+    // Handle high revision deals as separate insight if present
+    if (highRevisionDeals.length > 0) {
+      const revisionValue = highRevisionDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const actionGuidance = highRevisionDeals.length === 1 
+        ? 'Deal has multiple revision requests - needs immediate attention'
+        : 'Multiple deals have repeated revision requests - review strategy';
+        
+      insights.push({
+        id: 'revision-risk',
+        title: 'High Revision Risk',
+        metric: highRevisionDeals.length,
+        description: `${formatShortCurrency(revisionValue)} in deals with 2+ revisions. ${actionGuidance}`,
+        priority: 'high',
+        actionLabel: 'Review Strategy',
+        actionRoute: highRevisionDeals.length === 1 ? `/deals/${highRevisionDeals[0].id}` : `/analytics?filter=needs_attention`,
+        dealIds: highRevisionDeals.map(d => d.id),
+        trend: 'down'
+      });
+    }
   }
 
   // 2. PERFORMANCE THRESHOLD MONITORING - Pipeline value changes
