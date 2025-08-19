@@ -1450,6 +1450,41 @@ export class MemStorage implements IStorage {
       comments: comments || null,
     });
     
+    // AUTOMATIC APPROVAL WORKFLOW TRIGGERING
+    // When a deal moves to "under_review", automatically initiate approval workflow
+    if (status === 'under_review' && previousStatus !== 'under_review') {
+      try {
+        console.log(`🔄 AUTO-TRIGGERING APPROVAL WORKFLOW: Deal ${id} moved to under_review`);
+        
+        // Get incentives to determine required departments
+        const incentives = await this.getIncentiveValues(id);
+        const { departments, reasons } = await this.determineRequiredDepartments(incentives);
+        
+        // Create Stage 1 department approvals
+        for (const department of departments) {
+          const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
+          const departmentReasons = reasons[department] || [];
+          
+          await this.createDealApproval({
+            dealId: id,
+            approvalStage: 1,
+            department: department as any,
+            requiredRole: 'department_reviewer',
+            status: 'pending',
+            priority: 'normal',
+            dueDate,
+          });
+          
+          console.log(`📬 AUTO-CREATED APPROVAL: Deal ${id} - ${department} department (${departmentReasons.join(", ")})`);
+        }
+        
+        console.log(`✅ APPROVAL WORKFLOW INITIATED: Deal ${id} has ${departments.length} department reviews assigned`);
+      } catch (error) {
+        console.error(`❌ FAILED TO INITIATE APPROVAL WORKFLOW for Deal ${id}:`, error);
+        // Don't throw - deal status update should still succeed even if approval workflow fails
+      }
+    }
+    
     return updatedDeal;
   }
 
