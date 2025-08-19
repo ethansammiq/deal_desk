@@ -258,7 +258,11 @@ export class MemStorage implements IStorage {
   private initSampleApprovals() {
     console.log("🚀 INITIALIZING SAMPLE APPROVALS: Creating persistent approval workflows for testing");
     
-    // Deal 2: WPP Agency Partnership - under_review with finance and trading departments
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+    const oneDayFromNow = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+    
+    // Deal 2: WPP Agency Partnership - OVERDUE APPROVALS for bottleneck testing
     const approvals = [
       {
         dealId: 2,
@@ -267,7 +271,7 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        dueDate: threeDaysAgo, // OVERDUE - should trigger bottleneck detection
       },
       {
         dealId: 2,
@@ -276,9 +280,9 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        dueDate: fiveDaysAgo, // SEVERELY OVERDUE - should trigger bottleneck detection
       },
-      // Deal 6: Meta Q2 Campaign Scoping - has product incentives so needs creative department too
+      // Deal 6: Meta Q2 Campaign Scoping - has mixed approval states including revision_requested
       {
         dealId: 6,
         approvalStage: 1,
@@ -286,7 +290,7 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        dueDate: oneDayFromNow, // Still on time
       },
       {
         dealId: 6,
@@ -295,22 +299,22 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "approved" as any,
         priority: "normal" as any,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        dueDate: oneDayFromNow,
       },
       {
         dealId: 6,
         approvalStage: 1,
         department: "creative" as any,
         requiredRole: "department_reviewer" as any,
-        status: "revision_requested" as any,
+        status: "revision_requested" as any, // BOTTLENECK - revision request blocks progress
         priority: "normal" as any,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        dueDate: oneDayFromNow,
       }
     ];
     
     approvals.forEach(approval => {
       this.createDealApproval(approval);
-      console.log(`📬 SAMPLE APPROVAL CREATED: Deal ${approval.dealId} - ${approval.department} department (${approval.status})`);
+      console.log(`📬 SAMPLE APPROVAL CREATED: Deal ${approval.dealId} - ${approval.department} department (${approval.status}${approval.status === 'pending' && new Date(approval.dueDate) < new Date() ? ' - OVERDUE' : ''})`);
     });
   }
   
@@ -928,7 +932,7 @@ export class MemStorage implements IStorage {
     this.addDemoStrategicInsightsData();
     
     // Update existing deals with flow intelligence for testing
-    this.updateFlowIntelligenceForExistingDeals();
+    this.updateFlowIntelligenceForExistingDeals().catch(console.error);
     
     // Add sample tiers for tiered deals
     const tiersByDealId = {
@@ -1312,19 +1316,19 @@ export class MemStorage implements IStorage {
   }
 
   // Update existing deals with flow intelligence for proper testing
-  private updateFlowIntelligenceForExistingDeals(): void {
+  private async updateFlowIntelligenceForExistingDeals(): Promise<void> {
     const now = new Date();
     
-    this.deals.forEach((deal, id) => {
+    for (const [id, deal] of this.deals) {
       // Use backend calculateFlowIntelligence method for consistency
-      const flowIntelligence = this.calculateFlowIntelligence(deal, deal.status, now);
+      const flowIntelligence = await this.calculateFlowIntelligence(deal, deal.status, now);
       
       // Update the deal
       this.deals.set(id, {
         ...deal,
         flowIntelligence
       });
-    });
+    }
     
     console.log("Flow intelligence updated for existing deals");
   }
@@ -1429,7 +1433,7 @@ export class MemStorage implements IStorage {
   }
 
   // Phase 7A: Calculate flow intelligence based on deal timing and status
-  private calculateFlowIntelligence(deal: Deal, status: DealStatus, currentTime: Date): "on_track" | "needs_attention" | null {
+  private async calculateFlowIntelligence(deal: Deal, status: DealStatus, currentTime: Date): Promise<"on_track" | "needs_attention" | null> {
     const now = currentTime;
     const lastUpdate = deal.lastStatusChange ? new Date(deal.lastStatusChange) : new Date(deal.createdAt || now);
     const daysInStatus = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
@@ -1439,7 +1443,15 @@ export class MemStorage implements IStorage {
       return "on_track";
     }
 
-    // BUSINESS RISK CRITERIA - Check first for immediate attention
+    // ENHANCED APPROVAL SYSTEM INTEGRATION - Check approval bottlenecks first
+    if (status === 'under_review') {
+      const approvalBottlenecks = await this.detectApprovalBottlenecks(deal.id, now);
+      if (approvalBottlenecks.hasBottlenecks) {
+        return 'needs_attention';
+      }
+    }
+
+    // BUSINESS RISK CRITERIA - Check for immediate attention
     
     // 1. Revision requested - always needs seller attention
     if (status === 'revision_requested') {
@@ -1455,8 +1467,6 @@ export class MemStorage implements IStorage {
     if (deal.revisionCount && deal.revisionCount >= 2) {
       return 'needs_attention';
     }
-
-
 
     // 4. Priority escalation - critical/high priority deals stuck too long
     if ((deal.priority === 'critical' || deal.priority === 'high') && daysInStatus > 1) {
@@ -1505,6 +1515,71 @@ export class MemStorage implements IStorage {
     }
     
     return "on_track";
+  }
+
+  // APPROVAL BOTTLENECK DETECTION - Enhanced integration with approval states
+  private async detectApprovalBottlenecks(dealId: number, currentTime: Date): Promise<{
+    hasBottlenecks: boolean;
+    overdueApprovals: DealApproval[];
+    stalledDepartments: string[];
+    bottleneckSeverity: 'low' | 'medium' | 'high';
+  }> {
+    const approvals = await this.getDealApprovals(dealId);
+    const overdueApprovals: DealApproval[] = [];
+    const stalledDepartments: string[] = [];
+    
+    // Check for overdue approvals
+    for (const approval of approvals) {
+      if (approval.status === 'pending' && approval.dueDate) {
+        const dueDate = new Date(approval.dueDate);
+        const daysOverdue = Math.floor((currentTime.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysOverdue > 0) {
+          overdueApprovals.push(approval);
+          if (approval.department) {
+            stalledDepartments.push(approval.department);
+          }
+        }
+      }
+      
+      // Check for revision requests blocking progress
+      if (approval.status === 'revision_requested') {
+        if (approval.department) {
+          stalledDepartments.push(approval.department);
+        }
+      }
+    }
+    
+    // Determine bottleneck severity
+    let bottleneckSeverity: 'low' | 'medium' | 'high' = 'low';
+    if (overdueApprovals.length >= 3 || stalledDepartments.length >= 2) {
+      bottleneckSeverity = 'high';
+    } else if (overdueApprovals.length >= 2 || stalledDepartments.length >= 1) {
+      bottleneckSeverity = 'medium';
+    }
+    
+    // Check for Stage 1 completion bottlenecks
+    const stage1Approvals = approvals.filter(a => a.approvalStage === 1);
+    const pendingStage1 = stage1Approvals.filter(a => a.status === 'pending');
+    
+    if (stage1Approvals.length > 0 && pendingStage1.length > 0) {
+      // If more than half of Stage 1 departments are still pending after 2+ days
+      const createdAt = stage1Approvals[0]?.createdAt ? new Date(stage1Approvals[0].createdAt) : currentTime;
+      const daysSinceCreation = Math.floor((currentTime.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceCreation >= 2 && pendingStage1.length >= Math.ceil(stage1Approvals.length / 2)) {
+        bottleneckSeverity = bottleneckSeverity === 'low' ? 'medium' : 'high';
+      }
+    }
+    
+    const hasBottlenecks = overdueApprovals.length > 0 || stalledDepartments.length > 0;
+    
+    return {
+      hasBottlenecks,
+      overdueApprovals,
+      stalledDepartments: [...new Set(stalledDepartments)], // Remove duplicates
+      bottleneckSeverity
+    };
   }
 
   async updateDealWithRevision(id: number, revisionData: Partial<Deal>): Promise<Deal | undefined> {
