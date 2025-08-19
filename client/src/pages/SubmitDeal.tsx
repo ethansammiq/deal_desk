@@ -116,6 +116,8 @@ import { SUBMIT_DEAL_TABS, createTabToStepMap, getNextTabId, getPreviousTabId, g
 
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
+import { useFinancialData } from "@/hooks/useFinancialData";
+import { useApprovalAlert } from "@/hooks/useApprovalAlert";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -158,9 +160,7 @@ export default function SubmitDeal() {
   const draftId = urlParams.get('draftId');
   const [isPreFilling, setIsPreFilling] = useState(!!fromScopingId || !!draftId);
   const [scopingDealData, setScopingDealData] = useState<any>(null);
-  const [currentApprover, setCurrentApprover] = useState<ApprovalRule | null>(
-    null,
-  );
+  // ✅ REMOVED: currentApprover state moved to useApprovalAlert hook
   const [dealStructureType, setDealStructure] = useState<
     "tiered" | "flat_commit" | ""
   >("");
@@ -178,10 +178,7 @@ export default function SubmitDeal() {
 
   // ✅ Phase 2.3: Legacy helper functions removed - using form.watch() and form.getValues() directly
 
-  // Handle approval level changes
-  const handleApprovalChange = (level: string, approvalInfo: ApprovalRule) => {
-    setCurrentApprover(approvalInfo);
-  };
+  // ✅ REMOVED: handleApprovalChange - now handled by useApprovalAlert hook
 
   // ❌ ELIMINATED: Incentive change handlers - DealTier manages its own data
 
@@ -292,6 +289,13 @@ export default function SubmitDeal() {
   );
 
   // Auto-save functionality removed as requested by user
+  
+  // ✅ APPROVAL ALERT: Initialize approval alert hook after form and dealTiers are defined
+  const { currentApprover } = useApprovalAlert(
+    dealTiers,
+    form.watch("dealType"),
+    form.watch("salesChannel")
+  );
 
   // Load draft data when resuming from Priority Actions
   useEffect(() => {
@@ -773,14 +777,6 @@ export default function SubmitDeal() {
 
   // ✅ PHASE 2: Data fetching now handled by useClientData hook
   const { agenciesData, advertisersData } = useFinancialData();
-  const { currentApprover } = useApprovalAlert(
-    dealTiers,
-    form.watch("dealType"),
-    form.watch("salesChannel")
-  );
-  
-  // ✅ FINANCIAL CALCULATIONS: Initialize deal calculations hook
-  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");
@@ -854,6 +850,9 @@ export default function SubmitDeal() {
 
     // ✅ FIXED: Calculate financial summary using proper hook-based calculation
     if (dealTiers.length > 0 && salesChannel) {
+      const advertiserName = form.getValues("advertiserName");
+      const agencyName = form.getValues("agencyName");
+      
       const summary = dealCalculations.calculateFinancialSummary(
         dealTiers,
         salesChannel,
@@ -862,7 +861,7 @@ export default function SubmitDeal() {
       );
       setFinancialSummary(summary);
     }
-  }, [dealTiers, salesChannel, dealCalculations, advertiserName, agencyName]);
+  }, [dealTiers, salesChannel, dealCalculations, form]);
 
   // ✅ PHASE 3: Tab navigation now handled by useTabNavigation hook
 
