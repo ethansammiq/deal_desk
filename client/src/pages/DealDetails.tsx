@@ -103,69 +103,6 @@ export default function DealDetails() {
           </Button>
           <h1 className="text-2xl font-bold text-slate-900">Deal Details</h1>
         </div>
-        
-        {/* Role-based Action Buttons */}
-        <QueryStateHandler query={dealQuery} loadingComponent={null} errorComponent={null}>
-          {(deal) => (
-            <div className="flex items-center gap-2">
-              {/* Approver Actions */}
-              {userRole === 'approver' && deal.status === 'under_review' && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRevisionModalOpen(true)}
-                    disabled={isUpdatingStatus}
-                  >
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Request Revision
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => approveDeal.mutate({ dealId: deal.id, comments: "Approved via deal details" })}
-                    disabled={isUpdatingStatus}
-                  >
-                    <FileCheck className="h-4 w-4 mr-2" />
-                    Approve Deal
-                  </Button>
-                </>
-              )}
-              
-              {/* Approver Actions for Negotiating */}
-              {userRole === 'approver' && deal.status === 'negotiating' && (
-                <Button
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setRevisionModalOpen(true)}
-                  disabled={isUpdatingStatus}
-                >
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Request Revision
-                </Button>
-              )}
-              
-              {/* Seller Actions for Revision Requested */}
-              {userRole === 'seller' && deal.status === 'revision_requested' && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
-                  >
-                    Edit Deal
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => resubmitMutation.mutate(deal.id)}
-                    disabled={resubmitMutation.isPending}
-                  >
-                    Resubmit Deal
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        </QueryStateHandler>
       </div>
 
       <QueryStateHandler
@@ -336,29 +273,36 @@ export default function DealDetails() {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {/* Edit Deal - Navigate to submission form for drafts/revisions */}
-                  {deal.status === 'draft' ? (
-                    <Button 
-                      className="w-full" 
-                      variant="default"
-                      onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Continue Draft
-                    </Button>
-                  ) : deal.status === 'revision_requested' ? (
-                    <Button 
-                      className="w-full" 
-                      variant="default"
-                      onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Continue Editing
-                    </Button>
-                  ) : null}
+                  {/* Seller actions */}
+                  {userRole === 'seller' && (
+                    <>
+                      {/* Edit Deal for drafts/revisions */}
+                      {(deal.status === 'draft' || deal.status === 'revision_requested') && (
+                        <Button 
+                          className="w-full" 
+                          variant="default"
+                          onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          {deal.status === 'draft' ? 'Continue Draft' : 'Continue Editing'}
+                        </Button>
+                      )}
+                      
+                      {/* Generate Deck placeholder */}
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => {/* TODO: Generate deck functionality */}}
+                        disabled
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Generate Deck
+                      </Button>
+                    </>
+                  )}
                   
-                  {/* Primary actions based on user role and deal status */}
-                  {user && (userRole === 'approver' || userRole === 'legal' || userRole === 'department_reviewer') && deal.status === 'under_review' && (
+                  {/* Reviewer/Approver actions */}
+                  {(userRole === 'approver' || userRole === 'legal' || userRole === 'department_reviewer') && deal.status === 'under_review' && (
                     <>
                       <Button
                         variant="outline"
@@ -377,44 +321,6 @@ export default function DealDetails() {
                       </Button>
                     </>
                   )}
-                  
-                  {/* Share deal link */}
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
-                      toast({ 
-                        title: "Link copied",
-                        description: "Deal link has been copied to clipboard"
-                      });
-                    }}
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Share Deal
-                  </Button>
-                  
-                  {/* Status-specific actions */}
-                  {deal.status === 'approved' && (
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => {/* TODO: Generate contract */}}
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Generate Contract
-                    </Button>
-                  )}
-                  
-                  {/* Back to previous page */}
-                  <Button 
-                    className="w-full" 
-                    variant="ghost"
-                    onClick={() => navigate('/analytics')}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Analytics
-                  </Button>
                 </CardContent>
               </Card>
             </div>
