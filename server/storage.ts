@@ -309,6 +309,26 @@ export class MemStorage implements IStorage {
         status: "revision_requested" as any, // BOTTLENECK - revision request blocks progress
         priority: "normal" as any,
         dueDate: oneDayFromNow,
+      },
+      
+      // Deal 4: Droga5 Client Portfolio - Independent agency deal needs department review
+      {
+        dealId: 4,
+        approvalStage: 1,
+        department: "finance" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "pending" as any,
+        priority: "normal" as any,
+        dueDate: oneDayFromNow, // Due tomorrow
+      },
+      {
+        dealId: 4,
+        approvalStage: 1,
+        department: "trading" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "pending" as any,
+        priority: "normal" as any,
+        dueDate: oneDayFromNow,
       }
     ];
     
