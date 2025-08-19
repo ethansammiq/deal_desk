@@ -168,7 +168,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
   // This ensures consistency with the metrics that show 0 pending reviews for Creative
   if (userRole === 'department_reviewer' && approvalItems) {
     // Only look at deals that are actually in this department's queue
-    const departmentReviewItems = approvalItems.filter(item => item.type === 'technical_review');
+    const departmentReviewItems = approvalItems.filter(item => item.type === 'department_approval');
     const departmentDealIds = departmentReviewItems.map(item => item.dealId);
     const reviewingDeals = deals.filter(deal => departmentDealIds.includes(deal.id));
     

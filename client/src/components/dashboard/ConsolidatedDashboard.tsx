@@ -150,7 +150,7 @@ export function ConsolidatedDashboard() {
       case 'approver':
         // Department-aware metrics using approval queue data
         const pendingReviews = currentUser?.role === 'department_reviewer' 
-          ? approvalItems?.filter(item => item.type === 'technical_review').length || 0
+          ? approvalItems?.filter(item => item.type === 'department_approval').length || 0
           : approvalItems?.filter(item => item.type === 'business_approval').length || 0;
         const pendingApprovals = deals.filter(deal => deal.status === 'approved').length;
         

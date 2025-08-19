@@ -689,6 +689,7 @@ export class MemStorage implements IStorage {
         status: "submitted" // Phase 7A compatible
       },
       {
+        email: "seller@company.com", // Assign to demo seller
         dealName: "WPP Agency Partnership",
         dealType: "grow",
         businessSummary: "Strategic partnership with WPP to handle multiple clients under a unified agreement with volume discounts.",
