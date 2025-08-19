@@ -454,18 +454,18 @@ export default function DealsPage() {
                 </CardDescription>
               </div>
               
-              {/* Summary Stats */}
+              {/* Summary Stats - Use role-filtered deals for accurate metrics */}
               <div className="hidden lg:flex items-center gap-6 text-sm">
                 <div className="text-center">
-                  <div className="font-semibold text-slate-900">{deals.filter(d => d.status === 'signed').length}</div>
+                  <div className="font-semibold text-slate-900">{filteredDeals.filter(d => d.status === 'signed').length}</div>
                   <div className="text-slate-500">Signed</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-slate-900">{deals.filter(d => d.status === 'under_review' || d.status === 'submitted').length}</div>
+                  <div className="font-semibold text-slate-900">{filteredDeals.filter(d => d.status === 'under_review' || d.status === 'submitted').length}</div>
                   <div className="text-slate-500">In Review</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-slate-900">{deals.filter(d => d.status === 'approved').length}</div>
+                  <div className="font-semibold text-slate-900">{filteredDeals.filter(d => d.status === 'approved').length}</div>
                   <div className="text-slate-500">Approved</div>
                 </div>
               </div>
