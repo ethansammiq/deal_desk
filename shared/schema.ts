@@ -631,6 +631,25 @@ export const dealApprovalStates = {
 
 export type DealApprovalState = typeof dealApprovalStates[keyof typeof dealApprovalStates];
 
+// Deal Comments table for threaded discussions
+export const dealComments = pgTable("deal_comments", {
+  id: serial("id").primaryKey(),
+  dealId: integer("deal_id").notNull(),
+  userId: integer("user_id").notNull(),
+  userName: text("user_name").notNull(), // Denormalized for display
+  content: text("content").notNull(),
+  parentCommentId: integer("parent_comment_id"), // For threaded replies
+  isDeleted: boolean("is_deleted").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDealCommentSchema = createInsertSchema(dealComments)
+  .omit({ id: true, createdAt: true, updatedAt: true });
+
+export type DealComment = typeof dealComments.$inferSelect;
+export type InsertDealComment = z.infer<typeof insertDealCommentSchema>;
+
 // Export approval system types
 export type DealApproval = typeof dealApprovals.$inferSelect;
 export type InsertDealApproval = z.infer<typeof insertDealApprovalSchema>;

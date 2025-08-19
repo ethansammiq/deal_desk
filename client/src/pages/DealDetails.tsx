@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -336,25 +336,84 @@ export default function DealDetails() {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {/* Edit Deal - Navigate to submission form for drafts */}
+                  {/* Edit Deal - Navigate to submission form for drafts/revisions */}
                   {deal.status === 'draft' ? (
                     <Button 
                       className="w-full" 
                       variant="default"
                       onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
                     >
+                      <Edit className="mr-2 h-4 w-4" />
                       Continue Draft
                     </Button>
-                  ) : (
-                    <Button className="w-full" variant="outline" disabled>
-                      Edit Deal
+                  ) : deal.status === 'revision_requested' ? (
+                    <Button 
+                      className="w-full" 
+                      variant="default"
+                      onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Continue Editing
+                    </Button>
+                  ) : null}
+                  
+                  {/* Primary actions based on user role and deal status */}
+                  {user && (userRole === 'approver' || userRole === 'legal' || userRole === 'department_reviewer') && deal.status === 'under_review' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setRevisionModalOpen(true)}
+                      >
+                        <AlertTriangle className="mr-2 h-4 w-4" />
+                        Request Revision
+                      </Button>
+                      <Button
+                        className="w-full"
+                        onClick={() => {/* TODO: Implement approval action */}}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve Deal
+                      </Button>
+                    </>
+                  )}
+                  
+                  {/* Share deal link */}
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast({ 
+                        title: "Link copied",
+                        description: "Deal link has been copied to clipboard"
+                      });
+                    }}
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Share Deal
+                  </Button>
+                  
+                  {/* Status-specific actions */}
+                  {deal.status === 'approved' && (
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => {/* TODO: Generate contract */}}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Contract
                     </Button>
                   )}
-                  <Button className="w-full" variant="outline">
-                    View History
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    Export Details
+                  
+                  {/* Back to previous page */}
+                  <Button 
+                    className="w-full" 
+                    variant="ghost"
+                    onClick={() => navigate('/analytics')}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Analytics
                   </Button>
                 </CardContent>
               </Card>
