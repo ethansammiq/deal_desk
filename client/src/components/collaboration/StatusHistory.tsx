@@ -37,7 +37,7 @@ export function StatusHistory({ deal }: StatusHistoryProps) {
       scoping: 'Scoping',
       submitted: 'Submitted',
       under_review: 'Under Review',
-      revision_requested: 'Revision Requested',
+
       negotiating: 'Negotiating',
       approved: 'Approved',
       contract_drafting: 'Contract Drafting',
@@ -54,7 +54,7 @@ export function StatusHistory({ deal }: StatusHistoryProps) {
       scoping: 'bg-blue-100 text-blue-800',
       submitted: 'bg-indigo-100 text-indigo-800',
       under_review: 'bg-amber-100 text-amber-800',
-      revision_requested: 'bg-orange-100 text-orange-800',
+
       negotiating: 'bg-purple-100 text-purple-800',
       approved: 'bg-emerald-100 text-emerald-800',
       contract_drafting: 'bg-teal-100 text-teal-800',

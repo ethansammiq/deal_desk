@@ -1972,14 +1972,16 @@ export class MemStorage implements IStorage {
     
     // Stage 1 analysis
     const stage1Pending = stage1Approvals.filter(a => a.status === 'pending').length;
-    const stage1SoftApproved = stage1Approvals.filter(a => a.status === 'soft_approved').length;
+    // Removed soft_approved status - using simplified 3-state system
     const stage1RevisionRequested = stage1Approvals.filter(a => a.status === 'revision_requested').length;
     const stage1Total = stage1Approvals.length;
     
     let stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed';
+    const stage1Approved = stage1Approvals.filter(a => a.status === 'approved').length;
+    
     if (stage1RevisionRequested > 0) {
       stage1Status = 'revision_requested';
-    } else if (stage1SoftApproved === stage1Total) {
+    } else if (stage1Approved === stage1Total) {
       stage1Status = 'completed';
     } else if (stage1Pending === stage1Total) {
       stage1Status = 'pending';
@@ -2036,7 +2038,7 @@ export class MemStorage implements IStorage {
       status,
       reviewerNotes: reviewerNotes || approval.reviewerNotes || null,
       revisionReason: revisionReason || approval.revisionReason || null,
-      completedAt: ['soft_approved', 'approved', 'rejected'].includes(status) ? now : approval.completedAt
+      completedAt: ['approved'].includes(status) ? now : approval.completedAt
     };
     
     this.dealApprovals.set(approvalId, updatedApproval);
@@ -2044,9 +2046,7 @@ export class MemStorage implements IStorage {
     // Create action history
     await this.createApprovalAction({
       approvalId,
-      actionType: status === 'soft_approved' ? 'approve' : 
-                  status === 'revision_requested' ? 'request_revision' : 
-                  status === 'rejected' ? 'reject' : 'approve',
+      actionType: status === 'revision_requested' ? 'request_revision' : 'approve',
       performedBy: 1, // TODO: Get actual user ID
       comments: reviewerNotes || revisionReason
     });

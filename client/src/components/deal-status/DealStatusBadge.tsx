@@ -10,9 +10,9 @@ interface DealStatusBadgeProps {
 const statusVariants: Record<DealStatus, "default" | "secondary" | "destructive" | "outline"> = {
   draft: "outline",
   scoping: "outline",
+  converted: "outline",
   submitted: "secondary", 
   under_review: "default",
-  revision_requested: "default",
   negotiating: "default",
   approved: "default",
   contract_drafting: "default", 
@@ -25,9 +25,9 @@ const statusVariants: Record<DealStatus, "default" | "secondary" | "destructive"
 const statusColors: Record<DealStatus, string> = {
   draft: "bg-slate-100 text-slate-600 border-slate-200",
   scoping: "bg-slate-100 text-slate-700 border-slate-300",
+  converted: "bg-slate-100 text-slate-700 border-slate-300",
   submitted: "bg-blue-100 text-blue-700 border-blue-300",
   under_review: "bg-yellow-100 text-yellow-700 border-yellow-300", 
-  revision_requested: "bg-amber-100 text-amber-700 border-amber-300",
   negotiating: "bg-orange-100 text-orange-700 border-orange-300",
   approved: "bg-green-100 text-green-700 border-green-300",
   contract_drafting: "bg-purple-100 text-purple-700 border-purple-300",

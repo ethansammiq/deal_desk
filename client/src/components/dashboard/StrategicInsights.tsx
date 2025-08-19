@@ -55,7 +55,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     const internalDeals = stalledDeals.filter(deal => 
       ['under_review', 'submitted', 'approved', 'contract_drafting'].includes(deal.status)
     );
-    const revisionDeals = stalledDeals.filter(deal => deal.status === 'revision_requested');
+    // Note: revision_requested is now handled within approval system, not as deal status
     const highRevisionDeals = stalledDeals.filter(deal => deal.revisionCount && deal.revisionCount >= 2);
 
     
@@ -69,10 +69,10 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     }
     
     // Prioritize guidance based on urgency and type
-    if (revisionDeals.length > 0) {
-      actionGuidance = revisionDeals.length === 1 
-        ? 'Address revision feedback and resubmit deal'
-        : 'Address revision feedback on multiple deals';
+    if (highRevisionDeals.length > 0) {
+      actionGuidance = highRevisionDeals.length === 1 
+        ? 'Deal has multiple revision requests - needs immediate attention'
+        : 'Multiple deals have repeated revision requests';
     } else if (highRevisionDeals.length > 0) {
       actionGuidance = highRevisionDeals.length === 1
         ? 'Deal has multiple revisions - review strategy'

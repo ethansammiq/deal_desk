@@ -50,12 +50,14 @@ async function checkAndUpdateDealStatus(dealId: number, storage: WorkflowStorage
 
     // Check completion status
     const allApproved = approvals.every((a: DealApproval) => a.status === 'approved');
-    const anyRejected = approvals.some((a: DealApproval) => a.status === 'rejected');
+    // Simplified system: no rejected status, use revision_requested instead
 
     let newStatus = deal.status;
     
-    if (anyRejected) {
-      newStatus = 'revision_requested';
+    const anyRevisionRequested = approvals.some((a: DealApproval) => a.status === 'revision_requested');
+    
+    if (anyRevisionRequested) {
+      // Keep deal in under_review status when departments need revisions
     } else if (allApproved) {
       newStatus = 'approved';
     } else {
@@ -1433,7 +1435,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       const { status, comments } = req.body;
 
       // Validate status
-      if (!["pending", "approved", "rejected", "revision_requested"].includes(status)) {
+      if (!["pending", "approved", "revision_requested"].includes(status)) {
         return res.status(400).json({ message: "Invalid approval status" });
       }
 
@@ -1452,13 +1454,13 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       await storage.createApprovalAction({
         approvalId,
         actionType: status === 'approved' ? 'approve' : 
-                   status === 'rejected' ? 'reject' : 'request_revision',
+                   'request_revision',
         performedBy: currentUser.id,
         comments: comments || null
       });
 
       // AUTO-TRIGGER WORKFLOW AUTOMATION: Check if deal status should be updated
-      if (status === 'approved' || status === 'rejected') {
+      if (status === 'approved') {
         await checkAndUpdateDealStatus(dealId, storage);
       }
 
@@ -1611,7 +1613,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Calculate progress
       const totalApprovals = approvals.length;
       const completedApprovals = approvals.filter(a => 
-        a.status === 'approved' || a.status === 'rejected'
+        a.status === 'approved'
       ).length;
       const progressPercentage = totalApprovals > 0 
         ? Math.round((completedApprovals / totalApprovals) * 100)
@@ -1622,7 +1624,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       for (const stage of Object.keys(stageGroups).map(Number).sort()) {
         const stageApprovals = stageGroups[stage];
         const allStageComplete = stageApprovals.every(a => 
-          a.status === 'approved' || a.status === 'rejected'
+          a.status === 'approved'
         );
         if (!allStageComplete) {
           currentStage = stage;

@@ -114,7 +114,7 @@ export function useSellerDealCategories(deals: Deal[], userEmail?: string) {
         : 0;
       
       return (
-        deal.status === 'revision_requested' ||
+
         (deal.status === 'negotiating' && daysSinceUpdate > 7) ||
         (deal.revisionCount && deal.revisionCount >= 2) ||
         (deal.draftExpiresAt && 

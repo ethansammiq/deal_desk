@@ -70,9 +70,9 @@ export function DealRow({
   // Get description text based on variant
   const getDescription = () => {
     if (variant === 'action') {
-      return deal.status === 'revision_requested' ? 'Needs revision' :
-             deal.revisionCount && deal.revisionCount >= 2 ? `Multiple revisions (${deal.revisionCount})` :
-             'Draft expiring soon';
+      return deal.revisionCount && deal.revisionCount >= 2 ? `Multiple revisions (${deal.revisionCount})` :
+             deal.flowIntelligence === 'needs_attention' ? 'Needs attention' :
+             'Follow up required';
     }
     return getSalesChannelDisplayName(deal.salesChannel);
   };
