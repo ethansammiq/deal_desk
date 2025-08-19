@@ -1790,8 +1790,8 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
-  // Get deals pending Stage 2 (business) approval for dashboard metrics
-  router.get("/deals/pending-business-approval", async (req: Request, res: Response) => {
+  // Get deals pending Stage 2 (business) approval for dashboard metrics  
+  router.get("/deals-pending-business-approval", async (req: Request, res: Response) => {
     try {
       const role = req.query.role as string || 'approver';
       const department = req.query.department as string;
