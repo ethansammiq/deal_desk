@@ -70,7 +70,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       
       insights.push({
         id: 'stall-risk-combined',
-        title: 'Deals Need Attention',
+        title: 'Client & Internal Follow-Up',
         metric: stalledDeals.length,
         description: `${externalDeals.length} client follow-up (${formatShortCurrency(externalValue)}) + ${internalDeals.length} internal follow-up (${formatShortCurrency(internalValue)})`,
         priority: insightPriority,
