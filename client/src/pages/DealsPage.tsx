@@ -126,7 +126,11 @@ export default function DealsPage() {
                   ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
                   : ''
             }`}
-            onClick={() => navigate(`/deals/${deal.id}`)}
+            onClick={() => {
+              // Store current URL with parameters for breadcrumb navigation
+              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+              navigate(`/deals/${deal.id}`);
+            }}
           >
             <div className="font-medium text-slate-900">
               {deal.dealName}
@@ -142,7 +146,11 @@ export default function DealsPage() {
       cell: ({ row }) => (
         <div 
           className="cursor-pointer"
-          onClick={() => navigate(`/deals/${row.original.id}`)}
+          onClick={() => {
+            // Store current URL with parameters for breadcrumb navigation
+            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+            navigate(`/deals/${row.original.id}`);
+          }}
         >
           <div className="font-medium text-slate-700">
             {row.original.advertiserName || row.original.agencyName || "N/A"}
@@ -158,7 +166,11 @@ export default function DealsPage() {
         <Badge 
           variant="outline" 
           className="font-normal cursor-pointer"
-          onClick={() => navigate(`/deals/${row.original.id}`)}
+          onClick={() => {
+            // Store current URL with parameters for breadcrumb navigation
+            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+            navigate(`/deals/${row.original.id}`);
+          }}
         >
           {getSalesChannelDisplayName(row.original.salesChannel)}
         </Badge>
@@ -170,7 +182,11 @@ export default function DealsPage() {
       cell: ({ row }) => (
         <div 
           className="text-slate-600 cursor-pointer"
-          onClick={() => navigate(`/deals/${row.original.id}`)}
+          onClick={() => {
+            // Store current URL with parameters for breadcrumb navigation
+            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+            navigate(`/deals/${row.original.id}`);
+          }}
         >
           {getRegionDisplayName(row.original.region)}
         </div>
@@ -185,7 +201,11 @@ export default function DealsPage() {
         return (
           <div 
             className="font-medium text-slate-900 cursor-pointer"
-            onClick={() => navigate(`/deals/${row.original.id}`)}
+            onClick={() => {
+              // Store current URL with parameters for breadcrumb navigation
+              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+              navigate(`/deals/${row.original.id}`);
+            }}
           >
             {formatShortCurrency(value)}
           </div>
@@ -200,7 +220,11 @@ export default function DealsPage() {
         return (
           <div 
             className="cursor-pointer"
-            onClick={() => navigate(`/deals/${row.original.id}`)}
+            onClick={() => {
+              // Store current URL with parameters for breadcrumb navigation
+              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+              navigate(`/deals/${row.original.id}`);
+            }}
           >
             <DealStatusBadge status={status} />
           </div>
@@ -239,7 +263,11 @@ export default function DealsPage() {
         return (
           <div 
             className="text-sm text-slate-500 cursor-pointer"
-            onClick={() => navigate(`/deals/${row.original.id}`)}
+            onClick={() => {
+              // Store current URL with parameters for breadcrumb navigation
+              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
+              navigate(`/deals/${row.original.id}`);
+            }}
           >
             {dateString}
           </div>

@@ -52,7 +52,11 @@ export function Breadcrumbs() {
     
     // Handle deal detail pages
     if (location.startsWith("/deals/")) {
-      breadcrumbs.push({ title: "Analytics", path: "/analytics", id: "analytics" });
+      // Check sessionStorage for referrer URL to preserve query parameters
+      const referrerUrl = sessionStorage.getItem('analyticsReferrer');
+      const analyticsPath = referrerUrl && referrerUrl.startsWith('/analytics') ? referrerUrl : '/analytics';
+      
+      breadcrumbs.push({ title: "Analytics", path: analyticsPath, id: "analytics" });
       breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });
       return breadcrumbs;
     }
