@@ -41,19 +41,6 @@ export default function DealsPage() {
     const currentUrl = window.location.pathname + window.location.search;
     sessionStorage.setItem('analyticsReferrer', currentUrl);
     
-    console.log('🚗 Navigation Debug - Setting sessionStorage:', {
-      currentUrl,
-      sessionStorageJustSet: sessionStorage.getItem('analyticsReferrer'),
-      timestamp: new Date().toISOString()
-    });
-    
-    // Verify it's still there after a short delay
-    setTimeout(() => {
-      console.log('🚗 Navigation Debug - Verifying sessionStorage after 100ms:', {
-        sessionStorageStillThere: sessionStorage.getItem('analyticsReferrer')
-      });
-    }, 100);
-    
     navigate(`/deals/${dealId}`);
   };
 

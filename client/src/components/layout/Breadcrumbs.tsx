@@ -57,21 +57,10 @@ export function Breadcrumbs() {
       // Use sessionStorage to get the referrer URL with query parameters
       if (typeof window !== 'undefined') {
         const referrerUrl = sessionStorage.getItem('analyticsReferrer');
-        console.log('🍞 Breadcrumb Debug - SessionStorage Check:', {
-          referrerUrl,
-          startsWith: referrerUrl?.startsWith('/analytics'),
-          location
-        });
-        
         if (referrerUrl && referrerUrl.startsWith('/analytics')) {
           analyticsPath = referrerUrl;
-          console.log('🍞 Using referrer path:', analyticsPath);
-        } else {
-          console.log('🍞 Using default analytics path');
         }
       }
-      
-      console.log('🍞 Final breadcrumb path for Analytics button:', analyticsPath);
       
       breadcrumbs.push({ title: "Analytics", path: analyticsPath, id: "analytics" });
       breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });
@@ -111,14 +100,18 @@ export function Breadcrumbs() {
               {breadcrumb.title}
             </span>
           ) : (
-            <Link href={breadcrumb.path}>
-              <div className="flex items-center hover:text-[#3e0075] transition-all duration-200 cursor-pointer group">
-                {index === 0 && (
-                  <Home className="h-3.5 w-3.5 mr-1 group-hover:scale-110 transition-transform" />
-                )}
-                <span className="group-hover:font-medium">{breadcrumb.title}</span>
-              </div>
-            </Link>
+            <div 
+              className="flex items-center hover:text-[#3e0075] transition-all duration-200 cursor-pointer group"
+              onClick={() => {
+                // Use window.location for reliable navigation with query parameters
+                window.location.href = breadcrumb.path;
+              }}
+            >
+              {index === 0 && (
+                <Home className="h-3.5 w-3.5 mr-1 group-hover:scale-110 transition-transform" />
+              )}
+              <span className="group-hover:font-medium">{breadcrumb.title}</span>
+            </div>
           )}
         </div>
       ))}
