@@ -117,7 +117,6 @@ import { SUBMIT_DEAL_TABS, createTabToStepMap, getNextTabId, getPreviousTabId, g
 import { migrateLegacyTiers, toLegacyFormat } from "@/lib/tier-migration";
 import { DEAL_CONSTANTS, INCENTIVE_CONSTANTS, FORM_CONSTANTS } from "@/config/businessConstants";
 import { useFinancialData } from "@/hooks/useFinancialData";
-import { useApprovalAlert } from "@/hooks/useApprovalAlert";
 
 // Simplified deal schema with only essential fields
 // Simplified schema - fields now handled by shared components
@@ -290,12 +289,7 @@ export default function SubmitDeal() {
 
   // Auto-save functionality removed as requested by user
   
-  // ✅ APPROVAL ALERT: Initialize approval alert hook after form and dealTiers are defined
-  const { currentApprover } = useApprovalAlert(
-    dealTiers,
-    form.watch("dealType"),
-    form.watch("salesChannel")
-  );
+  // ✅ REMOVED: useApprovalAlert hook - functionality now handled by ApprovalMatrixDisplay component
 
   // Load draft data when resuming from Priority Actions
   useEffect(() => {
