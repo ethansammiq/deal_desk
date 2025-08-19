@@ -41,18 +41,12 @@ export default function DealsPage() {
     const currentUrl = window.location.pathname + window.location.search;
     sessionStorage.setItem('analyticsReferrer', currentUrl);
     
-    // Also pass referrer as URL parameter for more reliable breadcrumb navigation
-    const encodedRef = encodeURIComponent(currentUrl);
-    const targetUrl = `/deals/${dealId}?ref=${encodedRef}`;
-    
     console.log('🚗 Navigation Debug:', {
       currentUrl,
-      encodedRef,
-      targetUrl,
       sessionStorageSet: sessionStorage.getItem('analyticsReferrer')
     });
     
-    navigate(targetUrl);
+    navigate(`/deals/${dealId}`);
   };
 
   // Parse URL parameters on mount and location change

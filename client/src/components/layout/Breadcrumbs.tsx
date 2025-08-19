@@ -52,34 +52,15 @@ export function Breadcrumbs() {
     
     // Handle deal detail pages
     if (location.startsWith("/deals/")) {
-      // Check for referrer parameter in URL first, then sessionStorage as fallback
-      const urlParams = new URLSearchParams(window.location.search);
-      const referrer = urlParams.get('ref');
-      
       let analyticsPath = '/analytics';
       
-      // Debug logging
-      console.log('🍞 Breadcrumb Debug:', {
-        location,
-        search: window.location.search,
-        referrer,
-        sessionStorage: typeof window !== 'undefined' ? sessionStorage.getItem('analyticsReferrer') : null
-      });
-      
-      // If referrer parameter exists and is valid analytics URL
-      if (referrer && referrer.startsWith('/analytics')) {
-        analyticsPath = decodeURIComponent(referrer);
-        console.log('🍞 Using URL referrer:', analyticsPath);
-      } else if (typeof window !== 'undefined') {
-        // Fallback to sessionStorage for client-side navigation
+      // Use sessionStorage to get the referrer URL with query parameters
+      if (typeof window !== 'undefined') {
         const referrerUrl = sessionStorage.getItem('analyticsReferrer');
         if (referrerUrl && referrerUrl.startsWith('/analytics')) {
           analyticsPath = referrerUrl;
-          console.log('🍞 Using sessionStorage referrer:', analyticsPath);
         }
       }
-      
-      console.log('🍞 Final analyticsPath:', analyticsPath);
       
       breadcrumbs.push({ title: "Analytics", path: analyticsPath, id: "analytics" });
       breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });
