@@ -228,9 +228,6 @@ export default function DealDetails() {
                 />
               )}
 
-              {/* Deal History Section */}
-              <DealHistory dealId={deal.id} />
-
               {/* Comments Section */}
               <DealComments 
                 deal={deal} 
@@ -327,6 +324,9 @@ export default function DealDetails() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Deal History Section */}
+              <DealHistory dealId={deal.id} />
             </div>
           </div>
         )}
