@@ -1904,38 +1904,52 @@ export class MemStorage implements IStorage {
     return approvals.sort((a, b) => a.id - b.id);
   }
 
-  // Enhanced department assignment for all departments
+  // Smart department assignment based on incentives + core departments
   async determineRequiredDepartments(incentives: IncentiveValue[]): Promise<{
     departments: string[],
     reasons: Record<string, string[]>
   }> {
-    // ALL DEPARTMENTS now participate in Stage 1 review
-    const allDepts = ["finance", "trading", "creative", "marketing", "product", "solutions"];
+    // Core departments that review ALL deals
+    const coreDepartments = ["finance", "trading"];
     const reasons: Record<string, string[]> = {};
     
-    // Default reasons for all departments
-    allDepts.forEach(dept => {
-      reasons[dept] = ["comprehensive_deal_review"];
+    // Initialize core departments
+    coreDepartments.forEach(dept => {
+      reasons[dept] = ["core_business_review"];
     });
     
-    // Add specific reasons based on incentives
+    // Map incentives to specific departments
+    const incentiveMapping: Record<string, string> = {
+      "financial": "finance",
+      "resources": "finance", 
+      "product-innovation": "creative",
+      "technology": "product",
+      "analytics": "solutions",
+      "marketing": "marketing"
+    };
+    
+    // Add specialized departments based on incentives
+    const specializedDepts = new Set<string>();
     incentives.forEach(incentive => {
-      const incentiveMapping: Record<string, string> = {
-        "financial": "finance",
-        "resources": "finance", 
-        "product-innovation": "creative",
-        "technology": "product",
-        "analytics": "solutions",
-        "marketing": "marketing"
-      };
-      
-      const dept = incentiveMapping[incentive.category];
-      if (dept && reasons[dept]) {
-        reasons[dept].push(`${incentive.category}_incentive_expertise`);
+      const dept = incentiveMapping[incentive.categoryId] || incentiveMapping[incentive.category];
+      if (dept && dept !== "finance") { // Finance already included as core
+        specializedDepts.add(dept);
+        if (!reasons[dept]) reasons[dept] = [];
+        reasons[dept].push(`${incentive.categoryId || incentive.category}_expertise`);
       }
     });
+    
+    // Combine core + specialized departments
+    const allRequiredDepts = [...coreDepartments, ...Array.from(specializedDepts)];
 
-    return { departments: allDepts, reasons };
+    console.log(`📋 DEPARTMENT ROUTING: Required departments: ${allRequiredDepts.join(", ")}`);
+    console.log(`   Core: ${coreDepartments.join(", ")}`);
+    console.log(`   Specialized: ${Array.from(specializedDepts).join(", ") || "none"}`);
+
+    return { 
+      departments: allRequiredDepts, 
+      reasons 
+    };
   }
 
   // Calculate complex approval state for a deal
@@ -2040,7 +2054,7 @@ export class MemStorage implements IStorage {
     return updatedApproval;
   }
 
-  // Enhanced approval workflow initiation for ALL departments
+  // Enhanced approval workflow initiation for RELEVANT departments
   async initiateEnhancedApprovalWorkflow(dealId: number, initiatedBy: number): Promise<{
     approvals: DealApproval[],
     workflow: any
@@ -2048,14 +2062,16 @@ export class MemStorage implements IStorage {
     const deal = await this.getDeal(dealId);
     if (!deal) throw new Error("Deal not found");
     
-    // ALL DEPARTMENTS must review every deal - no filtering
-    const allDepartments = ["finance", "trading", "creative", "marketing", "product", "solutions"];
+    // Get incentives to determine which departments should review
+    const incentives = await this.getIncentiveValues(dealId);
+    const { departments, reasons } = await this.determineRequiredDepartments(incentives);
     
     const approvals: DealApproval[] = [];
     
-    // Stage 1: All departments review simultaneously
-    for (const department of allDepartments) {
+    // Stage 1: Relevant departments review simultaneously
+    for (const department of departments) {
       const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
+      const departmentReasons = reasons[department] || [];
       
       const approval = await this.createDealApproval({
         dealId,
@@ -2070,6 +2086,7 @@ export class MemStorage implements IStorage {
       approvals.push(approval);
       
       console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${department} department review`);
+      console.log(`   Reasons: ${departmentReasons.join(", ")}`);
       console.log(`   Stage: 1, Priority: normal, Due: ${dueDate}`);
     }
     
@@ -2079,7 +2096,7 @@ export class MemStorage implements IStorage {
       approvals,
       workflow: {
         totalStages: 2,
-        stage1Departments: allDepartments.length,
+        stage1Departments: departments.length,
         stage2Blocked: true,
         estimatedDuration: "5-10 business days"
       }
