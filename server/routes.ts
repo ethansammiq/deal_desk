@@ -180,8 +180,14 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
   router.get("/deals", async (req: Request, res: Response) => {
     try {
       const status = req.query.status as string | undefined;
+      const flowIntelligence = req.query.filter as string | undefined;
       const filters = status ? { status } : undefined;
-      const deals = await storage.getDeals(filters);
+      let deals = await storage.getDeals(filters);
+      
+      // Filter by flow intelligence if requested
+      if (flowIntelligence && ['needs_attention', 'on_track'].includes(flowIntelligence)) {
+        deals = deals.filter(deal => deal.flowIntelligence === flowIntelligence);
+      }
       
       // Enhance deals with tier data for accurate value calculation
       const dealsWithTiers = await Promise.all(
