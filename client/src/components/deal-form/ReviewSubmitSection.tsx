@@ -129,7 +129,9 @@ export function ReviewSubmitSection({
       </Card>
 
       {/* Financial Summary using shared component */}
-      <FinancialMetricsGrid financialSummary={financialSummary} />
+      {financialSummary && (
+        <FinancialMetricsGrid financialSummary={financialSummary} />
+      )}
 
       {/* Financial Structure using shared component */}
       {dealStructureType === "tiered" && dealTiers.length > 0 && (
@@ -142,9 +144,12 @@ export function ReviewSubmitSection({
       )}
 
       {/* Approval Pipeline Alert */}
-      {currentApprover && (
-        <ApprovalAlert approver={currentApprover} />
-      )}
+      <ApprovalAlert
+        totalValue={financialSummary.totalAnnualRevenue}
+        contractTerm={contractTerm}
+        dealType={formValues.dealType}
+        salesChannel={salesChannel}
+      />
 
       {/* Action Buttons - Using shared FormNavigation component */}
       <FormNavigation

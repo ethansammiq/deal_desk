@@ -772,6 +772,15 @@ export default function SubmitDeal() {
   });
 
   // ✅ PHASE 2: Data fetching now handled by useClientData hook
+  const { agenciesData, advertisersData } = useFinancialData();
+  const { currentApprover } = useApprovalAlert(
+    dealTiers,
+    form.watch("dealType"),
+    form.watch("salesChannel")
+  );
+  
+  // ✅ FINANCIAL CALCULATIONS: Initialize deal calculations hook
+  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
 
   // Watch for salesChannel and dealStructure changes to handle conditional fields
   const salesChannel = form.watch("salesChannel");
@@ -843,16 +852,17 @@ export default function SubmitDeal() {
       }
     }
 
-    // Calculate financial summary using dealTiers
-    const summary = calculateDealFinancialSummary(
-      dealTiers,
-      contractTerm,
-      previousYearRevenue,
-    );
-
-    // Update the financial summary state
-    setFinancialSummary(summary);
-  }, [dealTiers, salesChannel]);
+    // ✅ FIXED: Calculate financial summary using proper hook-based calculation
+    if (dealTiers.length > 0 && salesChannel) {
+      const summary = dealCalculations.calculateFinancialSummary(
+        dealTiers,
+        salesChannel,
+        advertiserName,
+        agencyName
+      );
+      setFinancialSummary(summary);
+    }
+  }, [dealTiers, salesChannel, dealCalculations, advertiserName, agencyName]);
 
   // ✅ PHASE 3: Tab navigation now handled by useTabNavigation hook
 
