@@ -1811,20 +1811,20 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
           departmentApprovals.every(a => a.status === 'approved');
         const anyDepartmentRevisions = departmentApprovals.some(a => a.status === 'revision_requested');
         
-        // Deal is pending business approval if:
-        // 1. All departments have approved (Stage 1 complete)
-        // 2. No department revisions requested
-        // 3. Business approvals exist but are not all approved yet
-        if (allDepartmentsApproved && !anyDepartmentRevisions) {
-          // For department reviewers, filter by deals relevant to their department
+        // Simply count Stage 2 approvals with pending status
+        const pendingStage2Approvals = approvals.filter(a => 
+          a.approvalStage === 2 && a.status === 'pending'
+        );
+        
+        if (pendingStage2Approvals.length > 0) {
+          // For department reviewers, only show deals where their department was involved in Stage 1
           if (role === 'department_reviewer' && department) {
-            // Check if this department was involved in approving this deal
             const departmentWasInvolved = departmentApprovals.some(a => a.department === department);
             if (departmentWasInvolved) {
               pendingBusinessApprovalDeals.push(deal);
             }
           } else {
-            // For approvers and other roles, show all deals pending business approval
+            // For approvers, show all deals with pending Stage 2 approvals
             pendingBusinessApprovalDeals.push(deal);
           }
         }
