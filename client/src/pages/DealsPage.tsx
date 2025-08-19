@@ -18,6 +18,7 @@ import {
   getDelayedDeals
 } from "@/utils/dealClassification";
 import { getSalesChannelDisplayName, getRegionDisplayName } from "@shared/constants";
+import { format } from "date-fns";
 import { 
   Briefcase, 
   PlusCircle, 
@@ -89,12 +90,62 @@ export default function DealsPage() {
   const approvalItems = (approvalData as any)?.items || [];
   const departmentDealIds = new Set(approvalItems.map((item: any) => item.dealId));
 
-  // Helper to format currency in shortened format
-  const formatShortCurrency = (amount: number): string => {
+  // Helper to format currency in shortened format with multi-tier indicator (from UnifiedDashboard)
+  const formatShortCurrency = (amount: number, isMultiTier = false): string => {
     if (amount === 0) return "$0";
-    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
-    return `$${amount.toLocaleString()}`;
+    
+    let suffix = '';
+    if (amount >= 1000000) {
+      suffix = `$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      suffix = `$${(amount / 1000).toFixed(1)}K`;
+    } else {
+      suffix = `$${amount.toFixed(0)}`;
+    }
+    
+    // Add + indicator for multi-tier deals
+    return isMultiTier ? `${suffix}+` : suffix;
+  };
+
+  // Helper function to get deal value based on deal type and structure (from UnifiedDashboard)
+  const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
+    // For scoping deals, use growth ambition
+    if (deal.status === 'scoping' && deal.growthAmbition) {
+      return { amount: deal.growthAmbition, isMultiTier: false };
+    }
+    
+    // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
+    if (deal.dealStructure === 'tiered') {
+      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
+      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
+      return { amount, isMultiTier: true }; // Always true for tiered deals
+    }
+    
+    // For flat commit deals, use annual revenue (no + sign)
+    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
+      return { amount: deal.annualRevenue, isMultiTier: false };
+    }
+    
+    // Fallback to any available revenue value
+    const amount = deal.annualRevenue || deal.growthAmbition || 0;
+    return { amount, isMultiTier: false };
+  };
+
+  // Format relative date (from UnifiedDashboard)
+  const formatRelativeDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diff === 0) return "Today";
+      if (diff === 1) return "Yesterday";
+      if (diff < 7) return `${diff} days ago`;
+      if (diff < 30) return `${Math.floor(diff / 7)} week${Math.floor(diff / 7) !== 1 ? 's' : ''} ago`;
+      return format(date, 'MMM d, yyyy');
+    } catch (e) {
+      return dateString || "Unknown date";
+    }
   };
 
   // Classify deals using unified system - use backend flowIntelligence for consistency
@@ -115,105 +166,93 @@ export default function DealsPage() {
     };
   });
 
-  // Deal table columns with comprehensive information
+  // Deal table columns replicating UnifiedDashboard structure with modifications
   const dealColumns: ColumnDef<Deal>[] = [
     {
-      accessorKey: "dealName",
-      header: "Deal Name",
+      id: "client",
+      header: "Client",
       cell: ({ row }) => {
         const deal = row.original;
-        const classifiedDeal = classifiedDeals.find(cd => cd.id === deal.id);
-        const isHighlighted = highlightedDeals.includes(deal.id);
-        const badgeInfo = classifiedDeal?.badgeInfo;
-        
-        return (
-          <div 
-            className={`cursor-pointer ${
-              isHighlighted 
-                ? 'pl-3 border-l-4 border-purple-500 bg-purple-50' 
-                : badgeInfo?.className 
-                  ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
-                  : ''
-            }`}
-            onClick={() => navigateToDeal(deal.id)}
-          >
-            <div className="font-medium text-slate-900">
-              {deal.dealName}
-            </div>
-            <div className="text-sm text-slate-500">#{deal.referenceNumber}</div>
-          </div>
-        );
+        const clientName = deal.advertiserName || deal.agencyName || "N/A";
+        return <div className="font-medium text-slate-900">{clientName}</div>;
       },
     },
     {
-      accessorKey: "advertiserName",
-      header: "Client",
-      cell: ({ row }) => (
-        <div 
-          className="cursor-pointer"
-          onClick={() => navigateToDeal(row.original.id)}
-        >
-          <div className="font-medium text-slate-700">
-            {row.original.advertiserName || row.original.agencyName || "N/A"}
-          </div>
-          <div className="text-sm text-slate-500">{row.original.dealType}</div>
-        </div>
-      ),
-    },
-    {
       accessorKey: "salesChannel",
-      header: "Channel",
-      cell: ({ row }) => (
-        <Badge 
-          variant="outline" 
-          className="font-normal cursor-pointer"
-          onClick={() => navigateToDeal(row.original.id)}
-        >
-          {getSalesChannelDisplayName(row.original.salesChannel)}
-        </Badge>
-      ),
+      header: "Sales Channel",
+      cell: ({ row }) => {
+        const channelLabels = {
+          'holding_company': 'Holding Company',
+          'independent_agency': 'Independent Agency', 
+          'client_direct': 'Client Direct'
+        };
+        const channel = row.original.salesChannel;
+        const label = channelLabels[channel as keyof typeof channelLabels] || channel;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
     },
     {
       accessorKey: "region",
       header: "Region",
-      cell: ({ row }) => (
-        <div 
-          className="text-slate-600 cursor-pointer"
-          onClick={() => navigateToDeal(row.original.id)}
-        >
-          {getRegionDisplayName(row.original.region)}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const regionLabels = {
+          'northeast': 'Northeast',
+          'midwest': 'Midwest',
+          'midatlantic': 'Mid-Atlantic',
+          'west': 'West',
+          'south': 'South'
+        };
+        const region = row.original.region;
+        const label = regionLabels[region as keyof typeof regionLabels] || region || "N/A";
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
     },
     {
-      accessorKey: "annualRevenue",
-      header: "Value",
+      accessorKey: "dealStructure",
+      header: "Deal Type",
       cell: ({ row }) => {
-        const deal = row.original as any;
-        const value = deal.annualRevenue || deal.totalValue || 0;
-        return (
-          <div 
-            className="font-medium text-slate-900 cursor-pointer"
-            onClick={() => navigateToDeal(row.original.id)}
-          >
-            {formatShortCurrency(value)}
-          </div>
-        );
+        const structure = row.original.dealStructure;
+        const typeLabels = {
+          'tiered': 'Tiered',
+          'flat_commit': 'Flat Commit'
+        };
+        const label = typeLabels[structure as keyof typeof typeLabels] || structure;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+    },
+    {
+      id: "dealValue", 
+      header: "Deal Value",
+      cell: ({ row }) => {
+        const { amount, isMultiTier } = getDealValue(row.original);
+        return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
       },
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status as DealStatus;
-        return (
-          <div 
-            className="cursor-pointer"
-            onClick={() => navigateToDeal(row.original.id)}
-          >
-            <DealStatusBadge status={status} />
-          </div>
-        );
+        const deal = row.original;
+        const status = deal.status as DealStatus;
+        // Show simplified status without badges, revision count, or draft type as requested
+        const statusLabels = {
+          'draft': 'Draft',
+          'scoping': 'Scoping',
+          'submitted': 'Submitted',
+          'under_review': 'Under Review',
+          'approved': 'Approved',
+          'negotiating': 'Negotiating',
+          'client_review': 'Client Review',
+          'contract_drafting': 'Contract Drafting',
+          'contract_sent': 'Contract Sent',
+          'signed': 'Signed',
+          'lost': 'Lost'
+        };
+        const label = statusLabels[status] || status;
+        return <div className="text-sm text-slate-700">{label}</div>;
+      },
+      filterFn: (row, id, value) => {
+        return value === row.getValue(id);
       },
     },
     {
@@ -244,15 +283,8 @@ export default function DealsPage() {
       header: "Updated",
       cell: ({ row }) => {
         const updatedAt = row.original.updatedAt;
-        const dateString = updatedAt ? new Date(updatedAt).toLocaleDateString() : "";
-        return (
-          <div 
-            className="text-sm text-slate-500 cursor-pointer"
-            onClick={() => navigateToDeal(row.original.id)}
-          >
-            {dateString}
-          </div>
-        );
+        const dateString = updatedAt ? updatedAt.toString() : "";
+        return <div className="text-sm text-slate-500">{formatRelativeDate(dateString)}</div>;
       },
     },
   ];
