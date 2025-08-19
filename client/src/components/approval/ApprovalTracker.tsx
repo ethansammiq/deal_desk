@@ -52,6 +52,12 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
 
   const { data: approvalStatus } = useQuery<any>({
     queryKey: [`/api/deals/${dealId}/approval-status`],
+    enabled: !!dealId,
+    refetchInterval: 5000 // Refresh every 5 seconds to catch new approvals
+  });
+
+  const { data: departments } = useQuery<any[]>({
+    queryKey: ['/api/approval-departments'],
     enabled: !!dealId
   });
 
@@ -74,7 +80,7 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
     );
   }
 
-  if (!approvalState || !approvalStatus) {
+  if (!approvalState || !approvalStatus || !departments) {
     return (
       <Card className={className}>
         <CardHeader>
@@ -95,6 +101,12 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
     );
   }
 
+  // Create department lookup map
+  const departmentMap = departments.reduce((acc: any, dept: any) => {
+    acc[dept.departmentName] = dept.displayName;
+    return acc;
+  }, {});
+
   // Process approval data into stages
   const stages: ApprovalStageData[] = [
     {
@@ -102,7 +114,10 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
       name: 'Department Review',
       description: 'Parallel review by relevant departments',
       status: getStageStatus(1, approvalState, approvalStatus),
-      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 1),
+      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 1).map((a: any) => ({
+        ...a,
+        departmentDisplayName: departmentMap[a.department] || a.department
+      })),
       progress: calculateStageProgress(1, approvalStatus),
       completedAt: getStageCompletedAt(1, approvalStatus)
     },
@@ -111,7 +126,10 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
       name: 'Business Approval',
       description: 'Executive approval for final sign-off',
       status: getStageStatus(2, approvalState, approvalStatus),
-      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 2),
+      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 2).map((a: any) => ({
+        ...a,
+        departmentDisplayName: departmentMap[a.department] || a.department
+      })),
       progress: calculateStageProgress(2, approvalStatus),
       completedAt: getStageCompletedAt(2, approvalStatus)
     }
