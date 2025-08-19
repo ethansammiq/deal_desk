@@ -77,7 +77,7 @@ export default function DealDetails() {
   });
 
   const handleGoBack = () => {
-    navigate('/deals');
+    navigate('/analytics');
   };
 
   if (!dealId || dealId <= 0) {
