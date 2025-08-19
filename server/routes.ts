@@ -920,6 +920,43 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
   
+  // TEST ENDPOINT: Create deal with short delay for demo purposes
+  router.post("/deals/test-auto-transition", async (req: Request, res: Response) => {
+    try {
+      // Extract dealTiers from request body if present
+      const { dealTiers, ...reqData } = req.body;
+      
+      // Validate the deal data against the schema
+      const validatedData = insertDealSchema.safeParse(reqData);
+      
+      if (!validatedData.success) {
+        const errorMessage = fromZodError(validatedData.error).message;
+        return res.status(400).json({ message: errorMessage });
+      }
+      
+      // Force status to submitted for testing
+      const dealData = { ...validatedData.data, status: 'submitted' as any };
+      
+      // Generate a unique reference number
+      const year = new Date().getFullYear();
+      const allDeals = await storage.getDeals();
+      const nextSequence = allDeals.length + 1;
+      const referenceNumber = `TEST-${year}-${String(nextSequence).padStart(3, '0')}`;
+      
+      // Create deal with short delay (2 minutes instead of 2 hours)
+      const newDeal = await storage.createTestDealWithShortDelay(dealData);
+      
+      res.status(201).json({ 
+        deal: newDeal,
+        message: "Test deal created - will auto-transition to under_review in 2 minutes",
+        note: "This is a testing endpoint with accelerated timing"
+      });
+    } catch (error) {
+      console.error("Error creating test deal:", error);
+      res.status(500).json({ message: "Failed to create test deal" });
+    }
+  });
+  
   router.patch("/deals/:id/status", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);

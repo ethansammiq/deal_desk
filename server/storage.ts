@@ -145,6 +145,27 @@ export interface IStorage {
   }>;
 }
 
+// Interface for scheduled tasks
+interface ScheduledTask {
+  id: string;
+  dealId: number;
+  taskType: 'status_transition';
+  fromStatus: DealStatus;
+  toStatus: DealStatus;
+  scheduledFor: Date;
+  executed: boolean;
+  createdAt: Date;
+}
+
+// Email notification placeholder - TODO: Implement proper email service
+interface EmailNotification {
+  to: string[];
+  subject: string;
+  body: string;
+  type: 'deal_submitted' | 'status_changed' | 'approval_required';
+  dealId: number;
+}
+
 // In-memory storage implementation
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
@@ -158,6 +179,10 @@ export class MemStorage implements IStorage {
   private dealApprovals: Map<number, DealApproval>; // Multi-layered approval system
   private approvalActions: Map<number, ApprovalAction>;
   private approvalDepartments: Map<number, ApprovalDepartment>;
+  
+  // Scheduled task system for delayed status transitions
+  private scheduledTasks: Map<string, ScheduledTask>;
+  private taskTimer: NodeJS.Timeout | null = null;
   
   private userCurrentId: number;
   private advertiserCurrentId: number;
@@ -183,6 +208,7 @@ export class MemStorage implements IStorage {
     this.dealApprovals = new Map();
     this.approvalActions = new Map();
     this.approvalDepartments = new Map();
+    this.scheduledTasks = new Map();
     
     this.userCurrentId = 1;
     this.advertiserCurrentId = 1;
@@ -204,6 +230,9 @@ export class MemStorage implements IStorage {
     
     // Add demo data with older timestamps for testing insights
     this.addDemoStrategicInsightsData();
+    
+    // Initialize scheduled task system
+    this.initializeTaskScheduler();
   }
 
   // Add demo data with older timestamps for Strategic Insights testing
@@ -254,6 +283,119 @@ export class MemStorage implements IStorage {
     }
   }
 
+  // SCHEDULED TASK SYSTEM FOR DELAYED STATUS TRANSITIONS
+  
+  // Initialize the task scheduler that runs every minute
+  private initializeTaskScheduler() {
+    console.log("📅 TASK SCHEDULER: Initializing scheduled task system");
+    
+    // Run task processor every minute
+    this.taskTimer = setInterval(() => {
+      this.processScheduledTasks();
+    }, 60000); // 60 seconds
+    
+    console.log("✅ TASK SCHEDULER: System initialized - checking tasks every 60 seconds");
+  }
+  
+  // Process scheduled tasks that are due for execution
+  private async processScheduledTasks() {
+    const now = new Date();
+    const dueTasks = Array.from(this.scheduledTasks.values())
+      .filter(task => !task.executed && task.scheduledFor <= now);
+    
+    if (dueTasks.length === 0) return;
+    
+    console.log(`⏰ TASK PROCESSOR: Found ${dueTasks.length} tasks ready for execution`);
+    
+    for (const task of dueTasks) {
+      try {
+        await this.executeScheduledTask(task);
+      } catch (error) {
+        console.error(`❌ TASK EXECUTION FAILED: Task ${task.id}`, error);
+      }
+    }
+  }
+  
+  // Execute a specific scheduled task
+  private async executeScheduledTask(task: ScheduledTask) {
+    if (task.taskType === 'status_transition') {
+      const deal = this.deals.get(task.dealId);
+      if (!deal) {
+        console.error(`❌ TASK EXECUTION: Deal ${task.dealId} not found for task ${task.id}`);
+        return;
+      }
+      
+      // Only execute if deal is still in the expected status
+      if (deal.status === task.fromStatus) {
+        console.log(`🔄 AUTO STATUS TRANSITION: Deal ${task.dealId} ${task.fromStatus} → ${task.toStatus}`);
+        
+        // Send email notifications before status change (placeholder)
+        await this.sendEmailNotifications(task.dealId, 'status_changed', task.toStatus);
+        
+        // Execute the status transition
+        await this.updateDealStatus(
+          task.dealId, 
+          task.toStatus, 
+          'system_scheduler',
+          `Automatic transition from ${task.fromStatus} to ${task.toStatus} after 2-hour delay`
+        );
+        
+        console.log(`✅ AUTO TRANSITION COMPLETE: Deal ${task.dealId} moved to ${task.toStatus}`);
+      } else {
+        console.log(`⏭️  TASK SKIPPED: Deal ${task.dealId} status changed from ${task.fromStatus} to ${deal.status}, skipping scheduled transition`);
+      }
+    }
+    
+    // Mark task as executed
+    task.executed = true;
+    this.scheduledTasks.set(task.id, task);
+  }
+  
+  // Schedule a delayed status transition
+  private scheduleStatusTransition(dealId: number, fromStatus: DealStatus, toStatus: DealStatus, delayHours: number = 2) {
+    const taskId = `deal_${dealId}_${fromStatus}_to_${toStatus}_${Date.now()}`;
+    const scheduledFor = new Date(Date.now() + delayHours * 60 * 60 * 1000);
+    
+    const task: ScheduledTask = {
+      id: taskId,
+      dealId,
+      taskType: 'status_transition',
+      fromStatus,
+      toStatus,
+      scheduledFor,
+      executed: false,
+      createdAt: new Date()
+    };
+    
+    this.scheduledTasks.set(taskId, task);
+    
+    console.log(`📅 SCHEDULED TRANSITION: Deal ${dealId} will move from ${fromStatus} to ${toStatus} at ${scheduledFor.toISOString()}`);
+    return taskId;
+  }
+  
+  // Email notification placeholder - TODO: Implement proper email service
+  private async sendEmailNotifications(dealId: number, type: EmailNotification['type'], newStatus?: DealStatus) {
+    const deal = this.deals.get(dealId);
+    if (!deal) return;
+    
+    console.log(`📧 EMAIL PLACEHOLDER: Would send ${type} notifications for Deal ${dealId} (${deal.dealName})`);
+    
+    if (type === 'deal_submitted') {
+      // Notify seller, department reviewers, and approvers
+      console.log(`   → Seller: Deal submitted successfully`);
+      console.log(`   → Department Reviewers: New deal requires review`);
+      console.log(`   → Approvers: New deal in pipeline`);
+    } else if (type === 'status_changed' && newStatus) {
+      console.log(`   → All stakeholders: Deal status changed to ${newStatus}`);
+    }
+    
+    // TODO: Implement actual email service integration
+    // - Use nodemailer or similar service
+    // - Get recipient emails from deal.email and user roles
+    // - Send formatted HTML emails with deal details
+    // - Include links to deal pages and action buttons
+  }
+  
   // Initialize sample approval workflows for testing
   private initSampleApprovals() {
     console.log("🚀 INITIALIZING SAMPLE APPROVALS: Creating persistent approval workflows for testing");
@@ -1398,6 +1540,21 @@ export class MemStorage implements IStorage {
     };
     
     this.deals.set(id, deal);
+    
+    // ENHANCED STATUS TRANSITION LOGIC
+    // If deal is submitted, schedule automatic transition to under_review after 2 hours
+    if (dealStatus === 'submitted') {
+      console.log(`📬 DEAL SUBMITTED: Deal ${id} (${deal.dealName}) created with submitted status`);
+      
+      // Send immediate email notifications (placeholder)
+      await this.sendEmailNotifications(id, 'deal_submitted');
+      
+      // Schedule automatic transition to under_review after 2 hours
+      this.scheduleStatusTransition(id, 'submitted', 'under_review', 2);
+      
+      console.log(`⏰ AUTO-TRANSITION SCHEDULED: Deal ${id} will move to under_review in 2 hours`);
+    }
+    
     return deal;
   }
 
@@ -1486,6 +1643,30 @@ export class MemStorage implements IStorage {
     }
     
     return updatedDeal;
+  }
+  
+  // TESTING METHOD: Create a deal with short delay for demo purposes
+  async createTestDealWithShortDelay(insertDeal: InsertDeal): Promise<Deal> {
+    const deal = await this.createDeal(insertDeal);
+    
+    // If submitted, override the 2-hour delay with 2-minute delay for testing
+    if (deal.status === 'submitted') {
+      // Cancel existing scheduled task
+      const existingTasks = Array.from(this.scheduledTasks.values())
+        .filter(task => task.dealId === deal.id && !task.executed);
+      
+      existingTasks.forEach(task => {
+        task.executed = true; // Mark as executed to cancel
+        this.scheduledTasks.set(task.id, task);
+      });
+      
+      // Schedule new task with 2-minute delay for testing
+      this.scheduleStatusTransition(deal.id, 'submitted', 'under_review', 2/60); // 2 minutes
+      
+      console.log(`🧪 TEST MODE: Deal ${deal.id} will auto-transition in 2 minutes instead of 2 hours`);
+    }
+    
+    return deal;
   }
 
   // Phase 7A: Calculate flow intelligence based on deal timing and status
