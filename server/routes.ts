@@ -1548,7 +1548,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Invalid approval ID" });
       }
       
-      if (!["pending", "soft_approved", "revision_requested", "approved", "rejected"].includes(status)) {
+      if (!["pending", "revision_requested", "approved"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
       

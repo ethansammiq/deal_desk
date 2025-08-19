@@ -156,7 +156,6 @@ export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistor
       "scoping", 
       "submitted", 
       "under_review",
-      "revision_requested", 
       "negotiating", 
       "approved", 
       "contract_drafting", 
@@ -257,7 +256,6 @@ export const DEAL_STATUSES = {
   CONVERTED: "converted", // For scoping deals that have been converted to submissions
   SUBMITTED: "submitted", 
   UNDER_REVIEW: "under_review",
-  REVISION_REQUESTED: "revision_requested",
   NEGOTIATING: "negotiating",
   APPROVED: "approved",
   CONTRACT_DRAFTING: "contract_drafting", // Renamed from legal_review
@@ -272,7 +270,6 @@ export const DEAL_STATUS_LABELS = {
   converted: "Converted", // Hidden from UI - used for tracking
   submitted: "Submitted",
   under_review: "Under Review", 
-  revision_requested: "Revision Requested",
   negotiating: "Negotiating",
   approved: "Approved",
   contract_drafting: "Contract Drafting", // Updated label
@@ -287,7 +284,6 @@ export const DEAL_STATUS_FLOW = [
   "scoping",
   "submitted", 
   "under_review",
-  "revision_requested",
   "negotiating",
   "approved",
   "contract_drafting", 
@@ -391,7 +387,6 @@ export const insertDealSchema = createInsertSchema(deals)
       "converted", // For scoping deals that have been converted to submissions
       "submitted", 
       "under_review",
-      "revision_requested", 
       "negotiating", 
       "approved", 
       "contract_drafting", 
@@ -463,7 +458,7 @@ export const dealApprovals = pgTable("deal_approvals", {
   department: text("department", { enum: departmentTypes }).notNull(), // Consistent with users table
   requiredRole: text("required_role").notNull(), // Single role requirement
   
-  status: text("status", { enum: ["pending", "soft_approved", "revision_requested", "approved", "rejected"] }).default("pending"),
+  status: text("status", { enum: ["pending", "revision_requested", "approved"] }).default("pending"),
   priority: text("priority", { enum: ["normal", "high", "urgent"] }).default("normal"),
   dueDate: timestamp("due_date").notNull(),
   assignedTo: integer("assigned_to"),
@@ -481,7 +476,7 @@ export const insertDealApprovalSchema = createInsertSchema(dealApprovals)
     approvalStage: z.number().positive("Approval stage must be positive"),
     department: z.enum(departmentTypes),
     requiredRole: z.string().min(1, "Required role is required"),
-    status: z.enum(["pending", "soft_approved", "revision_requested", "approved", "rejected"]).default("pending"),
+    status: z.enum(["pending", "revision_requested", "approved"]).default("pending"),
     priority: z.enum(["normal", "high", "urgent"]).default("normal"),
     dueDate: z.date(),
     assignedTo: z.number().positive().optional(),
@@ -570,7 +565,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: false,
     canEditDeals: false, // Cannot directly edit deals - must request revisions instead
     canDeleteDeals: false,
-    canChangeStatus: ["under_review", "negotiating", "approved", "revision_requested", "lost"], // Review and approval flow
+    canChangeStatus: ["under_review", "negotiating", "approved", "lost"], // Review and approval flow
     canViewAllDeals: true,
     canApproveDeals: true,
     canAccessLegalReview: false,
@@ -583,7 +578,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: true,
     canEditDeals: true,
     canDeleteDeals: true,
-    canChangeStatus: ["draft", "scoping", "submitted", "under_review", "revision_requested", "negotiating", "approved", "contract_drafting", "client_review", "signed", "lost"], // All status transitions
+    canChangeStatus: ["draft", "scoping", "submitted", "under_review", "negotiating", "approved", "contract_drafting", "client_review", "signed", "lost"], // All status transitions
     canViewAllDeals: true,
     canApproveDeals: true,
     canAccessLegalReview: true,
@@ -595,7 +590,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canCreateDeals: false,
     canEditDeals: false,
     canDeleteDeals: false,
-    canChangeStatus: ["approved", "revision_requested", "contract_drafting", "client_review", "signed"], // Can approve, request revisions, and handle legal workflows
+    canChangeStatus: ["approved", "contract_drafting", "client_review", "signed"], // Can approve and handle legal workflows
     canViewAllDeals: true, // Can view deals assigned to their department
     canApproveDeals: true,
     canAccessLegalReview: true, // Legal department reviewers have legal access
@@ -615,23 +610,21 @@ export const allDepartments: DepartmentType[] = [
   'trading', 'finance', 'creative', 'marketing', 'product', 'solutions'
 ];
 
-// Enhanced approval statuses for complex state management
+// Simplified approval statuses (3 states only)
 export const approvalStatuses = {
   PENDING: 'pending',
-  SOFT_APPROVED: 'soft_approved', 
   REVISION_REQUESTED: 'revision_requested',
-  APPROVED: 'approved',
-  REJECTED: 'rejected'
+  APPROVED: 'approved'
 } as const;
 
 export type ApprovalStatus = typeof approvalStatuses[keyof typeof approvalStatuses];
 
-// Deal-level approval states based on department statuses
+// Simplified deal-level approval states
 export const dealApprovalStates = {
   PENDING_DEPARTMENT_REVIEW: 'pending_department_review',
   MIXED_DEPARTMENT_REVIEW: 'mixed_department_review', // Some approved, some pending/revision
   REVISION_REQUESTED: 'revision_requested', // At least one department requested revision
-  DEPARTMENTS_APPROVED: 'departments_approved', // All departments soft approved
+  DEPARTMENTS_APPROVED: 'departments_approved', // All departments approved
   PENDING_BUSINESS_APPROVAL: 'pending_business_approval',
   FULLY_APPROVED: 'fully_approved'
 } as const;
@@ -689,10 +682,10 @@ export type InsertDealLossTracking = z.infer<typeof insertDealLossTrackingSchema
 export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
   draft: ["scoping", "submitted", "lost"],
   scoping: ["submitted", "lost"],
+  converted: ["submitted", "lost"], // Added missing converted status
   submitted: ["under_review", "lost"],
-  under_review: ["negotiating", "revision_requested", "approved", "lost"],
-  revision_requested: ["under_review", "lost"],
-  negotiating: ["approved", "revision_requested", "lost"],
+  under_review: ["negotiating", "approved", "lost"],
+  negotiating: ["approved", "lost"],
   approved: ["contract_drafting", "lost"],
   contract_drafting: ["client_review", "negotiating", "lost"],
   client_review: ["signed", "contract_drafting", "lost"],
@@ -702,7 +695,7 @@ export const statusTransitionRules: Record<DealStatus, DealStatus[]> = {
 
 // Role-based lost transition permissions
 export const lostTransitionPermissions = {
-  seller: ['draft', 'scoping', 'submitted', 'revision_requested'],
+  seller: ['draft', 'scoping', 'submitted'],
   approver: ['under_review', 'negotiating', 'approved'], 
   legal: ['contract_drafting', 'client_review'],
   admin: ['all'] as const
