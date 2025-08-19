@@ -693,7 +693,7 @@ export class MemStorage implements IStorage {
         addedValueBenefitsCost: 50000,
         analyticsTier: "silver",
         requiresCustomMarketing: false,
-        status: "revision_requested" // Changed to show as risky deal
+        status: "under_review" // In review status with revision requests at approval level
       },
       {
         email: "seller@company.com", // Assign to demo seller
