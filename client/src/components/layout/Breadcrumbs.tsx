@@ -57,10 +57,21 @@ export function Breadcrumbs() {
       // Use sessionStorage to get the referrer URL with query parameters
       if (typeof window !== 'undefined') {
         const referrerUrl = sessionStorage.getItem('analyticsReferrer');
+        console.log('🍞 Breadcrumb Debug - SessionStorage Check:', {
+          referrerUrl,
+          startsWith: referrerUrl?.startsWith('/analytics'),
+          location
+        });
+        
         if (referrerUrl && referrerUrl.startsWith('/analytics')) {
           analyticsPath = referrerUrl;
+          console.log('🍞 Using referrer path:', analyticsPath);
+        } else {
+          console.log('🍞 Using default analytics path');
         }
       }
+      
+      console.log('🍞 Final breadcrumb path for Analytics button:', analyticsPath);
       
       breadcrumbs.push({ title: "Analytics", path: analyticsPath, id: "analytics" });
       breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });
