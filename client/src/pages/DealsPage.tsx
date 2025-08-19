@@ -234,22 +234,11 @@ export default function DealsPage() {
       cell: ({ row }) => {
         const deal = row.original;
         const status = deal.status as DealStatus;
-        // Show simplified status without badges, revision count, or draft type as requested
-        const statusLabels = {
-          'draft': 'Draft',
-          'scoping': 'Scoping',
-          'submitted': 'Submitted',
-          'under_review': 'Under Review',
-          'approved': 'Approved',
-          'negotiating': 'Negotiating',
-          'client_review': 'Client Review',
-          'contract_drafting': 'Contract Drafting',
-          'contract_sent': 'Contract Sent',
-          'signed': 'Signed',
-          'lost': 'Lost'
-        };
-        const label = statusLabels[status] || status;
-        return <div className="text-sm text-slate-700">{label}</div>;
+        return (
+          <div className="flex items-center gap-2">
+            <DealStatusBadge status={status} />
+          </div>
+        );
       },
       filterFn: (row, id, value) => {
         return value === row.getValue(id);
