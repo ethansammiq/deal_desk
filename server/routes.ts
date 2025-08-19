@@ -1790,6 +1790,56 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
+  // Get deals pending Stage 2 (business) approval for dashboard metrics
+  router.get("/deals/pending-business-approval", async (req: Request, res: Response) => {
+    try {
+      const role = req.query.role as string || 'approver';
+      const department = req.query.department as string;
+      
+      const allDeals = await storage.getDeals();
+      const pendingBusinessApprovalDeals = [];
+      
+      for (const deal of allDeals) {
+        // Only check deals that are under review
+        if (deal.status !== 'under_review') continue;
+        
+        const approvals = await storage.getDealApprovals(deal.id);
+        const departmentApprovals = approvals.filter(a => a.approvalStage === 1);
+        const businessApprovals = approvals.filter(a => a.approvalStage === 2);
+        
+        const allDepartmentsApproved = departmentApprovals.length > 0 && 
+          departmentApprovals.every(a => a.status === 'approved');
+        const anyDepartmentRevisions = departmentApprovals.some(a => a.status === 'revision_requested');
+        
+        // Deal is pending business approval if:
+        // 1. All departments have approved (Stage 1 complete)
+        // 2. No department revisions requested
+        // 3. Business approvals exist but are not all approved yet
+        if (allDepartmentsApproved && !anyDepartmentRevisions) {
+          // For department reviewers, filter by deals relevant to their department
+          if (role === 'department_reviewer' && department) {
+            // Check if this department was involved in approving this deal
+            const departmentWasInvolved = departmentApprovals.some(a => a.department === department);
+            if (departmentWasInvolved) {
+              pendingBusinessApprovalDeals.push(deal);
+            }
+          } else {
+            // For approvers and other roles, show all deals pending business approval
+            pendingBusinessApprovalDeals.push(deal);
+          }
+        }
+      }
+      
+      res.status(200).json({
+        deals: pendingBusinessApprovalDeals,
+        count: pendingBusinessApprovalDeals.length
+      });
+    } catch (error) {
+      console.error("Error getting deals pending business approval:", error);
+      res.status(500).json({ message: "Failed to get deals pending business approval" });
+    }
+  });
+
   // Get approval workflow status for a deal
   router.get("/deals/:dealId/approval-status", async (req: Request, res: Response) => {
     try {

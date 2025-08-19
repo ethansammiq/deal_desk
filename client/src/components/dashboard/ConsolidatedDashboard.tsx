@@ -1,5 +1,6 @@
 // Consolidated Dashboard - Single source of truth for all dashboard functionality
 import { useUserPermissions } from "@/hooks/useAuth";
+import { usePendingBusinessApprovals } from "@/hooks/usePendingBusinessApprovals";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,9 @@ export function ConsolidatedDashboard() {
     priorityStats, 
     isLoading: priorityLoading 
   } = usePriorityItems(currentUser?.role as UserRole);
+
+  // Get pending business approvals for accurate Stage 2 metrics
+  const { data: pendingBusinessData } = usePendingBusinessApprovals(currentUser?.role, currentUser?.department);
 
   // Always call hooks before any early returns to maintain hook order
   // Helper function to format currency in shortened format
@@ -150,9 +154,11 @@ export function ConsolidatedDashboard() {
       case 'approver':
         // Department-aware metrics using approval queue data
         const pendingReviews = currentUser?.role === 'department_reviewer' 
-          ? approvalItems?.filter(item => item.type === 'department_approval').length || 0
-          : approvalItems?.filter(item => item.type === 'business_approval').length || 0;
-        const pendingApprovals = deals.filter(deal => deal.status === 'approved').length;
+          ? approvalItems?.filter((item: any) => item.type === 'department_approval').length || 0
+          : approvalItems?.filter((item: any) => item.type === 'business_approval').length || 0;
+        
+        // Use new API endpoint for accurate Stage 2 pending approval counts
+        const pendingApprovals = pendingBusinessData?.count || 0;
         
         return [
           { 
