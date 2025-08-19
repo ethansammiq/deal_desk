@@ -11,7 +11,7 @@ import type { DealTier } from "@/hooks/useDealTiers";
 // Core approval types
 export type ApprovalDepartment = 'product' | 'creative' | 'finance' | 'analytics' | 'trading';
 export type ApprovalStatus = 'pending' | 'approved' | 'revision_requested';
-export type ApprovalStage = 'incentive_review' | 'margin_review' | 'final_review';
+export type ApprovalStage = 1 | 2;
 export type FinalApproverLevel = 'MD' | 'Executive';
 
 // Individual approval requirement
@@ -58,31 +58,23 @@ export interface ApprovalPipelineStatus {
   bottlenecks: ApprovalRequirement[];
 }
 
-// Enhanced approval matrix configuration
+// Updated approval matrix to match current 2-stage system
 export const approvalStages: ApprovalStageDefinition[] = [
   {
-    stage: 'incentive_review',
-    name: 'Incentive Review',
-    description: 'Department-specific review of proposed incentives',
+    stage: 1 as any, // Stage 1: Parallel Department Review
+    name: 'Department Review',
+    description: 'Parallel review by relevant departments based on deal incentives',
     canRunParallel: true,
-    requiredDepartments: ['finance'], // Base requirement, others added based on incentives
+    requiredDepartments: ['finance', 'trading'], // Core departments + incentive-based departments
     estimatedTime: '1-2 business days'
   },
   {
-    stage: 'margin_review',
-    name: 'Margin & Profitability Review',
-    description: 'Trading and Finance review of deal margins',
-    canRunParallel: false, // Sequential with incentive review completion
-    requiredDepartments: ['trading', 'finance'],
+    stage: 2 as any, // Stage 2: Business Approval 
+    name: 'Business Approval',
+    description: 'Final business approval by designated approver',
+    canRunParallel: false, // Sequential after Stage 1 completion
+    requiredDepartments: [], // Determined by deal value and business rules
     estimatedTime: '1-2 business days'
-  },
-  {
-    stage: 'final_review',
-    name: 'Final Deal Structure Review',
-    description: 'MD or Executive approval of overall deal',
-    canRunParallel: false,
-    requiredDepartments: [], // Determined by deal value
-    estimatedTime: 'varies'
   }
 ];
 
