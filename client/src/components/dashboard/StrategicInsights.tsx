@@ -341,7 +341,7 @@ export function StrategicInsights({ userRole, deals, userEmail, userDepartment, 
           <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
           <div>
             <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-3">
-              {userRole === 'seller' ? 'Pipeline Health Intelligence' : 'Workflow Efficiency Intelligence'}
+              Deal Pipeline Intelligence
               {insights.some(i => i.priority === 'high' || i.priority === 'critical') && (
                 <Badge variant="destructive" className="text-xs">
                   Action Required
@@ -349,10 +349,7 @@ export function StrategicInsights({ userRole, deals, userEmail, userDepartment, 
               )}
             </CardTitle>
             <CardDescription className="text-slate-500">
-              {userRole === 'seller' 
-                ? 'Key opportunities and bottlenecks in your deal pipeline'
-                : 'Workflow insights and process efficiency indicators'
-              }
+              Strategic insights to identify gaps and prioritize actionable next steps
             </CardDescription>
           </div>
         </div>
