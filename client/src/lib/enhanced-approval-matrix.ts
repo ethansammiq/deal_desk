@@ -116,7 +116,7 @@ export const departmentConfig = {
     name: 'Trading Team',
     description: 'Reviews margin implications and trading viability',
     contactInfo: 'trading-team@company.com',
-    incentiveTypes: []
+    incentiveTypes: [] as string[]
   }
 };
 
@@ -239,7 +239,15 @@ export function calculateApprovalPipelineStatus(
   requirements: ApprovalRequirement[]
 ): ApprovalPipelineStatus {
   if (requirements.length === 0) {
-    throw new Error('No approval requirements provided');
+    // Return default empty status instead of throwing error
+    return {
+      dealId: 0,
+      overallStatus: 'pending',
+      currentStage: 'incentive_review',
+      stages: [],
+      bottlenecks: [],
+      nextActions: []
+    };
   }
   
   const dealId = requirements[0].dealId;

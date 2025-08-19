@@ -63,38 +63,50 @@ export function EnhancedApprovalAlert({
   });
 
   useEffect(() => {
-    if (dealId && realApprovalData && realApprovalData.approvals) {
-      // Use real approval data for existing deals
-      const realRequirements = realApprovalData.approvals || [];
-      setApprovalRequirements(realRequirements);
-      
-      // Calculate pipeline status from real data
-      const realStatus = calculateApprovalPipelineStatus(realRequirements);
-      setPipelineStatus(realStatus);
-      
-      // Use real recommendations or generate them
-      const realRecommendations = realApprovalData.recommendations || getFollowUpRecommendations(realStatus);
-      setFollowUpRecommendations(realRecommendations);
-    } else if (totalValue > 0) {
-      // Generate simulated approval requirements for new deals
-      const requirements = generateApprovalRequirements(
-        dealId || 0,
-        totalValue,
-        dealType,
-        salesChannel,
-        dealTiers,
-        selectedIncentives
-      );
-      
-      setApprovalRequirements(requirements);
-      
-      // Calculate pipeline status
-      const status = calculateApprovalPipelineStatus(requirements);
-      setPipelineStatus(status);
-      
-      // Get follow-up recommendations
-      const recommendations = getFollowUpRecommendations(status);
-      setFollowUpRecommendations(recommendations);
+    try {
+      if (dealId && realApprovalData && 'approvals' in realApprovalData) {
+        // Use real approval data for existing deals
+        const realRequirements = (realApprovalData as any).approvals || [];
+        if (realRequirements.length > 0) {
+          setApprovalRequirements(realRequirements);
+          
+          // Calculate pipeline status from real data
+          const realStatus = calculateApprovalPipelineStatus(realRequirements);
+          setPipelineStatus(realStatus);
+          
+          // Use real recommendations or generate them
+          const realRecommendations = getFollowUpRecommendations(realStatus);
+          setFollowUpRecommendations(realRecommendations);
+        }
+      } else if (totalValue > 0) {
+        // Generate simulated approval requirements for new deals
+        const requirements = generateApprovalRequirements(
+          dealId || 0,
+          totalValue,
+          dealType,
+          salesChannel,
+          dealTiers,
+          selectedIncentives
+        );
+        
+        if (requirements.length > 0) {
+          setApprovalRequirements(requirements);
+          
+          // Calculate pipeline status
+          const status = calculateApprovalPipelineStatus(requirements);
+          setPipelineStatus(status);
+          
+          // Get follow-up recommendations
+          const recommendations = getFollowUpRecommendations(status);
+          setFollowUpRecommendations(recommendations);
+        }
+      }
+    } catch (error) {
+      console.warn('Error processing approval requirements:', error);
+      // Reset state on error
+      setApprovalRequirements([]);
+      setPipelineStatus(null);
+      setFollowUpRecommendations([]);
     }
   }, [totalValue, dealType, salesChannel, dealTiers, selectedIncentives, dealId, realApprovalData]);
 
