@@ -52,9 +52,22 @@ export function Breadcrumbs() {
     
     // Handle deal detail pages
     if (location.startsWith("/deals/")) {
-      // Check sessionStorage for referrer URL to preserve query parameters
-      const referrerUrl = sessionStorage.getItem('analyticsReferrer');
-      const analyticsPath = referrerUrl && referrerUrl.startsWith('/analytics') ? referrerUrl : '/analytics';
+      // Check for referrer parameter in URL first, then sessionStorage as fallback
+      const urlParams = new URLSearchParams(window.location.search);
+      const referrer = urlParams.get('ref');
+      
+      let analyticsPath = '/analytics';
+      
+      // If referrer parameter exists and is valid analytics URL
+      if (referrer && referrer.startsWith('/analytics')) {
+        analyticsPath = decodeURIComponent(referrer);
+      } else if (typeof window !== 'undefined') {
+        // Fallback to sessionStorage for client-side navigation
+        const referrerUrl = sessionStorage.getItem('analyticsReferrer');
+        if (referrerUrl && referrerUrl.startsWith('/analytics')) {
+          analyticsPath = referrerUrl;
+        }
+      }
       
       breadcrumbs.push({ title: "Analytics", path: analyticsPath, id: "analytics" });
       breadcrumbs.push({ title: "Deal Details", path: location, isActive: true, id: "deal-details" });

@@ -35,6 +35,17 @@ export default function DealsPage() {
   const [dealInsightFilter, setDealInsightFilter] = useState<string>("all");
   const [highlightedDeals, setHighlightedDeals] = useState<number[]>([]);
   
+  // Helper function for consistent navigation with referrer tracking
+  const navigateToDeal = (dealId: number) => {
+    // Store current URL with parameters for breadcrumb navigation
+    const currentUrl = window.location.pathname + window.location.search;
+    sessionStorage.setItem('analyticsReferrer', currentUrl);
+    
+    // Also pass referrer as URL parameter for more reliable breadcrumb navigation
+    const encodedRef = encodeURIComponent(currentUrl);
+    navigate(`/deals/${dealId}?ref=${encodedRef}`);
+  };
+
   // Parse URL parameters on mount and location change
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -126,11 +137,7 @@ export default function DealsPage() {
                   ? `pl-3 border-l-4 border-orange-200 bg-orange-50/30` // Phase 2: Enhanced styling for needs_attention
                   : ''
             }`}
-            onClick={() => {
-              // Store current URL with parameters for breadcrumb navigation
-              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-              navigate(`/deals/${deal.id}`);
-            }}
+            onClick={() => navigateToDeal(deal.id)}
           >
             <div className="font-medium text-slate-900">
               {deal.dealName}
@@ -146,11 +153,7 @@ export default function DealsPage() {
       cell: ({ row }) => (
         <div 
           className="cursor-pointer"
-          onClick={() => {
-            // Store current URL with parameters for breadcrumb navigation
-            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-            navigate(`/deals/${row.original.id}`);
-          }}
+          onClick={() => navigateToDeal(row.original.id)}
         >
           <div className="font-medium text-slate-700">
             {row.original.advertiserName || row.original.agencyName || "N/A"}
@@ -166,11 +169,7 @@ export default function DealsPage() {
         <Badge 
           variant="outline" 
           className="font-normal cursor-pointer"
-          onClick={() => {
-            // Store current URL with parameters for breadcrumb navigation
-            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-            navigate(`/deals/${row.original.id}`);
-          }}
+          onClick={() => navigateToDeal(row.original.id)}
         >
           {getSalesChannelDisplayName(row.original.salesChannel)}
         </Badge>
@@ -182,11 +181,7 @@ export default function DealsPage() {
       cell: ({ row }) => (
         <div 
           className="text-slate-600 cursor-pointer"
-          onClick={() => {
-            // Store current URL with parameters for breadcrumb navigation
-            sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-            navigate(`/deals/${row.original.id}`);
-          }}
+          onClick={() => navigateToDeal(row.original.id)}
         >
           {getRegionDisplayName(row.original.region)}
         </div>
@@ -201,11 +196,7 @@ export default function DealsPage() {
         return (
           <div 
             className="font-medium text-slate-900 cursor-pointer"
-            onClick={() => {
-              // Store current URL with parameters for breadcrumb navigation
-              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-              navigate(`/deals/${row.original.id}`);
-            }}
+            onClick={() => navigateToDeal(row.original.id)}
           >
             {formatShortCurrency(value)}
           </div>
@@ -220,11 +211,7 @@ export default function DealsPage() {
         return (
           <div 
             className="cursor-pointer"
-            onClick={() => {
-              // Store current URL with parameters for breadcrumb navigation
-              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-              navigate(`/deals/${row.original.id}`);
-            }}
+            onClick={() => navigateToDeal(row.original.id)}
           >
             <DealStatusBadge status={status} />
           </div>
@@ -263,11 +250,7 @@ export default function DealsPage() {
         return (
           <div 
             className="text-sm text-slate-500 cursor-pointer"
-            onClick={() => {
-              // Store current URL with parameters for breadcrumb navigation
-              sessionStorage.setItem('analyticsReferrer', window.location.pathname + window.location.search);
-              navigate(`/deals/${row.original.id}`);
-            }}
+            onClick={() => navigateToDeal(row.original.id)}
           >
             {dateString}
           </div>
