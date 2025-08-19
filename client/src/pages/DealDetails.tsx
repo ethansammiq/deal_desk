@@ -9,7 +9,6 @@ import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
-import { ApprovalWorkflowDashboard } from "@/components/approval/ApprovalWorkflowDashboard";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -78,7 +77,7 @@ export default function DealDetails() {
   });
 
   const handleGoBack = () => {
-    navigate('/');
+    navigate('/deals');
   };
 
   if (!dealId || dealId <= 0) {
@@ -87,7 +86,7 @@ export default function DealDetails() {
         <p className="text-slate-500">Invalid deal ID</p>
         <Button onClick={handleGoBack} variant="outline" className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
+          Back to Analytics
         </Button>
       </div>
     );
@@ -100,7 +99,7 @@ export default function DealDetails() {
         <div className="flex items-center gap-3">
           <Button onClick={handleGoBack} variant="outline" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back to Analytics
           </Button>
           <h1 className="text-2xl font-bold text-slate-900">Deal Details</h1>
         </div>
@@ -297,20 +296,6 @@ export default function DealDetails() {
                 userRole={userRole} 
                 currentUser={user?.username || 'Unknown User'} 
               />
-
-              {/* Approval Workflow Dashboard */}
-              {deal.status !== 'draft' && deal.status !== 'scoping' && user && (
-                <ApprovalWorkflowDashboard
-                  dealId={deal.id}
-                  dealName={deal.dealName}
-                  dealValue={deal.annualRevenue || 0}
-                  currentUser={{
-                    id: user.id,
-                    role: user.role,
-                    department: user.department
-                  }}
-                />
-              )}
             </div>
 
             {/* Sidebar */}

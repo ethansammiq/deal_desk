@@ -124,113 +124,62 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
           <Users className="h-5 w-5" />
           Approval Progress: {dealName}
         </CardTitle>
-        <CardDescription>
-          Overall Status: <Badge variant="outline" className={getOverallStatusColor(approvalState.overallState)}>
-            {getOverallStatusLabel(approvalState.overallState)}
-          </Badge>
-        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Visual Progress Flow */}
-        <div className="relative">
-          <div className="flex items-center justify-between">
-            {stages.map((stage, index) => (
-              <React.Fragment key={stage.stage}>
-                {/* Stage Circle and Info */}
-                <div className="flex flex-col items-center space-y-2 flex-1">
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
-                    getStageCircleClasses(stage.status)
-                  )}>
-                    {getStageIcon(stage.status)}
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-sm">{stage.name}</div>
-                    <div className="text-xs text-gray-500">{stage.description}</div>
-                    {stage.status === 'in_progress' && (
-                      <div className="text-xs text-blue-600 font-medium mt-1">
-                        {stage.progress}% Complete
-                      </div>
-                    )}
-                    {stage.completedAt && (
-                      <div className="text-xs text-green-600 mt-1">
-                        Completed {new Date(stage.completedAt).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Arrow connector (except for last stage) */}
-                {index < stages.length - 1 && (
-                  <div className="flex-1 max-w-20 mx-4">
-                    <div className={cn(
-                      "h-0.5 transition-all",
-                      stage.status === 'completed' ? 'bg-green-500' : 'bg-gray-200'
-                    )}>
-                      <ArrowRight className={cn(
-                        "h-4 w-4 -mt-2 ml-auto transition-all",
-                        stage.status === 'completed' ? 'text-green-500' : 'text-gray-400'
-                      )} />
-                    </div>
-                  </div>
+      <CardContent className="space-y-4">
+        {/* Simplified 2-Stage Structure */}
+        {stages.map((stage) => (
+          <div key={stage.stage} className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium flex items-center gap-2">
+                Stage {stage.stage}: {stage.name}
+                {stage.status === 'in_progress' && (
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                    In Progress
+                  </Badge>
                 )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-
-        {/* Detailed Department Status */}
-        <div className="space-y-4">
-          {stages.map((stage) => (
-            <div key={stage.stage} className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium flex items-center gap-2">
-                  Stage {stage.stage}: {stage.name}
-                  {getStageIcon(stage.status)}
-                </h4>
-                <Badge variant="outline" className={getStageStatusColor(stage.status)}>
-                  {getStageStatusLabel(stage.status)}
-                </Badge>
-              </div>
-              
-              {stage.approvals.length > 0 ? (
-                <div className="grid gap-2">
-                  {stage.approvals.map((approval) => (
-                    <div key={approval.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{approval.departmentDisplayName}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant="outline" 
-                          className={cn(
-                            "text-xs",
-                            approval.status === 'approved' && 'bg-green-100 text-green-800',
-                            approval.status === 'pending' && 'bg-yellow-100 text-yellow-800',
-                            approval.status === 'revision_requested' && 'bg-orange-100 text-orange-800',
-                            approval.status === 'rejected' && 'bg-red-100 text-red-800'
-                          )}
-                        >
-                          {approval.status.replace('_', ' ')}
-                        </Badge>
-                        {approval.priority !== 'normal' && (
-                          <Badge variant="secondary" className="text-xs">
-                            {approval.priority}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  {stage.status === 'not_started' ? 'Waiting for previous stage to complete' : 'No approvals required for this stage'}
-                </p>
-              )}
+                {stage.status === 'completed' && (
+                  <Badge variant="outline" className="bg-green-100 text-green-800">
+                    Completed
+                  </Badge>
+                )}
+                {stage.status === 'not_started' && (
+                  <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                    Not Started
+                  </Badge>
+                )}
+              </h4>
             </div>
-          ))}
-        </div>
+            
+            {stage.approvals.length > 0 ? (
+              <div className="grid gap-2">
+                {stage.approvals.map((approval) => (
+                  <div key={approval.id} className="flex items-center justify-between p-3 bg-gray-50 rounded text-sm">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">{approval.departmentDisplayName}</span>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "text-xs",
+                        approval.status === 'approved' && 'bg-green-100 text-green-800',
+                        approval.status === 'pending' && 'bg-yellow-100 text-yellow-800',
+                        approval.status === 'revision_requested' && 'bg-orange-100 text-orange-800',
+                        approval.status === 'rejected' && 'bg-red-100 text-red-800'
+                      )}
+                    >
+                      {approval.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                {stage.status === 'not_started' ? 'Waiting for previous stage to complete' : 'No approvals required for this stage'}
+              </p>
+            )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
