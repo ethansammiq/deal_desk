@@ -10,6 +10,7 @@ import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal
 import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { ApprovalWorkflowDashboard } from "@/components/approval/ApprovalWorkflowDashboard";
+import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -281,6 +282,14 @@ export default function DealDetails() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Approval Progress Tracker */}
+              {deal.status !== 'draft' && deal.status !== 'scoping' && (
+                <ApprovalTracker
+                  dealId={deal.id}
+                  dealName={deal.dealName}
+                />
+              )}
 
               {/* Comments Section */}
               <DealComments 
