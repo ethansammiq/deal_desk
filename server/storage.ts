@@ -253,6 +253,66 @@ export class MemStorage implements IStorage {
       this.deals.set(2, { ...deal2, lastStatusChange: fiveDaysAgo });
     }
   }
+
+  // Initialize sample approval workflows for testing
+  private initSampleApprovals() {
+    console.log("🚀 INITIALIZING SAMPLE APPROVALS: Creating persistent approval workflows for testing");
+    
+    // Deal 2: WPP Agency Partnership - under_review with finance and trading departments
+    const approvals = [
+      {
+        dealId: 2,
+        approvalStage: 1,
+        department: "finance" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "pending" as any,
+        priority: "normal" as any,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      },
+      {
+        dealId: 2,
+        approvalStage: 1,
+        department: "trading" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "pending" as any,
+        priority: "normal" as any,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      },
+      // Deal 6: Meta Q2 Campaign Scoping - has product incentives so needs creative department too
+      {
+        dealId: 6,
+        approvalStage: 1,
+        department: "finance" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "pending" as any,
+        priority: "normal" as any,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      },
+      {
+        dealId: 6,
+        approvalStage: 1,
+        department: "trading" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "approved" as any,
+        priority: "normal" as any,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      },
+      {
+        dealId: 6,
+        approvalStage: 1,
+        department: "creative" as any,
+        requiredRole: "department_reviewer" as any,
+        status: "revision_requested" as any,
+        priority: "normal" as any,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      }
+    ];
+    
+    approvals.forEach(approval => {
+      this.createDealApproval(approval);
+      console.log(`📬 SAMPLE APPROVAL CREATED: Deal ${approval.dealId} - ${approval.department} department (${approval.status})`);
+    });
+  }
   
   // Initialize with sample data for demo purposes
   private initSampleData() {
@@ -860,6 +920,9 @@ export class MemStorage implements IStorage {
     sampleDeals.forEach(deal => {
       this.createDeal(deal);
     });
+    
+    // Add sample approval workflows for testing
+    this.initSampleApprovals();
     
     // Add some older timestamps to test Strategic Insights
     this.addDemoStrategicInsightsData();
