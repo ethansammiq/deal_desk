@@ -1560,12 +1560,8 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(404).json({ message: "Approval not found" });
       }
       
-      // Calculate new deal approval state
-      const dealState = await storage.calculateDealApprovalState(updatedApproval.dealId);
-      
       res.status(200).json({
         approval: updatedApproval,
-        dealState,
         message: `Approval status updated to ${status}`
       });
     } catch (error) {
@@ -1583,8 +1579,34 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Invalid deal ID" });
       }
       
-      const dealState = await storage.calculateDealApprovalState(dealId);
-      res.status(200).json(dealState);
+      const approvals = await storage.getDealApprovals(dealId);
+      
+      // Simplified approval state calculation
+      const departmentApprovals = approvals.filter(a => a.approvalStage === 1);
+      const businessApprovals = approvals.filter(a => a.approvalStage === 2);
+      
+      const allDepartmentsApproved = departmentApprovals.length > 0 && 
+        departmentApprovals.every(a => a.status === 'approved');
+      const anyDepartmentRevisions = departmentApprovals.some(a => a.status === 'revision_requested');
+      const allBusinessApproved = businessApprovals.length > 0 && 
+        businessApprovals.every(a => a.status === 'approved');
+      
+      let overallState = 'pending_department_review';
+      if (allBusinessApproved) {
+        overallState = 'fully_approved';
+      } else if (allDepartmentsApproved) {
+        overallState = 'pending_business_approval';  
+      } else if (anyDepartmentRevisions) {
+        overallState = 'revision_requested';
+      }
+      
+      res.status(200).json({
+        overallState,
+        departmentApprovals: departmentApprovals.length,
+        businessApprovals: businessApprovals.length,
+        departmentsComplete: allDepartmentsApproved,
+        revisionsRequested: anyDepartmentRevisions
+      });
     } catch (error) {
       console.error("Error getting deal approval state:", error);
       res.status(500).json({ message: "Failed to get deal approval state" });

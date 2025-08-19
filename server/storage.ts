@@ -104,13 +104,6 @@ export interface IStorage {
   getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]>;
   
   // Enhanced approval workflow methods
-  calculateDealApprovalState(dealId: number): Promise<{
-    stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed',
-    stage2Status: 'blocked' | 'pending' | 'completed',
-    overallState: string,
-    departmentStatuses: Record<string, string>,
-    canProceedToStage2: boolean
-  }>;
   updateApprovalStatus(approvalId: number, status: string, reviewerNotes?: string, revisionReason?: string): Promise<DealApproval | undefined>;
   initiateEnhancedApprovalWorkflow(dealId: number, initiatedBy: number): Promise<{
     approvals: DealApproval[],
@@ -229,7 +222,7 @@ export class MemStorage implements IStorage {
       this.deals.set(6, { ...deal6, lastStatusChange: fiveDaysAgo });
     }
     
-    // Deal 4 (revision_requested) - make it stalled (5 days old)  
+    // Deal 4 (under_review) - make it stalled (5 days old)  
     const deal4 = this.deals.get(4);
     if (deal4) {
       this.deals.set(4, { ...deal4, lastStatusChange: fiveDaysAgo });
@@ -1952,80 +1945,7 @@ export class MemStorage implements IStorage {
     };
   }
 
-  // Calculate complex approval state for a deal
-  async calculateDealApprovalState(dealId: number): Promise<{
-    stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed',
-    stage2Status: 'blocked' | 'pending' | 'completed',
-    overallState: string,
-    departmentStatuses: Record<string, string>,
-    canProceedToStage2: boolean
-  }> {
-    const approvals = await this.getDealApprovals(dealId);
-    const stage1Approvals = approvals.filter(a => a.approvalStage === 1);
-    const stage2Approvals = approvals.filter(a => a.approvalStage === 2);
-    
-    // Calculate department statuses
-    const departmentStatuses: Record<string, string> = {};
-    stage1Approvals.forEach(approval => {
-      departmentStatuses[approval.department] = approval.status;
-    });
-    
-    // Stage 1 analysis
-    const stage1Pending = stage1Approvals.filter(a => a.status === 'pending').length;
-    // Removed soft_approved status - using simplified 3-state system
-    const stage1RevisionRequested = stage1Approvals.filter(a => a.status === 'revision_requested').length;
-    const stage1Total = stage1Approvals.length;
-    
-    let stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed';
-    const stage1Approved = stage1Approvals.filter(a => a.status === 'approved').length;
-    
-    if (stage1RevisionRequested > 0) {
-      stage1Status = 'revision_requested';
-    } else if (stage1Approved === stage1Total) {
-      stage1Status = 'completed';
-    } else if (stage1Pending === stage1Total) {
-      stage1Status = 'pending';
-    } else {
-      stage1Status = 'mixed';
-    }
-    
-    // Stage 2 analysis
-    const canProceedToStage2 = stage1Status === 'completed';
-    let stage2Status: 'blocked' | 'pending' | 'completed';
-    
-    if (!canProceedToStage2) {
-      stage2Status = 'blocked';
-    } else if (stage2Approvals.length === 0) {
-      stage2Status = 'pending'; // Needs to be created
-    } else {
-      const stage2Completed = stage2Approvals.every(a => a.status === 'approved');
-      stage2Status = stage2Completed ? 'completed' : 'pending';
-    }
-    
-    // Overall state determination
-    let overallState: string;
-    if (stage1Status === 'revision_requested') {
-      overallState = 'revision_requested';
-    } else if (stage2Status === 'completed') {
-      overallState = 'fully_approved';
-    } else if (stage2Status === 'pending' && canProceedToStage2) {
-      overallState = 'pending_business_approval';
-    } else if (stage1Status === 'completed') {
-      overallState = 'departments_approved';
-    } else if (stage1Status === 'mixed') {
-      overallState = 'mixed_department_review';
-    } else {
-      overallState = 'pending_department_review';
-    }
-    
-    return {
-      stage1Status,
-      stage2Status,
-      overallState,
-      departmentStatuses,
-      canProceedToStage2
-    };
-  }
+  // Simplified approval state logic - approval complexity managed through individual approval statuses
 
   // Update approval status with enhanced tracking
   async updateApprovalStatus(approvalId: number, status: string, reviewerNotes?: string, revisionReason?: string): Promise<DealApproval | undefined> {
