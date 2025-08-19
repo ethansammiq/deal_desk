@@ -150,7 +150,7 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-medium flex items-center gap-2">
                 Stage {stage.stage}: {stage.name}
-                {stage.status === 'in_progress' && (
+                {(stage.status === 'in_progress' || stage.status === 'revision_requested') && (
                   <Badge variant="outline" className="bg-blue-100 text-blue-800">
                     In Progress
                   </Badge>
