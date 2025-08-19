@@ -43,7 +43,16 @@ export default function DealsPage() {
     
     // Also pass referrer as URL parameter for more reliable breadcrumb navigation
     const encodedRef = encodeURIComponent(currentUrl);
-    navigate(`/deals/${dealId}?ref=${encodedRef}`);
+    const targetUrl = `/deals/${dealId}?ref=${encodedRef}`;
+    
+    console.log('🚗 Navigation Debug:', {
+      currentUrl,
+      encodedRef,
+      targetUrl,
+      sessionStorageSet: sessionStorage.getItem('analyticsReferrer')
+    });
+    
+    navigate(targetUrl);
   };
 
   // Parse URL parameters on mount and location change
