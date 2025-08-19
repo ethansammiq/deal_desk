@@ -282,10 +282,144 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(404).json({ message: "Deal not found" });
       }
       
-      const history = await storage.getDealStatusHistory(id);
-      res.status(200).json(history);
+      // Get all history data
+      const [statusHistory, approvals] = await Promise.all([
+        storage.getDealStatusHistory(id),
+        storage.getDealApprovals(id)
+      ]);
+      
+      // Get unique user IDs from status history and approvals
+      const userIds = new Set<number>();
+      statusHistory.forEach(h => h.performedBy && userIds.add(h.performedBy));
+      approvals.forEach(a => a.assignedTo && userIds.add(a.assignedTo));
+      
+      // Get user information for those IDs
+      const users = await Promise.all(
+        Array.from(userIds).map(async (userId) => {
+          const user = await storage.getUser(userId);
+          return user;
+        })
+      );
+      
+      const validUsers = users.filter(Boolean);
+      
+      // Get all approval actions for the deal's approvals
+      const approvalActions = await Promise.all(
+        approvals.map(approval => storage.getApprovalActions(approval.id))
+      );
+      const allApprovalActions = approvalActions.flat();
+      
+      // Create a map of user IDs to names for quick lookup
+      const userMap = new Map(validUsers.map(user => [user!.id, `${user!.firstName || ''} ${user!.lastName || ''}`.trim() || user!.username]));
+      
+      // Transform data into timeline events
+      const events: any[] = [];
+      
+      // Add status change events
+      statusHistory.forEach(history => {
+        const actor = history.performedBy ? userMap.get(history.performedBy) : undefined;
+        const statusLabels: Record<string, string> = {
+          'draft': 'Draft Created',
+          'scoping': 'Scoping Phase Started', 
+          'submitted': 'Deal Submitted',
+          'under_review': 'Review Process Started',
+          'negotiating': 'Negotiations Started',
+          'approved': 'Deal Approved',
+          'contract_drafting': 'Contract Drafting',
+          'client_review': 'Client Review Phase',
+          'signed': 'Contract Signed',
+          'lost': 'Deal Lost'
+        };
+        
+        events.push({
+          id: `status_${history.id}`,
+          type: 'status_change',
+          title: statusLabels[history.status] || `Status: ${history.status}`,
+          description: history.comments || undefined,
+          timestamp: history.changedAt,
+          actor,
+          status: history.status === 'approved' ? 'completed' :
+                  history.status === 'lost' ? 'attention' :
+                  history.status === 'under_review' ? 'pending' : undefined
+        });
+      });
+      
+      // Add approval milestone events
+      approvals.forEach(approval => {
+        // Add completion events for approved/revision_requested approvals
+        if (approval.status === 'approved' && approval.completedAt) {
+          const actor = approval.assignedTo ? userMap.get(approval.assignedTo) : undefined;
+          events.push({
+            id: `approval_${approval.id}`,
+            type: 'department_approval',
+            title: `${approval.department.charAt(0).toUpperCase() + approval.department.slice(1)} Department Approved`,
+            description: approval.comments || undefined,
+            timestamp: approval.completedAt,
+            actor,
+            status: 'completed',
+            department: approval.department
+          });
+        } else if (approval.status === 'revision_requested') {
+          const actor = approval.assignedTo ? userMap.get(approval.assignedTo) : undefined;
+          events.push({
+            id: `revision_${approval.id}`,
+            type: 'approval_action', 
+            title: `${approval.department.charAt(0).toUpperCase() + approval.department.slice(1)} Requested Revision`,
+            description: approval.revisionReason || approval.comments || undefined,
+            timestamp: approval.completedAt || new Date().toISOString(),
+            actor,
+            status: 'revision',
+            department: approval.department
+          });
+        }
+      });
+      
+      // Add significant approval actions
+      allApprovalActions.forEach(action => {
+        if (['approve', 'request_revision'].includes(action.actionType)) {
+          const approval = approvals.find(a => a.id === action.approvalId);
+          const actor = userMap.get(action.performedBy);
+          const department = approval?.department;
+          
+          if (action.actionType === 'approve') {
+            events.push({
+              id: `action_approve_${action.id}`,
+              type: 'approval_action',
+              title: `${department ? department.charAt(0).toUpperCase() + department.slice(1) + ' ' : ''}Approval Completed`,
+              description: action.comments || undefined,
+              timestamp: action.createdAt,
+              actor,
+              status: 'completed',
+              department
+            });
+          } else if (action.actionType === 'request_revision') {
+            events.push({
+              id: `action_revision_${action.id}`,
+              type: 'approval_action',
+              title: `${department ? department.charAt(0).toUpperCase() + department.slice(1) + ' ' : ''}Revision Requested`,
+              description: action.comments || undefined,
+              timestamp: action.createdAt,
+              actor,
+              status: 'revision',
+              department
+            });
+          }
+        }
+      });
+      
+      // Sort events by timestamp (newest first) and remove duplicates
+      const uniqueEvents = events.filter((event, index, self) => 
+        index === self.findIndex(e => e.title === event.title && e.timestamp === event.timestamp)
+      );
+      
+      const sortedEvents = uniqueEvents.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      res.status(200).json(sortedEvents);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch deal status history" });
+      console.error("Error fetching deal history:", error);
+      res.status(500).json({ message: "Failed to fetch deal history" });
     }
   });
   

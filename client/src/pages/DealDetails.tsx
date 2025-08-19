@@ -9,6 +9,7 @@ import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
+import { DealHistory } from "@/components/collaboration/DealHistory";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -226,6 +227,9 @@ export default function DealDetails() {
                   dealName={deal.dealName}
                 />
               )}
+
+              {/* Deal History Section */}
+              <DealHistory dealId={deal.id} />
 
               {/* Comments Section */}
               <DealComments 
