@@ -463,12 +463,14 @@ export const dealApprovals = pgTable("deal_approvals", {
   department: text("department", { enum: departmentTypes }).notNull(), // Consistent with users table
   requiredRole: text("required_role").notNull(), // Single role requirement
   
-  status: text("status", { enum: ["pending", "approved", "rejected", "revision_requested"] }).default("pending"),
+  status: text("status", { enum: ["pending", "soft_approved", "revision_requested", "approved", "rejected"] }).default("pending"),
   priority: text("priority", { enum: ["normal", "high", "urgent"] }).default("normal"),
   dueDate: timestamp("due_date").notNull(),
   assignedTo: integer("assigned_to"),
   completedAt: timestamp("completed_at"),
   comments: text("comments"),
+  revisionReason: text("revision_reason"), // When status is revision_requested
+  reviewerNotes: text("reviewer_notes"), // Additional context from reviewer
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -479,7 +481,7 @@ export const insertDealApprovalSchema = createInsertSchema(dealApprovals)
     approvalStage: z.number().positive("Approval stage must be positive"),
     department: z.enum(departmentTypes),
     requiredRole: z.string().min(1, "Required role is required"),
-    status: z.enum(["pending", "approved", "revision_requested", "rejected"]).default("pending"),
+    status: z.enum(["pending", "soft_approved", "revision_requested", "approved", "rejected"]).default("pending"),
     priority: z.enum(["normal", "high", "urgent"]).default("normal"),
     dueDate: z.date(),
     assignedTo: z.number().positive().optional(),
@@ -602,16 +604,39 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
   }
 };
 
-// Simplified 2-stage approval pipeline
+// Enhanced 2-stage approval pipeline with complex state management
 export const approvalStages = {
-  TECHNICAL_REVIEW: 1,    // All department reviewers (parallel)
-  BUSINESS_APPROVAL: 2    // Executive approver (after Stage 1 complete)
+  DEPARTMENT_REVIEW: 1,    // All relevant departments review simultaneously (parallel)
+  BUSINESS_APPROVAL: 2     // Executive approver (after Stage 1 complete)
 } as const;
 
-// All 6 departments participate in Stage 1 technical review
-export const stage1Departments: DepartmentType[] = [
+// All 6 departments participate in Stage 1 department review
+export const allDepartments: DepartmentType[] = [
   'trading', 'finance', 'creative', 'marketing', 'product', 'solutions'
 ];
+
+// Enhanced approval statuses for complex state management
+export const approvalStatuses = {
+  PENDING: 'pending',
+  SOFT_APPROVED: 'soft_approved', 
+  REVISION_REQUESTED: 'revision_requested',
+  APPROVED: 'approved',
+  REJECTED: 'rejected'
+} as const;
+
+export type ApprovalStatus = typeof approvalStatuses[keyof typeof approvalStatuses];
+
+// Deal-level approval states based on department statuses
+export const dealApprovalStates = {
+  PENDING_DEPARTMENT_REVIEW: 'pending_department_review',
+  MIXED_DEPARTMENT_REVIEW: 'mixed_department_review', // Some approved, some pending/revision
+  REVISION_REQUESTED: 'revision_requested', // At least one department requested revision
+  DEPARTMENTS_APPROVED: 'departments_approved', // All departments soft approved
+  PENDING_BUSINESS_APPROVAL: 'pending_business_approval',
+  FULLY_APPROVED: 'fully_approved'
+} as const;
+
+export type DealApprovalState = typeof dealApprovalStates[keyof typeof dealApprovalStates];
 
 // Export approval system types
 export type DealApproval = typeof dealApprovals.$inferSelect;

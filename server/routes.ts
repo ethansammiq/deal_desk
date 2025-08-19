@@ -1502,7 +1502,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
-  // Initiate multi-stage approval workflow for a deal
+  // Enhanced Multi-Department Approval Workflow - ALL Departments Review
   router.post("/deals/:dealId/initiate-approval", async (req: Request, res: Response) => {
     try {
       const dealId = parseInt(req.params.dealId);
@@ -1511,94 +1511,81 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Invalid deal ID" });
       }
 
-      // Get the deal to determine approval requirements
+      const { initiatedBy } = req.body;
+      
+      if (!initiatedBy) {
+        return res.status(400).json({ message: "initiatedBy is required" });
+      }
+
       const deal = await storage.getDeal(dealId);
       if (!deal) {
         return res.status(404).json({ message: "Deal not found" });
       }
 
-      const { incentiveTypes, dealValue, initiatedBy } = req.body;
+      // Use enhanced workflow that includes ALL departments
+      const result = await storage.initiateEnhancedApprovalWorkflow(dealId, initiatedBy);
 
-      // Create approval requirements based on deal characteristics
-      const approvalRequirements = [];
-
-      // STREAMLINED 2-STAGE APPROVAL PIPELINE
-      
-      // Stage 1: Department Review (Incentive-based + Finance/Trading always)
-      // Get deal incentives to determine required departments
-      const incentives = await storage.getIncentiveValues(dealId);
-      const { departments, reasons } = await storage.determineRequiredDepartments(incentives);
-      
-      for (const dept of departments) {
-        approvalRequirements.push({
-          dealId,
-          approvalStage: 1, // Department review stage
-          department: dept as DepartmentType,
-          requiredRole: 'department_reviewer',
-          status: 'pending' as const,
-          priority: 'normal' as const,
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days for department review
-        });
-      }
-
-      // Legal only for contract_drafting status (separate from parallel review)
-      if (deal.status === 'contract_drafting') {
-        approvalRequirements.push({
-          dealId,
-          approvalStage: 1, // Parallel but separate workflow
-          department: 'legal' as DepartmentType,
-          requiredRole: 'department_reviewer',
-          status: 'pending' as const,
-          priority: 'normal' as const,
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-        });
-      }
-
-      // Stage 2: Business Approval (Executive decision after all technical reviews complete)
-      const executiveThreshold = 500000; // $500K threshold for executive approval
-      if (dealValue >= executiveThreshold) {
-        approvalRequirements.push({
-          dealId,
-          approvalStage: 2, // Business approval stage
-          department: 'finance' as const, // Executive oversight through finance
-          requiredRole: 'approver', // Business approver level
-          status: 'pending' as const,
-          priority: dealValue >= 1000000 ? 'high' as const : 'normal' as const,
-          dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days for executive decision
-        });
-      }
-
-      // Create all approval requirements  
-      const createdApprovals = await Promise.all(
-        approvalRequirements.map((req: InsertDealApproval) => storage.createDealApproval(req))
-      );
-
-      // Create initial action record
-      if (initiatedBy && createdApprovals.length > 0) {
-        await storage.createApprovalAction({
-          approvalId: createdApprovals[0].id,
-          actionType: 'initiate' as const,
-          performedBy: initiatedBy,
-          comments: `Approval workflow initiated for deal: ${deal.dealName}`
-        });
-      }
-
-      // NOTIFICATION SYSTEM: Send assignment notifications to reviewers
-      await sendApprovalAssignmentNotifications(dealId, createdApprovals, storage);
+      // Update deal status
+      await storage.updateDealStatus(dealId, "under_review", `system_${initiatedBy}`, "Enhanced approval workflow initiated - all departments reviewing");
 
       res.status(201).json({
-        message: "Approval workflow initiated successfully",
-        approvals: createdApprovals,
-        workflow: {
-          totalStages: Math.max(...createdApprovals.map(a => a.approvalStage)),
-          parallelStage1: createdApprovals.filter(a => a.approvalStage === 1).length,
-          sequentialStages: createdApprovals.filter(a => a.approvalStage > 1).length,
-          estimatedDuration: "7-14 business days"
-        }
+        message: "Enhanced approval workflow initiated successfully",
+        ...result
       });
     } catch (error) {
       console.error("Error initiating approval workflow:", error);
       res.status(500).json({ message: "Failed to initiate approval workflow" });
+    }
+  });
+
+  // Enhanced Approval Status Updates with Complex States
+  router.patch("/approvals/:approvalId/status", async (req: Request, res: Response) => {
+    try {
+      const approvalId = parseInt(req.params.approvalId);
+      const { status, reviewerNotes, revisionReason } = req.body;
+      
+      if (isNaN(approvalId)) {
+        return res.status(400).json({ message: "Invalid approval ID" });
+      }
+      
+      if (!["pending", "soft_approved", "revision_requested", "approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const updatedApproval = await storage.updateApprovalStatus(approvalId, status, reviewerNotes, revisionReason);
+      
+      if (!updatedApproval) {
+        return res.status(404).json({ message: "Approval not found" });
+      }
+      
+      // Calculate new deal approval state
+      const dealState = await storage.calculateDealApprovalState(updatedApproval.dealId);
+      
+      res.status(200).json({
+        approval: updatedApproval,
+        dealState,
+        message: `Approval status updated to ${status}`
+      });
+    } catch (error) {
+      console.error("Error updating approval status:", error);
+      res.status(500).json({ message: "Failed to update approval status" });
+    }
+  });
+
+  // Get complex deal approval state
+  router.get("/deals/:dealId/approval-state", async (req: Request, res: Response) => {
+    try {
+      const dealId = parseInt(req.params.dealId);
+      
+      if (isNaN(dealId)) {
+        return res.status(400).json({ message: "Invalid deal ID" });
+      }
+      
+      const dealState = await storage.calculateDealApprovalState(dealId);
+      res.status(200).json(dealState);
+    } catch (error) {
+      console.error("Error getting deal approval state:", error);
+      res.status(500).json({ message: "Failed to get deal approval state" });
     }
   });
 

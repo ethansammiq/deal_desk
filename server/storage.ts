@@ -96,12 +96,26 @@ export interface IStorage {
   getApprovalDepartment(departmentName: DepartmentType): Promise<ApprovalDepartment | undefined>;
   createApprovalDepartment(department: InsertApprovalDepartment): Promise<ApprovalDepartment>;
   
-  // Department assignment and approval queue methods
+  // Enhanced department assignment and approval queue methods
   determineRequiredDepartments(incentives: IncentiveValue[]): Promise<{
     departments: string[],
     reasons: Record<string, string[]>
   }>;
   getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]>;
+  
+  // Enhanced approval workflow methods
+  calculateDealApprovalState(dealId: number): Promise<{
+    stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed',
+    stage2Status: 'blocked' | 'pending' | 'completed',
+    overallState: string,
+    departmentStatuses: Record<string, string>,
+    canProceedToStage2: boolean
+  }>;
+  updateApprovalStatus(approvalId: number, status: string, reviewerNotes?: string, revisionReason?: string): Promise<DealApproval | undefined>;
+  initiateEnhancedApprovalWorkflow(dealId: number, initiatedBy: number): Promise<{
+    approvals: DealApproval[],
+    workflow: any
+  }>;
   
   // Deal tier methods
   getDealTiers(dealId: number): Promise<DealTier[]>;
@@ -1890,18 +1904,188 @@ export class MemStorage implements IStorage {
     return approvals.sort((a, b) => a.id - b.id);
   }
 
-  // Department-specific approval queue filtering
-  async getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]> {
-    let approvals = Array.from(this.dealApprovals.values())
-      .filter(approval => approval.status === 'pending');
+  // Enhanced department assignment for all departments
+  async determineRequiredDepartments(incentives: IncentiveValue[]): Promise<{
+    departments: string[],
+    reasons: Record<string, string[]>
+  }> {
+    // ALL DEPARTMENTS now participate in Stage 1 review
+    const allDepts = ["finance", "trading", "creative", "marketing", "product", "solutions"];
+    const reasons: Record<string, string[]> = {};
     
-    // Filter by department if specified
-    if (userDepartment) {
-      approvals = approvals.filter(approval => approval.department === userDepartment);
+    // Default reasons for all departments
+    allDepts.forEach(dept => {
+      reasons[dept] = ["comprehensive_deal_review"];
+    });
+    
+    // Add specific reasons based on incentives
+    incentives.forEach(incentive => {
+      const incentiveMapping: Record<string, string> = {
+        "financial": "finance",
+        "resources": "finance", 
+        "product-innovation": "creative",
+        "technology": "product",
+        "analytics": "solutions",
+        "marketing": "marketing"
+      };
+      
+      const dept = incentiveMapping[incentive.category];
+      if (dept && reasons[dept]) {
+        reasons[dept].push(`${incentive.category}_incentive_expertise`);
+      }
+    });
+
+    return { departments: allDepts, reasons };
+  }
+
+  // Calculate complex approval state for a deal
+  async calculateDealApprovalState(dealId: number): Promise<{
+    stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed',
+    stage2Status: 'blocked' | 'pending' | 'completed',
+    overallState: string,
+    departmentStatuses: Record<string, string>,
+    canProceedToStage2: boolean
+  }> {
+    const approvals = await this.getDealApprovals(dealId);
+    const stage1Approvals = approvals.filter(a => a.approvalStage === 1);
+    const stage2Approvals = approvals.filter(a => a.approvalStage === 2);
+    
+    // Calculate department statuses
+    const departmentStatuses: Record<string, string> = {};
+    stage1Approvals.forEach(approval => {
+      departmentStatuses[approval.department] = approval.status;
+    });
+    
+    // Stage 1 analysis
+    const stage1Pending = stage1Approvals.filter(a => a.status === 'pending').length;
+    const stage1SoftApproved = stage1Approvals.filter(a => a.status === 'soft_approved').length;
+    const stage1RevisionRequested = stage1Approvals.filter(a => a.status === 'revision_requested').length;
+    const stage1Total = stage1Approvals.length;
+    
+    let stage1Status: 'pending' | 'mixed' | 'revision_requested' | 'completed';
+    if (stage1RevisionRequested > 0) {
+      stage1Status = 'revision_requested';
+    } else if (stage1SoftApproved === stage1Total) {
+      stage1Status = 'completed';
+    } else if (stage1Pending === stage1Total) {
+      stage1Status = 'pending';
+    } else {
+      stage1Status = 'mixed';
     }
     
-    return approvals.sort((a, b) => a.id - b.id);
+    // Stage 2 analysis
+    const canProceedToStage2 = stage1Status === 'completed';
+    let stage2Status: 'blocked' | 'pending' | 'completed';
+    
+    if (!canProceedToStage2) {
+      stage2Status = 'blocked';
+    } else if (stage2Approvals.length === 0) {
+      stage2Status = 'pending'; // Needs to be created
+    } else {
+      const stage2Completed = stage2Approvals.every(a => a.status === 'approved');
+      stage2Status = stage2Completed ? 'completed' : 'pending';
+    }
+    
+    // Overall state determination
+    let overallState: string;
+    if (stage1Status === 'revision_requested') {
+      overallState = 'revision_requested';
+    } else if (stage2Status === 'completed') {
+      overallState = 'fully_approved';
+    } else if (stage2Status === 'pending' && canProceedToStage2) {
+      overallState = 'pending_business_approval';
+    } else if (stage1Status === 'completed') {
+      overallState = 'departments_approved';
+    } else if (stage1Status === 'mixed') {
+      overallState = 'mixed_department_review';
+    } else {
+      overallState = 'pending_department_review';
+    }
+    
+    return {
+      stage1Status,
+      stage2Status,
+      overallState,
+      departmentStatuses,
+      canProceedToStage2
+    };
   }
+
+  // Update approval status with enhanced tracking
+  async updateApprovalStatus(approvalId: number, status: string, reviewerNotes?: string, revisionReason?: string): Promise<DealApproval | undefined> {
+    const approval = this.dealApprovals.get(approvalId);
+    if (!approval) return undefined;
+    
+    const now = new Date();
+    const updatedApproval: DealApproval = {
+      ...approval,
+      status,
+      reviewerNotes: reviewerNotes || approval.reviewerNotes || null,
+      revisionReason: revisionReason || approval.revisionReason || null,
+      completedAt: ['soft_approved', 'approved', 'rejected'].includes(status) ? now : approval.completedAt
+    };
+    
+    this.dealApprovals.set(approvalId, updatedApproval);
+    
+    // Create action history
+    await this.createApprovalAction({
+      approvalId,
+      actionType: status === 'soft_approved' ? 'approve' : 
+                  status === 'revision_requested' ? 'request_revision' : 
+                  status === 'rejected' ? 'reject' : 'approve',
+      performedBy: 1, // TODO: Get actual user ID
+      comments: reviewerNotes || revisionReason
+    });
+    
+    return updatedApproval;
+  }
+
+  // Enhanced approval workflow initiation for ALL departments
+  async initiateEnhancedApprovalWorkflow(dealId: number, initiatedBy: number): Promise<{
+    approvals: DealApproval[],
+    workflow: any
+  }> {
+    const deal = await this.getDeal(dealId);
+    if (!deal) throw new Error("Deal not found");
+    
+    // ALL DEPARTMENTS must review every deal - no filtering
+    const allDepartments = ["finance", "trading", "creative", "marketing", "product", "solutions"];
+    
+    const approvals: DealApproval[] = [];
+    
+    // Stage 1: All departments review simultaneously
+    for (const department of allDepartments) {
+      const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
+      
+      const approval = await this.createDealApproval({
+        dealId,
+        approvalStage: 1,
+        department: department as any,
+        requiredRole: 'department_reviewer',
+        status: 'pending',
+        priority: 'normal',
+        dueDate,
+      });
+      
+      approvals.push(approval);
+      
+      console.log(`📬 APPROVAL ASSIGNMENT: Deal "${deal.dealName}" assigned for ${department} department review`);
+      console.log(`   Stage: 1, Priority: normal, Due: ${dueDate}`);
+    }
+    
+    // Stage 2: Business approval (will be created later when Stage 1 completes)
+    
+    return {
+      approvals,
+      workflow: {
+        totalStages: 2,
+        stage1Departments: allDepartments.length,
+        stage2Blocked: true,
+        estimatedDuration: "5-10 business days"
+      }
+    };
+  }
+
 }
 
 // Function to get the appropriate storage implementation based on environment
