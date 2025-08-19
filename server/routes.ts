@@ -1524,19 +1524,33 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
 
       // STREAMLINED 2-STAGE APPROVAL PIPELINE
       
-      // Stage 1: Technical Review (All 6 departments in parallel)
-      // All departments review deals for technical feasibility and compliance
-      const stage1Departments: DepartmentType[] = ['trading', 'finance', 'creative', 'marketing', 'product', 'solutions'];
+      // Stage 1: Department Review (Incentive-based + Finance/Trading always)
+      // Get deal incentives to determine required departments
+      const incentives = await storage.getIncentiveValues(dealId);
+      const { departments, reasons } = await storage.determineRequiredDepartments(incentives);
       
-      for (const dept of stage1Departments) {
+      for (const dept of departments) {
         approvalRequirements.push({
           dealId,
-          approvalStage: 1, // Technical review stage
-          department: dept,
+          approvalStage: 1, // Department review stage
+          department: dept as DepartmentType,
           requiredRole: 'department_reviewer',
           status: 'pending' as const,
           priority: 'normal' as const,
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days for technical review
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days for department review
+        });
+      }
+
+      // Legal only for contract_drafting status (separate from parallel review)
+      if (deal.status === 'contract_drafting') {
+        approvalRequirements.push({
+          dealId,
+          approvalStage: 1, // Parallel but separate workflow
+          department: 'legal' as DepartmentType,
+          requiredRole: 'department_reviewer',
+          status: 'pending' as const,
+          priority: 'normal' as const,
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
         });
       }
 
@@ -1663,8 +1677,52 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       // Get current user context from query params
       const userRole = req.query.role as string || "seller";
       const userDepartment = req.query.department as string;
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
       
-      // Fetch all deals to build role-specific queues
+      // For department reviewers, fetch actual pending approvals
+      if (userRole === "department_reviewer" && userDepartment) {
+        const pendingApprovals = await storage.getPendingApprovals(userRole, userId, userDepartment);
+        
+        // Enhanced approval data with deal information
+        const approvalItems = await Promise.all(
+          pendingApprovals.map(async (approval) => {
+            const deal = await storage.getDeal(approval.dealId);
+            return {
+              id: approval.id,
+              type: "department_approval",
+              title: `Review Required: ${deal?.dealName || 'Unknown Deal'}`,
+              description: `${approval.department} department review needed`,
+              dealId: approval.dealId,
+              dealName: deal?.dealName || 'Unknown Deal',
+              priority: approval.priority,
+              dueDate: approval.dueDate.toISOString(),
+              status: approval.status,
+              department: approval.department,
+              actionRequired: "review_and_approve",
+              isOverdue: new Date() > approval.dueDate
+            };
+          })
+        );
+
+        return res.status(200).json({
+          items: approvalItems,
+          queueType: "department_approvals",
+          summary: `${userDepartment} department review queue`,
+          metrics: {
+            totalPending: approvalItems.length,
+            urgentTasks: approvalItems.filter(item => item.priority === 'urgent').length,
+            highPriorityTasks: approvalItems.filter(item => item.priority === 'high').length,
+            overdueTasks: approvalItems.filter(item => item.isOverdue).length
+          },
+          userContext: {
+            role: userRole,
+            department: userDepartment,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+
+      // Fetch all deals to build role-specific queues for non-department users
       const allDeals = await storage.getDeals();
       
       // Role-specific queue generation

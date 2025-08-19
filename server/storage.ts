@@ -96,6 +96,13 @@ export interface IStorage {
   getApprovalDepartment(departmentName: DepartmentType): Promise<ApprovalDepartment | undefined>;
   createApprovalDepartment(department: InsertApprovalDepartment): Promise<ApprovalDepartment>;
   
+  // Department assignment and approval queue methods
+  determineRequiredDepartments(incentives: IncentiveValue[]): Promise<{
+    departments: string[],
+    reasons: Record<string, string[]>
+  }>;
+  getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]>;
+  
   // Deal tier methods
   getDealTiers(dealId: number): Promise<DealTier[]>;
   createDealTier(tier: InsertDealTier): Promise<DealTier>;
@@ -1597,6 +1604,41 @@ export class MemStorage implements IStorage {
       .filter(incentive => incentive.dealId === dealId)
       .sort((a, b) => a.id - b.id);
   }
+
+  // Department Assignment Logic - NEW FUNCTION
+  async determineRequiredDepartments(incentives: IncentiveValue[]): Promise<{
+    departments: string[],
+    reasons: Record<string, string[]>
+  }> {
+    // Finance & Trading always required for margin/profitability review
+    const required = ["finance", "trading"];
+    const reasons: Record<string, string[]> = {
+      finance: ["margin_profitability_review"],
+      trading: ["margin_profitability_review"]
+    };
+
+    // Map incentive categories to departments (using actual category IDs from schema)
+    const incentiveMapping: Record<string, string> = {
+      "financial": "finance",
+      "resources": "finance", 
+      "product-innovation": "creative",
+      "technology": "product",
+      "analytics": "solutions",
+      "marketing": "marketing"
+    };
+
+    // Add departments based on incentive categories
+    incentives.forEach(incentive => {
+      const dept = incentiveMapping[incentive.category];
+      if (dept && !required.includes(dept)) {
+        required.push(dept);
+        if (!reasons[dept]) reasons[dept] = [];
+        reasons[dept].push(`${incentive.category}_incentive_review`);
+      }
+    });
+
+    return { departments: required, reasons };
+  }
   
   async createIncentiveValue(incentive: InsertIncentiveValue): Promise<IncentiveValue> {
     const id = this.incentiveValueCurrentId++;
@@ -1833,6 +1875,32 @@ export class MemStorage implements IStorage {
     
     this.approvalDepartments.set(id, newDepartment);
     return newDepartment;
+  }
+
+  // Department-specific approval queue filtering
+  async getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]> {
+    let approvals = Array.from(this.dealApprovals.values())
+      .filter(approval => approval.status === 'pending');
+    
+    // Filter by department if specified
+    if (userDepartment) {
+      approvals = approvals.filter(approval => approval.department === userDepartment);
+    }
+    
+    return approvals.sort((a, b) => a.id - b.id);
+  }
+
+  // Department-specific approval queue filtering
+  async getPendingApprovals(userRole?: string, userId?: number, userDepartment?: string): Promise<DealApproval[]> {
+    let approvals = Array.from(this.dealApprovals.values())
+      .filter(approval => approval.status === 'pending');
+    
+    // Filter by department if specified
+    if (userDepartment) {
+      approvals = approvals.filter(approval => approval.department === userDepartment);
+    }
+    
+    return approvals.sort((a, b) => a.id - b.id);
   }
 }
 
