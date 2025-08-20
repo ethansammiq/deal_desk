@@ -352,7 +352,7 @@ export class DealCalculationService {
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
 
     if (lastYearAdjustedProfit === 0) return 0;
-    return currentAdjustedProfit / lastYearAdjustedProfit - 1;
+    return (currentAdjustedProfit - lastYearAdjustedProfit) / lastYearAdjustedProfit;
   }
 
   /**
@@ -403,9 +403,9 @@ export class DealCalculationService {
     const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
     const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
 
-    // Return the simple difference as percentage points (not a percentage of the previous margin)
-    // For example: 0.24 - 0.35 = -0.11 or -11 percentage points
-    return currentAdjustedGrossMargin - lastYearAdjustedGrossMargin;
+    // Calculate growth rate as percentage change
+    if (lastYearAdjustedGrossMargin === 0) return 0;
+    return (currentAdjustedGrossMargin - lastYearAdjustedGrossMargin) / lastYearAdjustedGrossMargin;
   }
 
   /**
