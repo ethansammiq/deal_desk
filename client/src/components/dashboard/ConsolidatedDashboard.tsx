@@ -63,8 +63,8 @@ export function ConsolidatedDashboard() {
           try {
             const response = await fetch(`/api/deals/${id}/tiers`);
             if (!response.ok) return { dealId: id, tiers: [] };
-            const tiers = await response.json();
-            return { dealId: id, tiers };
+            const data = await response.json();
+            return { dealId: id, tiers: data.tiers || [] };
           } catch {
             return { dealId: id, tiers: [] };
           }

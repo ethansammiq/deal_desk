@@ -28,8 +28,8 @@ function useDealTierRevenue(dealId: number) {
       try {
         const response = await fetch(`/api/deals/${dealId}/tiers`);
         if (!response.ok) return 0;
-        const tiers = await response.json();
-        return TierDataAccess.getExpectedRevenue(tiers);
+        const data = await response.json();
+        return TierDataAccess.getExpectedRevenue(data.tiers || []);
       } catch {
         return 0;
       }

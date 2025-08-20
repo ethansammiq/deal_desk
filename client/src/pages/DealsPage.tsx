@@ -118,8 +118,8 @@ export default function DealsPage() {
           try {
             const response = await fetch(`/api/deals/${id}/tiers`);
             if (!response.ok) return { dealId: id, revenue: 0 };
-            const tiers = await response.json();
-            const revenue = TierDataAccess.getExpectedRevenue(tiers);
+            const data = await response.json();
+            const revenue = TierDataAccess.getExpectedRevenue(data.tiers || []);
             return { dealId: id, revenue };
           } catch {
             return { dealId: id, revenue: 0 };
