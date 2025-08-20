@@ -29,20 +29,9 @@ export function useSellerMetrics({ deals, userEmail, tierRevenues = {} }: UseSel
       : deals.filter(deal => deal.status !== 'draft');
 
     // Calculate Pipeline Value using tier revenues with fallback to base deal data
-    const activePipelineDeals = sellerDeals.filter(deal => !['signed', 'lost'].includes(deal.status));
-    console.log("Pipeline calculation - active deals:", activePipelineDeals.map(d => ({ id: d.id, name: d.dealName, status: d.status })));
-    console.log("Pipeline calculation - tier revenues:", tierRevenues);
-    
-    const pipelineValue = activePipelineDeals
-      .reduce((sum, deal) => {
-        const tierRevenue = tierRevenues[deal.id] || 0;
-        const fallbackRevenue = (deal as any).annualRevenue || 0;
-        const usedRevenue = tierRevenue || fallbackRevenue;
-        console.log(`Deal ${deal.id} (${deal.dealName}): tier=$${tierRevenue}, fallback=$${fallbackRevenue}, using=$${usedRevenue}`);
-        return sum + usedRevenue;
-      }, 0);
-      
-    console.log("Final pipeline value:", pipelineValue);
+    const pipelineValue = sellerDeals
+      .filter(deal => !['signed', 'lost'].includes(deal.status))
+      .reduce((sum, deal) => sum + (tierRevenues[deal.id] || (deal as any).annualRevenue || 0), 0);
 
     // Calculate Close Rate - signed deals / total submitted deals
     const submittedDeals = sellerDeals.filter(deal => 
