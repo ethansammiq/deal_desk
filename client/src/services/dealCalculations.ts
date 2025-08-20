@@ -138,34 +138,48 @@ export class DealCalculationService {
   // ========================================
 
   /**
-   * MIGRATION: Get current year annual revenue (replaces deprecated deal.annualRevenue)
-   * Uses tier data aggregation as primary source
+   * CORRECTED: Get expected tier for deal performance projections
+   * Tiered deals achieve ONE tier based on performance, not sum of all tiers
+   * Logic: Use tier 2 as "expected" for multi-tier deals, or first tier for single tier
+   */
+  getExpectedTier(tiers: DealTier[]): DealTier | null {
+    if (!tiers || tiers.length === 0) return null;
+    
+    // Sort tiers by tierNumber to ensure consistent ordering
+    const sortedTiers = [...tiers].sort((a, b) => a.tierNumber - b.tierNumber);
+    
+    // For multi-tier deals: use tier 2 as "expected" performance
+    // For single tier deals: use the only tier
+    const expectedIndex = sortedTiers.length > 1 ? 1 : 0; // Index 1 = Tier 2
+    return sortedTiers[expectedIndex] || sortedTiers[0];
+  }
+
+  /**
+   * MIGRATION: Get expected annual revenue (replaces deprecated deal.annualRevenue)
+   * Uses expected tier logic instead of incorrect summation
    */
   getCurrentYearRevenue(tiers: DealTier[]): number {
-    return tiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0);
+    const expectedTier = this.getExpectedTier(tiers);
+    return expectedTier?.annualRevenue || 0;
   }
 
   /**
-   * MIGRATION: Get current year gross margin (replaces deprecated deal.annualGrossMargin)
-   * Calculates weighted average from tier data
+   * MIGRATION: Get expected gross margin (replaces deprecated deal.annualGrossMargin)
+   * Uses expected tier logic instead of weighted average across all tiers
    */
   getCurrentYearGrossMargin(tiers: DealTier[]): number {
-    const totalRevenue = this.getCurrentYearRevenue(tiers);
-    if (totalRevenue === 0) return 0;
-    
-    const totalGrossProfit = tiers.reduce((sum, tier) => 
-      sum + (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0), 0
-    );
-    
-    return totalGrossProfit / totalRevenue; // Returns decimal (0.25 = 25%)
+    const expectedTier = this.getExpectedTier(tiers);
+    return expectedTier?.annualGrossMargin || 0; // Returns decimal (0.25 = 25%)
   }
 
   /**
-   * MIGRATION: Get current year incentive cost (replaces deprecated deal.addedValueBenefitsCost)
-   * Uses tier incentive values aggregation
+   * MIGRATION: Get expected incentive cost (replaces deprecated deal.addedValueBenefitsCost)
+   * Uses expected tier logic instead of summation across all tiers
    */
   getCurrentYearIncentiveCost(tiers: DealTier[]): number {
-    return tiers.reduce((sum, tier) => sum + (tier.incentiveValue || 0), 0);
+    const expectedTier = this.getExpectedTier(tiers);
+    // Use getTotalIncentiveValue helper for incentive calculations
+    return expectedTier ? getTotalIncentiveValue(expectedTier) : 0;
   }
 
   /**
@@ -334,7 +348,8 @@ export class DealCalculationService {
   }
 
   /**
-   * Calculate financial summary for the entire deal
+   * CORRECTED: Calculate financial summary using expected tier logic
+   * Uses expected tier performance instead of summing all tiers
    */
   calculateDealMetrics(
     dealTiers: DealTier[]
@@ -344,25 +359,27 @@ export class DealCalculationService {
     averageGrossMarginPercent: number;
     totalIncentiveValue: number;
   } {
-    let totalAnnualRevenue = 0;
-    let totalGrossMargin = 0;
-    let totalIncentiveValue = 0;
-
-    // Calculate totals from all tiers using DealTier as single source of truth
-    dealTiers.forEach((tier) => {
-      totalAnnualRevenue += tier.annualRevenue || 0;
-      totalGrossMargin += ((tier.annualRevenue || 0) * (tier.annualGrossMargin || 0)); // Already decimal
-      totalIncentiveValue += getTotalIncentiveValue(tier); // Sum from incentives array
-    });
-
-    const averageGrossMarginPercent = totalAnnualRevenue > 0 ? (totalGrossMargin / totalAnnualRevenue) * 100 : 0;
-    const projectedNetValue = totalGrossMargin - totalIncentiveValue;
-
+    // Use expected tier logic instead of summation
+    const expectedTier = this.getExpectedTier(dealTiers);
+    
+    if (!expectedTier) {
+      return {
+        totalAnnualRevenue: 0,
+        totalGrossMargin: 0,
+        averageGrossMarginPercent: 0,
+        totalIncentiveValue: 0
+      };
+    }
+    
+    const expectedRevenue = expectedTier.annualRevenue || 0;
+    const expectedMargin = expectedTier.annualGrossMargin || 0;
+    const expectedIncentiveValue = getTotalIncentiveValue(expectedTier);
+    
     return {
-      totalAnnualRevenue,
-      totalGrossMargin,
-      averageGrossMarginPercent,
-      totalIncentiveValue
+      totalAnnualRevenue: expectedRevenue,
+      totalGrossMargin: expectedRevenue * expectedMargin,
+      averageGrossMarginPercent: expectedMargin * 100, // Convert to percentage
+      totalIncentiveValue: expectedIncentiveValue
     };
   }
 
@@ -385,15 +402,10 @@ export class DealCalculationService {
 
     const dealMetrics = this.calculateDealMetrics(dealTiers);
     
-    // For flat deals, use tier 1 data directly
-    // For tiered deals, use aggregated data from all tiers
-    const analysisRevenue = dealStructure === 'flat_commit' 
-      ? (dealTiers[0]?.annualRevenue || 0)
-      : dealMetrics.totalAnnualRevenue;
-      
-    const analysisMargin = dealStructure === 'flat_commit'
-      ? (dealTiers[0]?.annualGrossMargin || 0)
-      : (dealMetrics.totalGrossMargin / dealMetrics.totalAnnualRevenue);
+    // Use expected tier logic for both flat and tiered deals
+    // calculateDealMetrics now uses expected tier logic consistently
+    const analysisRevenue = dealMetrics.totalAnnualRevenue;
+    const analysisMargin = dealMetrics.averageGrossMarginPercent / 100; // Convert back to decimal
       
     const analysisIncentiveCost = dealStructure === 'flat_commit'
       ? getTotalIncentiveValue(dealTiers[0] || { incentives: [] } as any)
