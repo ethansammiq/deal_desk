@@ -30,7 +30,7 @@ interface StrategicInsightsProps {
   approvalItems?: any[]; // Department-filtered approval queue items
 }
 
-// Hook to get tier revenues for multiple deals using TierDataAccess
+// Hook to get tier revenues for multiple deals using enhanced fallback logic
 function useDealTierRevenues(dealIds: number[]) {
   return useQuery({
     queryKey: ['deal-tier-revenues-direct', dealIds],
@@ -41,7 +41,32 @@ function useDealTierRevenues(dealIds: number[]) {
             const response = await fetch(`/api/deals/${id}/tiers`);
             if (!response.ok) return { dealId: id, revenue: 0 };
             const data = await response.json();
-            const revenue = TierDataAccess.getExpectedRevenue(data.tiers || []);
+            let tiers = data.tiers || [];
+            
+            // Enhanced fallback: If no tiers, create one from migratedFinancials or deal data
+            if (tiers.length === 0) {
+              const dealResponse = await fetch(`/api/deals/${id}`);
+              if (dealResponse.ok) {
+                const deal = await dealResponse.json();
+                const revenue = deal.migratedFinancials?.annualRevenue || 
+                               deal.migratedFinancials?.previousYearRevenue || 
+                               deal.previousYearRevenue || 0;
+                const margin = deal.migratedFinancials?.annualGrossMargin || 
+                              deal.migratedFinancials?.previousYearMargin ||
+                              deal.previousYearMargin || 0.25;
+                
+                if (revenue > 0) {
+                  tiers = [{
+                    tierNumber: 1,
+                    annualRevenue: revenue,
+                    annualGrossMargin: margin,
+                    incentives: []
+                  }];
+                }
+              }
+            }
+            
+            const revenue = TierDataAccess.getExpectedRevenue(tiers);
             return { dealId: id, revenue };
           } catch {
             return { dealId: id, revenue: 0 };
