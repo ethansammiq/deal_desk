@@ -139,7 +139,7 @@ export function DealEvaluationPanel({
               {evaluationData.isStandardDeal ? (
                 "🎉 STANDARD DEAL - Meets all criteria"
               ) : (
-                "⚠️ NON-STANDARD DEAL - Review required"
+                "⚠️ NON-STANDARD DEAL - Executive approval required"
               )}
             </span>
           </div>
@@ -148,7 +148,7 @@ export function DealEvaluationPanel({
             {evaluationData.isStandardDeal ? (
               "All criteria met for streamlined processing"
             ) : (
-              `${evaluationData.criteria.filter(c => !c.meets).length} criteria require additional review`
+              `${evaluationData.criteria.filter(c => !c.meets).length} criteria require Executive Committee review`
             )}
           </div>
         </div>
