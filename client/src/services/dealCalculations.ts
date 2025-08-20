@@ -343,24 +343,18 @@ export class DealCalculationService {
     advertiserName?: string,
     agencyName?: string
   ): number {
-    const incentiveCost = getTotalIncentiveValue(tier);
-    
-    // If current incentives are zero, return the same as non-adjusted growth rate for consistency
-    if (incentiveCost === 0) {
-      return this.calculateGrossProfitGrowthRate(tier, salesChannel, advertiserName, agencyName);
-    }
-
     // Get the current tier's adjusted gross profit (gross profit minus incentive costs)
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     const currentAdjustedProfit = grossProfit - incentiveCost;
 
     // For last year's adjusted gross profit, we need to do the same calculation with last year's values
-    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
-    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal;
-    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
-    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost;
+    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
+    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
+    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName); // Dynamic based on selection
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
 
     if (lastYearAdjustedProfit === 0) return 0;
     return (currentAdjustedProfit - lastYearAdjustedProfit) / lastYearAdjustedProfit;
@@ -399,25 +393,19 @@ export class DealCalculationService {
     advertiserName?: string,
     agencyName?: string
   ): number {
-    const incentiveCost = getTotalIncentiveValue(tier);
-    
-    // If current incentives are zero, return the same as non-adjusted growth rate for consistency
-    if (incentiveCost === 0) {
-      return this.calculateGrossMarginGrowthRate(tier, salesChannel, advertiserName, agencyName);
-    }
-
     // Calculate current tier's adjusted gross margin as a decimal
     const revenue = tier.annualRevenue || 0;
     const grossProfit = revenue * (tier.annualGrossMargin || 0); // Already decimal
+    const incentiveCost = getTotalIncentiveValue(tier); // Sum from incentives array
     const adjustedGrossProfit = grossProfit - incentiveCost;
     const currentAdjustedGrossMargin = revenue > 0 ? adjustedGrossProfit / revenue : 0;
 
-    // Calculate last year's adjusted gross margin as a decimal
-    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
-    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal;
-    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
-    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost;
+    // Calculate last year's adjusted gross margin as a decimal (0.35 in your example)
+    const lastYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName); // 850,000
+    const lastYearMarginDecimal = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName); // 0.35 (35%)
+    const lastYearGrossProfit = lastYearRevenue * lastYearMarginDecimal; // 297,500
+    const lastYearIncentiveCost = this.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName); // Dynamic based on selection
+    const lastYearAdjustedProfit = lastYearGrossProfit - lastYearIncentiveCost; // 247,500 (297,500 - 50,000)
     const lastYearAdjustedGrossMargin = lastYearRevenue > 0 ? lastYearAdjustedProfit / lastYearRevenue : 0;
 
     // Calculate growth rate as percentage change
