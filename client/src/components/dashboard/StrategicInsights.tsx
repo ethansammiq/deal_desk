@@ -8,6 +8,7 @@ import { Link } from 'wouter';
 import { classifyDealFlow } from "@/utils/dealClassification";
 import { useQuery } from '@tanstack/react-query';
 import { DealCalculationService } from '@/services/dealCalculations';
+import { TierDataAccess } from '@/utils/tier-data-access';
 
 interface StrategicInsight {
   id: string;
@@ -29,32 +30,25 @@ interface StrategicInsightsProps {
   approvalItems?: any[]; // Department-filtered approval queue items
 }
 
-// Helper function to get expected tier revenue using corrected API
-async function getDealTierRevenue(dealId: number): Promise<number> {
-  try {
-    // Use the corrected deals API that has migration logic
-    const response = await fetch(`/api/deals/${dealId}`);
-    if (!response.ok) return 0;
-    const deal = await response.json();
-    // Return expected tier revenue from migration logic
-    return deal.migratedFinancials?.annualRevenue || 0;
-  } catch {
-    return 0;
-  }
-}
-
-// Hook to get tier revenues for multiple deals using corrected API
+// Hook to get tier revenues for multiple deals using TierDataAccess
 function useDealTierRevenues(dealIds: number[]) {
   return useQuery({
-    queryKey: ['deal-tier-revenues', dealIds],
+    queryKey: ['deal-tier-revenues-direct', dealIds],
     queryFn: async () => {
-      const revenues = await Promise.all(
+      const tierData = await Promise.all(
         dealIds.map(async (id) => {
-          const revenue = await getDealTierRevenue(id);
-          return { dealId: id, revenue };
+          try {
+            const response = await fetch(`/api/deals/${id}/tiers`);
+            if (!response.ok) return { dealId: id, revenue: 0 };
+            const tiers = await response.json();
+            const revenue = TierDataAccess.getExpectedRevenue(tiers);
+            return { dealId: id, revenue };
+          } catch {
+            return { dealId: id, revenue: 0 };
+          }
         })
       );
-      return revenues.reduce((acc, { dealId, revenue }) => {
+      return tierData.reduce((acc, { dealId, revenue }) => {
         acc[dealId] = revenue;
         return acc;
       }, {} as Record<number, number>);

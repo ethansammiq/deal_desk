@@ -5,6 +5,7 @@ import type { Deal, DealStatus } from "@shared/schema";
 import { getSalesChannelDisplayName } from "@shared/constants";
 import { useQuery } from '@tanstack/react-query';
 import { DealCalculationService } from '@/services/dealCalculations';
+import { TierDataAccess } from '@/utils/tier-data-access';
 
 
 interface DealRowProps {
@@ -19,18 +20,16 @@ interface DealRowProps {
   className?: string;
 }
 
-// Hook to get tier revenue for a single deal using corrected API
+// Hook to get tier revenue for a single deal using TierDataAccess
 function useDealTierRevenue(dealId: number) {
   return useQuery({
-    queryKey: ['deal-tier-revenue', dealId],
+    queryKey: ['deal-tier-revenue-direct', dealId],
     queryFn: async () => {
       try {
-        // Use the corrected deals API that has migration logic
-        const response = await fetch(`/api/deals/${dealId}`);
+        const response = await fetch(`/api/deals/${dealId}/tiers`);
         if (!response.ok) return 0;
-        const deal = await response.json();
-        // Return expected tier revenue from migration logic
-        return deal.migratedFinancials?.annualRevenue || 0;
+        const tiers = await response.json();
+        return TierDataAccess.getExpectedRevenue(tiers);
       } catch {
         return 0;
       }

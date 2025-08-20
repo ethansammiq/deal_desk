@@ -27,6 +27,7 @@ import {
   FileText,
   BarChart3
 } from "lucide-react";
+import { TierDataAccess } from '@/utils/tier-data-access';
 
 export default function DealsPage() {
   const { currentUser, canCreateDeals, canViewAllDeals } = useUserPermissions();
@@ -107,27 +108,25 @@ export default function DealsPage() {
     return isMultiTier ? `${suffix}+` : suffix;
   };
 
-  // Get tier revenues for all deals using corrected API
+  // Get tier revenues for all deals using TierDataAccess
   const dealIds = deals.map(d => d.id);
   const { data: tierRevenues } = useQuery({
-    queryKey: ['deal-tier-revenues', dealIds],
+    queryKey: ['deal-tier-revenues-direct', dealIds],
     queryFn: async () => {
-      const revenues = await Promise.all(
+      const tierData = await Promise.all(
         dealIds.map(async (id) => {
           try {
-            // Use the corrected deals API that has migration logic
-            const response = await fetch(`/api/deals/${id}`);
+            const response = await fetch(`/api/deals/${id}/tiers`);
             if (!response.ok) return { dealId: id, revenue: 0 };
-            const deal = await response.json();
-            // Return expected tier revenue from migration logic
-            const revenue = deal.migratedFinancials?.annualRevenue || 0;
+            const tiers = await response.json();
+            const revenue = TierDataAccess.getExpectedRevenue(tiers);
             return { dealId: id, revenue };
           } catch {
             return { dealId: id, revenue: 0 };
           }
         })
       );
-      return revenues.reduce((acc, { dealId, revenue }) => {
+      return tierData.reduce((acc, { dealId, revenue }) => {
         acc[dealId] = revenue;
         return acc;
       }, {} as Record<number, number>);

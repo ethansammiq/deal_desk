@@ -17,6 +17,9 @@ import type { Deal, UserRole, DealStatus } from "@shared/schema";
 import { Link, useLocation } from "wouter";
 import { getSalesChannelDisplayName, getRegionDisplayName } from "@shared/constants";
 import { ColumnDef } from "@tanstack/react-table";
+import { useDealTiers } from "@/hooks/useDealTiers";
+import { TierDataAccess } from "@/utils/tier-data-access";
+import { useMemo } from "react";
 import { 
   Briefcase, 
   TrendingUp, 
@@ -50,33 +53,38 @@ export function ConsolidatedDashboard() {
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
   });
 
-  // Get tier revenues for all deals using corrected API
+  // Get tier data for all deals and calculate expected revenues
   const dealIds = deals.map(d => d.id);
-  const { data: tierRevenues } = useQuery({
-    queryKey: ['deal-tier-revenues', dealIds],
+  const { data: allTierData } = useQuery({
+    queryKey: ['deal-tiers-bulk', dealIds],
     queryFn: async () => {
-      const revenues = await Promise.all(
+      const tierData = await Promise.all(
         dealIds.map(async (id) => {
           try {
-            // Use the corrected deals API that has migration logic
-            const response = await fetch(`/api/deals/${id}`);
-            if (!response.ok) return { dealId: id, revenue: 0 };
-            const deal = await response.json();
-            // Return expected tier revenue from migration logic
-            const revenue = deal.migratedFinancials?.annualRevenue || 0;
-            return { dealId: id, revenue };
+            const response = await fetch(`/api/deals/${id}/tiers`);
+            if (!response.ok) return { dealId: id, tiers: [] };
+            const tiers = await response.json();
+            return { dealId: id, tiers };
           } catch {
-            return { dealId: id, revenue: 0 };
+            return { dealId: id, tiers: [] };
           }
         })
       );
-      return revenues.reduce((acc, { dealId, revenue }) => {
-        acc[dealId] = revenue;
-        return acc;
-      }, {} as Record<number, number>);
+      return tierData;
     },
     enabled: dealIds.length > 0
   });
+  
+  // Calculate tier revenues using TierDataAccess utility
+  const tierRevenues = useMemo(() => {
+    if (!allTierData) return {};
+    
+    return allTierData.reduce((acc, { dealId, tiers }) => {
+      const expectedRevenue = TierDataAccess.getExpectedRevenue(tiers);
+      acc[dealId] = expectedRevenue;
+      return acc;
+    }, {} as Record<number, number>);
+  }, [allTierData]);
 
   const { data: departments = [] } = useQuery<{ department: string; displayName: string }[]>({
     queryKey: ['/api/approval-departments'],
@@ -420,9 +428,9 @@ export function ConsolidatedDashboard() {
               {(() => {
                 const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
                 
-                // Get upcoming deals (draft + scoping, but not converted) from pipeline deals
+                // Get upcoming deals (draft + scoping) from pipeline deals
                 const upcomingDeals = sellerPipelineDeals.filter(deal => 
-                  deal.status === 'draft' || (deal.status === 'scoping' && !deal.convertedAt && !deal.convertedDealId)
+                  deal.status === 'draft' || deal.status === 'scoping'
                 );
                 
                 // Get true active deals (submitted but not signed/lost)
