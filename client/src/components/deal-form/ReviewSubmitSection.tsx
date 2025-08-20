@@ -42,10 +42,12 @@ import {
 // Type this component to accept any valid form structure
 type ReviewSubmitFormValues = any;
 
-// Import unified interface from hook - NO calculations in step 4
+// Import unified interface from hook - Step 4 uses minimal calculations for display
 import { DealTier } from "@/hooks/useDealTiers";
 import { useBusinessSummary } from "@/hooks/useBusinessSummary";
 import { calculateContractTerm } from "@/lib/contractUtils";
+import { useFinancialData } from "@/hooks/useFinancialData";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
 
 // Import shared components from step 3 - NO new calculations in step 4
 import { DealSummaryCard } from "./DealSummaryCard";
@@ -89,7 +91,15 @@ export function ReviewSubmitSection({
   // Calculate contract term using shared utility
   const contractTerm = calculateContractTerm(formValues.termStartDate, formValues.termEndDate);
 
-  // Step 4 is pure display - no data fetching needed here
+  // Step 4 is pure display - calculate previous year data for FinancialStructureTable
+  // Use same calculation service as step 3 to ensure consistency
+  const { agenciesData, advertisersData } = useFinancialData();
+  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
+  
+  // Calculate previous year values for FinancialStructureTable display
+  const previousYearValue = dealCalculations.getPreviousYearValue(salesChannel, advertiserName, agencyName);
+  const previousYearGrossProfit = dealCalculations.getPreviousYearGrossProfit(salesChannel, advertiserName, agencyName);
+  const previousYearIncentiveCost = dealCalculations.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName);
 
   // Auto-populate business summary using shared hook
   useBusinessSummary({ form, formValues });
@@ -143,13 +153,13 @@ export function ReviewSubmitSection({
         </Card>
       )}
 
-      {/* Financial Structure Summary - Use exact same component as step 3 */}
+      {/* Financial Structure Summary - Step 4 pure display version */}
       {(dealTiers.length > 0 || dealStructureType === "flat_commit") && (
         <FinancialStructureTable 
           dealTiers={dealTiers}
-          salesChannel={salesChannel}
-          advertiserName={advertiserName}
-          agencyName={agencyName}
+          previousYearValue={previousYearValue}
+          previousYearGrossProfit={previousYearGrossProfit}
+          previousYearIncentiveCost={previousYearIncentiveCost}
         />
       )}
 

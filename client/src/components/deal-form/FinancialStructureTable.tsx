@@ -1,9 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
-import { DealTier } from "@/hooks/useDealTiers";
-import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { useFinancialData } from "@/hooks/useFinancialData";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
 import {
   FinancialTable,
   FinancialTableColGroup,
@@ -17,19 +15,19 @@ import {
 
 interface FinancialStructureTableProps {
   dealTiers: DealTier[];
-  salesChannel: string;
-  advertiserName?: string;
-  agencyName?: string;
+  // ✅ FIXED: Step 4 pure display - receive pre-calculated data instead of making new calculations
+  previousYearValue: number;
+  previousYearGrossProfit: number;
+  previousYearIncentiveCost: number;
 }
 
 export function FinancialStructureTable({
   dealTiers,
-  salesChannel,
-  advertiserName,
-  agencyName,
+  previousYearValue,
+  previousYearGrossProfit, 
+  previousYearIncentiveCost,
 }: FinancialStructureTableProps) {
-  const { agenciesData, advertisersData } = useFinancialData();
-  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
+  // ❌ REMOVED: Data fetching and calculations - this is now pure display
 
   // Don't render if no tiers for tiered deals, but allow flat commit to show with virtual tier
   if (dealTiers.length === 0) {
@@ -67,7 +65,7 @@ export function FinancialStructureTable({
                 />
               </FinancialDataCell>
               <FinancialDataCell>
-                {formatCurrency(dealCalculations.getPreviousYearValue(salesChannel, advertiserName, agencyName))}
+                {formatCurrency(previousYearValue)}
               </FinancialDataCell>
               {dealTiers.map((tier) => (
                 <FinancialDataCell key={`revenue-${tier.tierNumber}`}>
@@ -76,7 +74,7 @@ export function FinancialStructureTable({
               ))}
             </tr>
             
-            {/* Revenue Growth Rate Row - Match Step 3 exactly */}
+            {/* Revenue Growth Rate Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
@@ -88,12 +86,10 @@ export function FinancialStructureTable({
                 <span className="text-slate-500">—</span>
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const growthRate = dealCalculations.calculationService.calculateRevenueGrowthRate(
-                  tier,
-                  salesChannel,
-                  advertiserName,
-                  agencyName
-                );
+                // Calculate growth rate using tier data and previous year value
+                const growthRate = previousYearValue > 0 
+                  ? ((tier.annualRevenue || 0) - previousYearValue) / previousYearValue * 100 
+                  : 0;
                 return (
                   <FinancialDataCell key={`revenue-growth-${tier.tierNumber}`}>
                     <GrowthIndicator value={growthRate} />
@@ -102,131 +98,66 @@ export function FinancialStructureTable({
               })}
             </tr>
             
-            {/* Adjusted Gross Margin Growth Rate Row */}
+            {/* Gross Margin Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Adjusted Gross Margin Growth Rate"
-                  description="Change in margin percentage vs last year"
+                  title="Gross Margin"
+                  description="Annual gross margin amount"
                 />
               </FinancialDataCell>
               <FinancialDataCell>
-                <span className="text-slate-500">—</span>
+                {formatCurrency(previousYearGrossProfit)}
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const marginGrowthRate = dealCalculations.calculationService.calculateAdjustedGrossMarginGrowthRate(
-                  tier,
-                  salesChannel,
-                  advertiserName,
-                  agencyName
-                );
+                const grossMargin = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
                 return (
-                  <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
-                    <GrowthIndicator value={marginGrowthRate} />
+                  <FinancialDataCell key={`margin-${tier.tierNumber}`}>
+                    {formatCurrency(grossMargin)}
                   </FinancialDataCell>
                 );
               })}
             </tr>
             
-            {/* Adjusted Gross Profit Growth Rate Row */}
+            {/* Incentive Cost Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Adjusted Gross Profit Growth Rate"
-                  description="Change in dollar profit amount vs last year"
+                  title="Incentive Cost"
+                  description="Total incentive value for this tier"
                 />
               </FinancialDataCell>
               <FinancialDataCell>
-                <span className="text-slate-500">—</span>
+                {formatCurrency(previousYearIncentiveCost)}
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const profitGrowthRate = dealCalculations.calculationService.calculateAdjustedGrossProfitGrowthRate(
-                  tier,
-                  salesChannel,
-                  advertiserName,
-                  agencyName
-                );
+                const incentiveCost = getTotalIncentiveValue(tier);
                 return (
-                  <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
-                    <GrowthIndicator value={profitGrowthRate} />
+                  <FinancialDataCell key={`incentive-${tier.tierNumber}`}>
+                    {formatCurrency(incentiveCost)}
                   </FinancialDataCell>
                 );
               })}
             </tr>
             
-            {/* Total Incentive Cost Row */}
+            {/* Net Profit Row */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Total Incentive Cost"
-                  description="All incentives applied to this tier"
+                  title="Net Profit"
+                  description="Gross margin minus incentive costs"
                 />
               </FinancialDataCell>
               <FinancialDataCell>
-                {formatCurrency(dealCalculations.calculationService.getPreviousYearIncentiveCost(salesChannel, advertiserName, agencyName))}
-              </FinancialDataCell>
-              {dealTiers.map((tier) => (
-                <FinancialDataCell key={`cost-${tier.tierNumber}`}>
-                  {formatCurrency(dealCalculations.calculationService.calculateTierIncentiveCost(tier))}
-                </FinancialDataCell>
-              ))}
-            </tr>
-            
-            {/* Total Client Value Row */}
-            <tr>
-              <FinancialDataCell isMetricLabel>
-                <FinancialMetricLabel 
-                  title="Total Client Value"
-                  description="Expected business value from incentive"
-                />
-              </FinancialDataCell>
-              <FinancialDataCell>
-                {formatCurrency(dealCalculations.calculationService.getPreviousYearClientValue(salesChannel, advertiserName, agencyName))}
-              </FinancialDataCell>
-              {dealTiers.map((tier) => (
-                <FinancialDataCell key={`value-${tier.tierNumber}`}>
-                  {formatCurrency(dealCalculations.calculationService.calculateClientValueFromIncentives(tier))}
-                </FinancialDataCell>
-              ))}
-            </tr>
-            
-            {/* Incentive Cost Growth Rate Row - Moved above Client Value Growth Rate */}
-            <tr>
-              <FinancialDataCell isMetricLabel>
-                <FinancialMetricLabel 
-                  title="Incentive Cost Growth Rate"
-                  description="Change vs. last year"
-                />
-              </FinancialDataCell>
-              <FinancialDataCell>
-                <span className="text-slate-500">—</span>
+                {formatCurrency(previousYearGrossProfit - previousYearIncentiveCost)}
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const growthRate = dealCalculations.calculationService.calculateIncentiveCostGrowthRate(tier, salesChannel, advertiserName, agencyName);
+                const grossMargin = (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0);
+                const incentiveCost = getTotalIncentiveValue(tier);
+                const netProfit = grossMargin - incentiveCost;
                 return (
-                  <FinancialDataCell key={`cost-growth-${tier.tierNumber}`}>
-                    <GrowthIndicator value={growthRate} invertColors={true} />
-                  </FinancialDataCell>
-                );
-              })}
-            </tr>
-            
-            {/* Client Value Growth Rate Row */}
-            <tr>
-              <FinancialDataCell isMetricLabel>
-                <FinancialMetricLabel 
-                  title="Client Value Growth Rate"
-                  description="Change vs. last year"
-                />
-              </FinancialDataCell>
-              <FinancialDataCell>
-                <span className="text-slate-500">—</span>
-              </FinancialDataCell>
-              {dealTiers.map((tier) => {
-                const growthRate = dealCalculations.calculationService.calculateClientValueGrowthRateFromIncentives(tier, salesChannel, advertiserName, agencyName);
-                return (
-                  <FinancialDataCell key={`client-value-growth-${tier.tierNumber}`}>
-                    <GrowthIndicator value={growthRate} />
+                  <FinancialDataCell key={`profit-${tier.tierNumber}`}>
+                    {formatCurrency(netProfit)}
                   </FinancialDataCell>
                 );
               })}
