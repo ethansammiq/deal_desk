@@ -132,6 +132,98 @@ export class DealCalculationService {
     return 122500; // Default to industry average from our data (35k * 3.5x)
   }
 
+  // ========================================
+  // PHASE 2: ENHANCED MIGRATION LOGIC
+  // Migration from deprecated base deal fields to tier + historical data
+  // ========================================
+
+  /**
+   * MIGRATION: Get current year annual revenue (replaces deprecated deal.annualRevenue)
+   * Uses tier data aggregation as primary source
+   */
+  getCurrentYearRevenue(tiers: DealTier[]): number {
+    return tiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0);
+  }
+
+  /**
+   * MIGRATION: Get current year gross margin (replaces deprecated deal.annualGrossMargin)
+   * Calculates weighted average from tier data
+   */
+  getCurrentYearGrossMargin(tiers: DealTier[]): number {
+    const totalRevenue = this.getCurrentYearRevenue(tiers);
+    if (totalRevenue === 0) return 0;
+    
+    const totalGrossProfit = tiers.reduce((sum, tier) => 
+      sum + (tier.annualRevenue || 0) * (tier.annualGrossMargin || 0), 0
+    );
+    
+    return totalGrossProfit / totalRevenue; // Returns decimal (0.25 = 25%)
+  }
+
+  /**
+   * MIGRATION: Get current year incentive cost (replaces deprecated deal.addedValueBenefitsCost)
+   * Uses tier incentive values aggregation
+   */
+  getCurrentYearIncentiveCost(tiers: DealTier[]): number {
+    return tiers.reduce((sum, tier) => sum + (tier.incentiveValue || 0), 0);
+  }
+
+  /**
+   * MIGRATION: Calculate yearly revenue growth rate (replaces deprecated deal.yearlyRevenueGrowthRate)
+   * Uses current tier data vs historical advertiser/agency data
+   */
+  getYearlyRevenueGrowthRate(tiers: DealTier[], salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    const currentRevenue = this.getCurrentYearRevenue(tiers);
+    const previousRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
+    
+    return previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) : 0;
+  }
+
+  /**
+   * MIGRATION: Calculate yearly margin growth rate (replaces deprecated deal.yearlyMarginGrowthRate)
+   * Uses current tier margin vs historical advertiser/agency margin
+   */
+  getYearlyMarginGrowthRate(tiers: DealTier[], salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    const currentMargin = this.getCurrentYearGrossMargin(tiers);
+    const previousMargin = this.getPreviousYearMargin(salesChannel, advertiserName, agencyName);
+    
+    return previousMargin > 0 ? ((currentMargin - previousMargin) / previousMargin) : 0;
+  }
+
+  /**
+   * MIGRATION: Calculate forecasted margin (replaces deprecated deal.forecastedMargin)
+   * Projects margin based on tier data and growth trends
+   */
+  getForecastedMargin(tiers: DealTier[], salesChannel: string, advertiserName?: string, agencyName?: string): number {
+    const currentMargin = this.getCurrentYearGrossMargin(tiers);
+    const marginGrowthRate = this.getYearlyMarginGrowthRate(tiers, salesChannel, advertiserName, agencyName);
+    
+    // Project next year margin based on current + growth trend
+    return Math.max(0, Math.min(1, currentMargin * (1 + marginGrowthRate))); // Cap between 0-100%
+  }
+
+  /**
+   * MIGRATION: Complete deal financial data using tier + historical data
+   * Replaces all deprecated base deal financial fields with calculated equivalents
+   */
+  getMigratedDealFinancials(tiers: DealTier[], salesChannel: string, advertiserName?: string, agencyName?: string) {
+    return {
+      // Current year (from tiers)
+      annualRevenue: this.getCurrentYearRevenue(tiers),
+      annualGrossMargin: this.getCurrentYearGrossMargin(tiers),
+      addedValueBenefitsCost: this.getCurrentYearIncentiveCost(tiers),
+      
+      // Historical (from advertiser/agency tables)
+      previousYearRevenue: this.getPreviousYearValue(salesChannel, advertiserName, agencyName),
+      previousYearMargin: this.getPreviousYearMargin(salesChannel, advertiserName, agencyName),
+      
+      // Calculated/Derived (combination of current + historical)
+      yearlyRevenueGrowthRate: this.getYearlyRevenueGrowthRate(tiers, salesChannel, advertiserName, agencyName),
+      yearlyMarginGrowthRate: this.getYearlyMarginGrowthRate(tiers, salesChannel, advertiserName, agencyName),
+      forecastedMargin: this.getForecastedMargin(tiers, salesChannel, advertiserName, agencyName),
+    };
+  }
+
   /**
    * Calculate client value using 3.5x multiplier on incentive cost
    */

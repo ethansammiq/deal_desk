@@ -29,6 +29,7 @@ import {
   getMarketAnalysis,
   generateStructuredResponse 
 } from "./claude-analyzer";
+import { DealCalculationService } from "../client/src/services/dealCalculations";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -189,28 +190,61 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         deals = deals.filter(deal => deal.flowIntelligence === flowIntelligence);
       }
       
-      // Enhance deals with tier data for accurate value calculation
-      const dealsWithTiers = await Promise.all(
+      // PHASE 2: Enhanced tier data with historical data integration
+      const [advertisers, agencies] = await Promise.all([
+        storage.getAdvertisers(),
+        storage.getAgencies()
+      ]);
+      const calculationService = new DealCalculationService(advertisers, agencies);
+      
+      const dealsWithEnhancedData = await Promise.all(
         deals.map(async (deal) => {
-          if (deal.dealStructure === 'tiered') {
-            const tiers = await storage.getDealTiers(deal.id);
-            return {
-              ...deal,
-              tiers: tiers,
-              // Calculate total tier revenue for display
-              totalTierRevenue: tiers.length > 0 
-                ? tiers.reduce((sum, tier) => sum + tier.annualRevenue, 0)
-                : deal.annualRevenue || 0,
-              // Get Tier 1 revenue specifically
-              tier1Revenue: tiers.find(t => t.tierNumber === 1)?.annualRevenue || deal.annualRevenue || 0
-            };
-          }
-          return deal;
+          const tiers = await storage.getDealTiers(deal.id);
+          
+          // Transform database tiers to match DealTier interface
+          const transformedTiers = tiers.map(tier => ({
+            ...tier,
+            incentives: [{
+              option: tier.incentiveOption,
+              value: tier.incentiveValue,
+              notes: tier.incentiveNotes || ''
+            }]
+          }));
+          
+          // Get migrated financial data using tier + historical data
+          const migratedFinancials = calculationService.getMigratedDealFinancials(
+            transformedTiers, 
+            deal.salesChannel, 
+            deal.advertiserName || undefined, 
+            deal.agencyName || undefined
+          );
+          
+          return {
+            ...deal,
+            tiers: tiers,
+            // MIGRATION: Use tier-based calculations over deprecated fields
+            totalTierRevenue: migratedFinancials.annualRevenue,
+            tier1Revenue: tiers.find(t => t.tierNumber === 1)?.annualRevenue || migratedFinancials.annualRevenue,
+            // Enhanced data with historical context
+            migratedFinancials,
+            // Include historical data for context
+            previousYearData: {
+              revenue: migratedFinancials.previousYearRevenue,
+              margin: migratedFinancials.previousYearMargin
+            },
+            // Growth metrics from migration logic
+            growthMetrics: {
+              revenueGrowthRate: migratedFinancials.yearlyRevenueGrowthRate,
+              marginGrowthRate: migratedFinancials.yearlyMarginGrowthRate,
+              forecastedMargin: migratedFinancials.forecastedMargin
+            }
+          };
         })
       );
       
-      res.status(200).json(dealsWithTiers);
+      res.status(200).json(dealsWithEnhancedData);
     } catch (error) {
+      console.error('Error enhancing deals with tier + historical data:', error);
       res.status(500).json({ message: "Failed to fetch deals" });
     }
   });
@@ -227,8 +261,61 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(404).json({ message: "Deal not found" });
       }
       
-      res.status(200).json(deal);
+      // PHASE 2: Enhanced individual deal response with migration data
+      const [tiers, advertisers, agencies] = await Promise.all([
+        storage.getDealTiers(id),
+        storage.getAdvertisers(),
+        storage.getAgencies()
+      ]);
+      
+      const calculationService = new DealCalculationService(advertisers, agencies);
+      
+      // Transform database tiers to match DealTier interface
+      const transformedTiers = tiers.map(tier => ({
+        ...tier,
+        incentives: [{
+          option: tier.incentiveOption,
+          value: tier.incentiveValue,
+          notes: tier.incentiveNotes || ''
+        }]
+      }));
+      
+      // Get complete migrated financial data
+      const migratedFinancials = calculationService.getMigratedDealFinancials(
+        transformedTiers, 
+        deal.salesChannel, 
+        deal.advertiserName || undefined, 
+        deal.agencyName || undefined
+      );
+      
+      // Enhanced deal response with migration data
+      const enhancedDeal = {
+        ...deal,
+        tiers,
+        // MIGRATION: Prioritize tier + historical data over deprecated base fields
+        migratedFinancials,
+        // Comprehensive financial context
+        financialSummary: {
+          currentYear: {
+            revenue: migratedFinancials.annualRevenue,
+            margin: migratedFinancials.annualGrossMargin,
+            incentiveCost: migratedFinancials.addedValueBenefitsCost
+          },
+          previousYear: {
+            revenue: migratedFinancials.previousYearRevenue,
+            margin: migratedFinancials.previousYearMargin
+          },
+          growth: {
+            revenueGrowthRate: migratedFinancials.yearlyRevenueGrowthRate,
+            marginGrowthRate: migratedFinancials.yearlyMarginGrowthRate,
+            forecastedMargin: migratedFinancials.forecastedMargin
+          }
+        }
+      };
+      
+      res.status(200).json(enhancedDeal);
     } catch (error) {
+      console.error('Error fetching enhanced deal data:', error);
       res.status(500).json({ message: "Failed to fetch deal" });
     }
   });
@@ -823,7 +910,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
     }
   });
 
-  // Add endpoint to fetch tier data for a specific deal
+  // PHASE 2: Enhanced tier endpoint with migration calculations
   router.get("/deals/:id/tiers", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
@@ -836,11 +923,49 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(404).json({ message: "Deal not found" });
       }
 
-      // Get tier data from the dealTiers table
-      const tierData = await storage.getDealTiers(id);
-      res.status(200).json(tierData);
+      // Enhanced tier data with historical context
+      const [tierData, advertisers, agencies] = await Promise.all([
+        storage.getDealTiers(id),
+        storage.getAdvertisers(),
+        storage.getAgencies()
+      ]);
+      
+      const calculationService = new DealCalculationService(advertisers, agencies);
+      
+      // Transform database tiers to match DealTier interface
+      const transformedTiers = tierData.map(tier => ({
+        ...tier,
+        incentives: [{
+          option: tier.incentiveOption,
+          value: tier.incentiveValue,
+          notes: tier.incentiveNotes || ''
+        }]
+      }));
+      
+      // Enhanced response with tier calculations and migration data
+      const enhancedTierResponse = {
+        tiers: tierData, // Return original DB format for compatibility
+        // Aggregated tier calculations (replaces deprecated base fields)
+        aggregated: {
+          totalRevenue: calculationService.getCurrentYearRevenue(transformedTiers),
+          weightedMargin: calculationService.getCurrentYearGrossMargin(transformedTiers),
+          totalIncentiveCost: calculationService.getCurrentYearIncentiveCost(transformedTiers)
+        },
+        // Historical comparison
+        historical: {
+          previousYearRevenue: calculationService.getPreviousYearValue(deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined),
+          previousYearMargin: calculationService.getPreviousYearMargin(deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined)
+        },
+        // Growth calculations using migration logic
+        growth: {
+          revenueGrowthRate: calculationService.getYearlyRevenueGrowthRate(transformedTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined),
+          marginGrowthRate: calculationService.getYearlyMarginGrowthRate(transformedTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined)
+        }
+      };
+      
+      res.status(200).json(enhancedTierResponse);
     } catch (error) {
-      console.error("Error fetching tier data:", error);
+      console.error("Error fetching enhanced tier data:", error);
       res.status(500).json({ message: "Failed to fetch tier data" });
     }
   });
