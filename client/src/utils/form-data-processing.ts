@@ -110,9 +110,7 @@ export function processDealSubmissionData(
     dealName: dealName,
     // Convert contract term with default fallback
     contractTermMonths: processedData.contractTermMonths ? Number(processedData.contractTermMonths) : 12,
-    // Add missing required fields for API compatibility
-    annualRevenue: data.annualRevenue || defaultAnnualRevenue,
-    annualGrossMargin: (data.annualGrossMarginPercent || defaultGrossMargin * 100) / 100,
+    // Financial data now managed through tier records - removed deprecated fields
     // Only include dealTiers if the structure is tiered
     ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),
   };
