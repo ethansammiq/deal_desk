@@ -35,11 +35,11 @@ import {
   calculateProfit,
   calculateProfitMargin,
   calculateIncentiveImpact,
-  calculateDealFinancialSummary,
+  // calculateDealFinancialSummary removed - using DealCalculationService instead
   calculateGrossMarginValue,
   calculateTierContribution,
   calculateEffectiveDiscountRate,
-  type DealFinancialSummary,
+  // type DealFinancialSummary removed - using DealCalculationService directly
   cn,
 } from "@/lib/utils";
 import {
@@ -161,14 +161,7 @@ export default function SubmitDeal() {
   const [dealStructureType, setDealStructure] = useState<
     "tiered" | "flat_commit" | ""
   >("");
-  const [financialSummary, setFinancialSummary] =
-    useState<DealFinancialSummary>({
-      totalAnnualRevenue: 0,
-      totalGrossMargin: 0,
-      averageGrossMarginPercent: 0,
-      totalIncentiveValue: 0,
-      projectedNetValue: 0,
-    });
+  // Financial summary state removed - calculated directly from dealTiers using DealCalculationService
 
   // ✅ Phase 2.3: Legacy helper functions removed - using form.watch() and form.getValues() directly
 
@@ -1149,7 +1142,7 @@ export default function SubmitDeal() {
                     dealTiers={dealTiers}
                     selectedIncentives={[]} // Placeholder - incentives are embedded in dealTiers
                     tierIncentives={[]} // Placeholder - tier-specific incentives 
-                    financialSummary={financialSummary}
+                    contractTerm={calculateContractTerm(form.watch("termStartDate"), form.watch("termEndDate"))}
                     currentApprover={null}
                     isSubmitting={submitDealMutation.isPending}
                     onSubmit={form.handleSubmit(onSubmit)}

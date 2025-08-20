@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { DealCalculationService } from "@/services/dealCalculations";
-import { DealFinancialSummary } from "@/lib/utils";
+// DealFinancialSummary removed - using direct calculation metrics
 // Import DealTier from the central hook
 import { DealTier } from "@/hooks/useDealTiers";
 
@@ -25,13 +25,13 @@ export function useDealCalculations(
       salesChannel: string,
       advertiserName?: string,
       agencyName?: string
-    ): DealFinancialSummary => {
-      return calculationService.calculateDealFinancialSummary(
-        dealTiers,
-        salesChannel,
-        advertiserName,
-        agencyName
-      );
+    ): {
+      totalAnnualRevenue: number;
+      totalGrossMargin: number;
+      averageGrossMarginPercent: number;
+      totalIncentiveValue: number;
+    } => {
+      return calculationService.calculateDealMetrics(dealTiers);
     },
     [calculationService]
   );

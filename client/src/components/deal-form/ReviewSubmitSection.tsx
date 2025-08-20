@@ -26,7 +26,6 @@ interface TierIncentive {
 import {
   formatCurrency,
   formatPercentage,
-  type DealFinancialSummary,
 } from "@/lib/utils";
 
 import { Textarea } from "@/components/ui/textarea";
@@ -60,7 +59,7 @@ interface ReviewSubmitSectionProps {
   dealTiers: DealTier[];
   selectedIncentives: SelectedIncentive[];
   tierIncentives: TierIncentive[];
-  financialSummary: DealFinancialSummary;
+  contractTerm: number;
   currentApprover: ApprovalRule | null;
   isSubmitting: boolean;
   onSubmit: () => void;
@@ -75,7 +74,7 @@ export function ReviewSubmitSection({
   dealTiers,
   selectedIncentives,
   tierIncentives,
-  financialSummary,
+  contractTerm,
   currentApprover,
   isSubmitting,
   onSubmit,
@@ -130,7 +129,7 @@ export function ReviewSubmitSection({
 
       {/* Financial Summary using shared component */}
       {(dealTiers.length > 0 || dealStructureType === "flat_commit") ? (
-        <FinancialMetricsGrid financialSummary={financialSummary} />
+        <FinancialMetricsGrid dealTiers={dealTiers} contractTerm={contractTerm} />
       ) : (
         <Card>
           <CardContent className="p-6">
@@ -160,7 +159,7 @@ export function ReviewSubmitSection({
 
       {/* Approval Pipeline Alert */}
       <ApprovalAlert
-        totalValue={financialSummary.totalAnnualRevenue}
+        totalValue={dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0)}
         contractTerm={contractTerm}
         dealType={formValues.dealType}
         salesChannel={salesChannel}

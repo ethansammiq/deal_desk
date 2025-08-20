@@ -244,12 +244,14 @@ export class DealCalculationService {
   /**
    * Calculate financial summary for the entire deal
    */
-  calculateDealFinancialSummary(
-    dealTiers: DealTier[],
-    salesChannel: string,
-    advertiserName?: string,
-    agencyName?: string
-  ): DealFinancialSummary {
+  calculateDealMetrics(
+    dealTiers: DealTier[]
+  ): {
+    totalAnnualRevenue: number;
+    totalGrossMargin: number;
+    averageGrossMarginPercent: number;
+    totalIncentiveValue: number;
+  } {
     let totalAnnualRevenue = 0;
     let totalGrossMargin = 0;
     let totalIncentiveValue = 0;
@@ -268,9 +270,7 @@ export class DealCalculationService {
       totalAnnualRevenue,
       totalGrossMargin,
       averageGrossMarginPercent,
-      totalIncentiveValue,
-      projectedNetValue,
-      // Removed legacy calculations that were inconsistent with step 3
+      totalIncentiveValue
     };
   }
 
@@ -287,7 +287,7 @@ export class DealCalculationService {
       return "Unable to analyze deal structure with the current data. Please ensure all tier values are completed.";
     }
 
-    const summary = this.calculateDealFinancialSummary(dealTiers, salesChannel, advertiserName, agencyName);
+    const dealMetrics = this.calculateDealMetrics(dealTiers);
     
     // Calculate growth rates for analysis
     let revenueGrowthRate = 0;
@@ -299,15 +299,15 @@ export class DealCalculationService {
       profitGrowthRate = this.calculateProfitGrowthRate(firstTier, salesChannel, advertiserName, agencyName);
     }
 
-    // Calculate effective discount rate inline (since it was removed from interface)
-    const effectiveDiscountRate = summary.totalAnnualRevenue > 0 
-      ? (summary.totalIncentiveValue / summary.totalAnnualRevenue) * 100 
+    // Calculate effective discount rate inline
+    const effectiveDiscountRate = dealMetrics.totalAnnualRevenue > 0 
+      ? (dealMetrics.totalIncentiveValue / dealMetrics.totalAnnualRevenue) * 100 
       : 0;
 
     // Generate analysis based on metrics
     if (effectiveDiscountRate > 15) {
       return "This deal structure has a high incentive rate (>15%). Consider reviewing the incentive structure to ensure it aligns with profitability targets.";
-    } else if (summary.averageGrossMarginPercent < 25) {
+    } else if (dealMetrics.averageGrossMarginPercent < 25) {
       return "This deal structure shows lower than typical gross margins (<25%). Recommend reviewing pricing strategy or cost structure.";
     } else if (revenueGrowthRate > 0 && profitGrowthRate > 0) {
       return "This deal structure shows positive growth in both revenue and profitability, though the approval matrix indicates additional oversight required.";
