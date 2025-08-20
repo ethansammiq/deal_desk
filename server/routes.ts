@@ -955,7 +955,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       const calculationService = new DealCalculationService(advertisers, agencies);
       
       // Transform database tiers to match DealTier interface
-      const transformedTiers = tierData.map(tier => ({
+      let transformedTiers = tierData.map(tier => ({
         ...tier,
         incentives: [{
           option: tier.incentiveOption,
@@ -964,14 +964,29 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         }]
       }));
       
+      // CRITICAL FIX: Add enhanced fallback logic for flat commit deals  
+      let tiersToUse = transformedTiers;
+      if (tiersToUse.length === 0 && (deal.dealStructure === 'flat_commit' || deal.dealStructure === 'tiered')) {
+        // For flat commit deals, use available financial data with intelligent fallback
+        const fallbackRevenue = deal.annualRevenue || deal.previousYearRevenue || deal.totalValue || 0;
+        const fallbackMargin = deal.annualGrossMargin || deal.previousYearMargin || 0.25; // 25% default margin
+        
+        tiersToUse = [{
+          tierNumber: 1,
+          annualRevenue: fallbackRevenue,
+          annualGrossMargin: fallbackMargin,
+          incentives: []
+        }];
+      }
+      
       // Enhanced response with tier calculations and migration data
       const enhancedTierResponse = {
-        tiers: tierData, // Return original DB format for compatibility
+        tiers: tiersToUse, // Return fallback tier data for flat commit deals
         // Aggregated tier calculations (replaces deprecated base fields)
         aggregated: {
-          totalRevenue: calculationService.getCurrentYearRevenue(transformedTiers),
-          weightedMargin: calculationService.getCurrentYearGrossMargin(transformedTiers),
-          totalIncentiveCost: calculationService.getCurrentYearIncentiveCost(transformedTiers)
+          totalRevenue: calculationService.getCurrentYearRevenue(tiersToUse),
+          weightedMargin: calculationService.getCurrentYearGrossMargin(tiersToUse),
+          totalIncentiveCost: calculationService.getCurrentYearIncentiveCost(tiersToUse)
         },
         // Historical comparison
         historical: {
@@ -980,8 +995,8 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         },
         // Growth calculations using migration logic
         growth: {
-          revenueGrowthRate: calculationService.getYearlyRevenueGrowthRate(transformedTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined),
-          marginGrowthRate: calculationService.getYearlyMarginGrowthRate(transformedTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined)
+          revenueGrowthRate: calculationService.getYearlyRevenueGrowthRate(tiersToUse, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined),
+          marginGrowthRate: calculationService.getYearlyMarginGrowthRate(tiersToUse, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined)
         }
       };
       

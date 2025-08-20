@@ -64,7 +64,28 @@ export function ConsolidatedDashboard() {
             const response = await fetch(`/api/deals/${id}/tiers`);
             if (!response.ok) return { dealId: id, tiers: [] };
             const data = await response.json();
-            return { dealId: id, tiers: data.tiers || [] };
+            let tiers = data.tiers || [];
+            
+            // Enhanced fallback: If no tiers, create one from migratedFinancials or deal data
+            if (tiers.length === 0) {
+              const dealResponse = await fetch(`/api/deals/${id}`);
+              if (dealResponse.ok) {
+                const deal = await dealResponse.json();
+                const revenue = deal.migratedFinancials?.annualRevenue || deal.previousYearRevenue || 0;
+                const margin = deal.migratedFinancials?.annualGrossMargin || deal.previousYearMargin || 0;
+                
+                if (revenue > 0) {
+                  tiers = [{
+                    tierNumber: 1,
+                    annualRevenue: revenue,
+                    annualGrossMargin: margin,
+                    incentives: []
+                  }];
+                }
+              }
+            }
+            
+            return { dealId: id, tiers };
           } catch {
             return { dealId: id, tiers: [] };
           }
