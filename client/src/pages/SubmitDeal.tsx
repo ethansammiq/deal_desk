@@ -1115,7 +1115,7 @@ export default function SubmitDeal() {
                     selectedIncentives={[]} // Placeholder - incentives are embedded in dealTiers
                     tierIncentives={[]} // Placeholder - tier-specific incentives 
                     financialSummary={financialSummary}
-                    currentApprover={currentApprover}
+                    currentApprover={null}
                     isSubmitting={submitDealMutation.isPending}
                     onSubmit={form.handleSubmit(onSubmit)}
                     onPrevStep={goToPrevTab}
