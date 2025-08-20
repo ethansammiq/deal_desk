@@ -129,8 +129,22 @@ export function ReviewSubmitSection({
       </Card>
 
       {/* Financial Summary using shared component */}
-      {financialSummary && (
+      {dealTiers.length > 0 ? (
         <FinancialMetricsGrid financialSummary={financialSummary} />
+      ) : (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-8">
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">No Financial Structure Configured</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Please go back to step 3 "Financial Structure" to configure deal tiers and see financial summary.
+              </p>
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Go to Financial Structure
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Financial Structure using shared component */}
