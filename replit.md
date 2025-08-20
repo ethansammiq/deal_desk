@@ -55,6 +55,7 @@ The application features an Express.js backend with an in-memory storage solutio
 - **Unified Risk Detection**: Aligned Strategic Insights with Deals at Risk metric by combining flowIntelligence timing detection with business risk criteria.
 - **Simplified Multi-Department Approval Workflow**: Streamlined approval system with core and specialized departments, managing approval states within the workflow rather than as separate deal statuses.
 - **Lightweight AI Assessment Components**: DealGenieAssessment supports both full and compact modes for flexible integration. Compact mode provides essential AI insights (Overall Value Score, top-performing metric, recommendation) in a streamlined 120px interface, production-ready for potential Step 4 submission flow integration without API delay concerns.
+- **Tier Data Architecture (Single Source of Truth)**: Established tier records as the definitive source for all financial calculations throughout the application. Flat commit deals store their financial data in a single Tier 1 record, while tiered deals use multiple tier records that are aggregated for totals. All dashboard components, AI analysis, and financial displays now consistently use tier data aggregation instead of base deal records, ensuring 100% data consistency across the entire application. This architectural decision eliminates financial discrepancies and maintains data integrity across all deal types and user interfaces.
 
 **Key Features:**
 - **Deal Submission**: Supports both tiered and flat commit structures.
