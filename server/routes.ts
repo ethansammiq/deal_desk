@@ -211,9 +211,20 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
             }]
           }));
           
+          // FLAT COMMIT FALLBACK: If no tiers exist for flat_commit deal, create default tier from base data
+          let tiersToUse = transformedTiers;
+          if (deal.dealStructure === 'flat_commit' && tiersToUse.length === 0) {
+            tiersToUse = [{
+              tierNumber: 1,
+              annualRevenue: deal.annualRevenue || 0,
+              annualGrossMargin: deal.annualGrossMargin || 0,
+              incentives: []
+            }];
+          }
+          
           // Get migrated financial data using tier + historical data
           const migratedFinancials = calculationService.getMigratedDealFinancials(
-            transformedTiers, 
+            tiersToUse, 
             deal.salesChannel, 
             deal.advertiserName || undefined, 
             deal.agencyName || undefined
@@ -280,9 +291,20 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         }]
       }));
       
+      // FLAT COMMIT FALLBACK: If no tiers exist for flat_commit deal, create default tier from base data
+      let tiersToUse = transformedTiers;
+      if (deal.dealStructure === 'flat_commit' && tiersToUse.length === 0) {
+        tiersToUse = [{
+          tierNumber: 1,
+          annualRevenue: deal.annualRevenue || 0,
+          annualGrossMargin: deal.annualGrossMargin || 0,
+          incentives: []
+        }];
+      }
+      
       // Get complete migrated financial data
       const migratedFinancials = calculationService.getMigratedDealFinancials(
-        transformedTiers, 
+        tiersToUse, 
         deal.salesChannel, 
         deal.advertiserName || undefined, 
         deal.agencyName || undefined
