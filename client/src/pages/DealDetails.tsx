@@ -12,7 +12,7 @@ import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { DealHistory } from "@/components/collaboration/DealHistory";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
@@ -99,6 +99,9 @@ export default function DealDetails() {
     navigate('/analytics');
   };
 
+  // Initialize calculation service for adjusted metrics  
+  const calculationService = useDealCalculations();
+
   // Calculate proper financial metrics based on deal structure
   const getFinancialMetrics = () => {
     const deal = dealQuery.data;
@@ -109,19 +112,44 @@ export default function DealDetails() {
     // For tiered deals with tiers data, use aggregated calculations
     if (deal.dealStructure === "tiered" && dealTiers.length > 0) {
       const summary = calculateFinancialSummary(dealTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined);
+      
+      // Calculate adjusted metrics using DealCalculationService
+      const adjustedGrossMargin = dealTiers.reduce((sum, tier, index) => {
+        const revenue = tier.annualRevenue || 0;
+        const adjustedMargin = calculationService.calculateAdjustedGrossMargin(tier);
+        return index === 0 ? adjustedMargin : (sum * (totalRevenueSoFar / (totalRevenueSoFar + revenue))) + (adjustedMargin * (revenue / (totalRevenueSoFar + revenue)));
+      }, 0);
+      
+      const adjustedGrossProfit = dealTiers.reduce((sum, tier) => {
+        return sum + calculationService.calculateTierGrossProfit(tier);
+      }, 0);
+      
+      const totalIncentiveCosts = dealTiers.reduce((sum, tier) => {
+        return sum + (tier.incentives?.reduce((tierSum, inc) => tierSum + (inc.value || 0), 0) || 0);
+      }, 0);
+      
       return {
         annualRevenue: summary.totalAnnualRevenue,
         annualGrossMargin: summary.averageGrossMarginPercent * 100, // Convert to percentage
-        yearlyRevenueGrowthRate: deal.yearlyRevenueGrowthRate,
-        analyticsTier: deal.analyticsTier
+        adjustedGrossMargin: adjustedGrossMargin || 0,
+        adjustedGrossProfit: adjustedGrossProfit || 0,
+        totalIncentiveCosts: totalIncentiveCosts || 0
       };
     } else {
-      // For flat commit deals or deals without tiers, use direct fields
+      // For flat commit deals, use direct values with calculations
+      const flatTier = {
+        tierNumber: 1,
+        annualRevenue: deal.annualRevenue || 0,
+        annualGrossMargin: deal.annualGrossMargin || 0,
+        incentives: [] // No incentives in flat deals for now
+      };
+      
       return {
         annualRevenue: deal.annualRevenue,
         annualGrossMargin: deal.annualGrossMargin,
-        yearlyRevenueGrowthRate: deal.yearlyRevenueGrowthRate,
-        analyticsTier: deal.analyticsTier
+        adjustedGrossMargin: calculationService.calculateAdjustedGrossMargin(flatTier),
+        adjustedGrossProfit: calculationService.calculateTierGrossProfit(flatTier),
+        totalIncentiveCosts: 0 // No incentives in flat deals for now
       };
     }
   };
@@ -242,7 +270,7 @@ export default function DealDetails() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Key Metrics Row */}
+                  {/* Revenue & Adjusted Margin Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
                       <div className="flex items-center justify-between">
@@ -259,13 +287,13 @@ export default function DealDetails() {
                       )}
                     </div>
                     
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-blue-800">Gross Margin</span>
+                        <span className="text-sm font-medium text-blue-800">Adjusted Gross Margin</span>
                         <div className="flex items-center gap-1">
-                          {financialMetrics?.annualGrossMargin && financialMetrics.annualGrossMargin > 30 ? (
+                          {financialMetrics?.adjustedGrossMargin && financialMetrics.adjustedGrossMargin > 0.15 ? (
                             <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : financialMetrics?.annualGrossMargin && financialMetrics.annualGrossMargin > 15 ? (
+                          ) : financialMetrics?.adjustedGrossMargin && financialMetrics.adjustedGrossMargin > 0.10 ? (
                             <Minus className="h-4 w-4 text-yellow-500" />
                           ) : (
                             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -273,50 +301,42 @@ export default function DealDetails() {
                         </div>
                       </div>
                       <p className="text-2xl font-bold text-blue-700 mt-1">
-                        {financialMetrics?.annualGrossMargin ? `${financialMetrics.annualGrossMargin.toFixed(1)}%` : 'N/A'}
+                        {financialMetrics?.adjustedGrossMargin ? formatPercentage(financialMetrics.adjustedGrossMargin) : 'N/A'}
                       </p>
-                      {financialMetrics?.annualGrossMargin && (
+                      {financialMetrics?.adjustedGrossMargin && (
                         <p className="text-xs text-blue-600 mt-1">
-                          {financialMetrics.annualGrossMargin > 30 ? 'Excellent margin' : 
-                           financialMetrics.annualGrossMargin > 15 ? 'Good margin' : 'Below target'}
-                          {deal.dealStructure === "tiered" ? ' (weighted average)' : ''}
+                          {financialMetrics.adjustedGrossMargin > 0.15 ? 'Strong margin after costs' : 
+                           financialMetrics.adjustedGrossMargin > 0.10 ? 'Fair margin after costs' : 'Low margin after costs'}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  {/* Contract & Structure Row */}
+                  {/* Adjusted Profit & Incentive Costs Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-purple-800">Contract Term</span>
-                        <Calendar className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium text-purple-800">Adjusted Gross Profit</span>
+                        <TrendingUp className="h-4 w-4 text-purple-600" />
                       </div>
                       <p className="text-2xl font-bold text-purple-700 mt-1">
-                        {deal.contractTermMonths || 12} months
+                        {financialMetrics?.adjustedGrossProfit ? formatCurrency(financialMetrics.adjustedGrossProfit) : 'N/A'}
                       </p>
                       <p className="text-xs text-purple-600 mt-1">
-                        Contract duration set by user
+                        Profit after all incentive costs
                       </p>
                     </div>
                     
                     <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-amber-800">Deal Structure</span>
+                        <span className="text-sm font-medium text-amber-800">Total Incentive Costs</span>
                         <FileCheck className="h-4 w-4 text-amber-600" />
                       </div>
-                      <div className="mt-2">
-                        <Badge 
-                          variant="secondary" 
-                          className="capitalize bg-amber-100 text-amber-800 hover:bg-amber-200"
-                        >
-                          {deal.dealStructure === 'tiered' ? 'Multi-Tier' : 'Flat Commit'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-amber-600 mt-2">
-                        {deal.dealStructure === 'tiered' ? 
-                          'Variable pricing structure' : 
-                          'Single commitment level'}
+                      <p className="text-2xl font-bold text-amber-700 mt-1">
+                        {financialMetrics?.totalIncentiveCosts ? formatCurrency(financialMetrics.totalIncentiveCosts) : 'N/A'}
+                      </p>
+                      <p className="text-xs text-amber-600 mt-1">
+                        Investment to secure deal
                       </p>
                     </div>
                   </div>
