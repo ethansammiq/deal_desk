@@ -584,7 +584,7 @@ export class MemStorage implements IStorage {
     // Initialize the 6 departments for multi-layered approval
     const departments = [
       {
-        departmentName: "finance" as const,
+        department: "finance" as const,
         displayName: "Finance Team",
         description: "Reviews financial incentives and overall deal viability",
         contactEmail: "finance-team@company.com",
@@ -592,7 +592,7 @@ export class MemStorage implements IStorage {
         isActive: true
       },
       {
-        departmentName: "trading" as const,
+        department: "trading" as const,
         displayName: "Trading Team", 
         description: "Reviews margin implications and trading viability",
         contactEmail: "trading-team@company.com",
@@ -600,7 +600,7 @@ export class MemStorage implements IStorage {
         isActive: true
       },
       {
-        departmentName: "creative" as const,
+        department: "creative" as const,
         displayName: "Creative Team",
         description: "Reviews creative and marketing incentives",
         contactEmail: "creative-team@company.com", 
@@ -608,7 +608,7 @@ export class MemStorage implements IStorage {
         isActive: true
       },
       {
-        departmentName: "marketing" as const,
+        department: "marketing" as const,
         displayName: "Marketing Team",
         description: "Reviews marketing strategy and promotional incentives",
         contactEmail: "marketing-team@company.com",
@@ -616,7 +616,7 @@ export class MemStorage implements IStorage {
         isActive: true
       },
       {
-        departmentName: "product" as const,
+        department: "product" as const,
         displayName: "Product Team", 
         description: "Reviews product-related incentives and offerings",
         contactEmail: "product-team@company.com",
@@ -624,7 +624,7 @@ export class MemStorage implements IStorage {
         isActive: true
       },
       {
-        departmentName: "solutions" as const,
+        department: "solutions" as const,
         displayName: "Solutions Team",
         description: "Reviews technical solutions and implementation incentives", 
         contactEmail: "solutions-team@company.com",
@@ -713,7 +713,6 @@ export class MemStorage implements IStorage {
       },
       { 
         name: "Meta", 
-        type: "technology", 
         previousYearRevenue: 1500000, 
         previousYearMargin: 0.280, // 28.0% as decimal
         previousYearProfit: 420000,
@@ -723,7 +722,6 @@ export class MemStorage implements IStorage {
       },
       { 
         name: "Tesla", 
-        type: "automotive", 
         previousYearRevenue: 6000000, 
         previousYearMargin: 0.220, // 22.0% as decimal
         previousYearProfit: 1320000,
@@ -737,7 +735,6 @@ export class MemStorage implements IStorage {
     const sampleAgencies: InsertAgency[] = [
       { 
         name: "WPP", 
-        type: "holding_company", 
         previousYearRevenue: 8500000, 
         previousYearMargin: 0.285, // ✅ FIXED: 28.5% as decimal
         previousYearProfit: 2422500,
@@ -747,7 +744,6 @@ export class MemStorage implements IStorage {
       },
       { 
         name: "Omnicom", 
-        type: "holding_company", 
         previousYearRevenue: 7800000, 
         previousYearMargin: 0.272, // ✅ FIXED: 27.2% as decimal
         previousYearProfit: 2121600,
@@ -845,6 +841,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 20.5,
         yearlyMarginGrowthRate: 10.8,
         addedValueBenefitsCost: 150000,
+        priority: "high" as const,
+        isRevision: false,
         status: "submitted" // Phase 7A compatible
       },
       {
@@ -864,6 +862,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 30.2,
         yearlyMarginGrowthRate: 5.9,
         addedValueBenefitsCost: 320000,
+        priority: "critical" as const,
+        isRevision: false,
         status: "under_review" // Phase 7A: updated status
       },
       {
@@ -882,6 +882,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 15.8,
         yearlyMarginGrowthRate: 28.5,
         addedValueBenefitsCost: 450000,
+        priority: "high" as const,
+        isRevision: false,
         status: "approved" // Phase 7A: updated status
       },
       {
@@ -901,6 +903,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 32.8,
         yearlyMarginGrowthRate: 0,
         addedValueBenefitsCost: 50000,
+        priority: "medium" as const,
+        isRevision: false,
         status: "under_review" // In review status with revision requests at approval level
       },
       {
@@ -920,6 +924,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 25.5,
         yearlyMarginGrowthRate: 13.8,
         addedValueBenefitsCost: 275000,
+        priority: "high" as const,
+        isRevision: false,
         status: "signed" // Phase 7A compatible
       },
       // Phase 7A: Additional deals to cover all 9 statuses
@@ -940,6 +946,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 28.0,
         yearlyMarginGrowthRate: 8.0,
         addedValueBenefitsCost: 75000,
+        priority: "medium" as const,
+        isRevision: false,
         status: "under_review" // Changed for better pipeline view
       },
       {
@@ -958,6 +966,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 18.5,
         yearlyMarginGrowthRate: 15.0,
         addedValueBenefitsCost: 580000,
+        priority: "critical" as const,
+        isRevision: false,
         status: "contract_drafting" // Phase 7A: contract_drafting status (formerly legal_review)
       },
       {
@@ -976,6 +986,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 24.0,
         yearlyMarginGrowthRate: 3.0,
         addedValueBenefitsCost: 200000,
+        priority: "high" as const,
+        isRevision: false,
         status: "client_review" // Phase 7A: client_review status (formerly contract_sent)
       },
       {
@@ -995,6 +1007,8 @@ export class MemStorage implements IStorage {
         forecastedMargin: 22.0,
         yearlyMarginGrowthRate: 12.0,
         addedValueBenefitsCost: 400000,
+        priority: "critical" as const,
+        isRevision: false,
         status: "negotiating" // Changed from lost to active deal
       },
       // Draft deal for testing draft editing flow
@@ -1013,7 +1027,11 @@ export class MemStorage implements IStorage {
         annualRevenue: 850000,
         yearlyRevenueGrowthRate: 25,
         annualGrossMargin: 0.19,
-        priority: "medium",
+        forecastedMargin: 19.0,
+        yearlyMarginGrowthRate: 5.0,
+        addedValueBenefitsCost: 25000,
+        priority: "medium" as const,
+        isRevision: false,
         status: "draft"
       },
       // Scoping deal for testing scoping flow
@@ -1032,7 +1050,11 @@ export class MemStorage implements IStorage {
         annualRevenue: 1200000,
         yearlyRevenueGrowthRate: 30,
         annualGrossMargin: 0.22,
-        priority: "high",
+        forecastedMargin: 22.0,
+        yearlyMarginGrowthRate: 8.0,
+        addedValueBenefitsCost: 75000,
+        priority: "high" as const,
+        isRevision: false,
         status: "scoping"
       },
       // Lost deal for testing complete status spectrum
@@ -1051,7 +1073,11 @@ export class MemStorage implements IStorage {
         annualRevenue: 750000,
         yearlyRevenueGrowthRate: 15,
         annualGrossMargin: 0.20,
-        priority: "medium",
+        forecastedMargin: 20.0,
+        yearlyMarginGrowthRate: 0,
+        addedValueBenefitsCost: 0,
+        priority: "medium" as const,
+        isRevision: false,
         status: "lost"
       }
     ];

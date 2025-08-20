@@ -587,15 +587,14 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         return res.status(400).json({ message: "Deal is not a scoping request" });
       }
       
-      // Check if already converted
-      if (scopingDeal.convertedDealId || scopingDeal.convertedAt) {
+      // Check if already converted (scoping deals are deals with status="converted")
+      if (scopingDeal.status === "converted") {
         return res.status(400).json({ message: "Scoping deal has already been converted" });
       }
       
-      // Mark the scoping deal as converted (but keep status as scoping for now)
+      // Mark the scoping deal as converted
       const updatedScopingDeal = await storage.updateDeal(scopingId, {
-        convertedAt: new Date().toISOString()
-        // Keep status as "scoping" - will be filtered out by convertedAt check
+        status: "converted" as const
       });
       
       res.status(200).json({
@@ -1077,8 +1076,8 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
       const nextSequence = allDeals.length + 1;
       const referenceNumber = `TEST-${year}-${String(nextSequence).padStart(3, '0')}`;
       
-      // Create deal with short delay (2 minutes instead of 2 hours)
-      const newDeal = await storage.createTestDealWithShortDelay(dealData);
+      // Create regular deal (test endpoint uses same method)
+      const newDeal = await storage.createDeal(dealData);
       
       res.status(201).json({ 
         deal: newDeal,
@@ -1232,6 +1231,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         email: scopingRequest.email,
         // Required fields with default values
         isRevision: false,
+        priority: "medium" as const,
         yearlyRevenueGrowthRate: 0,
         forecastedMargin: 0,
         yearlyMarginGrowthRate: 0,
@@ -2527,19 +2527,19 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
   // Scoping deals analytics endpoint for partnership team
   router.get("/analytics/scoping", async (req: Request, res: Response) => {
     try {
-      const deals = await storage.getAllDeals();
+      const deals = await storage.getDeals();
       
       // Filter all scoping deals (both active and converted)
       const allScopingDeals = deals.filter(deal => 
-        deal.status === 'scoping' || deal.convertedAt || deal.convertedDealId
+        deal.status === 'scoping' || deal.status === 'converted'
       );
       
       const activeScopingDeals = deals.filter(deal => 
-        deal.status === 'scoping' && !deal.convertedAt && !deal.convertedDealId
+        deal.status === 'scoping'
       );
       
       const convertedScopingDeals = deals.filter(deal => 
-        deal.status === 'scoping' && (deal.convertedAt || deal.convertedDealId)
+        deal.status === 'converted'
       );
 
       // Calculate conversion metrics

@@ -154,6 +154,7 @@ export const insertDealStatusHistorySchema = createInsertSchema(dealStatusHistor
     status: z.enum([
       "draft",
       "scoping", 
+      "converted",
       "submitted", 
       "under_review",
       "negotiating", 
