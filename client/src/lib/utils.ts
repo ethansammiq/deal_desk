@@ -125,12 +125,12 @@ export interface DealFinancialSummary {
   totalGrossMargin: number;
   averageGrossMarginPercent: number;
   totalIncentiveValue: number;
-  effectiveDiscountRate: number;
-  monthlyValue: number;
-  yearOverYearGrowth: number;
   projectedNetValue: number;
+  // Removed legacy fields: effectiveDiscountRate, monthlyValue, yearOverYearGrowth
+  // These can be calculated inline when needed: monthlyValue = totalAnnualRevenue/12
 }
 
+// ❌ DEPRECATED: Legacy calculation function - use DealCalculationService instead
 export function calculateDealFinancialSummary(
   tiers: Array<{
     annualRevenue?: number,
@@ -156,17 +156,6 @@ export function calculateDealFinancialSummary(
   // Calculate total incentive value
   const totalIncentiveValue = tiers.reduce((sum, tier) => sum + (tier.incentiveAmount || 0), 0);
   
-  // Calculate effective discount rate
-  const effectiveDiscountRate = totalAnnualRevenue > 0
-    ? (totalIncentiveValue / totalAnnualRevenue) * 100
-    : 0;
-  
-  // Calculate monthly value
-  const monthlyValue = calculateMonthlyValue(totalAnnualRevenue - totalIncentiveValue, contractTerm);
-  
-  // Calculate year over year growth
-  const yearOverYearGrowth = calculateYOYGrowth(totalAnnualRevenue, previousYearRevenue);
-  
   // Calculate projected net value for the full contract term
   const projectedNetValue = (totalAnnualRevenue - totalIncentiveValue) * (contractTerm / 12);
   
@@ -175,9 +164,7 @@ export function calculateDealFinancialSummary(
     totalGrossMargin,
     averageGrossMarginPercent,
     totalIncentiveValue,
-    effectiveDiscountRate,
-    monthlyValue,
-    yearOverYearGrowth,
     projectedNetValue
+    // Removed legacy calculations: effectiveDiscountRate, monthlyValue, yearOverYearGrowth
   };
 }

@@ -38,25 +38,25 @@ export function FinancialMetricsGrid({ financialSummary }: FinancialMetricsGridP
           </div>
         </div>
 
-        {/* Additional Financial Details */}
+        {/* Additional Financial Details - Using meaningful metrics */}
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Effective Discount Rate</label>
+              <label className="text-sm font-medium text-gray-700">Gross Margin %</label>
               <p className="text-lg font-semibold">
-                {formatPercentage(financialSummary.effectiveDiscountRate)}
+                {formatPercentage(financialSummary.averageGrossMarginPercent)}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Monthly Value</label>
+              <label className="text-sm font-medium text-gray-700">Contract Value</label>
               <p className="text-lg font-semibold">
-                {formatCurrency(financialSummary.monthlyValue)}
+                {formatCurrency(financialSummary.projectedNetValue)}
               </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">YoY Growth</label>
+              <label className="text-sm font-medium text-gray-700">Revenue Per Month</label>
               <p className="text-lg font-semibold">
-                {formatPercentage(financialSummary.yearOverYearGrowth)}
+                {formatCurrency(financialSummary.totalAnnualRevenue / 12)}
               </p>
             </div>
           </div>

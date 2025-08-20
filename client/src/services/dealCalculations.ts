@@ -262,13 +262,6 @@ export class DealCalculationService {
     });
 
     const averageGrossMarginPercent = totalAnnualRevenue > 0 ? (totalGrossMargin / totalAnnualRevenue) * 100 : 0;
-    const effectiveDiscountRate = totalAnnualRevenue > 0 ? (totalIncentiveValue / totalAnnualRevenue) * 100 : 0;
-    const monthlyValue = totalAnnualRevenue / 12;
-    
-    // Calculate YoY growth based on previous year data
-    const previousYearRevenue = this.getPreviousYearValue(salesChannel, advertiserName, agencyName);
-    const yearOverYearGrowth = previousYearRevenue > 0 ? ((totalAnnualRevenue - previousYearRevenue) / previousYearRevenue) * 100 : 0;
-    
     const projectedNetValue = totalGrossMargin - totalIncentiveValue;
 
     return {
@@ -276,10 +269,8 @@ export class DealCalculationService {
       totalGrossMargin,
       averageGrossMarginPercent,
       totalIncentiveValue,
-      effectiveDiscountRate,
-      monthlyValue,
-      yearOverYearGrowth,
       projectedNetValue,
+      // Removed legacy calculations that were inconsistent with step 3
     };
   }
 
