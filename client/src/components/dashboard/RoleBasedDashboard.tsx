@@ -271,7 +271,7 @@ export function RoleBasedDashboard() {
             },
             { 
               label: "Pipeline Value", 
-              value: `$${Math.round(relevantDeals.filter(d => d.status === "under_review").reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0) / 1000)}k`, 
+              value: `$${Math.round(relevantDeals.filter(d => d.status === "under_review").reduce((sum, deal) => sum + (tierRevenues?.[deal.id] || deal.growthAmbition || 0), 0) / 1000)}k`, 
               icon: BarChart3,
               color: "text-green-600",
               bgColor: "bg-green-100"

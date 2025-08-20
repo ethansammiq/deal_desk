@@ -28,6 +28,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
+import { TierDataAccess } from "@/utils/tier-data-access";
 import { Deal, type DealStatus, type UserRole } from "@shared/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
@@ -376,29 +377,68 @@ export default function UnifiedDashboard() {
     }
   };
 
-  // Helper function to get deal value based on deal type and structure
-  const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
-    // For scoping deals, use growth ambition
-    if (deal.status === 'scoping' && deal.growthAmbition) {
-      return { amount: deal.growthAmbition, isMultiTier: false };
-    }
+  // Hook to get tier revenue for a single deal using enhanced fallback logic
+  function useDealTierRevenue(dealId: number) {
+    return useQuery({
+      queryKey: ['deal-tier-revenue-unified', dealId],
+      queryFn: async () => {
+        try {
+          const response = await fetch(`/api/deals/${dealId}/tiers`);
+          if (!response.ok) return 0;
+          const data = await response.json();
+          let tiers = data.tiers || [];
+          
+          // Enhanced fallback: If no tiers, create one from migratedFinancials or deal data
+          if (tiers.length === 0) {
+            const dealResponse = await fetch(`/api/deals/${dealId}`);
+            if (dealResponse.ok) {
+              const deal = await dealResponse.json();
+              const revenue = deal.migratedFinancials?.previousYearRevenue || 
+                             deal.growthAmbition || 0;
+              const margin = deal.migratedFinancials?.previousYearMargin || 0.25;
+              
+              if (revenue > 0) {
+                tiers = [{
+                  tierNumber: 1,
+                  annualRevenue: revenue,
+                  annualGrossMargin: margin,
+                  incentives: []
+                }];
+              }
+            }
+          }
+          
+          return TierDataAccess.getExpectedRevenue(tiers);
+        } catch {
+          return 0;
+        }
+      }
+    });
+  }
+
+  // Component to display deal value using TierDataAccess
+  function DealValueCell({ deal }: { deal: Deal }) {
+    const { data: tierRevenue = 0 } = useDealTierRevenue(deal.id);
     
-    // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
-    if (deal.dealStructure === 'tiered') {
-      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
-      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
-      return { amount, isMultiTier: true }; // Always true for tiered deals
-    }
-    
-    // For flat commit deals, use annual revenue (no + sign)
-    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
-      return { amount: deal.annualRevenue, isMultiTier: false };
-    }
-    
-    // Fallback to any available revenue value
-    const amount = deal.annualRevenue || deal.growthAmbition || 0;
-    return { amount, isMultiTier: false };
-  };
+    // Helper function to get deal value based on deal type and structure using TierDataAccess
+    const getDealValue = (deal: Deal, tierRevenue: number): { amount: number; isMultiTier: boolean } => {
+      // For scoping deals, use growth ambition
+      if (deal.status === 'scoping' && deal.growthAmbition) {
+        return { amount: deal.growthAmbition, isMultiTier: false };
+      }
+      
+      // Use tier revenue if available, otherwise fallback to growth ambition
+      const amount = tierRevenue || deal.growthAmbition || 0;
+      
+      // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
+      const isMultiTier = deal.dealStructure === 'tiered';
+      
+      return { amount, isMultiTier };
+    };
+
+    const { amount, isMultiTier } = getDealValue(deal, tierRevenue);
+    return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
+  }
 
   // Define columns for the deals table with action column
   const columns: ColumnDef<Deal>[] = [
@@ -458,8 +498,7 @@ export default function UnifiedDashboard() {
       id: "dealValue", 
       header: "Deal Value",
       cell: ({ row }) => {
-        const { amount, isMultiTier } = getDealValue(row.original);
-        return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
+        return <DealValueCell deal={row.original} />;
       },
     },
     {
