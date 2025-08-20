@@ -843,19 +843,36 @@ export default function SubmitDeal() {
     }
 
     // ✅ FIXED: Calculate financial summary using proper hook-based calculation
-    if (dealTiers.length > 0 && salesChannel) {
+    // For flat commit deals, always calculate even with empty tiers (will use form data)
+    if ((dealTiers.length > 0 || dealStructureType === "flat_commit") && salesChannel) {
       const advertiserName = form.getValues("advertiserName");
       const agencyName = form.getValues("agencyName");
       
+      // For flat commit deals with no tiers, create a virtual tier from form data
+      let tiersForCalculation = dealTiers;
+      if (dealStructureType === "flat_commit" && dealTiers.length === 0) {
+        const annualRevenue = form.getValues("annualRevenue") || 0;
+        const annualGrossMarginPercent = form.getValues("annualGrossMarginPercent") || 0;
+        
+        if (annualRevenue > 0) {
+          tiersForCalculation = [{
+            tierNumber: 1,
+            annualRevenue: annualRevenue,
+            annualGrossMargin: annualGrossMarginPercent / 100, // Convert percentage to decimal
+            incentives: []
+          }];
+        }
+      }
+      
       const summary = dealCalculations.calculateFinancialSummary(
-        dealTiers,
+        tiersForCalculation,
         salesChannel,
         advertiserName,
         agencyName
       );
       setFinancialSummary(summary);
     }
-  }, [dealTiers, salesChannel]);
+  }, [dealTiers, salesChannel, dealStructureType, form]);
 
   // ✅ PHASE 3: Tab navigation now handled by useTabNavigation hook
 

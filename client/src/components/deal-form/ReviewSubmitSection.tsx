@@ -129,7 +129,7 @@ export function ReviewSubmitSection({
       </Card>
 
       {/* Financial Summary using shared component */}
-      {dealTiers.length > 0 ? (
+      {(dealTiers.length > 0 || dealStructureType === "flat_commit") ? (
         <FinancialMetricsGrid financialSummary={financialSummary} />
       ) : (
         <Card>
