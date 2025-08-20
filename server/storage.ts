@@ -1199,6 +1199,52 @@ export class MemStorage implements IStorage {
           incentivePercentage: 4.5,
           incentiveNotes: "Tier 4 - 4.5% rebate + all premium features + executive quarterly reviews"
         }
+      ],
+      2: [ // For "WPP Agency Partnership" (flat_commit)
+        {
+          dealId: 2,
+          tierNumber: 1,
+          annualRevenue: 9500000,
+          annualGrossMargin: 0.302,
+          incentivePercentage: 0,
+          incentiveNotes: "Flat commit - unified agreement"
+        }
+      ],
+      3: [ // For "GM Custom Data Solution" (flat_commit)
+        {
+          dealId: 3,
+          tierNumber: 1,
+          annualRevenue: 5000000,
+          annualGrossMargin: 0.158,
+          incentivePercentage: 0,
+          incentiveNotes: "Flat commit - custom data solution"
+        }
+      ],
+      6: [ // For "Meta Q2 Campaign Scoping" (tiered)
+        {
+          dealId: 6,
+          tierNumber: 1,
+          annualRevenue: 1200000,
+          annualGrossMargin: 0.265,
+          incentivePercentage: 0,
+          incentiveNotes: "Base tier - no incentives"
+        },
+        {
+          dealId: 6,
+          tierNumber: 2,
+          annualRevenue: 1500000,
+          annualGrossMargin: 0.280,
+          incentivePercentage: 1.0,
+          incentiveNotes: "Tier 2 - 1% rebate"
+        },
+        {
+          dealId: 6,
+          tierNumber: 3,
+          annualRevenue: 1800000,
+          annualGrossMargin: 0.295,
+          incentivePercentage: 1.5,
+          incentiveNotes: "Tier 3 - 1.5% rebate + priority support"
+        }
       ]
     };
     

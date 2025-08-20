@@ -3,6 +3,8 @@ import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { AlertTriangle, Clock } from "lucide-react";
 import type { Deal, DealStatus } from "@shared/schema";
 import { getSalesChannelDisplayName } from "@shared/constants";
+import { useQuery } from '@tanstack/react-query';
+import { DealCalculationService } from '@/services/dealCalculations';
 
 
 interface DealRowProps {
@@ -17,6 +19,25 @@ interface DealRowProps {
   className?: string;
 }
 
+// Hook to get tier revenue for a single deal
+function useDealTierRevenue(dealId: number) {
+  return useQuery({
+    queryKey: ['deal-tier-revenue', dealId],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/deals/${dealId}/tiers`);
+        if (!response.ok) return 0;
+        const tiers = await response.json();
+        const calculationService = new DealCalculationService([], []);
+        const metrics = calculationService.calculateDealMetrics(tiers);
+        return metrics.totalAnnualRevenue;
+      } catch {
+        return 0;
+      }
+    }
+  });
+}
+
 export function DealRow({ 
   deal, 
   onClick, 
@@ -25,6 +46,9 @@ export function DealRow({
   showValue = true,
   className = ""
 }: DealRowProps) {
+  // Get tier revenue for this deal
+  const { data: tierRevenue = 0 } = useDealTierRevenue(deal.id);
+  
   // Helper to format currency in shortened format
   const formatShortCurrency = (amount: number): string => {
     if (amount === 0) return "$0";
@@ -98,7 +122,7 @@ export function DealRow({
           <>
             <DealStatusBadge status={deal.status as DealStatus} />
             <div className="text-sm font-medium text-slate-700">
-              {formatShortCurrency((deal as any).annualRevenue || 0)}
+              {formatShortCurrency(tierRevenue)}
             </div>
           </>
         )}

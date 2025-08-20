@@ -107,27 +107,58 @@ export default function DealsPage() {
     return isMultiTier ? `${suffix}+` : suffix;
   };
 
-  // Helper function to get deal value based on deal type and structure (from UnifiedDashboard)
+  // Get tier revenues for all deals
+  const dealIds = deals.map(d => d.id);
+  const { data: tierRevenues } = useQuery({
+    queryKey: ['deal-tier-revenues', dealIds],
+    queryFn: async () => {
+      const { DealCalculationService } = await import('@/services/dealCalculations');
+      const revenues = await Promise.all(
+        dealIds.map(async (id) => {
+          try {
+            const response = await fetch(`/api/deals/${id}/tiers`);
+            if (!response.ok) return { dealId: id, revenue: 0 };
+            const tiers = await response.json();
+            const calculationService = new DealCalculationService([], []);
+            const metrics = calculationService.calculateDealMetrics(tiers);
+            return { dealId: id, revenue: metrics.totalAnnualRevenue };
+          } catch {
+            return { dealId: id, revenue: 0 };
+          }
+        })
+      );
+      return revenues.reduce((acc, { dealId, revenue }) => {
+        acc[dealId] = revenue;
+        return acc;
+      }, {} as Record<number, number>);
+    },
+    enabled: dealIds.length > 0
+  });
+
+  // Helper function to get deal value using tier data aggregation
   const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
     // For scoping deals, use growth ambition
     if (deal.status === 'scoping' && deal.growthAmbition) {
       return { amount: deal.growthAmbition, isMultiTier: false };
     }
     
+    // Get aggregated tier revenue for this deal
+    const tierRevenue = tierRevenues?.[deal.id] || 0;
+    
     // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
     if (deal.dealStructure === 'tiered') {
-      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
-      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
+      // Use aggregated tier revenue, fallback to growth ambition if no tiers yet
+      const amount = tierRevenue || deal.growthAmbition || 0;
       return { amount, isMultiTier: true }; // Always true for tiered deals
     }
     
-    // For flat commit deals, use annual revenue (no + sign)
-    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
-      return { amount: deal.annualRevenue, isMultiTier: false };
+    // For flat commit deals, use tier revenue (no + sign)
+    if (deal.dealStructure === 'flat_commit' && tierRevenue > 0) {
+      return { amount: tierRevenue, isMultiTier: false };
     }
     
     // Fallback to any available revenue value
-    const amount = deal.annualRevenue || deal.growthAmbition || 0;
+    const amount = tierRevenue || deal.growthAmbition || 0;
     return { amount, isMultiTier: false };
   };
 

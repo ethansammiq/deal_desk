@@ -4,6 +4,9 @@ import { Separator } from "@/components/ui/separator";
 import { Lightbulb, TrendingUp, BarChart, DollarSign, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useClaude } from "@/hooks/use-claude";
+import { useQuery } from "@tanstack/react-query";
+import { DealCalculationService } from "@/services/dealCalculations";
+import { DealTier } from "@/hooks/useDealTiers";
 
 // Types for the AI analysis
 interface AnalysisScore {
@@ -22,7 +25,7 @@ interface DealAnalysis {
 }
 
 interface DealGenieAssessmentProps {
-  dealData: any;
+  dealData: any; // Base deal record for metadata
   revenueGrowthRate?: number;
   grossProfitGrowthRate?: number;
   compact?: boolean; // New prop for lightweight Step 4 version
@@ -40,25 +43,54 @@ export function DealGenieAssessment({
 
   const { analyzeDeal, isLoading } = useClaude();
 
+  // Fetch tier data for this deal
+  const dealTiersQuery = useQuery({
+    queryKey: ['/api/deals', dealData?.id, 'tiers'],
+    queryFn: async (): Promise<DealTier[]> => {
+      const response = await fetch(`/api/deals/${dealData?.id}/tiers`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch deal tiers');
+      }
+      return response.json();
+    },
+    enabled: !!dealData?.id,
+  });
+
   React.useEffect(() => {
     // Don't analyze if we don't have enough data
-    if (!dealData) return;
+    if (!dealData || !dealTiersQuery.data) return;
 
     const performAnalysis = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        // Add calculated metrics to deal data
-        const enrichedDealData = {
-          ...dealData,
+        // Create AI analysis data from tier records (source of truth)
+        const calculationService = new DealCalculationService();
+        const aiAnalysisData = calculationService.createAIAnalysisData(
+          dealTiersQuery.data,
+          dealData.salesChannel,
+          dealData.dealType,
+          dealData.dealStructure,
+          dealData.advertiserName,
+          dealData.agencyName,
+          dealData.addedValueBenefitsCost
+        );
+        
+        if (!aiAnalysisData) {
+          throw new Error('Unable to create analysis data from tier records');
+        }
+        
+        // Add calculated metrics to tier-based data
+        const enrichedAnalysisData = {
+          ...aiAnalysisData,
           calculatedMetrics: {
             revenueGrowthRate,
             grossProfitGrowthRate
           }
         };
         
-        const result = await analyzeDeal(enrichedDealData);
+        const result = await analyzeDeal(enrichedAnalysisData);
         setAnalysis(result);
       } catch (err) {
         console.error('Error analyzing deal:', err);
@@ -91,7 +123,7 @@ export function DealGenieAssessment({
     };
 
     performAnalysis();
-  }, [dealData, revenueGrowthRate, grossProfitGrowthRate, analyzeDeal]);
+  }, [dealData, dealTiersQuery.data, revenueGrowthRate, grossProfitGrowthRate, analyzeDeal]);
 
   // Calculate color based on score
   const getScoreColor = (score: number) => {
@@ -116,7 +148,7 @@ export function DealGenieAssessment({
   };
 
   // Return placeholder while loading
-  if (loading || isLoading) {
+  if (loading || isLoading || dealTiersQuery.isLoading) {
     if (compact) {
       return (
         <Card className="border-purple-200 bg-purple-50">

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { usePriorityItems } from "@/hooks/usePriorityItems";
+import { DealCalculationService } from '@/services/dealCalculations';
 import { UniversalApprovalQueue } from "@/components/approval/UniversalApprovalQueue";
 import { DataTable } from "@/components/ui/data-table";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
@@ -38,6 +39,33 @@ export function RoleBasedDashboard() {
   const { data: deals = [] } = useQuery({
     queryKey: ["/api/deals"],
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
+  });
+
+  // Get tier revenues for all deals
+  const dealIds = deals.map(d => d.id);
+  const { data: tierRevenues } = useQuery({
+    queryKey: ['deal-tier-revenues', dealIds],
+    queryFn: async () => {
+      const revenues = await Promise.all(
+        dealIds.map(async (id) => {
+          try {
+            const response = await fetch(`/api/deals/${id}/tiers`);
+            if (!response.ok) return { dealId: id, revenue: 0 };
+            const tiers = await response.json();
+            const calculationService = new DealCalculationService([], []);
+            const metrics = calculationService.calculateDealMetrics(tiers);
+            return { dealId: id, revenue: metrics.totalAnnualRevenue };
+          } catch {
+            return { dealId: id, revenue: 0 };
+          }
+        })
+      );
+      return revenues.reduce((acc, { dealId, revenue }) => {
+        acc[dealId] = revenue;
+        return acc;
+      }, {} as Record<number, number>);
+    },
+    enabled: dealIds.length > 0
   });
 
   const { data: departments = [] } = useQuery<{ department: string; displayName: string }[]>({
@@ -85,27 +113,30 @@ export function RoleBasedDashboard() {
     }
   };
 
-  // Helper function to get deal value (from UnifiedDashboard)
+  // Helper function to get deal value using tier data aggregation
   const getDealValue = (deal: Deal & { tier1Revenue?: number; totalTierRevenue?: number; tiers?: any[] }): { amount: number; isMultiTier: boolean } => {
     // For scoping deals, use growth ambition
     if (deal.status === 'scoping' && deal.growthAmbition) {
       return { amount: deal.growthAmbition, isMultiTier: false };
     }
     
+    // Get aggregated tier revenue for this deal
+    const tierRevenue = tierRevenues?.[deal.id] || 0;
+    
     // For tiered deals, ALWAYS show + sign since they are inherently multi-tier
     if (deal.dealStructure === 'tiered') {
-      // Use tier1Revenue if available, otherwise use annualRevenue or growthAmbition
-      const amount = deal.tier1Revenue || deal.annualRevenue || deal.growthAmbition || 0;
+      // Use aggregated tier revenue, fallback to growth ambition if no tiers yet
+      const amount = tierRevenue || deal.growthAmbition || 0;
       return { amount, isMultiTier: true }; // Always true for tiered deals
     }
     
-    // For flat commit deals, use annual revenue (no + sign)
-    if (deal.dealStructure === 'flat_commit' && deal.annualRevenue) {
-      return { amount: deal.annualRevenue, isMultiTier: false };
+    // For flat commit deals, use tier revenue (no + sign)
+    if (deal.dealStructure === 'flat_commit' && tierRevenue > 0) {
+      return { amount: tierRevenue, isMultiTier: false };
     }
     
     // Fallback to any available revenue value
-    const amount = deal.annualRevenue || deal.growthAmbition || 0;
+    const amount = tierRevenue || deal.growthAmbition || 0;
     return { amount, isMultiTier: false };
   };
 

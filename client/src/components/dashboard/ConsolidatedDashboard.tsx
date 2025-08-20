@@ -50,6 +50,34 @@ export function ConsolidatedDashboard() {
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
   });
 
+  // Get tier revenues for all deals
+  const dealIds = deals.map(d => d.id);
+  const { data: tierRevenues } = useQuery({
+    queryKey: ['deal-tier-revenues', dealIds],
+    queryFn: async () => {
+      const { DealCalculationService } = await import('@/services/dealCalculations');
+      const revenues = await Promise.all(
+        dealIds.map(async (id) => {
+          try {
+            const response = await fetch(`/api/deals/${id}/tiers`);
+            if (!response.ok) return { dealId: id, revenue: 0 };
+            const tiers = await response.json();
+            const calculationService = new DealCalculationService([], []);
+            const metrics = calculationService.calculateDealMetrics(tiers);
+            return { dealId: id, revenue: metrics.totalAnnualRevenue };
+          } catch {
+            return { dealId: id, revenue: 0 };
+          }
+        })
+      );
+      return revenues.reduce((acc, { dealId, revenue }) => {
+        acc[dealId] = revenue;
+        return acc;
+      }, {} as Record<number, number>);
+    },
+    enabled: dealIds.length > 0
+  });
+
   const { data: departments = [] } = useQuery<{ department: string; displayName: string }[]>({
     queryKey: ['/api/approval-departments'],
     staleTime: 300000 // 5 minutes
@@ -273,9 +301,10 @@ export function ConsolidatedDashboard() {
       accessorKey: "totalDealValue",
       header: "Value",
       cell: ({ row }) => {
-        // Calculate total value from annualRevenue if available, fallback to default
+        // Use tier revenue aggregation instead of base deal annualRevenue  
         const deal = row.original as any;
-        const value = deal.annualRevenue || deal.totalValue || 0;
+        const tierRevenue = tierRevenues?.[deal.id] || 0;
+        const value = tierRevenue || deal.totalValue || deal.growthAmbition || 0;
         return (
           <div className="font-medium text-slate-900">
             {formatShortCurrency(value)}

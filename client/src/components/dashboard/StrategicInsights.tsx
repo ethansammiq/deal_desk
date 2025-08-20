@@ -6,6 +6,8 @@ import { AlertTriangle, Clock, TrendingUp, TrendingDown, Minus, ExternalLink } f
 import { Deal, UserRole, DealPriority } from '@shared/schema';
 import { Link } from 'wouter';
 import { classifyDealFlow } from "@/utils/dealClassification";
+import { useQuery } from '@tanstack/react-query';
+import { DealCalculationService } from '@/services/dealCalculations';
 
 interface StrategicInsight {
   id: string;
@@ -27,8 +29,42 @@ interface StrategicInsightsProps {
   approvalItems?: any[]; // Department-filtered approval queue items
 }
 
+// Helper function to get aggregated tier revenue for a deal
+async function getDealTierRevenue(dealId: number): Promise<number> {
+  try {
+    const response = await fetch(`/api/deals/${dealId}/tiers`);
+    if (!response.ok) return 0;
+    const tiers = await response.json();
+    const calculationService = new DealCalculationService([], []);
+    const metrics = calculationService.calculateDealMetrics(tiers);
+    return metrics.totalAnnualRevenue;
+  } catch {
+    return 0;
+  }
+}
+
+// Hook to get tier revenues for multiple deals
+function useDealTierRevenues(dealIds: number[]) {
+  return useQuery({
+    queryKey: ['deal-tier-revenues', dealIds],
+    queryFn: async () => {
+      const revenues = await Promise.all(
+        dealIds.map(async (id) => {
+          const revenue = await getDealTierRevenue(id);
+          return { dealId: id, revenue };
+        })
+      );
+      return revenues.reduce((acc, { dealId, revenue }) => {
+        acc[dealId] = revenue;
+        return acc;
+      }, {} as Record<number, number>);
+    },
+    enabled: dealIds.length > 0
+  });
+}
+
 // Phase 2A: Enhanced Pipeline Health Intelligence using existing data
-function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): StrategicInsight[] {
+function generatePipelineHealthInsights(deals: Deal[], userEmail?: string, tierRevenues: Record<number, number> = {}): StrategicInsight[] {
   // Step 1: Exclude both 'draft' and 'scoping' status for seller insights
   const sellerDeals = userEmail 
     ? deals.filter(deal => deal.email === userEmail && !['draft', 'scoping'].includes(deal.status))
@@ -46,7 +82,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   });
 
   if (stalledDeals.length > 0) {
-    const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+    const totalStalledValue = stalledDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
     
     // Enhanced contextual guidance based on deal types and risk factors
     const externalDeals = stalledDeals.filter(deal => 
@@ -65,8 +101,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     // ENHANCED: Create separate insights for client vs internal follow-up
     if (externalDeals.length > 0 && internalDeals.length > 0) {
       // Mixed scenario - create combined insight with clear breakdown
-      const externalValue = externalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
-      const internalValue = internalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const externalValue = externalDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
+      const internalValue = internalDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       
       insights.push({
         id: 'stall-risk-combined',
@@ -81,7 +117,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       });
     } else if (externalDeals.length > 0) {
       // Client follow-up only
-      const externalValue = externalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const externalValue = externalDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       const actionGuidance = externalDeals.length === 1 
         ? 'Contact client today to move deal forward' 
         : 'Contact clients to accelerate progress';
@@ -99,7 +135,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
       });
     } else if (internalDeals.length > 0) {
       // Internal follow-up only
-      const internalValue = internalDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const internalValue = internalDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       const actionGuidance = internalDeals.length === 1 
         ? 'Follow up internally to move deal forward' 
         : 'Follow up with internal teams on stalled deals';
@@ -119,7 +155,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
     
     // Handle high revision deals as separate insight if present
     if (highRevisionDeals.length > 0) {
-      const revisionValue = highRevisionDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const revisionValue = highRevisionDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       const actionGuidance = highRevisionDeals.length === 1 
         ? 'Deal has multiple revision requests - needs immediate attention'
         : 'Multiple deals have repeated revision requests - review strategy';
@@ -142,7 +178,7 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
   const activeDeals = sellerDeals.filter(deal => 
     !['signed', 'lost', 'draft'].includes(deal.status)
   );
-  const currentPipelineValue = activeDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+  const currentPipelineValue = activeDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
   
   // Historical baseline comparison (using deal creation patterns as proxy)
   const recentDeals = sellerDeals.filter(deal => {
@@ -159,8 +195,8 @@ function generatePipelineHealthInsights(deals: Deal[], userEmail?: string): Stra
 
   // ONLY SHOW DECLINING VALUE TRENDS (ACTIONABLE PROBLEM)
   if (olderDeals.length > 0 && recentDeals.length > 0) {
-    const recentAvgValue = recentDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0) / recentDeals.length;
-    const historicalAvgValue = olderDeals.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0) / olderDeals.length;
+    const recentAvgValue = recentDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0) / recentDeals.length;
+    const historicalAvgValue = olderDeals.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0) / olderDeals.length;
     const changePercent = Math.round(((recentAvgValue - historicalAvgValue) / historicalAvgValue) * 100);
     
     // Only show if it's a significant decline requiring action
@@ -199,7 +235,7 @@ function formatShortCurrency(amount: number): string {
 }
 
 // Phase 2A: Enhanced Workflow Efficiency Intelligence using existing data
-function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, userDepartment?: string, approvalItems?: any[]): StrategicInsight[] {
+function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, userDepartment?: string, approvalItems?: any[], tierRevenues: Record<number, number> = {}): StrategicInsight[] {
   const insights: StrategicInsight[] = [];
   const now = new Date();
 
@@ -218,7 +254,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
     });
 
     if (stalledReviews.length > 0) {
-      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       const actionGuidance = stalledReviews.length === 1 
         ? 'Review the delayed deal today to prevent further stalling'
         : 'Block 2 hours to clear review backlog and prevent seller frustration';
@@ -253,7 +289,7 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
     });
 
     if (stalledReviews.length > 0) {
-      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      const totalStalledValue = stalledReviews.reduce((sum, deal) => sum + (tierRevenues[deal.id] || 0), 0);
       const actionGuidance = stalledReviews.length === 1 
         ? 'Review the delayed deal today to prevent further stalling'
         : 'Block 2 hours to clear review backlog and prevent seller frustration';
@@ -292,9 +328,23 @@ function generateWorkflowEfficiencyInsights(deals: Deal[], userRole: UserRole, u
 
 // Main component
 export function StrategicInsights({ userRole, deals, userEmail, userDepartment, approvalItems }: StrategicInsightsProps) {
+  // Get tier revenues for all deals
+  const dealIds = deals.map(d => d.id);
+  const { data: tierRevenues, isLoading } = useDealTierRevenues(dealIds);
+  
+  // Show loading while tier revenues are being fetched
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-20 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
   const insights = userRole === 'seller' 
-    ? generatePipelineHealthInsights(deals, userEmail)
-    : generateWorkflowEfficiencyInsights(deals, userRole, userDepartment, approvalItems);
+    ? generatePipelineHealthInsights(deals, userEmail, tierRevenues || {})
+    : generateWorkflowEfficiencyInsights(deals, userRole, userDepartment, approvalItems, tierRevenues || {});
 
   // Don't render if no insights (normal operation when all deals are progressing well)
   if (insights.length === 0) {

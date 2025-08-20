@@ -275,6 +275,64 @@ export class DealCalculationService {
   }
 
   /**
+   * Create AI analysis data from tier records for both tiered and flat deals
+   * This ensures consistent data source for AI analysis regardless of deal structure
+   */
+  createAIAnalysisData(
+    dealTiers: DealTier[],
+    salesChannel: string,
+    dealType: string,
+    dealStructure: string,
+    advertiserName?: string,
+    agencyName?: string,
+    addedValueBenefitsCost?: number
+  ): any {
+    if (dealTiers.length === 0) {
+      return null;
+    }
+
+    const dealMetrics = this.calculateDealMetrics(dealTiers);
+    
+    // For flat deals, use tier 1 data directly
+    // For tiered deals, use aggregated data from all tiers
+    const analysisRevenue = dealStructure === 'flat_commit' 
+      ? (dealTiers[0]?.annualRevenue || 0)
+      : dealMetrics.totalAnnualRevenue;
+      
+    const analysisMargin = dealStructure === 'flat_commit'
+      ? (dealTiers[0]?.annualGrossMargin || 0)
+      : (dealMetrics.totalGrossMargin / dealMetrics.totalAnnualRevenue);
+      
+    const analysisIncentiveCost = dealStructure === 'flat_commit'
+      ? getTotalIncentiveValue(dealTiers[0] || { incentives: [] } as any)
+      : dealMetrics.totalIncentiveValue;
+
+    return {
+      dealType,
+      dealStructure,
+      salesChannel,
+      advertiserName,
+      agencyName,
+      // Use tier data as the authoritative source
+      annualRevenue: analysisRevenue,
+      annualGrossMargin: analysisMargin, // Keep as decimal
+      totalIncentiveCost: analysisIncentiveCost,
+      addedValueBenefitsCost: addedValueBenefitsCost || 0,
+      // Calculate derived metrics
+      grossProfit: analysisRevenue * analysisMargin,
+      netProfit: (analysisRevenue * analysisMargin) - analysisIncentiveCost - (addedValueBenefitsCost || 0),
+      // Include tier structure for context
+      tierCount: dealTiers.length,
+      tiers: dealTiers.map(tier => ({
+        tierNumber: tier.tierNumber,
+        revenue: tier.annualRevenue,
+        margin: tier.annualGrossMargin,
+        incentiveCost: getTotalIncentiveValue(tier)
+      }))
+    };
+  }
+
+  /**
    * Generate deal analysis insights
    */
   generateDealAnalysis(
