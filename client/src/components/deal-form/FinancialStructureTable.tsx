@@ -107,52 +107,52 @@ export function FinancialStructureTable({
               })}
             </tr>
             
-            {/* Gross Margin Growth Rate Row - EXACT match to Step 3 */}
+            {/* Adjusted Gross Margin Growth Rate Row - EXACT match to Step 3 */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Gross Margin Growth Rate"
-                  description="Change in margin percentage vs last year"
+                  title="Adjusted Gross Margin Growth Rate"
+                  description="Change in adjusted margin percentage vs last year"
                 />
               </FinancialDataCell>
               <FinancialDataCell>
                 <span className="text-slate-500">—</span>
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
+                const marginGrowthRate = calculationService.calculateAdjustedGrossMarginGrowthRate(
                   tier,
                   salesChannel,
                   advertiserName,
                   agencyName
                 );
                 return (
-                  <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
+                  <FinancialDataCell key={`adj-margin-growth-${tier.tierNumber}`}>
                     <GrowthIndicator value={marginGrowthRate} />
                   </FinancialDataCell>
                 );
               })}
             </tr>
             
-            {/* Gross Profit Growth Rate Row - EXACT match to Step 3 */}
+            {/* Adjusted Gross Profit Growth Rate Row - EXACT match to Step 3 */}
             <tr>
               <FinancialDataCell isMetricLabel>
                 <FinancialMetricLabel 
-                  title="Gross Profit Growth Rate"
-                  description="Change in dollar profit amount vs last year"
+                  title="Adjusted Gross Profit Growth Rate"
+                  description="Change in adjusted profit amount vs last year"
                 />
               </FinancialDataCell>
               <FinancialDataCell>
                 <span className="text-slate-500">—</span>
               </FinancialDataCell>
               {dealTiers.map((tier) => {
-                const profitGrowthRate = calculationService.calculateProfitGrowthRate(
+                const profitGrowthRate = calculationService.calculateAdjustedGrossProfitGrowthRate(
                   tier,
                   salesChannel,
                   advertiserName,
                   agencyName
                 );
                 return (
-                  <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
+                  <FinancialDataCell key={`adj-profit-growth-${tier.tierNumber}`}>
                     <GrowthIndicator value={profitGrowthRate} />
                   </FinancialDataCell>
                 );
