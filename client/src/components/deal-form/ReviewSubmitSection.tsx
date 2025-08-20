@@ -10,20 +10,7 @@ import { DealEvaluationPanel } from "./DealEvaluationPanel";
 import { ApprovalPathPredictor } from "./ApprovalPathPredictor";
 import { ApprovalRule } from "@/lib/approval-matrix";
 // Removed EnhancedApprovalAlert - using ApprovalAlert instead for consistency
-// Legacy interfaces - simplified for current architecture
-interface SelectedIncentive {
-  id: string;
-  type: string;
-  value: number;
-  option?: string;
-  tierIds?: number[];
-  notes?: string;
-}
-
-interface TierIncentive {
-  tierNumber: number;
-  incentives: SelectedIncentive[];
-}
+// Updated interfaces for current architecture - using consolidated DealTier structure
 import {
   formatCurrency,
   formatPercentage,
@@ -49,8 +36,8 @@ interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
   dealStructureType: "tiered" | "flat_commit" | "";
   dealTiers: DealTier[];
-  selectedIncentives: SelectedIncentive[];
-  tierIncentives: TierIncentive[];
+  selectedIncentives: any[]; // Legacy prop - not used (kept for compatibility)
+  tierIncentives: any[]; // Legacy prop - not used (kept for compatibility)
   contractTermMonths: number;
   currentApprover: ApprovalRule | null;
   isSubmitting: boolean;
@@ -83,11 +70,22 @@ export function ReviewSubmitSection({
   // Extract deal value and incentive types for approval prediction
   const totalDealValue = dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0);
   
-  // Extract incentive types from selectedIncentives and tierIncentives
-  const allIncentiveTypes = [
-    ...selectedIncentives.map(si => si.type),
-    ...tierIncentives.flatMap(ti => ti.incentives.map(i => i.type))
-  ].filter((type, index, array) => array.indexOf(type) === index); // Remove duplicates
+  // Extract incentive types from dealTiers incentives (updated structure)
+  const allIncentiveTypes = dealTiers
+    .flatMap(tier => tier.incentives || [])
+    .flatMap(incentive => [
+      incentive.category,        // e.g., "analytics", "technology"
+      incentive.subCategory,     // e.g., "analytics-reporting", "tech-infra"
+      incentive.option          // e.g., "Custom Reports", "Enhanced API Access"
+    ])
+    .filter((type, index, array) => type && array.indexOf(type) === index); // Remove duplicates and empty values
+  
+  // Debug: Log incentive types for troubleshooting
+  console.log("🔍 DEBUG: Extracted incentive types:", allIncentiveTypes);
+  console.log("🔍 DEBUG: DealTiers with incentives:", dealTiers.map(t => ({ 
+    tier: t.tierNumber, 
+    incentives: t.incentives?.map(i => ({ category: i.category, subCategory: i.subCategory, option: i.option }))
+  })));
 
   return (
     <div className="space-y-6">
