@@ -78,11 +78,27 @@ export function useDealTiers(options: UseDealTiersOptions = {}) {
   const [tiers, setTiers] = useState<DealTier[]>(() => {
     if (initialTiers.length > 0) {
       // ✅ MIGRATION: Ensure existing tiers have incentives array initialized
-      return initialTiers.map(tier => ({
+      let processedTiers = initialTiers.map(tier => ({
         ...tier,
         incentives: tier.incentives || [] // Initialize if missing
       }));
+      
+      // For flat commit deals, ensure only tier 1 exists
+      if (dealStructure === "flat_commit") {
+        processedTiers = processedTiers.filter(tier => tier.tierNumber === 1);
+        if (processedTiers.length === 0) {
+          processedTiers = [{
+            tierNumber: 1,
+            annualRevenue: DEAL_CONSTANTS.DEFAULT_ANNUAL_REVENUE,
+            annualGrossMargin: DEAL_CONSTANTS.DEFAULT_GROSS_MARGIN,
+            incentives: []
+          }];
+        }
+      }
+      
+      return processedTiers;
     }
+    
     // Create default first tier with empty incentives array
     return [{
       tierNumber: 1,

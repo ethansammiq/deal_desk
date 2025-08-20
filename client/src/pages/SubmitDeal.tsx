@@ -261,7 +261,7 @@ export default function SubmitDeal() {
   
   // Direct access to tiers and operations (no more redundant wrapper)
   const dealTiers = tierManager.tiers;
-  const setDealTiers = tierManager.setTiers;
+  const setDealTiers = tierManager.updateAllTiers; // Use the proper method name
   
   // ✅ OPTIMIZED: Tab-based validation mapping
   const tabToStepMap = createTabToStepMap(SUBMIT_DEAL_TABS);
@@ -776,12 +776,32 @@ export default function SubmitDeal() {
   const salesChannel = form.watch("salesChannel");
   const dealStructureValue = form.watch("dealStructure");
 
-  // Update dealStructureType when form value changes
+  // Update dealStructureType when form value changes and manage tier logic
   useEffect(() => {
     if (dealStructureValue) {
-      setDealStructure(dealStructureValue as "tiered" | "flat_commit");
+      const newStructure = dealStructureValue as "tiered" | "flat_commit";
+      setDealStructure(newStructure);
+      
+      // For flat commit deals, ensure we only have tier 1
+      if (newStructure === "flat_commit") {
+        const currentTiers = tierManager.tiers;
+        if (currentTiers.length === 0) {
+          // Add tier 1 if no tiers exist
+          tierManager.addTier();
+        } else if (currentTiers.length > 1) {
+          // Keep only tier 1 for flat commit
+          const tier1 = currentTiers.find(tier => tier.tierNumber === 1);
+          if (tier1) {
+            tierManager.setTiers([tier1]);
+          } else {
+            // If somehow no tier 1 exists, reset with new tier 1
+            tierManager.resetTiers();
+          }
+        }
+      }
+      // For tiered deals, no special action needed - allow multiple tiers
     }
-  }, [dealStructureValue]);
+  }, [dealStructureValue, tierManager]);
 
   // ✅ REFACTORED: Auto-populate region using shared utility
   useEffect(() => {
@@ -848,24 +868,22 @@ export default function SubmitDeal() {
       const advertiserName = form.getValues("advertiserName");
       const agencyName = form.getValues("agencyName");
       
-      // For flat commit deals with no tiers, create a virtual tier from form data
+      // For flat commit deals, ensure we always have a tier 1 for calculations
       let tiersForCalculation = dealTiers;
-      if (dealStructureType === "flat_commit" && dealTiers.length === 0) {
-        const annualRevenue = form.getValues("annualRevenue") || 0;
-        const annualGrossMarginPercent = form.getValues("annualGrossMarginPercent") || 0;
-        
-        console.log("Flat commit virtual tier data:", { annualRevenue, annualGrossMarginPercent, dealStructureType });
-        
-        if (annualRevenue > 0) {
+      if (dealStructureType === "flat_commit") {
+        if (dealTiers.length === 0) {
+          // Create default tier 1 for flat commit if none exists
           tiersForCalculation = [{
             tierNumber: 1,
-            annualRevenue: annualRevenue,
-            annualGrossMargin: annualGrossMarginPercent / 100, // Convert percentage to decimal
+            annualRevenue: 0,
+            annualGrossMargin: 0,
             incentives: []
           }];
-          console.log("Created virtual tier:", tiersForCalculation[0]);
+          console.log("Created default tier 1 for flat commit deal");
         } else {
-          console.log("No annual revenue found, cannot create virtual tier");
+          // Flat commit should only ever have tier 1
+          tiersForCalculation = dealTiers.filter(tier => tier.tierNumber === 1);
+          console.log("Filtered to tier 1 only for flat commit");
         }
       }
       
