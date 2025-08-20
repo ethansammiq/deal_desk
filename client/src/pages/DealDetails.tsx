@@ -139,7 +139,7 @@ export default function DealDetails() {
       const flatTier = {
         tierNumber: 1,
         annualRevenue: deal.annualRevenue || 0,
-        annualGrossMargin: deal.annualGrossMargin || 0,
+        annualGrossMargin: (deal.annualGrossMargin || 0) / 100, // Convert percentage to decimal
         incentives: [] // No incentives in flat deals for now
       };
       
@@ -326,7 +326,7 @@ export default function DealDetails() {
                         {financialMetrics?.adjustedGrossProfit ? formatCurrency(financialMetrics.adjustedGrossProfit) : 'N/A'}
                       </p>
                       <p className="text-xs text-purple-600 mt-1">
-                        {financialMetrics.displayTier ? 
+                        {financialMetrics?.displayTier ? 
                           `Tier ${financialMetrics.displayTier} profit after costs` : 
                           'Profit after all incentive costs'}
                       </p>
