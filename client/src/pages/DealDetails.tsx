@@ -139,7 +139,7 @@ export default function DealDetails() {
       const flatTier = {
         tierNumber: 1,
         annualRevenue: deal.annualRevenue || 0,
-        annualGrossMargin: (deal.annualGrossMargin || 0) / 100, // Convert percentage to decimal
+        annualGrossMargin: deal.annualGrossMargin || 0, // Already in decimal format
         incentives: [] // No incentives in flat deals for now
       };
       
