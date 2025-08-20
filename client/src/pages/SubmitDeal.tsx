@@ -875,13 +875,8 @@ export default function SubmitDeal() {
         }
       }
       
-      const summary = dealCalculations.calculateFinancialSummary(
-        tiersForCalculation,
-        salesChannel,
-        advertiserName,
-        agencyName
-      );
-      setFinancialSummary(summary);
+      // Financial summary now calculated directly by dealCalculations service
+      // No need to store in state - components access calculations directly
     }
   }, [dealTiers, salesChannel, dealStructureType, form]);
 
@@ -1142,7 +1137,7 @@ export default function SubmitDeal() {
                     dealTiers={dealTiers}
                     selectedIncentives={[]} // Placeholder - incentives are embedded in dealTiers
                     tierIncentives={[]} // Placeholder - tier-specific incentives 
-                    contractTerm={calculateContractTerm(form.watch("termStartDate"), form.watch("termEndDate"))}
+                    contractTermMonths={calculateContractTerm(form.watch("termStartDate"), form.watch("termEndDate"))}
                     currentApprover={null}
                     isSubmitting={submitDealMutation.isPending}
                     onSubmit={form.handleSubmit(onSubmit)}

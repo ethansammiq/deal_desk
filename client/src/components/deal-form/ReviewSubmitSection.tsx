@@ -59,7 +59,7 @@ interface ReviewSubmitSectionProps {
   dealTiers: DealTier[];
   selectedIncentives: SelectedIncentive[];
   tierIncentives: TierIncentive[];
-  contractTerm: number;
+  contractTermMonths: number;
   currentApprover: ApprovalRule | null;
   isSubmitting: boolean;
   onSubmit: () => void;
@@ -74,7 +74,7 @@ export function ReviewSubmitSection({
   dealTiers,
   selectedIncentives,
   tierIncentives,
-  contractTerm,
+  contractTermMonths,
   currentApprover,
   isSubmitting,
   onSubmit,
@@ -87,8 +87,7 @@ export function ReviewSubmitSection({
   const advertiserName = String(formValues.advertiserName || "");
   const agencyName = String(formValues.agencyName || "");
 
-  // Calculate contract term using shared utility
-  const contractTerm = calculateContractTerm(formValues.termStartDate, formValues.termEndDate);
+  // Use contract term from props (already calculated in parent component)
 
   // Step 4 is pure display - get same calculation service as step 3 to ensure consistency
   const { agenciesData, advertisersData } = useFinancialData();
@@ -108,7 +107,7 @@ export function ReviewSubmitSection({
       <DealSummaryCard 
         formValues={formValues}
         dealStructureType={dealStructureType}
-        contractTerm={contractTerm}
+        contractTerm={contractTermMonths}
       />
 
       {/* Business Summary Field - Using shared FormFieldWithTooltip */}
@@ -129,7 +128,7 @@ export function ReviewSubmitSection({
 
       {/* Financial Summary using shared component */}
       {(dealTiers.length > 0 || dealStructureType === "flat_commit") ? (
-        <FinancialMetricsGrid dealTiers={dealTiers} contractTerm={contractTerm} />
+        <FinancialMetricsGrid dealTiers={dealTiers} contractTerm={contractTermMonths} />
       ) : (
         <Card>
           <CardContent className="p-6">
@@ -160,7 +159,7 @@ export function ReviewSubmitSection({
       {/* Approval Pipeline Alert */}
       <ApprovalAlert
         totalValue={dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0)}
-        contractTerm={contractTerm}
+        contractTerm={contractTermMonths}
         dealType={formValues.dealType}
         salesChannel={salesChannel}
       />

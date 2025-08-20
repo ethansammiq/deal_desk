@@ -1,5 +1,5 @@
 // ❌ ELIMINATED: SelectedIncentive and TierIncentive imports - using DealTier only
-import { DealFinancialSummary } from "@/lib/utils";
+// DealFinancialSummary type removed - using direct calculation metrics
 
 // Import DealTier from the central hook
 import { DealTier, getTotalIncentiveValue } from "@/hooks/useDealTiers";
