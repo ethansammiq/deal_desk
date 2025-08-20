@@ -220,21 +220,10 @@ export const deals = pgTable("deals", {
   termEndDate: text("term_end_date"), // ISO 8601: "2025-12-15"
   contractTerm: integer("contract_term"), // calculated in months from start and end dates
   
-  // Financial data for flat commit structure
-  // @deprecated - Use tier data aggregation instead. These fields will be removed in Phase 3.
-  // Migration: annualRevenue -> sum(dealTiers.annualRevenue), annualGrossMargin -> calculated from tiers
-  annualRevenue: doublePrecision("annual_revenue"),
-  annualGrossMargin: doublePrecision("annual_gross_margin"), // as a percentage
+  // Financial data now managed exclusively through tier records
+  // Phase 3: Migrated to tier-first architecture
   previousYearRevenue: doublePrecision("previous_year_revenue").default(0),
   previousYearMargin: doublePrecision("previous_year_margin").default(0),
-  
-  // Standard deal criteria fields
-  // @deprecated - These calculations now derive from tier data. Will be removed in Phase 3.
-  // Migration: Use DealCalculationService for all financial metrics and growth calculations
-  yearlyRevenueGrowthRate: doublePrecision("yearly_revenue_growth_rate").default(0),
-  forecastedMargin: doublePrecision("forecasted_margin").default(0),
-  yearlyMarginGrowthRate: doublePrecision("yearly_margin_growth_rate").default(0),
-  addedValueBenefitsCost: doublePrecision("added_value_benefits_cost").default(0),
   
   // Phase 7A: Workflow fields
   lastStatusChange: timestamp("last_status_change").defaultNow(),
@@ -370,18 +359,8 @@ export const insertDealSchema = createInsertSchema(deals)
     clientAsks: z.string().optional(),
     growthAmbition: z.number().min(1000000, "Growth ambition must be at least $1M").optional(),
     
-    // Financial validations
-    // @deprecated - Use tier data instead. Kept for backward compatibility during migration to Phase 3
-    annualRevenue: z.number().positive("Annual revenue must be positive").optional(),
-    // @deprecated - Use tier data instead. Kept for backward compatibility during migration to Phase 3
-    annualGrossMargin: z.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
-    
-    // Deal criteria validations
-    // @deprecated - These calculations now derive from tier data. Will be removed in Phase 3
-    yearlyRevenueGrowthRate: z.number().default(0),
-    forecastedMargin: z.number().min(0).max(100, "Forecasted margin must be between 0 and 100%").default(0),
-    yearlyMarginGrowthRate: z.number().default(0),
-    addedValueBenefitsCost: z.number().min(0).default(0),
+    // Financial validations now handled through tier records
+    // Phase 3: All financial data managed through dealTiers table
     
     // Phase 8: Enhanced status and draft validation
     status: z.enum([

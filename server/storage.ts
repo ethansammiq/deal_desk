@@ -835,12 +835,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-01-01",
         termEndDate: "2025-12-31",
-        annualRevenue: 3000000,
-        annualGrossMargin: 0.205,
-        yearlyRevenueGrowthRate: 20,
-        forecastedMargin: 20.5,
-        yearlyMarginGrowthRate: 10.8,
-        addedValueBenefitsCost: 150000,
+        // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
         status: "submitted" // Phase 7A compatible
@@ -856,12 +851,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-01-01",
         termEndDate: "2026-12-31",
-        annualRevenue: 9500000,
-        annualGrossMargin: 0.302,
-        yearlyRevenueGrowthRate: 11.8,
-        forecastedMargin: 30.2,
-        yearlyMarginGrowthRate: 5.9,
-        addedValueBenefitsCost: 320000,
+        // Financial data now handled through tier records
         priority: "critical" as const,
         isRevision: false,
         status: "under_review" // Phase 7A: updated status
@@ -876,12 +866,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-03-01",
         termEndDate: "2026-02-28",
-        annualRevenue: 5000000,
-        annualGrossMargin: 0.158,
-        yearlyRevenueGrowthRate: 19,
-        forecastedMargin: 15.8,
-        yearlyMarginGrowthRate: 28.5,
-        addedValueBenefitsCost: 450000,
+        // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
         status: "approved" // Phase 7A: updated status
@@ -897,12 +882,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-02-15",
         termEndDate: "2025-12-31",
-        annualRevenue: 980000,
-        annualGrossMargin: 0.328,
-        yearlyRevenueGrowthRate: 3.2,
-        forecastedMargin: 32.8,
-        yearlyMarginGrowthRate: 0,
-        addedValueBenefitsCost: 50000,
+        // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
         status: "under_review" // In review status with revision requests at approval level
@@ -918,12 +898,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-04-01",
         termEndDate: "2027-03-31",
-        annualRevenue: 2500000,
-        annualGrossMargin: 0.255,
-        yearlyRevenueGrowthRate: 38.9,
-        forecastedMargin: 25.5,
-        yearlyMarginGrowthRate: 13.8,
-        addedValueBenefitsCost: 275000,
+        // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
         status: "signed" // Phase 7A compatible
@@ -940,12 +915,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-04-01",
         termEndDate: "2025-09-30",
-        annualRevenue: 1500000,
-        annualGrossMargin: 0.280,
-        yearlyRevenueGrowthRate: 15,
-        forecastedMargin: 28.0,
-        yearlyMarginGrowthRate: 8.0,
-        addedValueBenefitsCost: 75000,
+        // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
         status: "under_review" // Changed for better pipeline view
@@ -960,12 +930,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-05-01",
         termEndDate: "2026-04-30",
-        annualRevenue: 7200000,
-        annualGrossMargin: 0.185,
-        yearlyRevenueGrowthRate: 25,
-        forecastedMargin: 18.5,
-        yearlyMarginGrowthRate: 15.0,
-        addedValueBenefitsCost: 580000,
+        // Financial data now handled through tier records
         priority: "critical" as const,
         isRevision: false,
         status: "contract_drafting" // Phase 7A: contract_drafting status (formerly legal_review)
@@ -980,12 +945,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-03-15",
         termEndDate: "2026-03-14",
-        annualRevenue: 4500000,
-        annualGrossMargin: 0.240,
-        yearlyRevenueGrowthRate: 8,
-        forecastedMargin: 24.0,
-        yearlyMarginGrowthRate: 3.0,
-        addedValueBenefitsCost: 200000,
+        // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
         status: "client_review" // Phase 7A: client_review status (formerly contract_sent)
@@ -1001,12 +961,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-02-01",
         termEndDate: "2025-12-31",
-        annualRevenue: 6000000,
-        annualGrossMargin: 0.220,
-        yearlyRevenueGrowthRate: 30,
-        forecastedMargin: 22.0,
-        yearlyMarginGrowthRate: 12.0,
-        addedValueBenefitsCost: 400000,
+        // Financial data now handled through tier records
         priority: "critical" as const,
         isRevision: false,
         status: "negotiating" // Changed from lost to active deal
@@ -1024,12 +979,7 @@ export class MemStorage implements IStorage {
         termStartDate: "2025-04-01",
         termEndDate: "2026-03-31",
         contractTermMonths: 12,
-        annualRevenue: 850000,
-        yearlyRevenueGrowthRate: 25,
-        annualGrossMargin: 0.19,
-        forecastedMargin: 19.0,
-        yearlyMarginGrowthRate: 5.0,
-        addedValueBenefitsCost: 25000,
+        // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
         status: "draft"
@@ -1047,12 +997,7 @@ export class MemStorage implements IStorage {
         termStartDate: "2025-05-01",
         termEndDate: "2026-04-30",
         contractTermMonths: 12,
-        annualRevenue: 1200000,
-        yearlyRevenueGrowthRate: 30,
-        annualGrossMargin: 0.22,
-        forecastedMargin: 22.0,
-        yearlyMarginGrowthRate: 8.0,
-        addedValueBenefitsCost: 75000,
+        // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
         status: "scoping"
@@ -1070,12 +1015,7 @@ export class MemStorage implements IStorage {
         termStartDate: "2025-03-01",
         termEndDate: "2026-02-28",
         contractTermMonths: 12,
-        annualRevenue: 750000,
-        yearlyRevenueGrowthRate: 15,
-        annualGrossMargin: 0.20,
-        forecastedMargin: 20.0,
-        yearlyMarginGrowthRate: 0,
-        addedValueBenefitsCost: 0,
+        // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
         status: "lost"
@@ -1580,8 +1520,7 @@ export class MemStorage implements IStorage {
       businessSummary: insertDeal.businessSummary || null,
       termStartDate: insertDeal.termStartDate || null,
       termEndDate: insertDeal.termEndDate || null,
-      annualRevenue: insertDeal.annualRevenue || null,
-      annualGrossMargin: insertDeal.annualGrossMargin || null,
+      // Financial data managed through tier records
     };
     
     this.deals.set(id, deal);
@@ -1776,8 +1715,10 @@ export class MemStorage implements IStorage {
     }
 
     // 9. High-value deal monitoring - deals over threshold need special attention
-    // Use consistent fallback logic (consistent with dealClassification)
-    const dealValue = deal.annualRevenue || deal.growthAmbition || 0;
+    // Phase 3: Use tier data for deal value calculation (expected tier approach)
+    const dealTiers = await this.getDealTiers(deal.id);
+    const expectedTier = dealTiers.find(t => t.tierNumber === 2) || dealTiers[0]; // Tier 2 or first available
+    const dealValue = expectedTier?.annualRevenue || deal.growthAmbition || 0;
     if (dealValue > 5000000 && daysInStatus > 2) {
       return 'needs_attention';
     }
@@ -1999,11 +1940,7 @@ export class MemStorage implements IStorage {
       growthOpportunityClient: scopingRequest.growthOpportunityClient,
       clientAsks: scopingRequest.clientAsks,
       growthAmbition: scopingRequest.growthAmbition,
-      // Required default values
-      yearlyRevenueGrowthRate: 0,
-      forecastedMargin: 0,
-      yearlyMarginGrowthRate: 0,
-      addedValueBenefitsCost: 0,
+      // Financial data managed through tier records
     };
     
     // Create the deal
