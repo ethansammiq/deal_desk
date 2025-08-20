@@ -2278,12 +2278,12 @@ export class MemStorage implements IStorage {
   async getApprovalDepartments(): Promise<ApprovalDepartment[]> {
     return Array.from(this.approvalDepartments.values())
       .filter(dept => dept.isActive)
-      .sort((a, b) => a.departmentName.localeCompare(b.departmentName));
+      .sort((a, b) => a.department.localeCompare(b.department));
   }
 
   async getApprovalDepartment(departmentName: DepartmentType): Promise<ApprovalDepartment | undefined> {
     return Array.from(this.approvalDepartments.values())
-      .find(dept => dept.departmentName === departmentName && dept.isActive);
+      .find(dept => dept.department === departmentName && dept.isActive);
   }
 
   async createApprovalDepartment(department: InsertApprovalDepartment): Promise<ApprovalDepartment> {
