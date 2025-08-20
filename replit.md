@@ -54,10 +54,11 @@ The application features an Express.js backend with an in-memory storage solutio
 - **Priority-Driven Strategic Insights**: Uses actual DealPriority type for consistency.
 - **Unified Risk Detection**: Aligned Strategic Insights with Deals at Risk metric by combining flowIntelligence timing detection with business risk criteria.
 - **Simplified Multi-Department Approval Workflow**: Streamlined approval system with core and specialized departments, managing approval states within the workflow rather than as separate deal statuses.
+- **Lightweight AI Assessment Components**: DealGenieAssessment supports both full and compact modes for flexible integration. Compact mode provides essential AI insights (Overall Value Score, top-performing metric, recommendation) in a streamlined 120px interface, production-ready for potential Step 4 submission flow integration without API delay concerns.
 
 **Key Features:**
 - **Deal Submission**: Supports both tiered and flat commit structures.
-- **Real-time AI Analysis**: Provides intelligent insights and recommendations for deals.
+- **Real-time AI Analysis**: Provides intelligent insights and recommendations for deals through both comprehensive and lightweight compact modes.
 - **Dashboard**: Offers real-time deal tracking and performance statistics.
 - **Intelligent Chatbot (DealGenie)**: AI-powered assistance for users.
 - **Comprehensive Approval Workflow**: Supports a multi-layered approval system with automated status transitions and notifications.
