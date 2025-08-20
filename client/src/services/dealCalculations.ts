@@ -299,8 +299,13 @@ export class DealCalculationService {
       profitGrowthRate = this.calculateProfitGrowthRate(firstTier, salesChannel, advertiserName, agencyName);
     }
 
+    // Calculate effective discount rate inline (since it was removed from interface)
+    const effectiveDiscountRate = summary.totalAnnualRevenue > 0 
+      ? (summary.totalIncentiveValue / summary.totalAnnualRevenue) * 100 
+      : 0;
+
     // Generate analysis based on metrics
-    if (summary.effectiveDiscountRate > 15) {
+    if (effectiveDiscountRate > 15) {
       return "This deal structure has a high incentive rate (>15%). Consider reviewing the incentive structure to ensure it aligns with profitability targets.";
     } else if (summary.averageGrossMarginPercent < 25) {
       return "This deal structure shows lower than typical gross margins (<25%). Recommend reviewing pricing strategy or cost structure.";
