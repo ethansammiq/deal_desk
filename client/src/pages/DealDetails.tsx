@@ -285,35 +285,24 @@ export default function DealDetails() {
                     </div>
                   </div>
 
-                  {/* Growth & Analytics Row */}
+                  {/* Contract & Structure Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-purple-800">Growth Rate</span>
-                        <div className="flex items-center gap-1">
-                          {financialMetrics?.yearlyRevenueGrowthRate && financialMetrics.yearlyRevenueGrowthRate > 0 ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : financialMetrics?.yearlyRevenueGrowthRate === 0 ? (
-                            <Minus className="h-4 w-4 text-yellow-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          )}
-                        </div>
+                        <span className="text-sm font-medium text-purple-800">Contract Term</span>
+                        <Calendar className="h-4 w-4 text-purple-600" />
                       </div>
                       <p className="text-2xl font-bold text-purple-700 mt-1">
-                        {financialMetrics?.yearlyRevenueGrowthRate ? `${financialMetrics.yearlyRevenueGrowthRate}%` : 'N/A'}
+                        {deal.contractTermMonths || 12} months
                       </p>
-                      {financialMetrics?.yearlyRevenueGrowthRate !== null && financialMetrics?.yearlyRevenueGrowthRate !== undefined && (
-                        <p className="text-xs text-purple-600 mt-1">
-                          {financialMetrics.yearlyRevenueGrowthRate > 10 ? 'High growth' : 
-                           financialMetrics.yearlyRevenueGrowthRate > 0 ? 'Positive growth' : 'Declining'}
-                        </p>
-                      )}
+                      <p className="text-xs text-purple-600 mt-1">
+                        Contract duration set by user
+                      </p>
                     </div>
                     
                     <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-amber-800">Analytics Tier</span>
+                        <span className="text-sm font-medium text-amber-800">Deal Structure</span>
                         <FileCheck className="h-4 w-4 text-amber-600" />
                       </div>
                       <div className="mt-2">
@@ -321,11 +310,13 @@ export default function DealDetails() {
                           variant="secondary" 
                           className="capitalize bg-amber-100 text-amber-800 hover:bg-amber-200"
                         >
-                          {financialMetrics?.analyticsTier || 'Standard'}
+                          {deal.dealStructure === 'tiered' ? 'Multi-Tier' : 'Flat Commit'}
                         </Badge>
                       </div>
                       <p className="text-xs text-amber-600 mt-2">
-                        Analytics capabilities included
+                        {deal.dealStructure === 'tiered' ? 
+                          'Variable pricing structure' : 
+                          'Single commitment level'}
                       </p>
                     </div>
                   </div>
