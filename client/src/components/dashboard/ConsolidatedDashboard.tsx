@@ -161,7 +161,8 @@ export function ConsolidatedDashboard() {
   const sellerDeals = useSellerDeals(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
   const sellerMetrics = useSellerMetrics({ 
     deals, 
-    userEmail: currentUser?.role === 'seller' ? currentUser?.email : undefined 
+    userEmail: currentUser?.role === 'seller' ? currentUser?.email : undefined,
+    tierRevenues 
   });
   const sellerDealCategories = useSellerDealCategories(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
   const sellerPipelineDeals = useSellerPipelineDeals(deals, currentUser?.role === 'seller' ? currentUser?.email : undefined);
