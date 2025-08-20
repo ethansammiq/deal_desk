@@ -31,11 +31,9 @@ import {
 import {
   formatCurrency,
   formatPercentage,
-  calculateMonthlyValue,
   calculateNetValue,
   calculateProfit,
   calculateProfitMargin,
-  calculateYOYGrowth,
   calculateIncentiveImpact,
   calculateDealFinancialSummary,
   calculateGrossMarginValue,
@@ -169,9 +167,6 @@ export default function SubmitDeal() {
       totalGrossMargin: 0,
       averageGrossMarginPercent: 0,
       totalIncentiveValue: 0,
-      effectiveDiscountRate: 0,
-      monthlyValue: 0,
-      yearOverYearGrowth: 0,
       projectedNetValue: 0,
     });
 

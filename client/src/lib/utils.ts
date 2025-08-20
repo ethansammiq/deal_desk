@@ -24,10 +24,7 @@ export function formatPercentage(value: number): string {
   }).format(value);
 }
 
-export function calculateMonthlyValue(totalValue: number, contractTerm: number): number {
-  if (!totalValue || !contractTerm || contractTerm <= 0) return 0;
-  return totalValue / contractTerm;
-}
+// ❌ REMOVED: Legacy calculateMonthlyValue - use inline calculation instead
 
 export function calculateNetValue(totalValue: number, discountPercentage: number): number {
   if (!totalValue) return 0;
@@ -47,10 +44,7 @@ export function calculateProfitMargin(totalValue: number, discountPercentage: nu
   return (profit / netValue) * 100;
 }
 
-export function calculateYOYGrowth(currentValue: number, previousValue: number): number {
-  if (!previousValue || previousValue === 0) return 0;
-  return ((currentValue - previousValue) / previousValue) * 100;
-}
+// ❌ REMOVED: Legacy calculateYOYGrowth - not used in current system
 
 export function calculateIncentiveImpact(totalValue: number, incentivePercentage: number): number {
   if (!totalValue) return 0;
