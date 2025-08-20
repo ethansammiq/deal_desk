@@ -211,9 +211,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
             }]
           }));
           
-          // FLAT COMMIT FALLBACK: If no tiers exist for flat_commit deal, create default tier from base data
+          // MISSING TIERS FALLBACK: Create default tier from base data if no tiers exist
           let tiersToUse = transformedTiers;
-          if (deal.dealStructure === 'flat_commit' && tiersToUse.length === 0) {
+          if (tiersToUse.length === 0 && (deal.dealStructure === 'flat_commit' || deal.dealStructure === 'tiered')) {
             tiersToUse = [{
               tierNumber: 1,
               annualRevenue: deal.annualRevenue || 0,
@@ -291,9 +291,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         }]
       }));
       
-      // FLAT COMMIT FALLBACK: If no tiers exist for flat_commit deal, create default tier from base data
+      // MISSING TIERS FALLBACK: Create default tier from base data if no tiers exist
       let tiersToUse = transformedTiers;
-      if (deal.dealStructure === 'flat_commit' && tiersToUse.length === 0) {
+      if (tiersToUse.length === 0 && (deal.dealStructure === 'flat_commit' || deal.dealStructure === 'tiered')) {
         tiersToUse = [{
           tierNumber: 1,
           annualRevenue: deal.annualRevenue || 0,
