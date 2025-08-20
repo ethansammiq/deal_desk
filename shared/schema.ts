@@ -226,13 +226,10 @@ export const deals = pgTable("deals", {
   previousYearMargin: doublePrecision("previous_year_margin").default(0),
   
   // Standard deal criteria fields
-  hasTradeAMImplications: boolean("has_trade_am_implications").default(false),
   yearlyRevenueGrowthRate: doublePrecision("yearly_revenue_growth_rate").default(0),
   forecastedMargin: doublePrecision("forecasted_margin").default(0),
   yearlyMarginGrowthRate: doublePrecision("yearly_margin_growth_rate").default(0),
   addedValueBenefitsCost: doublePrecision("added_value_benefits_cost").default(0),
-  analyticsTier: text("analytics_tier").default("silver"),
-  requiresCustomMarketing: boolean("requires_custom_marketing").default(false),
   
   // Phase 7A: Workflow fields
   lastStatusChange: timestamp("last_status_change").defaultNow(),
@@ -373,12 +370,10 @@ export const insertDealSchema = createInsertSchema(deals)
     annualGrossMargin: z.number().min(0).max(100, "Annual gross margin must be between 0 and 100%").optional(),
     
     // Deal criteria validations
-    hasTradeAMImplications: z.boolean().default(false),
     yearlyRevenueGrowthRate: z.number().default(0),
     forecastedMargin: z.number().min(0).max(100, "Forecasted margin must be between 0 and 100%").default(0),
     yearlyMarginGrowthRate: z.number().default(0),
     addedValueBenefitsCost: z.number().min(0).default(0),
-    analyticsTier: z.enum(["bronze", "silver", "gold", "platinum"]).default("silver"),
     
     // Phase 8: Enhanced status and draft validation
     status: z.enum([
@@ -403,7 +398,6 @@ export const insertDealSchema = createInsertSchema(deals)
     revisionReason: z.string().optional(),
     lastRevisedAt: z.string().optional(), // ISO timestamp string
     
-    requiresCustomMarketing: z.boolean().default(false),
   });
 
 // Type definitions for ORM
