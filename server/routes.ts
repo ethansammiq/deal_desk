@@ -1232,13 +1232,10 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         email: scopingRequest.email,
         // Required fields with default values
         isRevision: false,
-        hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 0,
         forecastedMargin: 0,
         yearlyMarginGrowthRate: 0,
-        addedValueBenefitsCost: 0,
-        analyticsTier: "silver",
-        requiresCustomMarketing: false
+        addedValueBenefitsCost: 0
       };
 
       // Generate reference number

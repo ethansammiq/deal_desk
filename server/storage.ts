@@ -841,13 +841,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2025-12-31",
         annualRevenue: 3000000,
         annualGrossMargin: 0.205,
-        hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 20,
         forecastedMargin: 20.5,
         yearlyMarginGrowthRate: 10.8,
         addedValueBenefitsCost: 150000,
-        analyticsTier: "gold",
-        requiresCustomMarketing: false,
         status: "submitted" // Phase 7A compatible
       },
       {
@@ -863,13 +860,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2026-12-31",
         annualRevenue: 9500000,
         annualGrossMargin: 0.302,
-        hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 11.8,
         forecastedMargin: 30.2,
         yearlyMarginGrowthRate: 5.9,
         addedValueBenefitsCost: 320000,
-        analyticsTier: "platinum",
-        requiresCustomMarketing: true,
         status: "under_review" // Phase 7A: updated status
       },
       {
@@ -884,13 +878,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2026-02-28",
         annualRevenue: 5000000,
         annualGrossMargin: 0.158,
-        hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 19,
         forecastedMargin: 15.8,
         yearlyMarginGrowthRate: 28.5,
         addedValueBenefitsCost: 450000,
-        analyticsTier: "platinum",
-        requiresCustomMarketing: true,
         status: "approved" // Phase 7A: updated status
       },
       {
@@ -906,13 +897,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2025-12-31",
         annualRevenue: 980000,
         annualGrossMargin: 0.328,
-        hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 3.2,
         forecastedMargin: 32.8,
         yearlyMarginGrowthRate: 0,
         addedValueBenefitsCost: 50000,
-        analyticsTier: "silver",
-        requiresCustomMarketing: false,
         status: "under_review" // In review status with revision requests at approval level
       },
       {
@@ -928,13 +916,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2027-03-31",
         annualRevenue: 2500000,
         annualGrossMargin: 0.255,
-        hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 38.9,
         forecastedMargin: 25.5,
         yearlyMarginGrowthRate: 13.8,
         addedValueBenefitsCost: 275000,
-        analyticsTier: "gold",
-        requiresCustomMarketing: true,
         status: "signed" // Phase 7A compatible
       },
       // Phase 7A: Additional deals to cover all 9 statuses
@@ -951,13 +936,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2025-09-30",
         annualRevenue: 1500000,
         annualGrossMargin: 0.280,
-        hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 15,
         forecastedMargin: 28.0,
         yearlyMarginGrowthRate: 8.0,
         addedValueBenefitsCost: 75000,
-        analyticsTier: "gold",
-        requiresCustomMarketing: true,
         status: "under_review" // Changed for better pipeline view
       },
       {
@@ -972,13 +954,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2026-04-30",
         annualRevenue: 7200000,
         annualGrossMargin: 0.185,
-        hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 25,
         forecastedMargin: 18.5,
         yearlyMarginGrowthRate: 15.0,
         addedValueBenefitsCost: 580000,
-        analyticsTier: "platinum",
-        requiresCustomMarketing: true,
         status: "contract_drafting" // Phase 7A: contract_drafting status (formerly legal_review)
       },
       {
@@ -993,13 +972,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2026-03-14",
         annualRevenue: 4500000,
         annualGrossMargin: 0.240,
-        hasTradeAMImplications: false,
         yearlyRevenueGrowthRate: 8,
         forecastedMargin: 24.0,
         yearlyMarginGrowthRate: 3.0,
         addedValueBenefitsCost: 200000,
-        analyticsTier: "gold",
-        requiresCustomMarketing: false,
         status: "client_review" // Phase 7A: client_review status (formerly contract_sent)
       },
       {
@@ -1015,13 +991,10 @@ export class MemStorage implements IStorage {
         termEndDate: "2025-12-31",
         annualRevenue: 6000000,
         annualGrossMargin: 0.220,
-        hasTradeAMImplications: true,
         yearlyRevenueGrowthRate: 30,
         forecastedMargin: 22.0,
         yearlyMarginGrowthRate: 12.0,
         addedValueBenefitsCost: 400000,
-        analyticsTier: "platinum",
-        requiresCustomMarketing: true,
         status: "negotiating" // Changed from lost to active deal
       },
       // Draft deal for testing draft editing flow
@@ -1953,13 +1926,10 @@ export class MemStorage implements IStorage {
       clientAsks: scopingRequest.clientAsks,
       growthAmbition: scopingRequest.growthAmbition,
       // Required default values
-      hasTradeAMImplications: false,
       yearlyRevenueGrowthRate: 0,
       forecastedMargin: 0,
       yearlyMarginGrowthRate: 0,
       addedValueBenefitsCost: 0,
-      analyticsTier: "silver" as const,
-      requiresCustomMarketing: false,
     };
     
     // Create the deal
