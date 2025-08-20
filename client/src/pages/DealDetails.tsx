@@ -17,7 +17,7 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -127,7 +127,7 @@ export default function DealDetails() {
       const tierIncentiveCosts = expectedTier.incentives?.reduce((sum: number, inc: any) => sum + (inc.value || 0), 0) || 0;
       
       return {
-        annualRevenue: summary.totalAnnualRevenue, // Show total potential revenue
+        annualRevenue: expectedTier.annualRevenue, // Show expected tier revenue
         annualGrossMargin: expectedTier.annualGrossMargin, // Expected tier margin
         adjustedGrossMargin: adjustedGrossMargin,
         adjustedGrossProfit: adjustedGrossProfit,
@@ -228,9 +228,16 @@ export default function DealDetails() {
                       <DollarSign className="h-4 w-4 text-slate-500" />
                       <span className="text-sm font-medium">Deal Type:</span>
                       <Badge variant="outline">
-                        {deal.dealType === 'grow' ? 'Growth' : 
-                         deal.dealType === 'protect' ? 'Retention' : 
+                        {deal.dealType === 'grow' ? 'Grow' : 
+                         deal.dealType === 'protect' ? 'Protect' : 
                          deal.dealType === 'custom' ? 'Custom' : deal.dealType}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4 text-slate-500" />
+                      <span className="text-sm font-medium">Deal Structure:</span>
+                      <Badge variant="secondary">
+                        {deal.dealStructure === 'tiered' ? 'Tiered Revenue' : 'Flat Commit'}
                       </Badge>
                     </div>
                   </div>
