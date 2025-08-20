@@ -292,7 +292,7 @@ export default function DealDetails() {
                       {financialMetrics?.annualRevenue && (
                         <p className="text-xs text-green-600 mt-1">
                           {deal.dealStructure === "tiered" ? 
-                            "Total revenue across all tiers" : 
+                            `Expected tier performance (Tier ${financialMetrics.displayTier || 2})` : 
                             "Primary revenue target"}
                         </p>
                       )}
