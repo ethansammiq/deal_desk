@@ -964,20 +964,8 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         }]
       }));
       
-      // CRITICAL FIX: Add enhanced fallback logic for flat commit deals  
+      // Use transformed tiers as-is (fallback handled in frontend)
       let tiersToUse = transformedTiers;
-      if (tiersToUse.length === 0 && (deal.dealStructure === 'flat_commit' || deal.dealStructure === 'tiered')) {
-        // For flat commit deals, use available financial data with intelligent fallback
-        const fallbackRevenue = deal.annualRevenue || deal.previousYearRevenue || deal.totalValue || 0;
-        const fallbackMargin = deal.annualGrossMargin || deal.previousYearMargin || 0.25; // 25% default margin
-        
-        tiersToUse = [{
-          tierNumber: 1,
-          annualRevenue: fallbackRevenue,
-          annualGrossMargin: fallbackMargin,
-          incentives: []
-        }];
-      }
       
       // Enhanced response with tier calculations and migration data
       const enhancedTierResponse = {

@@ -71,8 +71,13 @@ export function ConsolidatedDashboard() {
               const dealResponse = await fetch(`/api/deals/${id}`);
               if (dealResponse.ok) {
                 const deal = await dealResponse.json();
-                const revenue = deal.migratedFinancials?.annualRevenue || deal.previousYearRevenue || 0;
-                const margin = deal.migratedFinancials?.annualGrossMargin || deal.previousYearMargin || 0;
+                // Use migratedFinancials.previousYearRevenue for Tesla-type deals
+                const revenue = deal.migratedFinancials?.annualRevenue || 
+                               deal.migratedFinancials?.previousYearRevenue || 
+                               deal.previousYearRevenue || 0;
+                const margin = deal.migratedFinancials?.annualGrossMargin || 
+                              deal.migratedFinancials?.previousYearMargin ||
+                              deal.previousYearMargin || 0.25; // Default 25% margin
                 
                 if (revenue > 0) {
                   tiers = [{
