@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FormSectionHeader, FormNavigation } from "@/components/ui/form-style-guide";
 import { FormFieldWithTooltip } from "@/components/ui/form-components";
-import { ApprovalAlert } from "@/components/ApprovalAlert";
+import { DealEvaluationPanel } from "./DealEvaluationPanel";
 import { ApprovalRule } from "@/lib/approval-matrix";
 // Removed EnhancedApprovalAlert - using ApprovalAlert instead for consistency
 // Legacy interfaces - simplified for current architecture
@@ -41,17 +41,8 @@ import {
 // Type this component to accept any valid form structure
 type ReviewSubmitFormValues = any;
 
-// Import unified interface from hook - Step 4 uses minimal calculations for display
+// Import unified interface from hook - simplified for streamlined review step
 import { DealTier } from "@/hooks/useDealTiers";
-import { useBusinessSummary } from "@/hooks/useBusinessSummary";
-import { calculateContractTerm } from "@/lib/contractUtils";
-import { useFinancialData } from "@/hooks/useFinancialData";
-import { useDealCalculations } from "@/hooks/useDealCalculations";
-
-// Import shared components from step 3 - NO new calculations in step 4
-import { DealSummaryCard } from "./DealSummaryCard";
-import { FinancialMetricsGrid } from "./FinancialMetricsGrid";
-import { FinancialStructureTable } from "./FinancialStructureTable";
 
 interface ReviewSubmitSectionProps {
   form: UseFormReturn<ReviewSubmitFormValues>;
@@ -87,81 +78,26 @@ export function ReviewSubmitSection({
   const advertiserName = String(formValues.advertiserName || "");
   const agencyName = String(formValues.agencyName || "");
 
-  // Use contract term from props (already calculated in parent component)
-
-  // Step 4 is pure display - get same calculation service as step 3 to ensure consistency
-  const { agenciesData, advertisersData } = useFinancialData();
-  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
-
-  // Auto-populate business summary using shared hook
-  useBusinessSummary({ form, formValues });
+  // Streamlined review step - removed redundant data calculations and auto-population
+  // Deal evaluation is now handled by the DealEvaluationPanel component
 
   return (
     <div className="space-y-6">
       <FormSectionHeader
         title="Review & Submit"
-        description="Review your deal details and submit for approval"
+        description="Verify deal evaluation and approval requirements before submission"
       />
 
-      {/* Deal Summary using shared component */}
-      <DealSummaryCard 
-        formValues={formValues}
-        dealStructureType={dealStructureType}
-        contractTerm={contractTermMonths}
-      />
-
-      {/* Business Summary Field - Using shared FormFieldWithTooltip */}
-      <Card>
-        <CardContent className="p-6">
-          <FormFieldWithTooltip
-            form={form}
-            name="businessSummary"
-            label="Business Summary"
-            type="textarea"
-            required={true}
-            placeholder="Auto-populated from business context fields..."
-            description="This summary is auto-generated from your business context inputs but can be edited as needed."
-            tooltip="Use this field to provide additional context about the deal that wasn't captured in other sections."
-          />
-        </CardContent>
-      </Card>
-
-      {/* Financial Summary using shared component */}
-      {(dealTiers.length > 0 || dealStructureType === "flat_commit") ? (
-        <FinancialMetricsGrid dealTiers={dealTiers} contractTerm={contractTermMonths} />
-      ) : (
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">No Financial Structure Configured</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Please go back to step 3 "Financial Structure" to configure deal tiers and see financial summary.
-              </p>
-              <Button variant="outline" onClick={() => window.history.back()}>
-                Go to Financial Structure
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Financial Structure Summary - Step 4 pure display version with same calculation service */}
-      {(dealTiers.length > 0 || dealStructureType === "flat_commit") && (
-        <FinancialStructureTable 
-          dealTiers={dealTiers}
-          salesChannel={salesChannel}
-          advertiserName={advertiserName}
-          agencyName={agencyName}
-          calculationService={dealCalculations.calculationService}
-        />
-      )}
-
-      {/* Approval Pipeline Alert */}
-      <ApprovalAlert
-        totalValue={dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0)}
-        contractTerm={contractTermMonths}
-        dealType={formValues.dealType}
+      {/* Deal Evaluation Panel - Replaces redundant components with focused assessment */}
+      <DealEvaluationPanel
+        dealValue={dealTiers.reduce((sum, tier) => sum + (tier.annualRevenue || 0), 0)}
+        dealType={formValues.dealType || "grow"}
         salesChannel={salesChannel}
+        contractTerm={contractTermMonths}
+        onChange={(approverLevel, approver) => {
+          // Pass approval information to parent if needed
+          // This maintains compatibility with existing approval tracking
+        }}
       />
 
       {/* Action Buttons - Using shared FormNavigation component */}
