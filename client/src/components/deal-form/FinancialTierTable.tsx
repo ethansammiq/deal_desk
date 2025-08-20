@@ -247,52 +247,52 @@ export function FinancialTierTable({
             })}
           </tr>
 
-          {/* Adjusted Gross Margin Growth Rate Row */}
+          {/* Gross Margin Growth Rate Row - Revenue & Profitability table shows basic rates */}
           <tr>
             <FinancialDataCell isMetricLabel>
               <FinancialMetricLabel 
-                title="Adjusted Gross Margin Growth Rate"
-                description="Change in adjusted margin percentage vs last year"
+                title="Gross Margin Growth Rate"
+                description="Change in margin percentage vs last year"
               />
             </FinancialDataCell>
             <FinancialDataCell>
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const marginGrowthRate = calculationService.calculateAdjustedGrossMarginGrowthRate(
+              const marginGrowthRate = calculationService.calculateGrossMarginGrowthRate(
                 tier,
                 salesChannel,
                 advertiserName,
                 agencyName
               );
               return (
-                <FinancialDataCell key={`adj-margin-growth-${tier.tierNumber}`}>
+                <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={marginGrowthRate} />
                 </FinancialDataCell>
               );
             })}
           </tr>
 
-          {/* Adjusted Gross Profit Growth Rate Row */}
+          {/* Gross Profit Growth Rate Row - Revenue & Profitability table shows basic rates */}
           <tr>
             <FinancialDataCell isMetricLabel>
               <FinancialMetricLabel 
-                title="Adjusted Gross Profit Growth Rate"
-                description="Change in adjusted profit amount vs last year"
+                title="Gross Profit Growth Rate"
+                description="Change in dollar profit amount vs last year"
               />
             </FinancialDataCell>
             <FinancialDataCell>
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              const profitGrowthRate = calculationService.calculateAdjustedGrossProfitGrowthRate(
+              const profitGrowthRate = calculationService.calculateProfitGrowthRate(
                 tier,
                 salesChannel,
                 advertiserName,
                 agencyName
               );
               return (
-                <FinancialDataCell key={`adj-profit-growth-${tier.tierNumber}`}>
+                <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
                   <GrowthIndicator value={profitGrowthRate} />
                 </FinancialDataCell>
               );

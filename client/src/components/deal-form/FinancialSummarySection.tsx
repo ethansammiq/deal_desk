@@ -145,22 +145,17 @@ function FinancialSummarySection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              // Calculate adjusted margin growth rate using consolidated logic
-              const revenue = tier.annualRevenue || 0;
-              const grossMarginDecimal = tier.annualGrossMargin || 0;
-              const grossProfit = revenue * grossMarginDecimal;
-              const incentiveCost = calculationService.calculateTierIncentiveCost(tier);
-              const adjustedProfit = grossProfit - incentiveCost;
-              const adjustedMarginDecimal = revenue > 0 ? adjustedProfit / revenue : 0;
-              
-              // Compare to last year's adjusted margin (use shared service value)
-              const lastYearAdjustedMargin = calculationService.getPreviousYearAdjustedGrossMargin(salesChannel, advertiserName, agencyName);
-              const growthRate = lastYearAdjustedMargin > 0 ? 
-                ((adjustedMarginDecimal - lastYearAdjustedMargin) / lastYearAdjustedMargin) : 0;
+              // Use the calculation service method for consistency
+              const marginGrowthRate = calculationService.calculateAdjustedGrossMarginGrowthRate(
+                tier,
+                salesChannel,
+                advertiserName,
+                agencyName
+              );
               
               return (
                 <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
-                  <GrowthIndicator value={growthRate} />
+                  <GrowthIndicator value={marginGrowthRate} />
                 </FinancialDataCell>
               );
             })}
@@ -178,21 +173,17 @@ function FinancialSummarySection({
               <span className="text-slate-500">—</span>
             </FinancialDataCell>
             {dealTiers.map((tier) => {
-              // Calculate adjusted profit growth rate using consolidated logic
-              const revenue = tier.annualRevenue || 0;
-              const grossMarginDecimal = tier.annualGrossMargin || 0;
-              const grossProfit = revenue * grossMarginDecimal;
-              const incentiveCost = calculationService.calculateTierIncentiveCost(tier);
-              const adjustedProfit = grossProfit - incentiveCost;
-              
-              // Compare to last year's adjusted profit (use shared service value)
-              const lastYearAdjustedProfit = calculationService.getPreviousYearAdjustedGrossProfit(salesChannel, advertiserName, agencyName);
-              const growthRate = lastYearAdjustedProfit > 0 ? 
-                ((adjustedProfit - lastYearAdjustedProfit) / lastYearAdjustedProfit) : 0;
+              // Use the calculation service method for consistency
+              const profitGrowthRate = calculationService.calculateAdjustedGrossProfitGrowthRate(
+                tier,
+                salesChannel,
+                advertiserName,
+                agencyName
+              );
               
               return (
                 <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
-                  <GrowthIndicator value={growthRate} />
+                  <GrowthIndicator value={profitGrowthRate} />
                 </FinancialDataCell>
               );
             })}
