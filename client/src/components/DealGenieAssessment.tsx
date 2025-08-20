@@ -25,12 +25,14 @@ interface DealGenieAssessmentProps {
   dealData: any;
   revenueGrowthRate?: number;
   grossProfitGrowthRate?: number;
+  compact?: boolean; // New prop for lightweight Step 4 version
 }
 
 export function DealGenieAssessment({ 
   dealData, 
   revenueGrowthRate, 
-  grossProfitGrowthRate 
+  grossProfitGrowthRate,
+  compact = false
 }: DealGenieAssessmentProps) {
   const [analysis, setAnalysis] = React.useState<DealAnalysis | null>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -115,6 +117,26 @@ export function DealGenieAssessment({
 
   // Return placeholder while loading
   if (loading || isLoading) {
+    if (compact) {
+      return (
+        <Card className="border-purple-200 bg-purple-50">
+          <CardContent className="p-4">
+            <div className="animate-pulse space-y-3">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-purple-600" />
+                <div className="h-4 bg-purple-200 rounded w-32"></div>
+              </div>
+              <div className="h-3 bg-purple-200 rounded w-3/4"></div>
+              <div className="flex justify-between">
+                <div className="h-4 bg-purple-200 rounded w-20"></div>
+                <div className="h-4 bg-purple-200 rounded w-16"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card className="mt-6 overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-purple-700 to-indigo-600 text-white">
@@ -156,6 +178,53 @@ export function DealGenieAssessment({
   
   const recInfo = getRecommendationInfo(analysis.overallValue.recommendation);
 
+  // Compact version for Step 4 integration
+  if (compact) {
+    // Get the top performing metric for quick insight
+    const metrics = [
+      { name: "Revenue Growth", score: analysis.revenueGrowth.score, icon: TrendingUp },
+      { name: "Margin Improvement", score: analysis.marginImprovement.score, icon: BarChart },
+      { name: "Profitability", score: analysis.profitabilityImpact.score, icon: DollarSign }
+    ];
+    const topMetric = metrics.reduce((prev, current) => (prev.score > current.score) ? prev : current);
+    const TopIcon = topMetric.icon;
+
+    return (
+      <Card className="border-purple-200 bg-purple-50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-900">DealGenie Insights</span>
+            </div>
+            <Badge className={`text-xs px-2 py-1 ${recInfo.color}`}>
+              {recInfo.text}
+            </Badge>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-purple-800">Overall Value Score</span>
+              <span className={`text-sm font-semibold ${getScoreColor(analysis.overallValue.score)}`}>
+                {analysis.overallValue.score}/10
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-xs text-purple-700">
+              <TopIcon className="h-3 w-3" />
+              <span>Strongest: {topMetric.name} ({topMetric.score}/10)</span>
+            </div>
+            
+            <p className="text-xs text-purple-700 leading-relaxed">
+              {analysis.summary.split('.')[0]}.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full version (original implementation)
   return (
     <Card className="mt-6 overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-purple-700 to-indigo-600 text-white">
