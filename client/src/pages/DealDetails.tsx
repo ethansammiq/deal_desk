@@ -109,31 +109,30 @@ export default function DealDetails() {
     
     if (!deal) return null;
 
-    // For tiered deals with tiers data, use aggregated calculations
+    // For tiered deals with tiers data, show expected tier performance (middle tier)
     if (deal.dealStructure === "tiered" && dealTiers.length > 0) {
+      // Sort tiers by tier number to ensure consistent ordering
+      const sortedTiers = [...dealTiers].sort((a, b) => a.tierNumber - b.tierNumber);
+      
+      // Use middle tier as "expected" performance, or second tier if available
+      const expectedTierIndex = sortedTiers.length > 2 ? 1 : 0; // Index 1 = Tier 2, or first tier
+      const expectedTier = sortedTiers[expectedTierIndex];
+      
+      // Calculate total revenue across all tiers for context
       const summary = calculateFinancialSummary(dealTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined);
       
-      // Calculate adjusted metrics using DealCalculationService
-      const adjustedGrossMargin = dealTiers.reduce((sum, tier, index) => {
-        const revenue = tier.annualRevenue || 0;
-        const adjustedMargin = calculationService.calculateAdjustedGrossMargin(tier);
-        return index === 0 ? adjustedMargin : (sum * (totalRevenueSoFar / (totalRevenueSoFar + revenue))) + (adjustedMargin * (revenue / (totalRevenueSoFar + revenue)));
-      }, 0);
-      
-      const adjustedGrossProfit = dealTiers.reduce((sum, tier) => {
-        return sum + calculationService.calculateTierGrossProfit(tier);
-      }, 0);
-      
-      const totalIncentiveCosts = dealTiers.reduce((sum, tier) => {
-        return sum + (tier.incentives?.reduce((tierSum, inc) => tierSum + (inc.value || 0), 0) || 0);
-      }, 0);
+      // Calculate adjusted metrics for the expected tier
+      const adjustedGrossMargin = calculationService.calculateAdjustedGrossMargin(expectedTier);
+      const adjustedGrossProfit = calculationService.calculateTierGrossProfit(expectedTier);
+      const tierIncentiveCosts = expectedTier.incentives?.reduce((sum: number, inc: any) => sum + (inc.value || 0), 0) || 0;
       
       return {
-        annualRevenue: summary.totalAnnualRevenue,
-        annualGrossMargin: summary.averageGrossMarginPercent * 100, // Convert to percentage
-        adjustedGrossMargin: adjustedGrossMargin || 0,
-        adjustedGrossProfit: adjustedGrossProfit || 0,
-        totalIncentiveCosts: totalIncentiveCosts || 0
+        annualRevenue: summary.totalAnnualRevenue, // Show total potential revenue
+        annualGrossMargin: expectedTier.annualGrossMargin, // Expected tier margin
+        adjustedGrossMargin: adjustedGrossMargin,
+        adjustedGrossProfit: adjustedGrossProfit,
+        totalIncentiveCosts: tierIncentiveCosts,
+        displayTier: expectedTier.tierNumber // Track which tier we're showing
       };
     } else {
       // For flat commit deals, use direct values with calculations
@@ -149,7 +148,8 @@ export default function DealDetails() {
         annualGrossMargin: deal.annualGrossMargin,
         adjustedGrossMargin: calculationService.calculateAdjustedGrossMargin(flatTier),
         adjustedGrossProfit: calculationService.calculateTierGrossProfit(flatTier),
-        totalIncentiveCosts: 0 // No incentives in flat deals for now
+        totalIncentiveCosts: 0, // No incentives in flat deals for now
+        displayTier: null // No tiers in flat deals
       };
     }
   };
@@ -282,7 +282,9 @@ export default function DealDetails() {
                       </p>
                       {financialMetrics?.annualRevenue && (
                         <p className="text-xs text-green-600 mt-1">
-                          {deal.dealStructure === "tiered" ? "Aggregated from all tiers" : "Primary revenue target"}
+                          {deal.dealStructure === "tiered" ? 
+                            "Total revenue across all tiers" : 
+                            "Primary revenue target"}
                         </p>
                       )}
                     </div>
@@ -307,6 +309,7 @@ export default function DealDetails() {
                         <p className="text-xs text-blue-600 mt-1">
                           {financialMetrics.adjustedGrossMargin > 0.15 ? 'Strong margin after costs' : 
                            financialMetrics.adjustedGrossMargin > 0.10 ? 'Fair margin after costs' : 'Low margin after costs'}
+                          {financialMetrics.displayTier ? ` (Tier ${financialMetrics.displayTier} expected)` : ''}
                         </p>
                       )}
                     </div>
@@ -323,7 +326,9 @@ export default function DealDetails() {
                         {financialMetrics?.adjustedGrossProfit ? formatCurrency(financialMetrics.adjustedGrossProfit) : 'N/A'}
                       </p>
                       <p className="text-xs text-purple-600 mt-1">
-                        Profit after all incentive costs
+                        {financialMetrics.displayTier ? 
+                          `Tier ${financialMetrics.displayTier} profit after costs` : 
+                          'Profit after all incentive costs'}
                       </p>
                     </div>
                     
@@ -346,7 +351,7 @@ export default function DealDetails() {
               {/* AI Assessment Section */}
               <DealGenieAssessment 
                 dealData={deal}
-                revenueGrowthRate={financialMetrics?.yearlyRevenueGrowthRate || undefined}
+                revenueGrowthRate={undefined}
                 grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
               />
 
