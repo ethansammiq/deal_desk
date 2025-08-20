@@ -29,21 +29,21 @@ interface StrategicInsightsProps {
   approvalItems?: any[]; // Department-filtered approval queue items
 }
 
-// Helper function to get aggregated tier revenue for a deal
+// Helper function to get expected tier revenue using corrected API
 async function getDealTierRevenue(dealId: number): Promise<number> {
   try {
-    const response = await fetch(`/api/deals/${dealId}/tiers`);
+    // Use the corrected deals API that has migration logic
+    const response = await fetch(`/api/deals/${dealId}`);
     if (!response.ok) return 0;
-    const tiers = await response.json();
-    const calculationService = new DealCalculationService([], []);
-    const metrics = calculationService.calculateDealMetrics(tiers);
-    return metrics.totalAnnualRevenue;
+    const deal = await response.json();
+    // Return expected tier revenue from migration logic
+    return deal.migratedFinancials?.annualRevenue || 0;
   } catch {
     return 0;
   }
 }
 
-// Hook to get tier revenues for multiple deals
+// Hook to get tier revenues for multiple deals using corrected API
 function useDealTierRevenues(dealIds: number[]) {
   return useQuery({
     queryKey: ['deal-tier-revenues', dealIds],

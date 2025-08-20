@@ -107,21 +107,21 @@ export default function DealsPage() {
     return isMultiTier ? `${suffix}+` : suffix;
   };
 
-  // Get tier revenues for all deals
+  // Get tier revenues for all deals using corrected API
   const dealIds = deals.map(d => d.id);
   const { data: tierRevenues } = useQuery({
     queryKey: ['deal-tier-revenues', dealIds],
     queryFn: async () => {
-      const { DealCalculationService } = await import('@/services/dealCalculations');
       const revenues = await Promise.all(
         dealIds.map(async (id) => {
           try {
-            const response = await fetch(`/api/deals/${id}/tiers`);
+            // Use the corrected deals API that has migration logic
+            const response = await fetch(`/api/deals/${id}`);
             if (!response.ok) return { dealId: id, revenue: 0 };
-            const tiers = await response.json();
-            const calculationService = new DealCalculationService([], []);
-            const metrics = calculationService.calculateDealMetrics(tiers);
-            return { dealId: id, revenue: metrics.totalAnnualRevenue };
+            const deal = await response.json();
+            // Return expected tier revenue from migration logic
+            const revenue = deal.migratedFinancials?.annualRevenue || 0;
+            return { dealId: id, revenue };
           } catch {
             return { dealId: id, revenue: 0 };
           }

@@ -19,18 +19,18 @@ interface DealRowProps {
   className?: string;
 }
 
-// Hook to get tier revenue for a single deal
+// Hook to get tier revenue for a single deal using corrected API
 function useDealTierRevenue(dealId: number) {
   return useQuery({
     queryKey: ['deal-tier-revenue', dealId],
     queryFn: async () => {
       try {
-        const response = await fetch(`/api/deals/${dealId}/tiers`);
+        // Use the corrected deals API that has migration logic
+        const response = await fetch(`/api/deals/${dealId}`);
         if (!response.ok) return 0;
-        const tiers = await response.json();
-        const calculationService = new DealCalculationService([], []);
-        const metrics = calculationService.calculateDealMetrics(tiers);
-        return metrics.totalAnnualRevenue;
+        const deal = await response.json();
+        // Return expected tier revenue from migration logic
+        return deal.migratedFinancials?.annualRevenue || 0;
       } catch {
         return 0;
       }
