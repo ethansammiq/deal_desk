@@ -855,7 +855,7 @@ export default function SubmitDeal() {
       );
       setFinancialSummary(summary);
     }
-  }, [dealTiers, salesChannel, dealCalculations, form]);
+  }, [dealTiers, salesChannel]);
 
   // ✅ PHASE 3: Tab navigation now handled by useTabNavigation hook
 
