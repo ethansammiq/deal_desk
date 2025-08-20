@@ -2548,9 +2548,9 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         ? Math.round((convertedScopingDeals.length / totalScopingRequests) * 100) 
         : 0;
 
-      // Calculate average values for converted deals
-      const convertedDealsWithValue = convertedScopingDeals.filter(deal => deal.annualRevenue > 0);
-      const totalConvertedValue = convertedDealsWithValue.reduce((sum, deal) => sum + (deal.annualRevenue || 0), 0);
+      // Calculate average values for converted deals using consistent fallback logic
+      const convertedDealsWithValue = convertedScopingDeals.filter(deal => (deal.annualRevenue || deal.growthAmbition || 0) > 0);
+      const totalConvertedValue = convertedDealsWithValue.reduce((sum, deal) => sum + (deal.annualRevenue || deal.growthAmbition || 0), 0);
       const avgConvertedValue = convertedDealsWithValue.length > 0 
         ? totalConvertedValue / convertedDealsWithValue.length 
         : 0;

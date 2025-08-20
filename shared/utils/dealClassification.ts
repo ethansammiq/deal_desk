@@ -176,10 +176,12 @@ function checkBusinessRisk(deal: Deal, now: Date, daysInStatus: number): DealFlo
   }
 
   // 9. High-value deal monitoring - deals over threshold need special attention
-  if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
+  // Use available deal value (annualRevenue or growthAmbition fallback)
+  const dealValue = deal.annualRevenue || deal.growthAmbition || 0;
+  if (dealValue > 5000000 && daysInStatus > 2) {
     return {
       flowStatus: 'needs_attention',
-      reason: `High-value deal ($${(deal.annualRevenue / 1000000).toFixed(1)}M) delayed ${daysInStatus} days - executive attention needed`,
+      reason: `High-value deal ($${(dealValue / 1000000).toFixed(1)}M) delayed ${daysInStatus} days - executive attention needed`,
       daysInStatus,
       actionRequired: true,
       urgencyLevel: 'urgent'

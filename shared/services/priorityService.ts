@@ -23,14 +23,15 @@ export const getDaysInCurrentStatus = (deal: Deal): number => {
   }
 };
 
-// Calculate deal value for priority scoring
+// Calculate deal value for priority scoring (consistent with dealClassification)
 export const getDealValue = (deal: Deal): number => {
-  // For scoping deals, use growth ambition
+  // For scoping deals, prioritize growth ambition
   if (deal.status === 'scoping' && deal.growthAmbition) {
     return deal.growthAmbition;
   }
   
-  // For other deals, use annual revenue or growth ambition as fallback
+  // For other deals, use consistent fallback logic: annualRevenue > growthAmbition > 0
+  // Note: This will be updated to use tier data aggregation in future migration
   return deal.annualRevenue || deal.growthAmbition || 0;
 };
 

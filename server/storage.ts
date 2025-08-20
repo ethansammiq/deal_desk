@@ -1776,7 +1776,9 @@ export class MemStorage implements IStorage {
     }
 
     // 9. High-value deal monitoring - deals over threshold need special attention
-    if (deal.annualRevenue && deal.annualRevenue > 5000000 && daysInStatus > 2) {
+    // Use consistent fallback logic (consistent with dealClassification)
+    const dealValue = deal.annualRevenue || deal.growthAmbition || 0;
+    if (dealValue > 5000000 && daysInStatus > 2) {
       return 'needs_attention';
     }
 
