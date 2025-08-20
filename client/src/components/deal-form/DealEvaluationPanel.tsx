@@ -127,9 +127,9 @@ export function DealEvaluationPanel({
           </div>
         </div>
 
-        {/* Assessment Result */}
+        {/* Assessment Result - Focused on criteria evaluation only */}
         <div className={`p-4 rounded-lg border ${evaluationData.isStandardDeal ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             {evaluationData.isStandardDeal ? (
               <CheckCircle2 className="h-5 w-5 text-green-600" />
             ) : (
@@ -137,37 +137,31 @@ export function DealEvaluationPanel({
             )}
             <span className="font-medium text-sm">
               {evaluationData.isStandardDeal ? (
-                "🎉 STANDARD DEAL - Meets all criteria for streamlined approval"
+                "🎉 STANDARD DEAL - Meets all criteria"
               ) : (
-                "⚠️ NON-STANDARD DEAL - Requires enhanced review process"
+                "⚠️ NON-STANDARD DEAL - Review required"
               )}
             </span>
           </div>
           
-          <div className="text-sm text-muted-foreground">
-            → {evaluationData.approver.title} approval required
-            <span className="ml-2 text-xs">
-              ({evaluationData.approver.estimatedTime})
-            </span>
+          <div className="text-xs text-muted-foreground">
+            {evaluationData.isStandardDeal ? (
+              "All criteria met for streamlined processing"
+            ) : (
+              `${evaluationData.criteria.filter(c => !c.meets).length} criteria require additional review`
+            )}
           </div>
         </div>
 
-        {/* Help Section for Standard Criteria */}
+        {/* Help Section - Focused on criteria explanation only */}
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-500 mt-0.5" />
             <div>
-              <p className="text-xs text-slate-600 mb-2">
-                <strong>Standard deals</strong> meeting all criteria receive streamlined {evaluationData.approver.title} approval.
-                <strong> Non-standard deals</strong> require comprehensive business case review.
+              <p className="text-xs text-slate-600">
+                <strong>Standard deals</strong> meet all predefined criteria and qualify for streamlined processing.
+                <strong> Non-standard deals</strong> require additional review and validation.
               </p>
-              <div className="text-xs text-slate-700">
-                <strong>Approval Timeline:</strong>
-                <ul className="ml-4 mt-1 space-y-0.5 list-disc">
-                  <li>Managing Director: 1-2 business days</li>
-                  <li>Executive Committee: 3-5 business days</li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>

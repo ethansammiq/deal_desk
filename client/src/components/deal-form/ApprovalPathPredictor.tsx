@@ -59,20 +59,44 @@ export function ApprovalPathPredictor({
     // Core departments that always review
     const coreDepartments = ['finance', 'trading'];
     
-    // Specialized department mapping
+    // Specialized department mapping - handles both category IDs and subcategory IDs
     const incentiveMapping: Record<string, string> = {
+      // Main categories
       'financial': 'finance',
       'resources': 'finance', 
-      'product-innovation': 'creative',
+      'product': 'creative',
       'technology': 'product',
       'analytics': 'solutions',
-      'marketing': 'marketing'
+      'marketing-ld': 'marketing',
+      // Subcategories (more specific matching)
+      'product-innovation': 'creative',
+      'product-features': 'creative',
+      'prod-innovation': 'creative',
+      'prod-features': 'creative',
+      'tech-infra': 'product',
+      'tech-data': 'product',
+      'analytics-reporting': 'solutions',
+      'analytics-insights': 'solutions',
+      'marketing': 'marketing',
+      'learning': 'marketing'
     };
     
     // Determine required departments
     const specializedDepts = new Set<string>();
-    incentiveTypes.forEach(incentive => {
-      const dept = incentiveMapping[incentive];
+    incentiveTypes.forEach(incentiveType => {
+      // Check direct mapping first
+      let dept = incentiveMapping[incentiveType];
+      
+      // If no direct match, check if incentiveType contains a mapped category
+      if (!dept) {
+        for (const [key, value] of Object.entries(incentiveMapping)) {
+          if (incentiveType.includes(key) || key.includes(incentiveType)) {
+            dept = value;
+            break;
+          }
+        }
+      }
+      
       if (dept && !coreDepartments.includes(dept)) {
         specializedDepts.add(dept);
       }
