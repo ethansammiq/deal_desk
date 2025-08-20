@@ -103,7 +103,7 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
 
   // Create department lookup map
   const departmentMap = departments.reduce((acc: any, dept: any) => {
-    acc[dept.departmentName] = dept.displayName;
+    acc[dept.department] = dept.displayName;
     return acc;
   }, {});
 
