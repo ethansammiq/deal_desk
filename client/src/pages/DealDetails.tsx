@@ -17,7 +17,7 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus, BarChart3, Star, Clock, Target, Zap } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -240,7 +240,44 @@ export default function DealDetails() {
                         {deal.dealStructure === 'tiered' ? 'Tiered Revenue' : 'Flat Commit'}
                       </Badge>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-slate-500" />
+                      <span className="text-sm font-medium">Priority:</span>
+                      <Badge variant={deal.priority === 'critical' ? 'destructive' : deal.priority === 'high' ? 'default' : 'outline'}>
+                        {deal.priority?.charAt(0).toUpperCase() + deal.priority?.slice(1) || 'N/A'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4 text-slate-500" />
+                      <span className="text-sm font-medium">Analytics Tier:</span>
+                      <Badge variant="outline">
+                        {deal.analyticsTier?.charAt(0).toUpperCase() + deal.analyticsTier?.slice(1) || 'N/A'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-slate-500" />
+                      <span className="text-sm font-medium">Contract Term:</span>
+                      <span className="text-sm">{deal.contractTerm ? `${deal.contractTerm} months` : 'N/A'}</span>
+                    </div>
                   </div>
+                  
+                  {/* Additional Deal Features */}
+                  {(deal.hasTradeAMImplications || deal.requiresCustomMarketing) && (
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200">
+                      {deal.hasTradeAMImplications && (
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 text-amber-500" />
+                          <span className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded">Trade AM Required</span>
+                        </div>
+                      )}
+                      {deal.requiresCustomMarketing && (
+                        <div className="flex items-center gap-1">
+                          <Target className="h-3 w-3 text-blue-500" />
+                          <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded">Custom Marketing</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Revision Information */}
                   {deal.status === 'revision_requested' && deal.revisionReason && (
