@@ -50,7 +50,17 @@ import { useFinancialData } from "@/hooks/useFinancialData";
 // Import new shared components
 import { DealSummaryCard } from "./DealSummaryCard";
 import { FinancialMetricsGrid } from "./FinancialMetricsGrid";
-import { FinancialStructureTable } from "./FinancialStructureTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  FinancialTable,
+  FinancialTableColGroup,
+  FinancialTableHeader,
+  FinancialTableBody,
+  FinancialHeaderCell,
+  FinancialDataCell,
+  FinancialMetricLabel,
+  GrowthIndicator,
+} from "@/components/ui/financial-table";
 import { useBusinessSummary } from "@/hooks/useBusinessSummary";
 import { calculateContractTerm } from "@/lib/contractUtils";
 
@@ -147,14 +157,190 @@ export function ReviewSubmitSection({
         </Card>
       )}
 
-      {/* Financial Structure using shared component */}
+      {/* Financial Structure using shared component - MUST use same calculation instance as step 3 */}
       {(dealTiers.length > 0 || dealStructureType === "flat_commit") && (
-        <FinancialStructureTable 
-          dealTiers={dealTiers}
-          salesChannel={salesChannel}
-          advertiserName={advertiserName}
-          agencyName={agencyName}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Deal Structure Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FinancialTable>
+              <FinancialTableColGroup dealTiers={dealTiers} />
+              
+              <FinancialTableHeader>
+                <tr>
+                  <FinancialHeaderCell isMetricName />
+                  <FinancialHeaderCell>Last Year</FinancialHeaderCell>
+                  {dealTiers.map((tier) => (
+                    <FinancialHeaderCell key={`header-${tier.tierNumber}`}>
+                      Tier {tier.tierNumber}
+                    </FinancialHeaderCell>
+                  ))}
+                </tr>
+              </FinancialTableHeader>
+              
+              <FinancialTableBody>
+                {/* Use the SAME financial summary data that was calculated in parent */}
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Annual Revenue"
+                      description="Total expected annual revenue"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    {formatCurrency(financialSummary.lastYearRevenue)}
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => (
+                    <FinancialDataCell key={`revenue-${tier.tierNumber}`}>
+                      {formatCurrency(tier.annualRevenue || 0)}
+                    </FinancialDataCell>
+                  ))}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Revenue Growth Rate"
+                      description="Percentage increase compared to last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const growthRate = financialSummary.revenueGrowthRate || 0;
+                    return (
+                      <FinancialDataCell key={`rev-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={growthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Adjusted Gross Margin Growth Rate"
+                      description="Change in margin percentage vs last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const marginGrowthRate = financialSummary.adjustedGrossMarginGrowthRate || 0;
+                    return (
+                      <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={marginGrowthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Adjusted Gross Profit Growth Rate"
+                      description="Percentage increase in adjusted profit vs last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const profitGrowthRate = financialSummary.adjustedGrossProfitGrowthRate || 0;
+                    return (
+                      <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={profitGrowthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Total Incentive Cost"
+                      description="All incentives applied to this tier"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    {formatCurrency(financialSummary.lastYearIncentiveCost)}
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const incentiveCost = financialSummary.totalIncentiveCost || 0;
+                    return (
+                      <FinancialDataCell key={`incentive-${tier.tierNumber}`}>
+                        {formatCurrency(incentiveCost)}
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Total Client Value"
+                      description="Expected business value from incentive"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    {formatCurrency(financialSummary.lastYearClientValue)}
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const clientValue = financialSummary.totalClientValue || 0;
+                    return (
+                      <FinancialDataCell key={`client-value-${tier.tierNumber}`}>
+                        {formatCurrency(clientValue)}
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Client Value Growth Rate"
+                      description="Change vs. last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const clientValueGrowthRate = financialSummary.clientValueGrowthRate || 0;
+                    return (
+                      <FinancialDataCell key={`client-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={clientValueGrowthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+
+                <tr>
+                  <FinancialDataCell isMetricLabel>
+                    <FinancialMetricLabel 
+                      title="Incentive Cost Growth Rate"
+                      description="Change vs. last year"
+                    />
+                  </FinancialDataCell>
+                  <FinancialDataCell>
+                    <span className="text-slate-500">—</span>
+                  </FinancialDataCell>
+                  {dealTiers.map((tier) => {
+                    const incentiveCostGrowthRate = financialSummary.incentiveCostGrowthRate || 0;
+                    return (
+                      <FinancialDataCell key={`incentive-growth-${tier.tierNumber}`}>
+                        <GrowthIndicator value={incentiveCostGrowthRate} />
+                      </FinancialDataCell>
+                    );
+                  })}
+                </tr>
+              </FinancialTableBody>
+            </FinancialTable>
+          </CardContent>
+        </Card>
       )}
 
       {/* Approval Pipeline Alert */}
