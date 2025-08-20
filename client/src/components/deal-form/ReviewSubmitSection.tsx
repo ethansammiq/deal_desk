@@ -80,12 +80,6 @@ export function ReviewSubmitSection({
     ])
     .filter((type, index, array) => type && array.indexOf(type) === index); // Remove duplicates and empty values
   
-  // Debug: Log incentive types for troubleshooting
-  console.log("🔍 DEBUG: Extracted incentive types:", allIncentiveTypes);
-  console.log("🔍 DEBUG: DealTiers with incentives:", dealTiers.map(t => ({ 
-    tier: t.tierNumber, 
-    incentives: t.incentives?.map(i => ({ category: i.category, subCategory: i.subCategory, option: i.option }))
-  })));
 
   return (
     <div className="space-y-6">

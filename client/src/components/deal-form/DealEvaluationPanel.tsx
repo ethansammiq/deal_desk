@@ -153,18 +153,6 @@ export function DealEvaluationPanel({
           </div>
         </div>
 
-        {/* Help Section - Focused on criteria explanation only */}
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-blue-500 mt-0.5" />
-            <div>
-              <p className="text-xs text-slate-600">
-                <strong>Standard deals</strong> meet all predefined criteria and qualify for streamlined processing.
-                <strong> Non-standard deals</strong> require additional review and validation.
-              </p>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
