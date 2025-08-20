@@ -17,6 +17,7 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
 import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { TierDataAccess } from "@/utils/tier-data-access";
 import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus, BarChart3, Clock, Target } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
@@ -79,7 +80,7 @@ export default function DealDetails() {
     enabled: !!dealId && dealId > 0,
   });
 
-  // Fetch deal tiers for proper financial calculations
+  // Fetch deal tiers using TierDataAccess with enhanced fallback
   const dealTiersQuery = useQuery({
     queryKey: ['/api/deals', dealId, 'tiers'],
     queryFn: async () => {
@@ -87,7 +88,14 @@ export default function DealDetails() {
       if (!response.ok) {
         throw new Error('Failed to fetch deal tiers');
       }
-      return response.json();
+      const data = await response.json();
+      
+      // Apply enhanced fallback logic if no tiers found
+      if (!data.tiers || data.tiers.length === 0) {
+        return await TierDataAccess.fetchTiersWithFallback(dealId);
+      }
+      
+      return data.tiers;
     },
     enabled: !!dealId && dealId > 0,
   });
@@ -102,56 +110,27 @@ export default function DealDetails() {
   // Initialize calculation service for adjusted metrics  
   const calculationService = useDealCalculations();
 
-  // Calculate proper financial metrics based on deal structure
+  // Calculate financial metrics using TierDataAccess system
   const getFinancialMetrics = () => {
     const deal = dealQuery.data;
-    const dealTiers = dealTiersQuery.data || [];
+    const tiers = dealTiersQuery.data || [];
     
-    if (!deal) return null;
+    if (!deal || !tiers) return null;
 
-    // For tiered deals with tiers data, show expected tier performance (middle tier)
-    if (deal.dealStructure === "tiered" && dealTiers.length > 0) {
-      // Sort tiers by tier number to ensure consistent ordering
-      const sortedTiers = [...dealTiers].sort((a, b) => a.tierNumber - b.tierNumber);
-      
-      // Use middle tier as "expected" performance, or second tier if available
-      const expectedTierIndex = sortedTiers.length > 2 ? 1 : 0; // Index 1 = Tier 2, or first tier
-      const expectedTier = sortedTiers[expectedTierIndex];
-      
-      // Calculate total revenue across all tiers for context
-      const summary = calculateFinancialSummary(dealTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined);
-      
-      // Calculate adjusted metrics for the expected tier
-      const adjustedGrossMargin = calculationService.calculateAdjustedGrossMargin(expectedTier);
-      const adjustedGrossProfit = calculationService.calculateTierGrossProfit(expectedTier);
-      const tierIncentiveCosts = expectedTier.incentives?.reduce((sum: number, inc: any) => sum + (inc.value || 0), 0) || 0;
-      
-      return {
-        annualRevenue: expectedTier.annualRevenue, // Show expected tier revenue
-        annualGrossMargin: expectedTier.annualGrossMargin, // Expected tier margin
-        adjustedGrossMargin: adjustedGrossMargin,
-        adjustedGrossProfit: adjustedGrossProfit,
-        totalIncentiveCosts: tierIncentiveCosts,
-        displayTier: expectedTier.tierNumber // Track which tier we're showing
-      };
-    } else {
-      // For flat commit deals, use direct values with calculations
-      const flatTier = {
-        tierNumber: 1,
-        annualRevenue: deal.annualRevenue || 0,
-        annualGrossMargin: deal.annualGrossMargin || 0, // Already in decimal format
-        incentives: [] // No incentives in flat deals for now
-      };
-      
-      return {
-        annualRevenue: deal.annualRevenue,
-        annualGrossMargin: deal.annualGrossMargin,
-        adjustedGrossMargin: calculationService.calculateAdjustedGrossMargin(flatTier),
-        adjustedGrossProfit: calculationService.calculateTierGrossProfit(flatTier),
-        totalIncentiveCosts: 0, // No incentives in flat deals for now
-        displayTier: null // No tiers in flat deals
-      };
-    }
+    // Use TierDataAccess for consistent tier-first calculations
+    const expectedRevenue = TierDataAccess.getExpectedRevenue(tiers);
+    const expectedGrossMargin = TierDataAccess.getExpectedGrossMargin(tiers);
+    const expectedIncentiveCost = TierDataAccess.getExpectedIncentiveCost(tiers);
+    const expectedGrossProfit = TierDataAccess.getExpectedGrossProfit(tiers);
+
+    return {
+      annualRevenue: expectedRevenue,
+      annualGrossMargin: expectedGrossMargin,
+      adjustedGrossMargin: expectedGrossMargin,
+      adjustedGrossProfit: expectedGrossProfit,
+      totalIncentiveCosts: expectedIncentiveCost,
+      displayTier: tiers.length > 0 ? TierDataAccess.getExpectedTier(tiers)?.tierNumber : null
+    };
   };
 
   if (!dealId || dealId <= 0) {
