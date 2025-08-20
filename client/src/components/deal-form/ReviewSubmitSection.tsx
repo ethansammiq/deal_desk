@@ -89,9 +89,7 @@ export function ReviewSubmitSection({
   // Calculate contract term using shared utility
   const contractTerm = calculateContractTerm(formValues.termStartDate, formValues.termEndDate);
 
-  // ✅ FIXED: Use same data source as FinancialTierTable (Step 3)
-  const { agenciesData, advertisersData } = useFinancialData();
-  const dealCalculations = useDealCalculations(advertisersData, agenciesData);
+  // Step 4 is pure display - no data fetching needed here
 
   // Auto-populate business summary using shared hook
   useBusinessSummary({ form, formValues });
