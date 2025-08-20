@@ -31,6 +31,7 @@ export function FinancialStructureTable({
   const { agenciesData, advertisersData } = useFinancialData();
   const dealCalculations = useDealCalculations(advertisersData, agenciesData);
 
+  // Don't render if no tiers for tiered deals, but allow flat commit to show with virtual tier
   if (dealTiers.length === 0) {
     return null;
   }

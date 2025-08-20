@@ -148,7 +148,7 @@ export function ReviewSubmitSection({
       )}
 
       {/* Financial Structure using shared component */}
-      {dealStructureType === "tiered" && dealTiers.length > 0 && (
+      {(dealTiers.length > 0 || dealStructureType === "flat_commit") && (
         <FinancialStructureTable 
           dealTiers={dealTiers}
           salesChannel={salesChannel}
