@@ -68,6 +68,7 @@ export function ConsolidatedDashboard() {
             
             // Enhanced fallback: If no tiers, create one from migratedFinancials or deal data
             if (tiers.length === 0) {
+              console.log(`Deal ${id}: No tiers found, applying fallback`);
               const dealResponse = await fetch(`/api/deals/${id}`);
               if (dealResponse.ok) {
                 const deal = await dealResponse.json();
@@ -79,6 +80,14 @@ export function ConsolidatedDashboard() {
                               deal.migratedFinancials?.previousYearMargin ||
                               deal.previousYearMargin || 0.25; // Default 25% margin
                 
+                console.log(`Deal ${id} fallback data:`, {
+                  dealName: deal.dealName,
+                  annualRevenue: deal.migratedFinancials?.annualRevenue,
+                  previousYearRevenue: deal.migratedFinancials?.previousYearRevenue,
+                  calculatedRevenue: revenue,
+                  calculatedMargin: margin
+                });
+                
                 if (revenue > 0) {
                   tiers = [{
                     tierNumber: 1,
@@ -86,6 +95,9 @@ export function ConsolidatedDashboard() {
                     annualGrossMargin: margin,
                     incentives: []
                   }];
+                  console.log(`Deal ${id}: Created fallback tier with revenue ${revenue}`);
+                } else {
+                  console.log(`Deal ${id}: No revenue found for fallback`);
                 }
               }
             }
