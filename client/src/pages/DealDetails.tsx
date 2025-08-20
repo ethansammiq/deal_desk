@@ -228,7 +228,9 @@ export default function DealDetails() {
                       <DollarSign className="h-4 w-4 text-slate-500" />
                       <span className="text-sm font-medium">Deal Type:</span>
                       <Badge variant="outline">
-                        {deal.dealStructure === 'tiered' ? 'Tiered' : 'Flat Commit'}
+                        {deal.dealType === 'grow' ? 'Growth' : 
+                         deal.dealType === 'protect' ? 'Retention' : 
+                         deal.dealType === 'custom' ? 'Custom' : deal.dealType}
                       </Badge>
                     </div>
                   </div>

@@ -1120,7 +1120,7 @@ export class MemStorage implements IStorage {
           dealId: 1,
           tierNumber: 3,
           annualRevenue: 3500000,
-          annualGrossMargin: 21.0,
+          annualGrossMargin: 0.210,
           incentivePercentage: 2.0,
           incentiveNotes: "Tier 3 - 2% rebate + premium support"
         },
@@ -1146,7 +1146,7 @@ export class MemStorage implements IStorage {
           dealId: 4,
           tierNumber: 2,
           annualRevenue: 1000000,
-          annualGrossMargin: 33.0,
+          annualGrossMargin: 0.330,
           incentivePercentage: 1.0,
           incentiveNotes: "Tier 2 - 1% rebate"
         },
@@ -1154,7 +1154,7 @@ export class MemStorage implements IStorage {
           dealId: 4,
           tierNumber: 3,
           annualRevenue: 1100000,
-          annualGrossMargin: 33.5,
+          annualGrossMargin: 0.335,
           incentivePercentage: 1.5,
           incentiveNotes: "Tier 3 - 1.5% rebate"
         },
@@ -1162,7 +1162,7 @@ export class MemStorage implements IStorage {
           dealId: 4,
           tierNumber: 4,
           annualRevenue: 1250000,
-          annualGrossMargin: 34.0,
+          annualGrossMargin: 0.340,
           incentivePercentage: 2.5,
           incentiveNotes: "Tier 4 - 2.5% rebate + priority support"
         }
@@ -1172,7 +1172,7 @@ export class MemStorage implements IStorage {
           dealId: 5,
           tierNumber: 1,
           annualRevenue: 2000000,
-          annualGrossMargin: 23.0,
+          annualGrossMargin: 0.230,
           incentivePercentage: 0,
           incentiveNotes: "Base tier - no incentives"
         },
@@ -1188,7 +1188,7 @@ export class MemStorage implements IStorage {
           dealId: 5,
           tierNumber: 3,
           annualRevenue: 3000000,
-          annualGrossMargin: 27.0,
+          annualGrossMargin: 0.270,
           incentivePercentage: 3.0,
           incentiveNotes: "Tier 3 - 3% rebate + enhanced analytics + quarterly workshops"
         },
@@ -1196,7 +1196,7 @@ export class MemStorage implements IStorage {
           dealId: 5,
           tierNumber: 4,
           annualRevenue: 3500000,
-          annualGrossMargin: 28.5,
+          annualGrossMargin: 0.285,
           incentivePercentage: 4.5,
           incentiveNotes: "Tier 4 - 4.5% rebate + all premium features + executive quarterly reviews"
         }
