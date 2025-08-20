@@ -55,8 +55,19 @@ export const TierDataAccess = {
     const expectedTier = this.getExpectedTier(tiers);
     if (!expectedTier) return 0;
     
-    // Use shared utility for incentive calculation
-    return getTotalIncentiveValue(expectedTier);
+    // Handle both new incentives array format and legacy incentivePercentage format
+    const incentivesArrayCost = getTotalIncentiveValue(expectedTier);
+    if (incentivesArrayCost > 0) {
+      return incentivesArrayCost;
+    }
+    
+    // Fallback to legacy incentivePercentage calculation for existing data
+    const incentivePercentage = (expectedTier as any).incentivePercentage;
+    if (incentivePercentage && expectedTier.annualRevenue) {
+      return expectedTier.annualRevenue * (incentivePercentage / 100);
+    }
+    
+    return 0;
   },
 
   /**
