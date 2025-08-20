@@ -11,15 +11,16 @@ import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { DealHistory } from "@/components/collaboration/DealHistory";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
+import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
 
-type UserRole = 'seller' | 'approver' | 'legal' | 'admin';
+type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
 
 export default function DealDetails() {
   const { id } = useParams<{ id: string }>();
@@ -185,40 +186,108 @@ export default function DealDetails() {
                 </CardContent>
               </Card>
 
-              {/* Financial Details */}
+              {/* Enhanced Financial Details */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Financial Information</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <CardTitle>Financial Performance</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-sm font-medium text-slate-900">Annual Revenue</span>
-                      <p className="text-lg font-semibold text-green-600">
+                <CardContent className="space-y-6">
+                  {/* Key Metrics Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-green-800">Annual Revenue</span>
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-green-700 mt-1">
                         {deal.annualRevenue ? formatCurrency(deal.annualRevenue) : 'N/A'}
                       </p>
+                      {deal.annualRevenue && (
+                        <p className="text-xs text-green-600 mt-1">Primary revenue target</p>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-sm font-medium text-slate-900">Gross Margin</span>
-                      <p className="text-lg font-semibold">
+                    
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-blue-800">Gross Margin</span>
+                        <div className="flex items-center gap-1">
+                          {deal.annualGrossMargin && deal.annualGrossMargin > 30 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : deal.annualGrossMargin && deal.annualGrossMargin > 15 ? (
+                            <Minus className="h-4 w-4 text-yellow-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-700 mt-1">
                         {deal.annualGrossMargin ? `${deal.annualGrossMargin}%` : 'N/A'}
                       </p>
+                      {deal.annualGrossMargin && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          {deal.annualGrossMargin > 30 ? 'Excellent margin' : 
+                           deal.annualGrossMargin > 15 ? 'Good margin' : 'Below target'}
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-sm font-medium text-slate-900">Growth Rate</span>
-                      <p className="text-lg font-semibold">
+                  </div>
+
+                  {/* Growth & Analytics Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-purple-800">Growth Rate</span>
+                        <div className="flex items-center gap-1">
+                          {deal.yearlyRevenueGrowthRate && deal.yearlyRevenueGrowthRate > 0 ? (
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                          ) : deal.yearlyRevenueGrowthRate === 0 ? (
+                            <Minus className="h-4 w-4 text-yellow-500" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-purple-700 mt-1">
                         {deal.yearlyRevenueGrowthRate ? `${deal.yearlyRevenueGrowthRate}%` : 'N/A'}
                       </p>
+                      {deal.yearlyRevenueGrowthRate !== null && (
+                        <p className="text-xs text-purple-600 mt-1">
+                          {deal.yearlyRevenueGrowthRate > 10 ? 'High growth' : 
+                           deal.yearlyRevenueGrowthRate > 0 ? 'Positive growth' : 'Declining'}
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-sm font-medium text-slate-900">Analytics Tier</span>
-                      <Badge variant="secondary" className="capitalize">
-                        {deal.analyticsTier || 'N/A'}
-                      </Badge>
+                    
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-amber-800">Analytics Tier</span>
+                        <FileCheck className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="mt-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="capitalize bg-amber-100 text-amber-800 hover:bg-amber-200"
+                        >
+                          {deal.analyticsTier || 'Standard'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-amber-600 mt-2">
+                        Analytics capabilities included
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+              {/* AI Assessment Section */}
+              <DealGenieAssessment 
+                dealData={deal}
+                revenueGrowthRate={deal.yearlyRevenueGrowthRate || undefined}
+                grossProfitGrowthRate={deal.annualGrossMargin || undefined}
+              />
 
               {/* Approval Progress Tracker */}
               {deal.status !== 'draft' && deal.status !== 'scoping' && (
