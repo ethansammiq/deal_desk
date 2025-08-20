@@ -854,6 +854,8 @@ export default function SubmitDeal() {
         const annualRevenue = form.getValues("annualRevenue") || 0;
         const annualGrossMarginPercent = form.getValues("annualGrossMarginPercent") || 0;
         
+        console.log("Flat commit virtual tier data:", { annualRevenue, annualGrossMarginPercent, dealStructureType });
+        
         if (annualRevenue > 0) {
           tiersForCalculation = [{
             tierNumber: 1,
@@ -861,6 +863,9 @@ export default function SubmitDeal() {
             annualGrossMargin: annualGrossMarginPercent / 100, // Convert percentage to decimal
             incentives: []
           }];
+          console.log("Created virtual tier:", tiersForCalculation[0]);
+        } else {
+          console.log("No annual revenue found, cannot create virtual tier");
         }
       }
       
