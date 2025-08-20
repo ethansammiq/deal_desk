@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
 import { useToast } from "@/hooks/use-toast";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, AlertTriangle, FileCheck, Edit, CheckCircle2 as CheckCircle, Share2, FileText, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Deal } from "@shared/schema";
 import { format } from "date-fns";
@@ -78,8 +79,51 @@ export default function DealDetails() {
     enabled: !!dealId && dealId > 0,
   });
 
+  // Fetch deal tiers for proper financial calculations
+  const dealTiersQuery = useQuery({
+    queryKey: ['/api/deals', dealId, 'tiers'],
+    queryFn: async () => {
+      const response = await fetch(`/api/deals/${dealId}/tiers`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch deal tiers');
+      }
+      return response.json();
+    },
+    enabled: !!dealId && dealId > 0,
+  });
+
+  // Initialize calculation service for proper financial aggregation
+  const { calculateFinancialSummary } = useDealCalculations();
+
   const handleGoBack = () => {
     navigate('/analytics');
+  };
+
+  // Calculate proper financial metrics based on deal structure
+  const getFinancialMetrics = () => {
+    const deal = dealQuery.data;
+    const dealTiers = dealTiersQuery.data || [];
+    
+    if (!deal) return null;
+
+    // For tiered deals with tiers data, use aggregated calculations
+    if (deal.dealStructure === "tiered" && dealTiers.length > 0) {
+      const summary = calculateFinancialSummary(dealTiers, deal.salesChannel, deal.advertiserName || undefined, deal.agencyName || undefined);
+      return {
+        annualRevenue: summary.totalAnnualRevenue,
+        annualGrossMargin: summary.averageGrossMarginPercent * 100, // Convert to percentage
+        yearlyRevenueGrowthRate: deal.yearlyRevenueGrowthRate,
+        analyticsTier: deal.analyticsTier
+      };
+    } else {
+      // For flat commit deals or deals without tiers, use direct fields
+      return {
+        annualRevenue: deal.annualRevenue,
+        annualGrossMargin: deal.annualGrossMargin,
+        yearlyRevenueGrowthRate: deal.yearlyRevenueGrowthRate,
+        analyticsTier: deal.analyticsTier
+      };
+    }
   };
 
   if (!dealId || dealId <= 0) {
@@ -118,7 +162,10 @@ export default function DealDetails() {
           />
         }
       >
-        {(deal) => (
+        {(deal) => {
+          const financialMetrics = getFinancialMetrics();
+          
+          return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Deal Information */}
             <div className="lg:col-span-2 space-y-6">
@@ -203,10 +250,12 @@ export default function DealDetails() {
                         <DollarSign className="h-4 w-4 text-green-600" />
                       </div>
                       <p className="text-2xl font-bold text-green-700 mt-1">
-                        {deal.annualRevenue ? formatCurrency(deal.annualRevenue) : 'N/A'}
+                        {financialMetrics?.annualRevenue ? formatCurrency(financialMetrics.annualRevenue) : 'N/A'}
                       </p>
-                      {deal.annualRevenue && (
-                        <p className="text-xs text-green-600 mt-1">Primary revenue target</p>
+                      {financialMetrics?.annualRevenue && (
+                        <p className="text-xs text-green-600 mt-1">
+                          {deal.dealStructure === "tiered" ? "Aggregated from all tiers" : "Primary revenue target"}
+                        </p>
                       )}
                     </div>
                     
@@ -214,9 +263,9 @@ export default function DealDetails() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-blue-800">Gross Margin</span>
                         <div className="flex items-center gap-1">
-                          {deal.annualGrossMargin && deal.annualGrossMargin > 30 ? (
+                          {financialMetrics?.annualGrossMargin && financialMetrics.annualGrossMargin > 30 ? (
                             <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : deal.annualGrossMargin && deal.annualGrossMargin > 15 ? (
+                          ) : financialMetrics?.annualGrossMargin && financialMetrics.annualGrossMargin > 15 ? (
                             <Minus className="h-4 w-4 text-yellow-500" />
                           ) : (
                             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -224,12 +273,13 @@ export default function DealDetails() {
                         </div>
                       </div>
                       <p className="text-2xl font-bold text-blue-700 mt-1">
-                        {deal.annualGrossMargin ? `${deal.annualGrossMargin}%` : 'N/A'}
+                        {financialMetrics?.annualGrossMargin ? `${financialMetrics.annualGrossMargin.toFixed(1)}%` : 'N/A'}
                       </p>
-                      {deal.annualGrossMargin && (
+                      {financialMetrics?.annualGrossMargin && (
                         <p className="text-xs text-blue-600 mt-1">
-                          {deal.annualGrossMargin > 30 ? 'Excellent margin' : 
-                           deal.annualGrossMargin > 15 ? 'Good margin' : 'Below target'}
+                          {financialMetrics.annualGrossMargin > 30 ? 'Excellent margin' : 
+                           financialMetrics.annualGrossMargin > 15 ? 'Good margin' : 'Below target'}
+                          {deal.dealStructure === "tiered" ? ' (weighted average)' : ''}
                         </p>
                       )}
                     </div>
@@ -241,9 +291,9 @@ export default function DealDetails() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-purple-800">Growth Rate</span>
                         <div className="flex items-center gap-1">
-                          {deal.yearlyRevenueGrowthRate && deal.yearlyRevenueGrowthRate > 0 ? (
+                          {financialMetrics?.yearlyRevenueGrowthRate && financialMetrics.yearlyRevenueGrowthRate > 0 ? (
                             <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : deal.yearlyRevenueGrowthRate === 0 ? (
+                          ) : financialMetrics?.yearlyRevenueGrowthRate === 0 ? (
                             <Minus className="h-4 w-4 text-yellow-500" />
                           ) : (
                             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -251,12 +301,12 @@ export default function DealDetails() {
                         </div>
                       </div>
                       <p className="text-2xl font-bold text-purple-700 mt-1">
-                        {deal.yearlyRevenueGrowthRate ? `${deal.yearlyRevenueGrowthRate}%` : 'N/A'}
+                        {financialMetrics?.yearlyRevenueGrowthRate ? `${financialMetrics.yearlyRevenueGrowthRate}%` : 'N/A'}
                       </p>
-                      {deal.yearlyRevenueGrowthRate !== null && (
+                      {financialMetrics?.yearlyRevenueGrowthRate !== null && financialMetrics?.yearlyRevenueGrowthRate !== undefined && (
                         <p className="text-xs text-purple-600 mt-1">
-                          {deal.yearlyRevenueGrowthRate > 10 ? 'High growth' : 
-                           deal.yearlyRevenueGrowthRate > 0 ? 'Positive growth' : 'Declining'}
+                          {financialMetrics.yearlyRevenueGrowthRate > 10 ? 'High growth' : 
+                           financialMetrics.yearlyRevenueGrowthRate > 0 ? 'Positive growth' : 'Declining'}
                         </p>
                       )}
                     </div>
@@ -271,7 +321,7 @@ export default function DealDetails() {
                           variant="secondary" 
                           className="capitalize bg-amber-100 text-amber-800 hover:bg-amber-200"
                         >
-                          {deal.analyticsTier || 'Standard'}
+                          {financialMetrics?.analyticsTier || 'Standard'}
                         </Badge>
                       </div>
                       <p className="text-xs text-amber-600 mt-2">
@@ -285,8 +335,8 @@ export default function DealDetails() {
               {/* AI Assessment Section */}
               <DealGenieAssessment 
                 dealData={deal}
-                revenueGrowthRate={deal.yearlyRevenueGrowthRate || undefined}
-                grossProfitGrowthRate={deal.annualGrossMargin || undefined}
+                revenueGrowthRate={financialMetrics?.yearlyRevenueGrowthRate || undefined}
+                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
               />
 
               {/* Approval Progress Tracker */}
@@ -398,7 +448,8 @@ export default function DealDetails() {
               <DealHistory dealId={deal.id} />
             </div>
           </div>
-        )}
+          );
+        }}
       </QueryStateHandler>
 
       {/* Revision Request Modal */}
