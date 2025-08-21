@@ -5,14 +5,14 @@ import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
-import { EnhancedFinancialCard } from "@/components/deal-details/EnhancedFinancialCard";
+import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
 import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
 import { DealDetailsProvider, useDealDetails } from "@/providers/DealDetailsProvider";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
-import { ArrowLeft, ArrowRight, Building2, Calendar, DollarSign, Users, MapPin, Target, FileCheck, BarChart3, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, DollarSign, Users, MapPin, Target, FileCheck, BarChart3, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
@@ -112,23 +112,21 @@ function DealDetailsContent() {
         </div>
       </div>
 
-      {/* Consolidated Single-Page Layout */}
+      {/* Financial Structure - Full Width */}
+      <div className="px-6 py-6 border-b border-gray-200">
+        <FinancialSummarySection 
+          dealTiers={tiers}
+          salesChannel="independent_agency"
+          advertiserName={deal.dealName.split(' ')[0]}
+          agencyName="MiQ"
+        />
+      </div>
+
+      {/* Bottom Section - 2 Column Layout */}
       <div className="px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* LEFT COLUMN - Financial + AI + Approvals */}
+          {/* LEFT COLUMN - Approval Workflow */}
           <div className="space-y-8">
-            {/* Financial Performance */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Financial Performance
-              </h2>
-              <EnhancedFinancialCard 
-                tiers={tiers}
-                dealStructure={deal.dealStructure || 'flat_commit'}
-              />
-            </div>
-
             {/* Approval Workflow */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -151,48 +149,6 @@ function DealDetailsContent() {
                 Activity & Communication
               </h2>
               <ActivityFeed deal={deal} dealId={deal.id} />
-            </div>
-
-            {/* Deal Metadata */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Deal Information
-              </h2>
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Reference:</span>
-                    <span className="font-medium">#{deal.referenceNumber}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Type:</span>
-                    <span className="font-medium">{deal.dealType}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Structure:</span>
-                    <span className="font-medium capitalize">{deal.dealStructure?.replace('_', ' ')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Created:</span>
-                    <span className="font-medium">
-                      {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Client:</span>
-                    <span className="font-medium">{deal.dealName.split(' ')[0]}</span>
-                  </div>
-                  {deal.lastRevisedAt && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Last Revised:</span>
-                      <span className="font-medium">
-                        {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
 
             {/* Role-Based Actions */}
