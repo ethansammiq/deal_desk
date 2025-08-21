@@ -736,7 +736,7 @@ function DealDetailsContent() {
           </div>
 
           {/* Business Summary Section */}
-          {deal.businessSummary && (
+          {deal.businessSummary && deal.businessSummary.trim() && (
             <div className="mt-12 pt-6 border-t border-slate-200">
               <h3 className="text-sm font-medium text-slate-700 mb-2">Business Summary</h3>
               <p className="text-sm text-slate-600 leading-relaxed">{deal.businessSummary}</p>
