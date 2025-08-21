@@ -4,7 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
-import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
+import { useQuery } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { 
+  CheckCircle, 
+  Clock, 
+  AlertTriangle, 
+  XCircle,
+  ArrowRight,
+  Users,
+  Building2
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { FinancialTable, FinancialTableColGroup, FinancialTableHeader, FinancialTableBody, FinancialHeaderCell, FinancialDataCell, FinancialMetricLabel, GrowthIndicator } from "@/components/ui/financial-table";
 import { useFinancialData } from "@/hooks/useFinancialData";
@@ -16,7 +27,7 @@ import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
 import { DealDetailsProvider, useDealDetails } from "@/providers/DealDetailsProvider";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
-import { ArrowLeft, Calendar, DollarSign, Users, MapPin, Target, FileCheck, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, MapPin, Target, FileCheck } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
@@ -179,6 +190,142 @@ function FinancialSummaryTable({
   );
 }
 
+// Content-only approval tracker component
+function ApprovalTrackerContent({ 
+  dealId, 
+  dealName 
+}: {
+  dealId: number;
+  dealName: string;
+}) {
+  const { data: approvalState, isLoading } = useQuery<{
+    overallState: string;
+    departmentApprovals: number;
+    businessApprovals: number;
+    departmentsComplete: boolean;
+    revisionsRequested: boolean;
+  }>({
+    queryKey: [`/api/deals/${dealId}/approval-state`],
+    enabled: !!dealId,
+    refetchInterval: 30000
+  });
+
+  const { data: approvalStatus } = useQuery<any>({
+    queryKey: [`/api/deals/${dealId}/approval-status`],
+    enabled: !!dealId,
+    refetchInterval: 5000
+  });
+
+  if (isLoading) {
+    return <SectionLoading title="Loading approval data..." rows={3} />;
+  }
+
+  if (!approvalState || !approvalStatus) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-slate-500">No approval workflow initiated yet</p>
+      </div>
+    );
+  }
+
+  // Process approval data into stages
+  const stages = [
+    {
+      stage: 1,
+      name: 'Department Review',
+      description: 'Parallel review by relevant departments',
+      status: getStageStatus(1, approvalState, approvalStatus),
+      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 1),
+      progress: calculateStageProgress(1, approvalStatus)
+    },
+    {
+      stage: 2,
+      name: 'Business Approval', 
+      description: 'Executive approval for final sign-off',
+      status: getStageStatus(2, approvalState, approvalStatus),
+      approvals: (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === 2),
+      progress: calculateStageProgress(2, approvalStatus)
+    }
+  ];
+
+  return (
+    <div className="space-y-4">
+      {stages.map((stage) => (
+        <div key={stage.stage} className="border rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium flex items-center gap-2">
+              Stage {stage.stage}: {stage.name}
+              {(stage.status === 'in_progress' || stage.status === 'revision_requested') && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                  In Progress
+                </Badge>
+              )}
+              {stage.status === 'completed' && (
+                <Badge variant="outline" className="bg-green-100 text-green-800">
+                  Completed
+                </Badge>
+              )}
+              {stage.status === 'not_started' && (
+                <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                  Not Started
+                </Badge>
+              )}
+            </h4>
+          </div>
+          
+          {stage.approvals.length > 0 ? (
+            <div className="grid gap-2">
+              {stage.approvals.map((approval: any) => (
+                <div key={approval.id} className="flex items-center justify-between p-3 rounded text-sm bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">{approval.department}</span>
+                  </div>
+                  <Badge variant={
+                    approval.status === 'approved' ? 'default' :
+                    approval.status === 'revision_requested' ? 'secondary' :
+                    'outline'
+                  }>
+                    {approval.status === 'approved' ? 'Approved' :
+                     approval.status === 'revision_requested' ? 'Revision Requested' :
+                     'Pending'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-slate-500 text-sm">
+              {stage.stage === 1 ? 'No approvals required for this stage' : 'Waiting for previous stage to complete'}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Helper functions
+function getStageStatus(stageNumber: number, approvalState: any, approvalStatus: any): string {
+  const stageApprovals = (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === stageNumber);
+  if (stageApprovals.length === 0) return 'not_started';
+  
+  const hasRevisions = stageApprovals.some((a: any) => a.status === 'revision_requested');
+  const allApproved = stageApprovals.every((a: any) => a.status === 'approved');
+  
+  if (hasRevisions) return 'revision_requested';
+  if (allApproved) return 'completed';
+  
+  return 'in_progress';
+}
+
+function calculateStageProgress(stageNumber: number, approvalStatus: any): number {
+  const stageApprovals = (approvalStatus.approvals || []).filter((a: any) => a.approvalStage === stageNumber);
+  if (stageApprovals.length === 0) return 0;
+  
+  const completed = stageApprovals.filter((a: any) => a.status === 'approved').length;
+  return Math.round((completed / stageApprovals.length) * 100);
+}
+
 // Inner component that uses the consolidated data
 function DealDetailsContent() {
   const [, navigate] = useLocation();
@@ -311,7 +458,7 @@ function DealDetailsContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <ApprovalTracker 
+            <ApprovalTrackerContent 
               dealId={deal.id}
               dealName={deal.dealName}
             />
