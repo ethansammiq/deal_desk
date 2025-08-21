@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, 
@@ -13,7 +13,20 @@ import {
   XCircle,
   ArrowRight,
   Users,
-  Building2
+  Building2,
+  MessageSquare, 
+  FileText, 
+  Send, 
+  User, 
+  History,
+  ArrowLeft, 
+  Calendar, 
+  DollarSign, 
+  MapPin, 
+  Target, 
+  FileCheck,
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
@@ -23,11 +36,12 @@ import { useDealCalculations } from "@/hooks/useDealCalculations";
 import { formatCurrency } from "@/lib/utils";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
-import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 import { DealDetailsProvider, useDealDetails } from "@/providers/DealDetailsProvider";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
-import { ArrowLeft, Calendar, DollarSign, MapPin, Target, FileCheck } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
@@ -188,6 +202,268 @@ function FinancialSummaryTable({
       </FinancialTableBody>
     </FinancialTable>
   );
+}
+
+// Activity Feed types
+interface UnifiedActivity {
+  id: string;
+  type: 'status_change' | 'comment' | 'created' | 'revised';
+  title: string;
+  description?: string;
+  timestamp: string;
+  actor?: string;
+  actorRole?: string;
+  content?: string;
+  status?: string;
+  previousStatus?: string;
+  isSystemComment?: boolean;
+}
+
+// Content-only activity feed component
+function ActivityFeedContent({ deal, dealId }: { deal: any; dealId: number }) {
+  const [activeFilter, setActiveFilter] = useState<'all' | 'status' | 'comments'>('all');
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: user } = useCurrentUser();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const userRole = user?.role || 'seller';
+
+  // Unified data fetching - consolidates status history and comments
+  const { data: activities, isLoading, error } = useQuery({
+    queryKey: ['/api/deals', dealId, 'unified-activity'],
+    queryFn: async (): Promise<UnifiedActivity[]> => {
+      const [statusResponse, commentsResponse] = await Promise.all([
+        fetch(`/api/deals/${dealId}/history`),
+        fetch(`/api/deals/${dealId}/comments`)
+      ]);
+      
+      const statusHistory = statusResponse.ok ? await statusResponse.json() : [];
+      const comments = commentsResponse.ok ? await commentsResponse.json() : [];
+      
+      // Consolidate all activities into unified format
+      const unifiedActivities: UnifiedActivity[] = [
+        // Deal creation event
+        {
+          id: `created-${deal.id}`,
+          type: 'created',
+          title: 'Deal Created',
+          description: `Deal ${deal.dealName} was created`,
+          timestamp: deal.createdAt || new Date().toISOString(),
+          actor: deal.email || 'System'
+        },
+        // Status changes
+        ...statusHistory.map((entry: any) => ({
+          id: `status-${entry.id}`,
+          type: 'status_change' as const,
+          title: `Status changed to ${getStatusLabel(entry.status)}`,
+          description: entry.comments,
+          timestamp: entry.createdAt,
+          actor: entry.changedBy,
+          status: entry.status,
+          previousStatus: entry.previousStatus
+        })),
+        // Comments
+        ...comments.map((comment: any) => ({
+          id: `comment-${comment.id}`,
+          type: 'comment' as const,
+          title: comment.isSystemComment ? 'System Update' : 'Comment Added',
+          content: comment.content,
+          timestamp: comment.createdAt,
+          actor: comment.actor,
+          actorRole: comment.actorRole,
+          isSystemComment: comment.isSystemComment
+        }))
+      ];
+      
+      // Sort by timestamp (newest first)
+      return unifiedActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    },
+    enabled: !!dealId,
+    refetchInterval: 30000
+  });
+
+  // Filter activities based on active filter
+  const filteredActivities = activities?.filter(activity => {
+    switch (activeFilter) {
+      case 'status':
+        return activity.type === 'status_change' || activity.type === 'created' || activity.type === 'revised';
+      case 'comments':
+        return activity.type === 'comment';
+      default:
+        return true;
+    }
+  }) || [];
+
+  // Helper functions
+  const getActivityIcon = (activity: UnifiedActivity) => {
+    switch (activity.type) {
+      case 'status_change':
+        return <ArrowRight className="h-4 w-4 text-blue-600" />;
+      case 'comment':
+        return activity.isSystemComment ? 
+          <CheckCircle2 className="h-4 w-4 text-green-600" /> : 
+          <MessageSquare className="h-4 w-4 text-purple-600" />;
+      case 'revised':
+        return <AlertTriangle className="h-4 w-4 text-orange-600" />;
+      default:
+        return <FileText className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    const colors: Record<string, string> = {
+      seller: 'bg-blue-100 text-blue-800', approver: 'bg-green-100 text-green-800',
+      legal: 'bg-purple-100 text-purple-800', admin: 'bg-red-100 text-red-800',
+      department_reviewer: 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[role] || 'bg-gray-100 text-gray-800';
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Filter Tabs */}
+      <div className="flex gap-2">
+        {(['all', 'status', 'comments'] as const).map((filter) => (
+          <Button
+            key={filter}
+            variant={activeFilter === filter ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveFilter(filter)}
+            className="capitalize"
+          >
+            {filter === 'all' ? 'All Activity' : filter}
+          </Button>
+        ))}
+        {activities && (
+          <Badge variant="outline" className="ml-auto">
+            {filteredActivities.length} activities
+          </Badge>
+        )}
+      </div>
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="text-center py-8 text-sm text-slate-500">
+          <Activity className="h-8 w-8 mx-auto mb-2 opacity-50 animate-spin" />
+          Loading activity feed...
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-8 text-sm text-red-500">
+          <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+          Failed to load activity feed
+        </div>
+      )}
+      
+      {/* Empty State */}
+      {filteredActivities.length === 0 && !isLoading && !error && (
+        <div className="text-center py-8 text-sm text-slate-500">
+          <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          No activities found
+        </div>
+      )}
+      
+      {/* Activity Timeline */}
+      {filteredActivities.length > 0 && (
+        <div className="space-y-4">
+          {filteredActivities.map((activity, index) => (
+            <div key={activity.id} className="flex gap-3 pb-4 border-b border-slate-100 last:border-b-0 last:pb-0">
+              {/* Timeline indicator */}
+              <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-200">
+                  {getActivityIcon(activity)}
+                </div>
+                {index < filteredActivities.length - 1 && (
+                  <div className="w-px h-8 bg-slate-200 mt-2" />
+                )}
+              </div>
+              
+              {/* Activity content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-slate-900 text-sm">{activity.title}</h4>
+                    {activity.description && (
+                      <p className="text-slate-600 text-sm mt-1">{activity.description}</p>
+                    )}
+                    {activity.content && (
+                      <div className="mt-2 p-3 bg-slate-50 rounded-lg border text-sm">
+                        {activity.content}
+                      </div>
+                    )}
+                    
+                    {/* Actor information */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <User className="h-3 w-3 text-slate-400" />
+                      <span className="text-xs text-slate-500">{activity.actor}</span>
+                      {activity.actorRole && (
+                        <Badge variant="outline" className={`text-xs ${getRoleColor(activity.actorRole)}`}>
+                          {activity.actorRole.replace('_', ' ')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Timestamp */}
+                  <div className="text-xs text-slate-400 whitespace-nowrap">
+                    {format(new Date(activity.timestamp), 'MMM d, yyyy HH:mm')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Comment Section */}
+      <div className="pt-4 border-t border-slate-200">
+        <div className="flex items-start gap-3">
+          <MessageSquare className="h-5 w-5 text-slate-400 mt-1" />
+          <div className="flex-1 space-y-3">
+            <h4 className="font-medium text-sm">Add Comment</h4>
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment to this deal..."
+              className="min-h-[80px] resize-none"
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <User className="h-3 w-3" />
+                <span>Commenting as {user?.email || 'seller@company.com'}</span>
+              </div>
+              <Button 
+                size="sm" 
+                disabled={!newComment.trim() || isSubmitting}
+                className="gap-1"
+              >
+                <Send className="h-3 w-3" />
+                Add Comment
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper function for status labels
+function getStatusLabel(status: string): string {
+  const statusLabels: Record<string, string> = {
+    'draft': 'Draft',
+    'submitted': 'Submitted',
+    'under_review': 'Under Review',
+    'approved': 'Approved',
+    'revision_requested': 'Revision Requested',
+    'contract_sent': 'Contract Sent',
+    'closed_won': 'Closed Won',
+    'closed_lost': 'Closed Lost'
+  };
+  return statusLabels[status] || status;
 }
 
 // Content-only approval tracker component
@@ -483,7 +759,7 @@ function DealDetailsContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <ActivityFeed deal={deal} dealId={deal.id} />
+              <ActivityFeedContent deal={deal} dealId={deal.id} />
             </CardContent>
           </Card>
 
