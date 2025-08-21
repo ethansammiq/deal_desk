@@ -99,20 +99,7 @@ function DealDetailsContent() {
 
       {/* Financial Summary Card */}
       <Card className="border border-slate-200 shadow-sm bg-white">
-        <CardHeader className="pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-            <div className="flex-1">
-              <CardTitle className="text-xl font-semibold text-slate-900">
-                Financial Summary
-              </CardTitle>
-              <CardDescription className="text-slate-500">
-                Revenue projections and growth analysis for this deal
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <FinancialSummarySection 
           dealTiers={tiers.length > 0 ? tiers : [
             {
