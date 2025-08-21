@@ -302,7 +302,7 @@ export default function DealsPage() {
     },
     {
       accessorKey: "dealInsight",
-      header: "Deal Insight", 
+      header: "Deal Flow", 
       cell: ({ row }) => {
         const deal = row.original;
         // Use backend-calculated flowIntelligence for consistency
