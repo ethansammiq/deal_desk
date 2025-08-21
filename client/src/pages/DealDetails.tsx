@@ -296,7 +296,7 @@ export default function DealDetails() {
                 deal={deal}
                 userRole={userRole}
                 onRevisionRequest={() => setRevisionModalOpen(true)}
-                onApprove={() => approveDeal(deal.id)}
+                onApprove={() => approveDeal.mutate(deal.id)}
                 isUpdatingStatus={isUpdatingStatus}
               />
               
@@ -305,7 +305,7 @@ export default function DealDetails() {
                 dealData={deal}
                 revenueGrowthRate={undefined}
                 grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
-                mode="compact"
+                compact={true}
               />
             </div>
           </div>
