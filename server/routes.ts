@@ -1376,7 +1376,7 @@ async function sendApprovalAssignmentNotifications(dealId: number, approvals: De
         clientAsks: scopingRequest.clientAsks,
         termStartDate: scopingRequest.termStartDate,
         termEndDate: scopingRequest.termEndDate,
-        contractTermMonths: scopingRequest.contractTermMonths,
+        contractTerm: scopingRequest.contractTerm,
         status: "submitted" as const,
         email: scopingRequest.email,
         // Required fields with default values

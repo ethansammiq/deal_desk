@@ -35,7 +35,7 @@ interface BusinessContextFormValues {
   dealStructure?: "tiered" | "flat_commit";
   termStartDate?: Date;
   termEndDate?: Date;
-  contractTermMonths?: string;
+  contractTerm?: string;
   advertiserName?: string;
   agencyName?: string;
   // We need to be compatible with both SubmitDeal and RequestSupport form structures

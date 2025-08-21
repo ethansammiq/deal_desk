@@ -35,7 +35,7 @@ export interface AgencyData {
 
 // Form data processing interfaces
 export interface FormDataWithNumbers {
-  contractTermMonths?: string | number;
+  contractTerm?: string | number;
   growthAmbition?: string | number;
   [key: string]: any;
 }

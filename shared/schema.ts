@@ -74,7 +74,7 @@ export const dealScopingRequests = pgTable("deal_scoping_requests", {
   region: text("region"),
   dealType: text("deal_type"),
   dealStructure: text("deal_structure"),
-  contractTermMonths: integer("contract_term_months"),
+  contractTerm: integer("contract_term"),
   termStartDate: text("term_start_date"),
   termEndDate: text("term_end_date"),
   growthOpportunityMIQ: text("growth_opportunity_miq").notNull(),
@@ -98,7 +98,7 @@ export const insertDealScopingRequestSchema = createInsertSchema(dealScopingRequ
     region: z.string().optional(),
     dealType: z.string().optional(),
     dealStructure: z.string().optional(),
-    contractTermMonths: z.number().optional(),
+    contractTerm: z.number().optional(),
     termStartDate: z.string().optional(),
     termEndDate: z.string().optional(),
   }).passthrough(); // Allow additional fields from shared components
@@ -199,9 +199,6 @@ export const deals = pgTable("deals", {
   
   // RequestSupport specific fields
   growthAmbition: doublePrecision("growth_ambition"), // Used in RequestSupport form
-  
-  // Contract term input field (months)
-  contractTermMonths: integer("contract_term_months"),
   
   status: text("status").notNull().default("submitted"), // Phase 8: Enhanced workflow with draft support
   
@@ -351,7 +348,7 @@ export const insertDealSchema = createInsertSchema(deals)
     termEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional(),
     
     // Contract term validation
-    contractTermMonths: z.number().positive("Contract term must be positive").optional(),
+    contractTerm: z.number().positive("Contract term must be positive").optional(),
     
     // Business Context validations
     growthOpportunityMIQ: z.string().optional(),

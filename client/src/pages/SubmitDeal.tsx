@@ -134,7 +134,7 @@ const dealFormSchema = z.object({
   
   // Optional fields that may come from shared components
   // Note: growthAmbition removed - only exists in scoping form
-  contractTermMonths: z.number().optional(),
+  contractTerm: z.number().optional(),
   
   // Essential financial data for calculations
   annualRevenue: z.coerce.number().positive("Annual revenue must be positive").optional(),
@@ -205,7 +205,7 @@ export default function SubmitDeal() {
       clientAsks: "",
       
       // Note: growthAmbition field removed - only exists in scoping form
-      contractTermMonths: 12,
+      contractTerm: 12,
 
       // Client/Agency information
       salesChannel: undefined,
@@ -293,7 +293,7 @@ export default function SubmitDeal() {
         growthOpportunityClient: "",
         clientAsks: "",
         // growthAmbition field excluded - only in scoping form
-        contractTermMonths: 12,
+        contractTerm: 12,
         salesChannel: undefined,
         region: undefined,
         advertiserName: "",
@@ -405,7 +405,7 @@ export default function SubmitDeal() {
             
             // Optional RequestSupport fields
             growthAmbition: dealData.growthAmbition || 0,
-            contractTermMonths: dealData.contractTermMonths || 12,
+            contractTerm: dealData.contractTerm || 12,
 
             // Client/Agency information
             salesChannel: dealData.salesChannel,
@@ -511,7 +511,7 @@ export default function SubmitDeal() {
         agencyName: String(form.watch("agencyName") || ""),
         dealStructure: dealStructureType,
         annualRevenue: Number(form.watch("annualRevenue") || 0),
-        contractTermMonths: String(form.watch("contractTermMonths") || ""),
+        contractTerm: String(form.watch("contractTerm") || ""),
         termStartDate: String(form.watch("termStartDate") || ""),
         termEndDate: String(form.watch("termEndDate") || ""),
         businessSummary: String(form.watch("businessSummary") || "")
@@ -1137,7 +1137,7 @@ export default function SubmitDeal() {
                     dealTiers={dealTiers}
                     selectedIncentives={[]} // Placeholder - incentives are embedded in dealTiers
                     tierIncentives={[]} // Placeholder - tier-specific incentives 
-                    contractTermMonths={calculateContractTerm(form.watch("termStartDate"), form.watch("termEndDate"))}
+                    contractTerm={calculateContractTerm(form.watch("termStartDate"), form.watch("termEndDate"))}
                     currentApprover={null}
                     isSubmitting={submitDealMutation.isPending}
                     onSubmit={form.handleSubmit(onSubmit)}

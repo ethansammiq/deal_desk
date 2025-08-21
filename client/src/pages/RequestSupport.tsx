@@ -82,7 +82,7 @@ export default function RequestSupport() {
       agencyName: "",
       dealType: undefined,
       dealStructure: undefined,
-      contractTermMonths: 12,
+      contractTerm: 12,
       termStartDate: undefined,
       termEndDate: undefined,
       growthAmbition: 1000000,

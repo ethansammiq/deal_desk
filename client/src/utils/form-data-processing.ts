@@ -14,7 +14,7 @@ export function processFormDataForSubmission(data: FormDataWithNumbers): any {
   return {
     ...data,
     // Convert string numbers to actual numbers for backend validation
-    contractTermMonths: data.contractTermMonths ? Number(data.contractTermMonths) : undefined,
+    contractTerm: data.contractTerm ? Number(data.contractTerm) : undefined,
     growthAmbition: data.growthAmbition ? Number(data.growthAmbition) : undefined,
   };
 }
@@ -78,7 +78,7 @@ export function createPreFillMapping(scopingData: any): any {
     region: scopingData.region,
     dealType: scopingData.dealType,
     dealStructure: scopingData.dealStructure,
-    contractTermMonths: scopingData.contractTermMonths,
+    contractTerm: scopingData.contractTerm,
     termStartDate: scopingData.termStartDate,
     termEndDate: scopingData.termEndDate,
     advertiserName: scopingData.advertiserName || "",
@@ -109,7 +109,7 @@ export function processDealSubmissionData(
     ...processedData,
     dealName: dealName,
     // Convert contract term with default fallback
-    contractTermMonths: processedData.contractTermMonths ? Number(processedData.contractTermMonths) : 12,
+    contractTerm: processedData.contractTerm ? Number(processedData.contractTerm) : 12,
     // Financial data now managed through tier records - removed deprecated fields
     // Only include dealTiers if the structure is tiered
     ...(dealStructureType === "tiered" ? { dealTiers: dealTiers } : {}),

@@ -14,7 +14,7 @@ export interface DealFormData {
   
   // Deal Structure  
   dealStructure?: string;
-  contractTermMonths?: number;
+  contractTerm?: number;
   
   // Financial Information
   annualRevenue?: number;
@@ -67,7 +67,7 @@ const SUBMIT_DEAL_STEPS: FormStep[] = [
       'region',          // ClientInfoSection
       'dealType',        // DealDetailsSection
       'dealStructure',   // DealDetailsSection
-      'contractTermMonths', // DealDetailsSection
+      'contractTerm', // DealDetailsSection
       'termStartDate',   // DealDetailsSection
       'termEndDate'      // DealDetailsSection
     ]
@@ -113,7 +113,7 @@ const REQUEST_SUPPORT_STEPS: FormStep[] = [
       'region',             // ClientInfoSection
       'dealType',           // DealDetailsSection
       'dealStructure',      // DealDetailsSection
-      'contractTermMonths', // DealDetailsSection
+      'contractTerm', // DealDetailsSection
       'termStartDate',      // DealDetailsSection
       'termEndDate'         // DealDetailsSection
     ]

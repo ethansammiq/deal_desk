@@ -38,7 +38,7 @@ interface ReviewSubmitSectionProps {
   dealTiers: DealTier[];
   selectedIncentives: any[]; // Legacy prop - not used (kept for compatibility)
   tierIncentives: any[]; // Legacy prop - not used (kept for compatibility)
-  contractTermMonths: number;
+  contractTerm: number;
   currentApprover: ApprovalRule | null;
   isSubmitting: boolean;
   onSubmit: () => void;
@@ -53,7 +53,7 @@ export function ReviewSubmitSection({
   dealTiers,
   selectedIncentives,
   tierIncentives,
-  contractTermMonths,
+  contractTerm,
   currentApprover,
   isSubmitting,
   onSubmit,
@@ -93,7 +93,7 @@ export function ReviewSubmitSection({
         dealValue={totalDealValue}
         dealType={formValues.dealType || "grow"}
         salesChannel={salesChannel}
-        contractTerm={contractTermMonths}
+        contractTerm={contractTerm}
         onChange={(approverLevel, approver) => {
           // Pass approval information to parent if needed
           // This maintains compatibility with existing approval tracking

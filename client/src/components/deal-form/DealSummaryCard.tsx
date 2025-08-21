@@ -71,10 +71,10 @@ export function DealSummaryCard({ formValues, dealStructureType, contractTerm }:
                 <p className="text-base">{new Date(formValues.termEndDate).toLocaleDateString()}</p>
               </div>
             )}
-            {formValues.contractTermMonths && (
+            {formValues.contractTerm && (
               <div>
                 <label className="text-sm font-medium text-gray-700">Contract Term (Months)</label>
-                <p className="text-base">{formValues.contractTermMonths}</p>
+                <p className="text-base">{formValues.contractTerm}</p>
               </div>
             )}
           </div>

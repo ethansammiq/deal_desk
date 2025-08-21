@@ -982,7 +982,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-04-01",
         termEndDate: "2026-03-31",
-        contractTermMonths: 12,
+        contractTerm: 12,
         // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
@@ -1000,7 +1000,7 @@ export class MemStorage implements IStorage {
         dealStructure: "tiered",
         termStartDate: "2025-05-01",
         termEndDate: "2026-04-30",
-        contractTermMonths: 12,
+        contractTerm: 12,
         // Financial data now handled through tier records
         priority: "high" as const,
         isRevision: false,
@@ -1018,7 +1018,7 @@ export class MemStorage implements IStorage {
         dealStructure: "flat_commit",
         termStartDate: "2025-03-01",
         termEndDate: "2026-02-28",
-        contractTermMonths: 12,
+        contractTerm: 12,
         // Financial data now handled through tier records
         priority: "medium" as const,
         isRevision: false,
@@ -1265,7 +1265,7 @@ export class MemStorage implements IStorage {
         clientAsks: "Advanced audience segmentation and real-time performance optimization",
         termStartDate: "2025-03-01",
         termEndDate: "2026-02-28",
-        contractTermMonths: 12,
+        contractTerm: 12,
         email: "partnerships@amazon.com",
         status: "scoping"
       },
@@ -1282,7 +1282,7 @@ export class MemStorage implements IStorage {
         clientAsks: "Multi-market campaign optimization and competitive intelligence",
         termStartDate: "2025-04-01",
         termEndDate: "2026-03-31",
-        contractTermMonths: 12,
+        contractTerm: 12,
         email: "growth@netflix.com",
         status: "scoping"
       },
@@ -1299,7 +1299,7 @@ export class MemStorage implements IStorage {
         clientAsks: "Custom dashboard for content performance and family viewing patterns",
         termStartDate: "2025-05-01",
         termEndDate: "2026-04-30", 
-        contractTermMonths: 12,
+        contractTerm: 12,
         email: "analytics@disney.com",
         status: "scoping"
       }

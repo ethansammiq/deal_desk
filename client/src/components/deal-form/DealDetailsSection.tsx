@@ -31,7 +31,7 @@ interface DealDetailsFormValues {
   // Basic deal fields
   dealType?: "custom" | "grow" | "protect";
   dealStructure?: "tiered" | "flat_commit";
-  contractTermMonths?: string | number;
+  contractTerm?: string | number;
   termStartDate?: Date | string | null;
   termEndDate?: Date | string | null;
   businessSummary?: string;
@@ -115,7 +115,7 @@ export function DealDetailsSection({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
-            name="contractTermMonths"
+            name="contractTerm"
             render={({ field }) => {
               // Auto-calculate contract term when dates change
               const startDate = form.watch("termStartDate");
@@ -256,10 +256,10 @@ export function DealDetailsSection({
                       field.onChange(dateString);
                       
                       // Auto-update end date if contract term is set
-                      const contractTermMonths = parseInt(String(form.getValues("contractTermMonths")) || "0");
-                      if (dateString && contractTermMonths > 0) {
+                      const contractTerm = parseInt(String(form.getValues("contractTerm")) || "0");
+                      if (dateString && contractTerm > 0) {
                         const startDate = new Date(dateString);
-                        startDate.setMonth(startDate.getMonth() + contractTermMonths);
+                        startDate.setMonth(startDate.getMonth() + contractTerm);
                         form.setValue("termEndDate", startDate.toISOString().split('T')[0]);
                       }
                     }}
@@ -295,7 +295,7 @@ export function DealDetailsSection({
                         const start = new Date(startDate);
                         const end = new Date(dateString);
                         const monthsDiff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-                        form.setValue("contractTermMonths", monthsDiff.toString());
+                        form.setValue("contractTerm", monthsDiff.toString());
                       }
                     }}
                   />

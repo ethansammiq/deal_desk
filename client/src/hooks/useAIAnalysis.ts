@@ -21,7 +21,7 @@ interface DealData {
   agencyName?: string;
   dealStructure?: string;
   annualRevenue?: number;
-  contractTermMonths?: string;
+  contractTerm?: string;
   termStartDate?: string;
   termEndDate?: string;
   businessSummary?: string;
