@@ -2,15 +2,7 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { CardContent } from "@/components/ui/card";
 import { FormSectionHeader } from "@/components/ui/form-style-guide";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FormFieldWithTooltip } from "@/components/ui/form-components";
 import {
   FormField,
   FormItem,
@@ -19,6 +11,8 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // Interface for business context form values - compatible with both forms
 interface BusinessContextFormValues {
@@ -60,106 +54,52 @@ export function BusinessContextSection({ form, variant = "submitDeal" }: Busines
         />
         <div className="space-y-6">
           {/* Growth Ambition */}
-          <FormField
-            control={form.control}
+          <FormFieldWithTooltip
+            form={form}
             name="growthAmbition"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  2025 Growth Ambition ($) <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="1000000"
-                    placeholder="Enter amount (minimum $1M)"
-                    {...field}
-                    onChange={(e) =>
-                      field.onChange(parseFloat(e.target.value))
-                    }
-                  />
-                </FormControl>
-                <FormDescription>
-                  Growth ambition must be at least $1M for partnership team review.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="2025 Growth Ambition ($)"
+            type="number"
+            min={1000000}
+            placeholder="Enter amount (minimum $1M)"
+            required
+            tooltip="Minimum $1M growth target required for partnership team review"
+            description="Growth ambition must be at least $1M for partnership team review."
           />
 
           {/* Growth Opportunity MIQ */}
-          <FormField
-            control={form.control}
+          <FormFieldWithTooltip
+            form={form}
             name="growthOpportunityMIQ"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Growth Opportunity (MIQ) <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe the pathway to growth from our perspective..."
-                    className="resize-none"
-                    rows={4}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Explain how this opportunity represents growth potential for our business and what we can offer to drive success.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Growth Opportunity (MIQ)"
+            type="textarea"
+            placeholder="Describe the pathway to growth from our perspective..."
+            required
+            tooltip="Explain the specific growth pathway and how we can contribute to success"
+            description="Explain how this opportunity represents growth potential for our business and what we can offer to drive success."
           />
 
           {/* Growth Opportunity Client */}
-          <FormField
-            control={form.control}
+          <FormFieldWithTooltip
+            form={form}
             name="growthOpportunityClient"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Growth Opportunity (Client) <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe the pathway to growth from the client's perspective..."
-                    className="resize-none"
-                    rows={4}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Explain how this partnership will drive growth for the client's business and help them achieve their goals.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Growth Opportunity (Client)"
+            type="textarea"
+            placeholder="Describe the pathway to growth from the client's perspective..."
+            required
+            tooltip="Focus on client benefits, success metrics, and partnership value"
+            description="Explain how this partnership will drive growth for the client's business and help them achieve their goals."
           />
 
           {/* Client Asks */}
-          <FormField
-            control={form.control}
+          <FormFieldWithTooltip
+            form={form}
             name="clientAsks"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Client Asks <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="What specific requirements or needs does the client have..."
-                    className="resize-none"
-                    rows={4}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Detail the client's specific requirements, expectations, and any unique needs for this partnership.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Client Asks"
+            type="textarea"
+            placeholder="What specific requirements or needs does the client have..."
+            required
+            tooltip="Document specific client requirements, expectations, and resource requests"
+            description="Detail the client's specific requirements, expectations, and any unique needs for this partnership."
           />
         </div>
       </div>
@@ -178,31 +118,16 @@ export function BusinessContextSection({ form, variant = "submitDeal" }: Busines
         {/* Request Support specific fields */}
         {isRequestSupport && (
           <>
-            <FormField
-              control={form.control}
+            <FormFieldWithTooltip
+              form={form}
               name="growthAmbition"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    2025 Growth Ambition ($) <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1000000"
-                      placeholder="Enter amount (minimum $1M)"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Growth ambition must be at least $1M for partnership team review.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="2025 Growth Ambition ($)"
+              type="number"
+              min={1000000}
+              placeholder="Enter amount (minimum $1M)"
+              required
+              tooltip="Minimum $1M growth target required for partnership team review"
+              description="Growth ambition must be at least $1M for partnership team review."
             />
           </>
         )}

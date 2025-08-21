@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { FormFieldWithTooltip, FormSelectField } from "@/components/ui/form-components";
 
 // Import shared type definitions
 import { AdvertiserData, AgencyData } from "@shared/types";
@@ -47,92 +47,54 @@ export function ClientInfoSection({
     <div className="space-y-6">
       {/* Email field (optional) */}
       {includeEmail && (
-        <FormField
-          control={form.control}
+        <FormFieldWithTooltip
+          form={form}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{emailLabel}</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder={emailPlaceholder}
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={emailLabel}
+          type="email"
+          placeholder={emailPlaceholder}
+          tooltip="Contact email address for deal communications"
         />
       )}
 
       {/* Region and Sales Channel */}
       <div className={gridClass}>
-        <FormField
-          control={form.control}
+        <FormSelectField
+          form={form}
           name="region"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Region <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value || ""}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select region" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="northeast">Northeast</SelectItem>
-                  <SelectItem value="midwest">Midwest</SelectItem>
-                  <SelectItem value="midatlantic">Mid-Atlantic</SelectItem>
-                  <SelectItem value="south">South</SelectItem>
-                  <SelectItem value="west">West</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Region"
+          placeholder="Select region"
+          required
+          tooltip="Geographic region for this client relationship"
+          options={[
+            { value: "northeast", label: "Northeast" },
+            { value: "midwest", label: "Midwest" },
+            { value: "midatlantic", label: "Mid-Atlantic" },
+            { value: "south", label: "South" },
+            { value: "west", label: "West" }
+          ]}
         />
 
-        <FormField
-          control={form.control}
+        <FormSelectField
+          form={form}
           name="salesChannel"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Sales Channel <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Reset related fields when changing sales channel
-                  if (value === "client_direct" || value === "Client Direct") {
-                    form.setValue("agencyName", "");
-                  } else {
-                    form.setValue("advertiserName", "");
-                  }
-                }}
-                value={field.value || ""}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select sales channel" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="client_direct">Client Direct</SelectItem>
-                  <SelectItem value="holding_company">Holding Company</SelectItem>
-                  <SelectItem value="independent_agency">Independent Agency</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Sales Channel"
+          placeholder="Select sales channel"
+          required
+          tooltip="How this deal will be managed - direct with client or through agency"
+          options={[
+            { value: "client_direct", label: "Client Direct" },
+            { value: "holding_company", label: "Holding Company" },
+            { value: "independent_agency", label: "Independent Agency" }
+          ]}
+          onValueChange={(value) => {
+            // Reset related fields when changing sales channel
+            if (value === "client_direct" || value === "Client Direct") {
+              form.setValue("agencyName", "");
+            } else {
+              form.setValue("advertiserName", "");
+            }
+          }}
         />
       </div>
 

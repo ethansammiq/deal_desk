@@ -17,13 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 // Enhanced FormField with tooltip support
 interface FormFieldWithTooltipProps<TFieldValues extends FieldValues = FieldValues> {
@@ -64,18 +58,7 @@ export function FormFieldWithTooltip<TFieldValues extends FieldValues = FieldVal
               {label}
               {required && <span className="text-red-500">*</span>}
             </FormLabel>
-            {tooltip && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">{tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+            {tooltip && <InfoTooltip content={tooltip} />}
           </div>
           <FormControl>
             {type === "textarea" ? (
@@ -163,18 +146,7 @@ export function FormSelectField<TFieldValues extends FieldValues = FieldValues>(
               {label}
               {required && <span className="text-red-500">*</span>}
             </FormLabel>
-            {tooltip && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">{tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+            {tooltip && <InfoTooltip content={tooltip} />}
           </div>
           <Select
             onValueChange={(value) => {
