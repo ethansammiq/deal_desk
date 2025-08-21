@@ -1,7 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
@@ -25,7 +24,6 @@ function DealDetailsContent() {
   const { data: user } = useCurrentUser();
   const [revisionModalOpen, setRevisionModalOpen] = useState(false);
   const { approveDeal, isUpdatingStatus } = useDealActions();
-  const [activeTab, setActiveTab] = useState('overview');
   
   // Get all consolidated data from provider
   const {
@@ -79,178 +77,132 @@ function DealDetailsContent() {
         bottleneckCount={2}
       />
 
-      {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <FileCheck className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="approvals" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Approvals
-            </TabsTrigger>
-            <TabsTrigger value="financials" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Financials
-            </TabsTrigger>
-            <TabsTrigger value="ai-insights" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              AI Insights
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Activity
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Tab Content */}
-        <div className="px-6 py-6">
-          <TabsContent value="overview" className="space-y-6 mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Column 1: Deal Metadata */}
-              <div className="space-y-6">
-                {/* Deal Information Card */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Deal Information
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Reference:</span>
-                      <span className="font-medium">#{deal.referenceNumber}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-medium">{deal.dealType}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Structure:</span>
-                      <span className="font-medium capitalize">{deal.dealStructure?.replace('_', ' ')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Created:</span>
-                      <span className="font-medium">
-                        {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Client:</span>
-                      <span className="font-medium">{deal.dealName.split(' ')[0]}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Status Card */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    Current Status
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                        deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                        deal.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {deal.status?.replace('_', ' ')}
-                      </span>
-                    </div>
-                    {deal.lastRevisedAt && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Last Revised:</span>
-                        <span className="font-medium">
-                          {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Column 2: Actions & Next Steps */}
-              <div className="space-y-6">
-                {/* Role-Based Actions */}
-                <RoleBasedActions
-                  deal={deal}
-                  userRole={userRole}
-                  onApprove={() => approveDeal.mutate({ dealId: deal.id })}
-                  onEdit={() => navigate(`/deals/${deal.id}/edit`)}
-                  onRequestRevision={() => setRevisionModalOpen(true)}
-                  onResubmit={() => resubmitDeal()}
-                  isLoading={isUpdatingStatus}
-                />
-
-                {/* Next Steps Card */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <ArrowRight className="h-5 w-5" />
-                    Next Steps
-                  </h3>
-                  <div className="space-y-3">
-                    {deal.status === 'submitted' && (
-                      <p className="text-sm text-gray-600">
-                        Your deal is awaiting department review. You'll be notified of any updates.
-                      </p>
-                    )}
-                    {deal.status === 'under_review' && (
-                      <p className="text-sm text-gray-600">
-                        Your deal is currently under review by department teams and approvers.
-                      </p>
-                    )}
-                    {deal.status === 'revision_requested' && (
-                      <p className="text-sm text-gray-600">
-                        Please review the feedback and edit your deal accordingly, then resubmit.
-                      </p>
-                    )}
-                    {deal.status === 'approved' && (
-                      <p className="text-sm text-gray-600">
-                        Congratulations! Your deal has been approved and is ready for execution.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="approvals" className="mt-0">
-            <div className="space-y-6">
-              <ApprovalTracker 
-                dealId={deal.id}
-                dealName={deal.dealName}
+      {/* Consolidated Single-Page Layout */}
+      <div className="px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* LEFT COLUMN - Financial + AI + Approvals */}
+          <div className="space-y-8">
+            {/* Financial Performance */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Financial Performance
+              </h2>
+              <EnhancedFinancialCard 
+                tiers={tiers}
+                dealStructure={deal.dealStructure || 'flat_commit'}
               />
             </div>
-          </TabsContent>
 
-          <TabsContent value="financials" className="mt-0">
-            <EnhancedFinancialCard 
-              tiers={tiers}
-              dealStructure={deal.dealStructure || 'flat_commit'}
-            />
-          </TabsContent>
-
-          <TabsContent value="ai-insights" className="mt-0">
-            <div className="space-y-6">
+            {/* AI Assessment & Insights */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                AI Assessment & Insights
+              </h2>
               <DealGenieAssessment 
                 dealData={deal}
                 compact={false}
               />
             </div>
-          </TabsContent>
 
-          <TabsContent value="activity" className="mt-0">
-            <ActivityFeed deal={deal} dealId={deal.id} />
-          </TabsContent>
+            {/* Approval Workflow */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Approval Workflow
+              </h2>
+              <ApprovalTracker 
+                dealId={deal.id}
+                dealName={deal.dealName}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN - Activity + Metadata + Actions */}
+          <div className="space-y-8">
+            {/* Activity Feed */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Activity & Communication
+              </h2>
+              <ActivityFeed deal={deal} dealId={deal.id} />
+            </div>
+
+            {/* Deal Metadata */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Deal Information
+              </h2>
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Reference:</span>
+                    <span className="font-medium">#{deal.referenceNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Type:</span>
+                    <span className="font-medium">{deal.dealType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Structure:</span>
+                    <span className="font-medium capitalize">{deal.dealStructure?.replace('_', ' ')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Created:</span>
+                    <span className="font-medium">
+                      {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Client:</span>
+                    <span className="font-medium">{deal.dealName.split(' ')[0]}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Status:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                      deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                      deal.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {deal.status?.replace('_', ' ')}
+                    </span>
+                  </div>
+                  {deal.lastRevisedAt && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Last Revised:</span>
+                      <span className="font-medium">
+                        {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Role-Based Actions */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FileCheck className="h-5 w-5" />
+                Actions
+              </h2>
+              <RoleBasedActions
+                deal={deal}
+                userRole={userRole}
+                onApprove={() => approveDeal.mutate({ dealId: deal.id })}
+                onEdit={() => navigate(`/deals/${deal.id}/edit`)}
+                onRequestRevision={() => setRevisionModalOpen(true)}
+                onResubmit={() => resubmitDeal()}
+                isLoading={isUpdatingStatus}
+              />
+            </div>
+          </div>
         </div>
-      </Tabs>
+      </div>
 
       {/* Revision Request Modal */}
       <RevisionRequestModal
