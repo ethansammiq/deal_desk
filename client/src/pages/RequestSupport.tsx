@@ -116,15 +116,18 @@ export default function RequestSupport() {
     (targetStep) => formValidation.canAdvanceToStep(targetStep)
   );
 
-  // Create deal scoping request mutation
+  // Create scoping request as deal with status="scoping"
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
-      console.log("Submitting deal scoping request:", data);
+      console.log("Submitting scoping request as deal:", data);
 
       // ✅ REFACTORED: Using shared data processing utility
       const formData = processDealScopingData(data);
 
-      const res = await fetch("/api/deal-scoping-requests", {
+      // Set status to "scoping" for single table approach
+      formData.status = "scoping";
+
+      const res = await fetch("/api/deals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -138,15 +141,16 @@ export default function RequestSupport() {
 
       return await res.json();
     },
-    onSuccess: (scopingRequest) => {
+    onSuccess: (response) => {
+      const { deal } = response;
       toast({
-        title: "Request Submitted",
-        description: "Your deal scoping request has been submitted successfully. Would you like to convert it to a full deal submission?",
+        title: "Scoping Request Submitted",
+        description: "Your scoping request has been submitted successfully. You can convert it to a full deal submission when ready.",
         action: (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/submit-deal?from-scoping=${scopingRequest.id}`)}
+            onClick={() => navigate(`/submit-deal?from-scoping=${deal.id}`)}
           >
             Convert to Deal
           </Button>
@@ -157,9 +161,9 @@ export default function RequestSupport() {
       form.reset();
       navigate("/dashboard");
 
-      // Clear cached data
+      // Clear cached data - now invalidate deals cache since scoping requests are stored as deals
       queryClient.invalidateQueries({
-        queryKey: ["/api/deal-scoping-requests"],
+        queryKey: ["/api/deals"],
       });
     },
     onError: (error) => {
