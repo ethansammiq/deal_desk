@@ -296,7 +296,7 @@ export default function DealDetails() {
               />
             </div>
 
-            {/* Column 3: Actions & AI */}
+            {/* Column 3: Actions & History */}
             <div className="space-y-6">
               <ActionCards 
                 deal={deal}
@@ -306,7 +306,8 @@ export default function DealDetails() {
                 isUpdatingStatus={isUpdatingStatus}
               />
               
-
+              {/* Deal History */}
+              <DealHistory dealId={deal.id} />
             </div>
           </div>
           );

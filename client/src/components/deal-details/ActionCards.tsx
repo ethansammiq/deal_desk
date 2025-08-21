@@ -110,48 +110,7 @@ export function ActionCards({
         </CardContent>
       </Card>
 
-      {/* Deal Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4" />
-            Deal Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className={`p-3 rounded-lg border ${getStatusColor(deal.status)}`}>
-            <div className="flex items-center justify-between">
-              <span className="font-medium capitalize">
-                {deal.status.replace('_', ' ')}
-              </span>
-              <Badge variant="secondary" className="text-xs">
-                Stage 2
-              </Badge>
-            </div>
-            {deal.createdAt && (
-              <p className="text-xs mt-1 opacity-75">
-                Created {format(new Date(deal.createdAt), 'MMM dd, yyyy')}
-              </p>
-            )}
-          </div>
-          
-          {deal.status === 'revision_requested' && deal.revisionReason && (
-            <div className="p-3 rounded-lg border border-orange-200 bg-orange-50">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-medium text-orange-800 mb-1">
-                    Revision Required
-                  </p>
-                  <p className="text-xs text-orange-700">
-                    {deal.revisionReason}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
 
       {/* Timeline Summary */}
       <Card>
@@ -202,37 +161,7 @@ export function ActionCards({
         </CardContent>
       </Card>
 
-      {/* Activity Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <MessageSquare className="h-4 w-4" />
-            Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Comments</span>
-              <span className="font-medium">0</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Revisions</span>
-              <span className="font-medium">
-                {deal.revisionCount || 0}
-              </span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Stage</span>
-              <Badge variant="outline" className="text-xs h-5">
-                2
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
