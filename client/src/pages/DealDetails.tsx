@@ -6,6 +6,7 @@ import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
+import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
 import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
@@ -59,38 +60,31 @@ function DealDetailsContent() {
   }
 
   return (
-    <div className="space-y-0">
-      {/* Navigation Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <Button onClick={handleGoBack} variant="outline" size="sm">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Analytics
-        </Button>
-      </div>
+    <div className="min-h-screen bg-white">
 
       {/* Deal Summary Bar - Horizontal Layout */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-white">
+      <div className="px-6 py-6 border-b border-gray-200 bg-white">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Deal Title & Client */}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{deal.dealName}</h1>
-            <p className="text-sm text-gray-600 mt-1">Client: {deal.dealName.split(' ')[0]}</p>
+            <h1 className="text-2xl font-bold text-slate-900">{deal.dealName}</h1>
+            <p className="text-sm text-slate-500 mt-1">Client: {deal.dealName.split(' ')[0]}</p>
           </div>
           
           {/* Reference & Type */}
           <div>
-            <p className="text-sm font-medium text-gray-900">#{deal.referenceNumber}</p>
-            <p className="text-sm text-gray-600 mt-1">{deal.dealType} • {deal.dealStructure?.replace('_', ' ')}</p>
+            <p className="text-sm font-medium text-slate-900">#{deal.referenceNumber}</p>
+            <p className="text-sm text-slate-500 mt-1">{deal.dealType} • {deal.dealStructure?.replace('_', ' ')}</p>
           </div>
           
           {/* Timeline */}
           <div>
-            <p className="text-sm font-medium text-gray-900">Created</p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm font-medium text-slate-900">Created</p>
+            <p className="text-sm text-slate-500 mt-1">
               {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
             </p>
             {deal.lastRevisedAt && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Revised: {format(new Date(deal.lastRevisedAt), 'MMM dd')}
               </p>
             )}
@@ -104,7 +98,7 @@ function DealDetailsContent() {
               deal.status === 'approved' ? 'bg-green-100 text-green-800' :
               deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
               deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
-              'bg-gray-100 text-gray-800'
+              'bg-slate-100 text-slate-800'
             }`}>
               {deal.status?.replace('_', ' ')}
             </span>
@@ -113,7 +107,11 @@ function DealDetailsContent() {
       </div>
 
       {/* Financial Structure - Full Width */}
-      <div className="px-6 py-6 border-b border-gray-200">
+      <div className="px-6 py-6 border-b border-gray-200 space-y-6">
+        <FormSectionHeader
+          title="Financial Summary"
+          description="Revenue projections and growth analysis for this deal"
+        />
         <FinancialSummarySection 
           dealTiers={tiers.length > 0 ? tiers : [
             {
@@ -122,8 +120,8 @@ function DealDetailsContent() {
               annualRevenue: 6000000, // Tesla's revenue from fallback
               annualGrossMargin: 0.22, // Tesla's margin from fallback
               incentives: [],
-              createdAt: deal.createdAt,
-              updatedAt: deal.updatedAt
+              createdAt: deal.createdAt || new Date(),
+              updatedAt: deal.updatedAt || new Date()
             }
           ]}
           salesChannel="independent_agency"
@@ -139,10 +137,10 @@ function DealDetailsContent() {
           <div className="space-y-8">
             {/* Approval Workflow */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Approval Workflow
-              </h2>
+              <FormSectionHeader
+                title="Approval Workflow"
+                description="Current approval status and next steps"
+              />
               <ApprovalTracker 
                 dealId={deal.id}
                 dealName={deal.dealName}
@@ -154,10 +152,10 @@ function DealDetailsContent() {
           <div className="space-y-8">
             {/* Activity Feed */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Activity & Communication
-              </h2>
+              <FormSectionHeader
+                title="Activity & Communication"
+                description="Comments, updates, and collaboration history"
+              />
               <ActivityFeed deal={deal} dealId={deal.id} />
             </div>
 
