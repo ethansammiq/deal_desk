@@ -2,48 +2,64 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, AlertTriangle, Users } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, Users, ChevronRight } from "lucide-react";
 
 interface ApprovalSummaryProps {
   dealId: number;
   onViewDetails?: () => void;
+  compact?: boolean; // New prop to enable compact mode
 }
 
-export function ApprovalSummary({ dealId, onViewDetails }: ApprovalSummaryProps) {
-  const { data: approvalStatus } = useQuery({
-    queryKey: ['/api/deals', dealId, 'approval-status'],
+export function ApprovalSummary({ dealId, onViewDetails, compact = false }: ApprovalSummaryProps) {
+  // Unified data fetching - consolidates both API calls
+  const { data: consolidatedApprovalData, isLoading, error } = useQuery({
+    queryKey: ['/api/deals', dealId, 'consolidated-approvals'],
     queryFn: async () => {
-      const response = await fetch(`/api/deals/${dealId}/approval-status`);
-      if (!response.ok) throw new Error('Failed to fetch approval status');
-      return response.json();
+      const [statusResponse, stateResponse] = await Promise.all([
+        fetch(`/api/deals/${dealId}/approval-status`),
+        fetch(`/api/deals/${dealId}/approval-state`)
+      ]);
+      
+      const approvalStatus = statusResponse.ok ? await statusResponse.json() : { approvals: [] };
+      const approvalState = stateResponse.ok ? await stateResponse.json() : {};
+      
+      return { approvalStatus, approvalState };
     },
     refetchInterval: 30000,
     enabled: !!dealId
   });
 
-  const { data: approvalState } = useQuery({
-    queryKey: ['/api/deals', dealId, 'approval-state'],
-    refetchInterval: 30000,
-    enabled: !!dealId
-  });
-
-  if (!approvalStatus?.approvals) {
+  // Loading state
+  if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center text-gray-500">
-          No approval information available
+      <Card className={compact ? "h-32" : ""}>
+        <CardContent className="p-4 flex items-center justify-center">
+          <Clock className="h-4 w-4 animate-spin mr-2" />
+          <span className="text-sm text-gray-500">Loading approvals...</span>
         </CardContent>
       </Card>
     );
   }
 
-  const approvals = approvalStatus.approvals;
+  // Error or no data state
+  if (error || !consolidatedApprovalData?.approvalStatus?.approvals) {
+    return (
+      <Card className={compact ? "h-32" : ""}>
+        <CardContent className="p-4 text-center text-gray-500">
+          <Users className="h-6 w-6 mx-auto mb-2 opacity-50" />
+          <div className="text-sm">No approval information available</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const approvals = consolidatedApprovalData.approvalStatus.approvals;
   const totalApprovals = approvals.length;
   const approvedCount = approvals.filter((a: any) => a.status === 'approved').length;
   const pendingCount = approvals.filter((a: any) => a.status === 'pending').length;
   const revisionCount = approvals.filter((a: any) => a.status === 'revision_requested').length;
 
-  // Calculate bottlenecks (pending > 1 day)
+  // Enhanced bottleneck calculation
   const now = new Date();
   const bottlenecks = approvals
     .filter((approval: any) => approval.status === 'pending')
@@ -59,15 +75,59 @@ export function ApprovalSummary({ dealId, onViewDetails }: ApprovalSummaryProps)
     return Math.round((approvedCount / totalApprovals) * 100);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'revision_requested': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const getStatusIndicator = (count: number, total: number, type: 'approved' | 'pending' | 'revision') => {
+    const colors = {
+      approved: 'text-green-600',
+      pending: 'text-yellow-600', 
+      revision: 'text-red-600'
+    };
+    return count > 0 ? `${count}` : '0';
   };
 
+  // Compact mode - streamlined view
+  if (compact) {
+    return (
+      <Card className="h-32">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-gray-600" />
+              <span className="text-sm font-medium">Approvals</span>
+            </div>
+            {bottlenecks.length > 0 && (
+              <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                {bottlenecks.length} stuck
+              </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="text-xl font-bold text-green-600">{approvedCount}</div>
+              <div className="text-xl font-bold text-yellow-600">{pendingCount}</div>
+              {revisionCount > 0 && (
+                <div className="text-xl font-bold text-red-600">{revisionCount}</div>
+              )}
+            </div>
+            
+            <div className="text-right">
+              <div className="text-sm font-medium">{getProgressPercentage()}%</div>
+              <div className="text-xs text-gray-500">complete</div>
+            </div>
+          </div>
+          
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div 
+              className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${getProgressPercentage()}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full mode - enhanced original view
   return (
     <Card>
       <CardHeader>
@@ -137,7 +197,11 @@ export function ApprovalSummary({ dealId, onViewDetails }: ApprovalSummaryProps)
                 <span className="capitalize">{approval.department} Team</span>
                 <Badge 
                   variant="outline" 
-                  className={`text-xs ${getStatusColor(approval.status)} text-white border-0`}
+                  className={`text-xs ${
+                    approval.status === 'approved' ? 'bg-green-500 text-white border-0' :
+                    approval.status === 'pending' ? 'bg-yellow-500 text-white border-0' :
+                    'bg-red-500 text-white border-0'
+                  }`}
                 >
                   {approval.status.replace('_', ' ')}
                 </Badge>
@@ -147,16 +211,19 @@ export function ApprovalSummary({ dealId, onViewDetails }: ApprovalSummaryProps)
         </div>
 
         {/* View Details Button */}
-        <div className="pt-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onViewDetails}
-            className="w-full"
-          >
-            View Full Approval Details
-          </Button>
-        </div>
+        {onViewDetails && (
+          <div className="pt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onViewDetails}
+              className="w-full flex items-center gap-1"
+            >
+              View Full Approval Details
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
