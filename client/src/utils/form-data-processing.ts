@@ -42,8 +42,8 @@ export function processDealScopingData(data: FormDataWithNumbers): any {
     ...processedData,
     // Ensure growthAmbition has a minimum value for scoping requests
     growthAmbition: Number(processedData.growthAmbition || 1000000),
-    // Add required backend fields with consistent naming
-    dealName,
+    // Add required backend fields with consistent naming for scoping requests
+    requestTitle: dealName,
     description: "Growth opportunity assessment request",
   };
 }

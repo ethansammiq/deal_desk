@@ -81,6 +81,12 @@ export default function DealsPage() {
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
   });
 
+  // ✅ DUAL-TABLE APPROACH: Fetch scoping requests for analytics (exclude drafts from main view)
+  const { data: scopingRequests = [] } = useQuery({
+    queryKey: ["/api/deal-scoping-requests"],
+    queryFn: () => apiRequest("/api/deal-scoping-requests"),
+  });
+
   // Fetch approval queue for department reviewers to filter deals appropriately
   const { data: approvalData } = useQuery({
     queryKey: [`/api/approvals/pending?role=${currentUser?.role}&department=${currentUser?.department}`],
@@ -376,8 +382,35 @@ export default function DealsPage() {
 
   // No longer needed - using unified classification system
 
-  // Filter deals based on search and status using unified backend flowIntelligence
-  const filteredDeals = deals.filter(deal => {
+  // ✅ DUAL-TABLE APPROACH: Convert scoping requests to deal-like objects for unified analytics
+  const scopingDealsFormatted = scopingRequests.map((req: any) => ({
+    id: req.id,
+    dealName: req.requestTitle,
+    advertiserName: req.advertiserName,
+    agencyName: req.agencyName,
+    salesChannel: req.salesChannel,
+    region: req.region,
+    dealType: req.dealType,
+    dealStructure: req.dealStructure,
+    priority: 'medium' as const,
+    status: 'scoping' as const,
+    email: req.email,
+    createdAt: req.createdAt,
+    updatedAt: req.updatedAt,
+    growthAmbition: req.growthAmbition,
+    flowIntelligence: 'on_track' as const,
+    referenceNumber: `SC-${req.id}`,
+    _isScoping: true
+  }));
+
+  // Combine deals (excluding drafts) with scoping requests for analytics
+  const allAnalyticsData = [
+    ...deals.filter(deal => deal.status !== 'draft'),
+    ...scopingDealsFormatted
+  ];
+
+  // Filter combined data based on search and status using unified backend flowIntelligence
+  const filteredDeals = allAnalyticsData.filter(deal => {
     const matchesSearch = !searchTerm || 
       deal.dealName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.advertiserName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -409,12 +442,15 @@ export default function DealsPage() {
       matchesDepartment = departmentDealIds.has(deal.id);
     }
     
-    // Filter out draft deals, but include scoping deals for partnership team analytics
-    return matchesSearch && matchesStatus && matchesInsight && matchesUser && matchesDepartment && deal.status !== 'draft';
+    // ✅ ANALYTICS SCOPE: All deals and scoping requests (drafts already excluded above)
+    return matchesSearch && matchesStatus && matchesInsight && matchesUser && matchesDepartment;
   });
 
-  // Get unique statuses for filter - include all statuses except draft
-  const uniqueStatuses = Array.from(new Set(deals.map(deal => deal.status).filter(status => status !== 'draft')));
+  // Get unique statuses for filter - include all statuses except draft, plus scoping
+  const uniqueStatuses = Array.from(new Set([
+    ...deals.map(deal => deal.status).filter(status => status !== 'draft'),
+    'scoping' // Add scoping status to filter options
+  ]));
   // Removed categoryCounts - no longer needed after removing Flow Intelligence filters
 
   const userRole = currentUser?.role;

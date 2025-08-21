@@ -116,18 +116,15 @@ export default function RequestSupport() {
     (targetStep) => formValidation.canAdvanceToStep(targetStep)
   );
 
-  // Create scoping request as deal with status="scoping"
+  // Create scoping request to dedicated table
   const createDealScopingRequest = useMutation({
     mutationFn: async (data: DealScopingFormValues) => {
-      console.log("Submitting scoping request as deal:", data);
+      console.log("Submitting scoping request to dedicated table:", data);
 
-      // ✅ REFACTORED: Using shared data processing utility
+      // ✅ REFACTORED: Using shared data processing utility  
       const formData = processDealScopingData(data);
 
-      // Set status to "scoping" for single table approach
-      formData.status = "scoping";
-
-      const res = await fetch("/api/deals", {
+      const res = await fetch("/api/deal-scoping-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -141,8 +138,7 @@ export default function RequestSupport() {
 
       return await res.json();
     },
-    onSuccess: (response) => {
-      const { deal } = response;
+    onSuccess: (scopingRequest) => {
       toast({
         title: "Scoping Request Submitted",
         description: "Your scoping request has been submitted successfully. You can convert it to a full deal submission when ready.",
@@ -150,7 +146,7 @@ export default function RequestSupport() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/submit-deal?from-scoping=${deal.id}`)}
+            onClick={() => navigate(`/submit-deal?from-scoping=${scopingRequest.id}`)}
           >
             Convert to Deal
           </Button>
@@ -161,9 +157,12 @@ export default function RequestSupport() {
       form.reset();
       navigate("/dashboard");
 
-      // Clear cached data - now invalidate deals cache since scoping requests are stored as deals
+      // Clear cached data - now invalidate both deals and scoping requests
       queryClient.invalidateQueries({
         queryKey: ["/api/deals"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/deal-scoping-requests"],
       });
     },
     onError: (error) => {

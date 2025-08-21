@@ -53,6 +53,12 @@ export function ConsolidatedDashboard() {
     queryFn: () => apiRequest("/api/deals") as Promise<Deal[]>,
   });
 
+  // ✅ DUAL-TABLE APPROACH: Fetch scoping requests for "Upcoming Deals" section
+  const { data: scopingRequests = [] } = useQuery({
+    queryKey: ["/api/deal-scoping-requests"],
+    queryFn: () => apiRequest("/api/deal-scoping-requests"),
+  });
+
   // Get tier data for all deals and calculate expected revenues
   const dealIds = deals.map(d => d.id);
   const { data: allTierData } = useQuery({
@@ -467,10 +473,28 @@ export function ConsolidatedDashboard() {
               {(() => {
                 const { dealsNeedingAction, activeDeals, signedThisMonth } = sellerDealCategories;
                 
-                // Get upcoming deals (draft + scoping) from pipeline deals
-                const upcomingDeals = sellerPipelineDeals.filter(deal => 
-                  deal.status === 'draft' || deal.status === 'scoping'
+                // ✅ DUAL-TABLE APPROACH: Combine draft deals + scoping requests for seller
+                const draftDeals = sellerPipelineDeals.filter(deal => 
+                  deal.status === 'draft'
                 );
+                
+                // Filter scoping requests for current seller
+                const userScopingRequests = currentUser?.email 
+                  ? scopingRequests.filter((req: any) => req.email === currentUser.email)
+                  : [];
+                
+                // Convert scoping requests to deal-like objects for consistent rendering
+                const scopingDealsFormatted = userScopingRequests.map((req: any) => ({
+                  id: req.id,
+                  dealName: req.requestTitle,
+                  advertiserName: req.advertiserName,
+                  agencyName: req.agencyName,
+                  status: 'scoping' as const,
+                  growthAmbition: req.growthAmbition,
+                  _isScoping: true
+                }));
+                
+                const upcomingDeals = [...draftDeals, ...scopingDealsFormatted];
                 
                 // Get true active deals (submitted but not signed/lost)
                 const trueActiveDeals = sellerPipelineDeals.filter(deal => 
@@ -548,7 +572,14 @@ export function ConsolidatedDashboard() {
                                     )}
                                     <Button 
                                       size="sm"
-                                      onClick={() => navigate(isDraft ? `/deals/${deal.id}` : `/request/proposal?from-scoping=${deal.id}`)}
+                                      onClick={() => {
+                                        if (isDraft) {
+                                          navigate(`/deals/${deal.id}`);
+                                        } else {
+                                          // For scoping requests, convert to deal submission
+                                          navigate(`/submit-deal?from-scoping=${deal.id}`);
+                                        }
+                                      }}
                                       className="bg-[#3e0075] hover:bg-[#2d0055] text-white"
                                     >
                                       <ActionIcon className="h-4 w-4 mr-2" />
