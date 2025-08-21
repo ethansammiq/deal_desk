@@ -173,9 +173,9 @@ export default function DealDetails() {
           const financialMetrics = getFinancialMetrics();
           
           return (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Deal Information */}
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* Column 1: Core Information (40% - 2/5 of grid) */}
+            <div className="md:col-span-1 lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -354,8 +354,11 @@ export default function DealDetails() {
                 revenueGrowthRate={undefined}
                 grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
               />
+            </div>
 
-              {/* Approval Progress Tracker */}
+            {/* Column 2: Workflow & Progress (40% - 2/5 of grid) */}
+            <div className="md:col-span-1 lg:col-span-2 space-y-6">
+              {/* Approval Progress Tracker - Moved to Column 2 */}
               {deal.status !== 'draft' && deal.status !== 'scoping' && (
                 <ApprovalTracker
                   dealId={deal.id}
@@ -363,7 +366,7 @@ export default function DealDetails() {
                 />
               )}
 
-              {/* Comments Section */}
+              {/* Comments Section - Moved to Column 2 */}
               <DealComments 
                 deal={deal} 
                 userRole={userRole} 
@@ -371,8 +374,8 @@ export default function DealDetails() {
               />
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
+            {/* Column 3: Collaboration & Actions (20% - 1/5 of grid) */}
+            <div className="md:col-span-2 lg:col-span-1 space-y-6">
               {/* Deal Timeline */}
               <Card>
                 <CardHeader>
