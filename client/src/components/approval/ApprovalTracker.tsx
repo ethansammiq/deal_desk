@@ -73,7 +73,7 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
       .filter((approval: any) => approval.status === 'pending')
       .map((approval: any) => {
         // Use deal creation date as fallback if no approval createdAt
-        const createdDate = new Date(approval.createdAt || approval.submittedAt || new Date('2025-01-18')); // Demo: simulate older date
+        const createdDate = new Date(approval.createdAt || approval.submittedAt || '2025-01-18'); // Demo: simulate older date for bottleneck detection
         const daysPending = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
         
         return {

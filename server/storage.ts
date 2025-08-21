@@ -413,6 +413,7 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
+        createdAt: threeDaysAgo,
         dueDate: threeDaysAgo, // OVERDUE - should trigger bottleneck detection
       },
       {
@@ -422,6 +423,7 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
+        createdAt: fiveDaysAgo,
         dueDate: fiveDaysAgo, // SEVERELY OVERDUE - should trigger bottleneck detection
       },
       // Deal 6: Meta Q2 Campaign Scoping - has mixed approval states including revision_requested
@@ -461,7 +463,8 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
-        dueDate: oneDayFromNow, // Due tomorrow
+        createdAt: threeDaysAgo, // Created 3 days ago - should trigger bottleneck detection
+        dueDate: oneDayFromNow,
       },
       {
         dealId: 4,
@@ -470,6 +473,7 @@ export class MemStorage implements IStorage {
         requiredRole: "department_reviewer" as any,
         status: "pending" as any,
         priority: "normal" as any,
+        createdAt: threeDaysAgo, // Created 3 days ago - should trigger bottleneck detection
         dueDate: oneDayFromNow,
       }
     ];
