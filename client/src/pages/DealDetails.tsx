@@ -293,7 +293,10 @@ export default function DealDetails() {
                 deal={deal}
                 userRole={userRole}
                 onRevisionRequest={() => setRevisionModalOpen(true)}
-                onApprove={() => approveDeal.mutate(deal.id)}
+                onApprove={() => approveDeal.mutate({
+                  dealId: deal.id,
+                  comments: undefined
+                })}
                 isUpdatingStatus={isUpdatingStatus}
               />
 

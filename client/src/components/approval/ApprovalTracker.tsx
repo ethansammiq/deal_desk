@@ -32,9 +32,12 @@ interface ApprovalStageData {
     reviewerNotes?: string;
     completedAt?: string;
     priority: 'normal' | 'high' | 'urgent';
+    isBottleneck?: boolean;
+    daysPending?: number;
   }>;
   completedAt?: string;
   progress: number;
+  bottleneckCount?: number;
 }
 
 export function ApprovalTracker({ dealId, dealName, className }: ApprovalTrackerProps) {
@@ -60,6 +63,31 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
     queryKey: ['/api/approval-departments'],
     enabled: !!dealId
   });
+
+  // Bottleneck detection logic
+  const detectBottlenecks = () => {
+    if (!approvalStatus?.approvals) return [];
+    
+    const now = new Date();
+    const bottlenecks = approvalStatus.approvals
+      .filter((approval: any) => approval.status === 'pending')
+      .map((approval: any) => {
+        const createdDate = new Date(approval.createdAt || now);
+        const daysPending = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return {
+          ...approval,
+          daysPending,
+          isBottleneck: daysPending > 2 // Consider bottleneck if pending > 2 days
+        };
+      })
+      .filter((approval: any) => approval.isBottleneck);
+    
+    return bottlenecks;
+  };
+
+  const bottlenecks = detectBottlenecks();
+  const hasBottlenecks = bottlenecks.length > 0;
 
   if (isLoading) {
     return (
@@ -141,6 +169,12 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
           Approval Progress: {dealName}
+          {hasBottlenecks && (
+            <Badge variant="destructive" className="ml-2">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              {bottlenecks.length} Bottleneck{bottlenecks.length > 1 ? 's' : ''}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -170,26 +204,43 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
             
             {stage.approvals.length > 0 ? (
               <div className="grid gap-2">
-                {stage.approvals.map((approval) => (
-                  <div key={approval.id} className="flex items-center justify-between p-3 bg-gray-50 rounded text-sm">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium">{approval.departmentDisplayName}</span>
+                {stage.approvals.map((approval) => {
+                  const isBottleneck = bottlenecks.some((b: any) => b.id === approval.id);
+                  const daysPending = isBottleneck ? bottlenecks.find((b: any) => b.id === approval.id)?.daysPending : 0;
+                  
+                  return (
+                    <div key={approval.id} className={cn(
+                      "flex items-center justify-between p-3 rounded text-sm",
+                      isBottleneck ? "bg-red-50 border border-red-200" : "bg-gray-50"
+                    )}>
+                      <div className="flex items-center gap-2">
+                        <Building2 className={cn(
+                          "h-4 w-4",
+                          isBottleneck ? "text-red-500" : "text-gray-500"
+                        )} />
+                        <span className="font-medium">{approval.departmentDisplayName}</span>
+                        {isBottleneck && (
+                          <Badge variant="destructive" className="text-xs">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            {daysPending} days
+                          </Badge>
+                        )}
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs",
+                          approval.status === 'approved' && 'bg-green-100 text-green-800',
+                          approval.status === 'pending' && isBottleneck ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800',
+                          approval.status === 'revision_requested' && 'bg-orange-100 text-orange-800',
+                          approval.status === 'rejected' && 'bg-red-100 text-red-800'
+                        )}
+                      >
+                        {approval.status.replace('_', ' ')}
+                      </Badge>
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "text-xs",
-                        approval.status === 'approved' && 'bg-green-100 text-green-800',
-                        approval.status === 'pending' && 'bg-yellow-100 text-yellow-800',
-                        approval.status === 'revision_requested' && 'bg-orange-100 text-orange-800',
-                        approval.status === 'rejected' && 'bg-red-100 text-red-800'
-                      )}
-                    >
-                      {approval.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-sm text-gray-500">
