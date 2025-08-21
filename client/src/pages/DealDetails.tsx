@@ -671,7 +671,7 @@ function DealDetailsContent() {
           </div>
 
           {/* Two-column layout for deal information */}
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-8 mb-6">
             {/* Left Column */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
