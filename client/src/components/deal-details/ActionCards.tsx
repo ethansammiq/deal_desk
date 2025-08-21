@@ -202,31 +202,16 @@ export function ActionCards({
         </CardContent>
       </Card>
 
-      {/* Deal Metrics Summary */}
+      {/* Activity Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <BarChart3 className="h-4 w-4" />
-            Deal Metrics
+            <MessageSquare className="h-4 w-4" />
+            Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded">
-              <span className="text-slate-600">Deal Value</span>
-              <span className="font-bold text-green-600">$1.0M</span>
-            </div>
-            
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded">
-              <span className="text-slate-600">Expected Margin</span>
-              <span className="font-bold text-blue-600">33.0%</span>
-            </div>
-            
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded">
-              <span className="text-slate-600">Profit Impact</span>
-              <span className="font-bold text-purple-600">$320K</span>
-            </div>
-            
+          <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Comments</span>
               <span className="font-medium">0</span>
@@ -245,43 +230,6 @@ export function ActionCards({
                 2
               </Badge>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Deal Context */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <History className="h-4 w-4" />
-            Deal Context
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-xs">
-            <div>
-              <span className="text-slate-600 block mb-1">Deal Type</span>
-              <Badge variant="secondary" className="text-xs">
-                {deal.dealType || 'Standard'}
-              </Badge>
-            </div>
-            
-            <div>
-              <span className="text-slate-600 block mb-1">Channel</span>
-              <span className="font-medium">{deal.salesChannel || 'Direct'}</span>
-            </div>
-            
-            <div>
-              <span className="text-slate-600 block mb-1">Region</span>
-              <span className="font-medium">{deal.region || 'Global'}</span>
-            </div>
-            
-            {deal.agencyName && (
-              <div>
-                <span className="text-slate-600 block mb-1">Agency</span>
-                <span className="font-medium">{deal.agencyName}</span>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

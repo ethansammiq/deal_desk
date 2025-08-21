@@ -175,9 +175,9 @@ export default function DealDetails() {
           const financialMetrics = getFinancialMetrics();
           
           return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {/* Column 1: Core Information (40% - 2/5 of grid) */}
-            <div className="md:col-span-1 lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Column 1: Core Information */}
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -269,11 +269,17 @@ export default function DealDetails() {
                 dealStructure={deal.dealStructure || 'flat_commit'}
               />
 
-
+              {/* AI Assessment Section */}
+              <DealGenieAssessment 
+                dealData={deal}
+                revenueGrowthRate={undefined}
+                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
+                compact={true}
+              />
             </div>
 
-            {/* Column 2: Workflow & Progress (40% - 2/5 of grid) */}
-            <div className="md:col-span-1 lg:col-span-2 space-y-6">
+            {/* Column 2: Workflow & Progress */}
+            <div className="space-y-6">
               {/* Approval Progress Tracker - Moved to Column 2 */}
               {deal.status !== 'draft' && deal.status !== 'scoping' && (
                 <ApprovalTracker
@@ -290,8 +296,8 @@ export default function DealDetails() {
               />
             </div>
 
-            {/* Column 3: AI Insights & Actions (20% - 1/5 of grid) */}
-            <div className="md:col-span-2 lg:col-span-1 space-y-6">
+            {/* Column 3: Actions & AI */}
+            <div className="space-y-6">
               <ActionCards 
                 deal={deal}
                 userRole={userRole}
@@ -300,13 +306,7 @@ export default function DealDetails() {
                 isUpdatingStatus={isUpdatingStatus}
               />
               
-              {/* AI Assessment Section - Moved to Column 3 */}
-              <DealGenieAssessment 
-                dealData={deal}
-                revenueGrowthRate={undefined}
-                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
-                compact={true}
-              />
+
             </div>
           </div>
           );
