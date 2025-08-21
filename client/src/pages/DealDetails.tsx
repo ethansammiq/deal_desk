@@ -12,6 +12,8 @@ import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { DealHistory } from "@/components/collaboration/DealHistory";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
+import { EnhancedFinancialCard } from "@/components/deal-details/EnhancedFinancialCard";
+import { ActionCards } from "@/components/deal-details/ActionCards";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -261,92 +263,11 @@ export default function DealDetails() {
                 </CardContent>
               </Card>
 
-              {/* Enhanced Financial Details */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                    <CardTitle>Financial Performance</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Revenue & Adjusted Margin Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-green-800">Annual Revenue</span>
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                      </div>
-                      <p className="text-2xl font-bold text-green-700 mt-1">
-                        {financialMetrics?.annualRevenue ? formatCurrency(financialMetrics.annualRevenue) : 'N/A'}
-                      </p>
-                      {financialMetrics?.annualRevenue && (
-                        <p className="text-xs text-green-600 mt-1">
-                          {deal.dealStructure === "tiered" ? 
-                            `Expected tier performance (Tier ${financialMetrics.displayTier || 2})` : 
-                            "Primary revenue target"}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-blue-800">Adjusted Gross Margin</span>
-                        <div className="flex items-center gap-1">
-                          {financialMetrics?.adjustedGrossMargin && financialMetrics.adjustedGrossMargin > 0.15 ? (
-                            <TrendingUp className="h-4 w-4 text-green-500" />
-                          ) : financialMetrics?.adjustedGrossMargin && financialMetrics.adjustedGrossMargin > 0.10 ? (
-                            <Minus className="h-4 w-4 text-yellow-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-700 mt-1">
-                        {financialMetrics?.adjustedGrossMargin ? formatPercentage(financialMetrics.adjustedGrossMargin) : 'N/A'}
-                      </p>
-                      {financialMetrics?.adjustedGrossMargin && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          {financialMetrics.adjustedGrossMargin > 0.15 ? 'Strong margin after costs' : 
-                           financialMetrics.adjustedGrossMargin > 0.10 ? 'Fair margin after costs' : 'Low margin after costs'}
-                          {financialMetrics.displayTier ? ` (Tier ${financialMetrics.displayTier} expected)` : ''}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Adjusted Profit & Incentive Costs Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-purple-800">Adjusted Gross Profit</span>
-                        <TrendingUp className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <p className="text-2xl font-bold text-purple-700 mt-1">
-                        {financialMetrics?.adjustedGrossProfit ? formatCurrency(financialMetrics.adjustedGrossProfit) : 'N/A'}
-                      </p>
-                      <p className="text-xs text-purple-600 mt-1">
-                        {financialMetrics?.displayTier ? 
-                          `Tier ${financialMetrics.displayTier} profit after costs` : 
-                          'Profit after all incentive costs'}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-amber-800">Total Incentive Costs</span>
-                        <FileCheck className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <p className="text-2xl font-bold text-amber-700 mt-1">
-                        {financialMetrics?.totalIncentiveCosts ? formatCurrency(financialMetrics.totalIncentiveCosts) : 'N/A'}
-                      </p>
-                      <p className="text-xs text-amber-600 mt-1">
-                        Investment to secure deal
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Enhanced Financial Performance */}
+              <EnhancedFinancialCard 
+                tiers={dealTiersQuery.data || []}
+                dealStructure={deal.dealStructure || 'flat_commit'}
+              />
 
               {/* AI Assessment Section */}
               <DealGenieAssessment 
@@ -376,95 +297,13 @@ export default function DealDetails() {
 
             {/* Column 3: Collaboration & Actions (20% - 1/5 of grid) */}
             <div className="md:col-span-2 lg:col-span-1 space-y-6">
-              {/* Deal Timeline */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <span className="text-sm font-medium text-slate-900">Term Start</span>
-                    <p className="text-sm text-slate-600">
-                      {deal.termStartDate ? format(new Date(deal.termStartDate), 'MMM dd, yyyy') : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-slate-900">Term End</span>
-                    <p className="text-sm text-slate-600">
-                      {deal.termEndDate ? format(new Date(deal.termEndDate), 'MMM dd, yyyy') : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-slate-900">Last Updated</span>
-                    <p className="text-sm text-slate-600">
-                      {deal.updatedAt ? format(new Date(deal.updatedAt), 'MMM dd, yyyy') : 'Today'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {/* Seller actions */}
-                  {userRole === 'seller' && (
-                    <>
-                      {/* Edit Deal for drafts/revisions */}
-                      {(deal.status === 'draft' || deal.status === 'revision_requested') && (
-                        <Button 
-                          className="w-full" 
-                          variant="default"
-                          onClick={() => navigate(`/request/proposal?draftId=${deal.id}`)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          {deal.status === 'draft' ? 'Continue Draft' : 'Continue Editing'}
-                        </Button>
-                      )}
-                      
-                      {/* Generate Deck placeholder */}
-                      <Button 
-                        className="w-full" 
-                        variant="outline"
-                        onClick={() => {/* TODO: Generate deck functionality */}}
-                        disabled
-                      >
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate Deck
-                      </Button>
-                    </>
-                  )}
-                  
-                  {/* Reviewer/Approver actions */}
-                  {(userRole === 'approver' || userRole === 'legal' || userRole === 'department_reviewer') && deal.status === 'under_review' && (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => setRevisionModalOpen(true)}
-                      >
-                        <AlertTriangle className="mr-2 h-4 w-4" />
-                        Request Revision
-                      </Button>
-                      <Button
-                        className="w-full"
-                        onClick={() => {/* TODO: Implement approval action */}}
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Approve Deal
-                      </Button>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Deal History Section */}
-              <DealHistory dealId={deal.id} />
+              <ActionCards 
+                deal={deal}
+                userRole={userRole}
+                onRevisionRequest={() => setRevisionModalOpen(true)}
+                onApprove={() => approveDeal(deal.id)}
+                isUpdatingStatus={isUpdatingStatus}
+              />
             </div>
           </div>
           );
