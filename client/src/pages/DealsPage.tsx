@@ -277,6 +277,32 @@ export default function DealsPage() {
       },
     },
     {
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => {
+        const priority = row.original.priority;
+        const priorityLabels = {
+          'critical': 'Critical',
+          'high': 'High',
+          'medium': 'Medium', 
+          'low': 'Low'
+        };
+        const priorityColors = {
+          'critical': 'bg-red-100 text-red-800 border-red-200',
+          'high': 'bg-orange-100 text-orange-800 border-orange-200',
+          'medium': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          'low': 'bg-green-100 text-green-800 border-green-200'
+        };
+        const label = priorityLabels[priority as keyof typeof priorityLabels] || priority;
+        const colorClass = priorityColors[priority as keyof typeof priorityColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+        return (
+          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${colorClass}`}>
+            {label}
+          </span>
+        );
+      },
+    },
+    {
       id: "dealValue", 
       header: "Deal Value",
       cell: ({ row }) => {
