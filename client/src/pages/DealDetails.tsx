@@ -6,7 +6,10 @@ import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
-import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
+import { FinancialTable, FinancialTableColGroup, FinancialTableHeader, FinancialTableBody, FinancialHeaderCell, FinancialDataCell, FinancialMetricLabel, GrowthIndicator } from "@/components/ui/financial-table";
+import { useFinancialData } from "@/hooks/useFinancialData";
+import { useDealCalculations } from "@/hooks/useDealCalculations";
+import { formatCurrency } from "@/lib/utils";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
 import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
@@ -17,6 +20,164 @@ import { ArrowLeft, Calendar, DollarSign, Users, MapPin, Target, FileCheck, Cloc
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
+
+// Table-only financial summary component
+function FinancialSummaryTable({ 
+  dealTiers, 
+  salesChannel, 
+  advertiserName, 
+  agencyName 
+}: {
+  dealTiers: any[];
+  salesChannel: string;
+  advertiserName: string;
+  agencyName: string;
+}) {
+  const { agenciesQuery, advertisersQuery, isLoading, hasError, agenciesData, advertisersData } = useFinancialData();
+  const { calculationService } = useDealCalculations(advertisersData, agenciesData);
+
+  if (isLoading) {
+    return <SectionLoading title="Loading Financial Data..." rows={5} />;
+  }
+
+  if (hasError) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Error loading financial data. Please try again.</p>
+      </div>
+    );
+  }
+
+  return (
+    <FinancialTable>
+      <FinancialTableColGroup dealTiers={dealTiers} />
+      
+      <FinancialTableHeader>
+        <tr>
+          <FinancialHeaderCell isMetricName />
+          <FinancialHeaderCell>Last Year</FinancialHeaderCell>
+          {dealTiers.map((tier) => (
+            <FinancialHeaderCell key={`fs-header-${tier.tierNumber}`}>
+              Tier {tier.tierNumber}
+            </FinancialHeaderCell>
+          ))}
+        </tr>
+      </FinancialTableHeader>
+            
+      <FinancialTableBody>
+        {/* Adjusted Gross Margin */}
+        <tr>
+          <FinancialDataCell isMetricLabel>
+            <FinancialMetricLabel 
+              title="Adjusted Gross Margin"
+              description="Gross margin after incentives"
+            />
+          </FinancialDataCell>
+          <FinancialDataCell>
+            {(() => {
+              const lastYearAdjustedMargin = calculationService.getPreviousYearAdjustedGrossMargin(salesChannel, advertiserName, agencyName);
+              return `${(lastYearAdjustedMargin * 100).toFixed(1)}%`;
+            })()}
+          </FinancialDataCell>
+          {dealTiers.map((tier) => {
+            const revenue = tier.annualRevenue || 0;
+            const grossMarginDecimal = tier.annualGrossMargin || 0;
+            const grossProfit = revenue * grossMarginDecimal;
+            const incentiveCost = calculationService.calculateTierIncentiveCost(tier);
+            const adjustedProfit = grossProfit - incentiveCost;
+            const adjustedMarginDecimal = revenue > 0 ? adjustedProfit / revenue : 0;
+            
+            return (
+              <FinancialDataCell key={`adj-margin-${tier.tierNumber}`}>
+                {(adjustedMarginDecimal * 100).toFixed(1)}%
+              </FinancialDataCell>
+            );
+          })}
+        </tr>
+        
+        {/* Adjusted Gross Profit */}
+        <tr>
+          <FinancialDataCell isMetricLabel>
+            <FinancialMetricLabel 
+              title="Adjusted Gross Profit"
+              description="Gross profit after incentive costs"
+            />
+          </FinancialDataCell>
+          <FinancialDataCell>
+            {formatCurrency(calculationService.getPreviousYearAdjustedGrossProfit(salesChannel, advertiserName, agencyName))}
+          </FinancialDataCell>
+          {dealTiers.map((tier) => {
+            const revenue = tier.annualRevenue || 0;
+            const grossMarginDecimal = tier.annualGrossMargin || 0;
+            const grossProfit = revenue * grossMarginDecimal;
+            const incentiveCost = calculationService.calculateTierIncentiveCost(tier);
+            const adjustedProfit = grossProfit - incentiveCost;
+            
+            return (
+              <FinancialDataCell key={`adj-profit-${tier.tierNumber}`}>
+                {formatCurrency(adjustedProfit)}
+              </FinancialDataCell>
+            );
+          })}
+        </tr>
+        
+        {/* Adjusted Gross Margin Growth Rate */}
+        <tr>
+          <FinancialDataCell isMetricLabel>
+            <FinancialMetricLabel 
+              title="Adjusted Gross Margin Growth Rate"
+              description="Percentage change in adjusted margin"
+            />
+          </FinancialDataCell>
+          <FinancialDataCell>
+            <span className="text-slate-500">—</span>
+          </FinancialDataCell>
+          {dealTiers.map((tier) => {
+            const marginGrowthRate = calculationService.calculateAdjustedGrossMarginGrowthRate(
+              tier,
+              salesChannel,
+              advertiserName,
+              agencyName
+            );
+            
+            return (
+              <FinancialDataCell key={`margin-growth-${tier.tierNumber}`}>
+                <GrowthIndicator value={marginGrowthRate} />
+              </FinancialDataCell>
+            );
+          })}
+        </tr>
+        
+        {/* Adjusted Gross Profit Growth Rate */}
+        <tr>
+          <FinancialDataCell isMetricLabel>
+            <FinancialMetricLabel 
+              title="Adjusted Gross Profit Growth Rate"
+              description="Percentage increase in adjusted profit vs last year"
+            />
+          </FinancialDataCell>
+          <FinancialDataCell>
+            <span className="text-slate-500">—</span>
+          </FinancialDataCell>
+          {dealTiers.map((tier) => {
+            const profitGrowthRate = calculationService.calculateAdjustedGrossProfitGrowthRate(
+              tier,
+              salesChannel,
+              advertiserName,
+              agencyName
+            );
+            
+            return (
+              <FinancialDataCell key={`profit-growth-${tier.tierNumber}`}>
+                <GrowthIndicator value={profitGrowthRate} />
+              </FinancialDataCell>
+            );
+          })}
+        </tr>
+      </FinancialTableBody>
+    </FinancialTable>
+  );
+}
 
 // Inner component that uses the consolidated data
 function DealDetailsContent() {
@@ -99,22 +260,35 @@ function DealDetailsContent() {
 
       {/* Financial Summary Card */}
       <Card className="border border-slate-200 shadow-sm bg-white">
-        <CardContent className="p-0">
-          <FinancialSummarySection 
-          dealTiers={tiers.length > 0 ? tiers : [
-            {
-              dealId: deal.id,
-              tierNumber: 1,
-              annualRevenue: 6000000, // Tesla's revenue from fallback
-              annualGrossMargin: 0.22, // Tesla's margin from fallback
-              incentives: [],
-              createdAt: deal.createdAt || new Date(),
-              updatedAt: deal.updatedAt || new Date()
-            }
-          ]}
-          salesChannel="independent_agency"
-          advertiserName={deal.dealName.split(' ')[0]}
-          agencyName="MiQ"
+        <CardHeader className="pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+            <div className="flex-1">
+              <CardTitle className="text-xl font-semibold text-slate-900">
+                Financial Summary
+              </CardTitle>
+              <CardDescription className="text-slate-500">
+                Revenue projections and growth analysis for this deal
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <FinancialSummaryTable 
+            dealTiers={tiers.length > 0 ? tiers : [
+              {
+                dealId: deal.id,
+                tierNumber: 1,
+                annualRevenue: 6000000, // Tesla's revenue from fallback
+                annualGrossMargin: 0.22, // Tesla's margin from fallback
+                incentives: [],
+                createdAt: deal.createdAt || new Date(),
+                updatedAt: deal.updatedAt || new Date()
+              }
+            ]}
+            salesChannel="independent_agency"
+            advertiserName={deal.dealName.split(' ')[0]}
+            agencyName="MiQ"
           />
         </CardContent>
       </Card>
