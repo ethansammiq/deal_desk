@@ -139,12 +139,6 @@ function DealDetailsContent() {
                     </div>
                   </div>
                 </div>
-
-                {/* Enhanced Financial Performance */}
-                <EnhancedFinancialCard 
-                  tiers={tiers}
-                  dealStructure={deal.dealStructure || 'flat_commit'}
-                />
               </div>
 
               {/* Column 2: Workflow & Collaboration */}
@@ -156,7 +150,7 @@ function DealDetailsContent() {
                 <RoleBasedActions
                   deal={deal}
                   userRole={userRole}
-                  onApprove={() => approveDeal(deal.id)}
+                  onApprove={() => approveDeal.mutate(deal.id)}
                   onEdit={() => navigate(`/deals/${deal.id}/edit`)}
                   onRequestRevision={() => setRevisionModalOpen(true)}
                   onResubmit={() => resubmitDeal()}
@@ -168,7 +162,7 @@ function DealDetailsContent() {
               <div className="space-y-6">
                 {/* DealGenie Assessment - Compact Mode */}
                 <DealGenieAssessment 
-                  dealId={deal.id}
+                  dealData={deal}
                   compact={true}
                 />
 
@@ -312,7 +306,7 @@ function DealDetailsContent() {
           <TabsContent value="ai-insights" className="mt-0">
             <div className="space-y-6">
               <DealGenieAssessment 
-                dealId={deal.id}
+                dealData={deal}
                 compact={false}
               />
             </div>

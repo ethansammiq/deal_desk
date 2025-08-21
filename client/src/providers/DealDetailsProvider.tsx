@@ -82,13 +82,16 @@ export function DealDetailsProvider({ dealId, children }: DealDetailsProviderPro
       }
       const data = await response.json();
       
+      // Extract tiers array from API response
+      const tiersArray = data.tiers || [];
+      
       // Apply enhanced fallback logic if no tiers found
-      if (!data.tiers || data.tiers.length === 0) {
-        const fallbackData = await TierDataAccess.fetchTiersWithFallback(dealId);
-        return fallbackData || [];
+      if (tiersArray.length === 0) {
+        // For now, return empty array - fallback logic will be implemented later
+        return [];
       }
       
-      return data.tiers || [];
+      return tiersArray;
     },
     enabled: !!dealId && dealId > 0,
     staleTime: 30000,
