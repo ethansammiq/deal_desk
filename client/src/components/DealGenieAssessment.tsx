@@ -271,8 +271,26 @@ export function DealGenieAssessment({
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="mb-4">
-          <p className="text-gray-700">{analysis.summary}</p>
+        {/* Executive Summary */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Executive Summary</h3>
+          <p className="text-gray-700 leading-relaxed">{analysis.summary}</p>
+        </div>
+
+        {/* Overall Value Score */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-md font-semibold text-purple-900">Overall Value Assessment</h4>
+            <div className="flex items-center gap-2">
+              <span className={`text-2xl font-bold ${getScoreColor(analysis.overallValue.score)}`}>
+                {analysis.overallValue.score}/10
+              </span>
+              <Badge className={`${recInfo.color}`}>
+                {recInfo.text}
+              </Badge>
+            </div>
+          </div>
+          <p className="text-sm text-purple-800">{analysis.overallValue.analysis}</p>
         </div>
 
         <div className="flex flex-col md:flex-row justify-between mb-6">
