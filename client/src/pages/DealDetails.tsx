@@ -14,7 +14,7 @@ import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
 import { DealDetailsProvider, useDealDetails } from "@/providers/DealDetailsProvider";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
-import { ArrowLeft, Building2, Calendar, DollarSign, Users, MapPin, Target, FileCheck, BarChart3, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Calendar, DollarSign, Users, MapPin, Target, FileCheck, BarChart3, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
@@ -109,8 +109,8 @@ function DealDetailsContent() {
         {/* Tab Content */}
         <div className="px-6 py-6">
           <TabsContent value="overview" className="space-y-6 mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Column 1: Core Deal Information */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Column 1: Deal Metadata */}
               <div className="space-y-6">
                 {/* Deal Information Card */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -137,122 +137,83 @@ function DealDetailsContent() {
                         {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Client:</span>
+                      <span className="font-medium">{deal.dealName.split(' ')[0]}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Current Status Card */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Current Status
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Status:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                        deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                        deal.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {deal.status?.replace('_', ' ')}
+                      </span>
+                    </div>
+                    {deal.lastRevisedAt && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Last Revised:</span>
+                        <span className="font-medium">
+                          {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Column 2: Workflow & Collaboration */}
+              {/* Column 2: Actions & Next Steps */}
               <div className="space-y-6">
-                {/* Approval Summary - Compact Mode */}
-                <ApprovalSummary dealId={deal.id} compact={true} />
-
                 {/* Role-Based Actions */}
                 <RoleBasedActions
                   deal={deal}
                   userRole={userRole}
-                  onApprove={() => approveDeal.mutate(deal.id)}
+                  onApprove={() => approveDeal.mutate({ dealId: deal.id })}
                   onEdit={() => navigate(`/deals/${deal.id}/edit`)}
                   onRequestRevision={() => setRevisionModalOpen(true)}
                   onResubmit={() => resubmitDeal()}
                   isLoading={isUpdatingStatus}
                 />
-              </div>
 
-              {/* Column 3: Actions & AI Insights & Context */}
-              <div className="space-y-6">
-                {/* DealGenie Assessment - Compact Mode */}
-                <DealGenieAssessment 
-                  dealData={deal}
-                  compact={true}
-                />
-
-                {/* Action Cards Component */}
+                {/* Next Steps Card */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Deal Metrics
+                    <ArrowRight className="h-5 w-5" />
+                    Next Steps
                   </h3>
-                  
-                  <div className="space-y-4">
-                    {/* Deal Value */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Deal Value</span>
-                      <span className="font-bold text-green-600">
-                        {financialMetrics?.annualRevenue ? `$${(financialMetrics.annualRevenue / 1000000).toFixed(1)}M` : 'N/A'}
-                      </span>
-                    </div>
-                    
-                    {/* Expected Tier */}
-                    {financialMetrics?.displayTier && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Expected Tier</span>
-                        <span className="font-medium text-blue-600">Tier {financialMetrics.displayTier}</span>
-                      </div>
-                    )}
-                    
-                    {/* Profit Margin */}
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Profit Margin</span>
-                      <span className={`font-medium ${
-                        (financialMetrics?.adjustedGrossMargin || 0) > 0.15 ? 'text-green-600' :
-                        (financialMetrics?.adjustedGrossMargin || 0) > 0.10 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
-                        {financialMetrics?.adjustedGrossMargin ? `${(financialMetrics.adjustedGrossMargin * 100).toFixed(1)}%` : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Timeline Component */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Timeline
-                  </h3>
-                  
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Deal Created</p>
-                        <p className="text-xs text-gray-500">
-                          {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy • h:mm a')}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {deal.lastRevisedAt && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Revision Requested</p>
-                          <p className="text-xs text-gray-500">
-                            {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy • h:mm a')}
-                          </p>
-                        </div>
-                      </div>
+                    {deal.status === 'submitted' && (
+                      <p className="text-sm text-gray-600">
+                        Your deal is awaiting department review. You'll be notified of any updates.
+                      </p>
                     )}
-                  </div>
-                </div>
-
-                {/* Context Component */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Context
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Deal Owner</p>
-                      <p className="text-sm">{deal.email}</p>
-                    </div>
-                    
-                    {deal.revisionReason && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Revision Reason</p>
-                        <p className="text-sm text-orange-600">{deal.revisionReason}</p>
-                      </div>
+                    {deal.status === 'under_review' && (
+                      <p className="text-sm text-gray-600">
+                        Your deal is currently under review by department teams and approvers.
+                      </p>
+                    )}
+                    {deal.status === 'revision_requested' && (
+                      <p className="text-sm text-gray-600">
+                        Please review the feedback and edit your deal accordingly, then resubmit.
+                      </p>
+                    )}
+                    {deal.status === 'approved' && (
+                      <p className="text-sm text-gray-600">
+                        Congratulations! Your deal has been approved and is ready for execution.
+                      </p>
                     )}
                   </div>
                 </div>
