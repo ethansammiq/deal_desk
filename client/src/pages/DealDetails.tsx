@@ -107,18 +107,6 @@ function DealDetailsContent() {
               />
             </div>
 
-            {/* AI Assessment & Insights */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                AI Assessment & Insights
-              </h2>
-              <DealGenieAssessment 
-                dealData={deal}
-                compact={false}
-              />
-            </div>
-
             {/* Approval Workflow */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
