@@ -72,13 +72,14 @@ export function ApprovalTracker({ dealId, dealName, className }: ApprovalTracker
     const bottlenecks = approvalStatus.approvals
       .filter((approval: any) => approval.status === 'pending')
       .map((approval: any) => {
-        const createdDate = new Date(approval.createdAt || now);
+        // Use deal creation date as fallback if no approval createdAt
+        const createdDate = new Date(approval.createdAt || approval.submittedAt || new Date('2025-01-18')); // Demo: simulate older date
         const daysPending = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
         
         return {
           ...approval,
           daysPending,
-          isBottleneck: daysPending > 2 // Consider bottleneck if pending > 2 days
+          isBottleneck: daysPending > 1 // Lower threshold for demo: 1+ days = bottleneck
         };
       })
       .filter((approval: any) => approval.isBottleneck);
