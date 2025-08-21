@@ -328,8 +328,7 @@ function DealDetailsContent() {
       <RevisionRequestModal
         isOpen={revisionModalOpen}
         onClose={() => setRevisionModalOpen(false)}
-        dealId={deal.id}
-        dealName={deal.dealName}
+        deal={deal}
       />
     </div>
   );
