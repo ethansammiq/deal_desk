@@ -696,11 +696,11 @@ function DealDetailsContent() {
                 </div>
               )}
               
-              {deal.contractTermMonths && (
+              {(deal.contractTermMonths || deal.contractTerm) && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-slate-400" />
                   <span className="text-sm font-medium text-slate-700">Contract Term:</span>
-                  <span className="text-sm text-slate-900">{deal.contractTermMonths} month{Number(deal.contractTermMonths) !== 1 ? 's' : ''}</span>
+                  <span className="text-sm text-slate-900">{deal.contractTermMonths || deal.contractTerm} month{Number(deal.contractTermMonths || deal.contractTerm) !== 1 ? 's' : ''}</span>
                 </div>
               )}
             </div>
