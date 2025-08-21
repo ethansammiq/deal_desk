@@ -655,50 +655,54 @@ function DealDetailsContent() {
               <CardTitle className="text-xl font-semibold text-slate-900">
                 {deal.dealName}
               </CardTitle>
-              <CardDescription className="text-slate-500 space-y-1">
+              <div className="text-slate-500 space-y-2">
+                {/* Deal Structure & Client Info */}
                 <div className="flex items-center gap-2 text-sm">
-                  <span>{deal.dealType}</span>
+                  <span className="font-medium">{deal.dealType}</span>
                   <span>•</span>
-                  <span>{deal.dealStructure?.replace('_', ' ')}</span>
-                  <span>•</span>
-                  <span>Client: {deal.advertiserName || deal.agencyName || deal.dealName.split(' ')[0]}</span>
+                  <span className="capitalize">{deal.dealStructure?.replace('_', ' ')}</span>
                   {deal.salesChannel && (
                     <>
                       <span>•</span>
-                      <span>{deal.salesChannel.replace('_', ' ')}</span>
+                      <span className="capitalize">{deal.salesChannel.replace('_', ' ')}</span>
                     </>
                   )}
+                </div>
+                
+                {/* Client & Region */}
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    <span>Client: {deal.advertiserName || deal.agencyName || deal.dealName.split(' ')[0]}</span>
+                  </div>
                   {deal.region && (
-                    <>
-                      <span>•</span>
-                      <span>{deal.region}</span>
-                    </>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      <span className="capitalize">{deal.region}</span>
+                    </div>
                   )}
                 </div>
+                
                 {/* Timeline Information */}
-                <div className="flex items-center gap-4 text-xs text-slate-400 mt-2">
-                  {deal.termStartDate && deal.termEndDate && (
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>
-                        {format(new Date(deal.termStartDate), 'MMM dd, yyyy')} - {format(new Date(deal.termEndDate), 'MMM dd, yyyy')}
-                      </span>
-                    </div>
-                  )}
-                  {deal.contractTermMonths && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{deal.contractTermMonths} months</span>
-                    </div>
-                  )}
-                  {deal.createdAt && (
-                    <div className="flex items-center gap-1">
-                      <FileCheck className="h-3 w-3" />
-                      <span>Created {format(new Date(deal.createdAt), 'MMM dd, yyyy')}</span>
-                    </div>
-                  )}
-                </div>
-              </CardDescription>
+                {(deal.termStartDate && deal.termEndDate) || deal.contractTermMonths ? (
+                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                    {deal.termStartDate && deal.termEndDate && (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {format(new Date(deal.termStartDate), 'MMM dd, yyyy')} - {format(new Date(deal.termEndDate), 'MMM dd, yyyy')}
+                        </span>
+                      </div>
+                    )}
+                    {deal.contractTermMonths && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{deal.contractTermMonths} month{deal.contractTermMonths !== '1' ? 's' : ''} term</span>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
