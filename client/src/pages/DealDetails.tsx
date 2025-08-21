@@ -231,37 +231,10 @@ function DealDetailsContent() {
           </TabsContent>
 
           <TabsContent value="financials" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <EnhancedFinancialCard 
-                tiers={tiers}
-                dealStructure={deal.dealStructure || 'flat_commit'}
-              />
-              
-              {/* Additional Financial Details */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Revenue</span>
-                    <span className="font-medium">
-                      {financialMetrics?.annualRevenue ? `$${(financialMetrics.annualRevenue / 1000000).toFixed(1)}M` : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Gross Profit</span>
-                    <span className="font-medium">
-                      {financialMetrics?.adjustedGrossProfit ? `$${(financialMetrics.adjustedGrossProfit / 1000000).toFixed(1)}M` : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Incentive Costs</span>
-                    <span className="font-medium">
-                      {financialMetrics?.totalIncentiveCosts ? `$${(financialMetrics.totalIncentiveCosts / 1000000).toFixed(1)}M` : 'N/A'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <EnhancedFinancialCard 
+              tiers={tiers}
+              dealStructure={deal.dealStructure || 'flat_commit'}
+            />
           </TabsContent>
 
           <TabsContent value="ai-insights" className="mt-0">
