@@ -409,7 +409,7 @@ function ActivityFeedContent({ deal, dealId }: { deal: any; dealId: number }) {
                   
                   {/* Timestamp */}
                   <div className="text-xs text-slate-400 whitespace-nowrap">
-                    {format(new Date(activity.timestamp), 'MMM d, yyyy HH:mm')}
+                    {activity.timestamp ? format(new Date(activity.timestamp), 'MMM d, yyyy HH:mm') : 'Date unknown'}
                   </div>
                 </div>
               </div>
@@ -655,8 +655,49 @@ function DealDetailsContent() {
               <CardTitle className="text-xl font-semibold text-slate-900">
                 {deal.dealName}
               </CardTitle>
-              <CardDescription className="text-slate-500">
-                {deal.dealType} • {deal.dealStructure?.replace('_', ' ')} • Client: {deal.dealName.split(' ')[0]}
+              <CardDescription className="text-slate-500 space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <span>{deal.dealType}</span>
+                  <span>•</span>
+                  <span>{deal.dealStructure?.replace('_', ' ')}</span>
+                  <span>•</span>
+                  <span>Client: {deal.advertiserName || deal.agencyName || deal.dealName.split(' ')[0]}</span>
+                  {deal.salesChannel && (
+                    <>
+                      <span>•</span>
+                      <span>{deal.salesChannel.replace('_', ' ')}</span>
+                    </>
+                  )}
+                  {deal.region && (
+                    <>
+                      <span>•</span>
+                      <span>{deal.region}</span>
+                    </>
+                  )}
+                </div>
+                {/* Timeline Information */}
+                <div className="flex items-center gap-4 text-xs text-slate-400 mt-2">
+                  {deal.termStartDate && deal.termEndDate && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>
+                        {format(new Date(deal.termStartDate), 'MMM dd, yyyy')} - {format(new Date(deal.termEndDate), 'MMM dd, yyyy')}
+                      </span>
+                    </div>
+                  )}
+                  {deal.contractTermMonths && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{deal.contractTermMonths} months</span>
+                    </div>
+                  )}
+                  {deal.createdAt && (
+                    <div className="flex items-center gap-1">
+                      <FileCheck className="h-3 w-3" />
+                      <span>Created {format(new Date(deal.createdAt), 'MMM dd, yyyy')}</span>
+                    </div>
+                  )}
+                </div>
               </CardDescription>
             </div>
             <div className="flex items-center gap-4">
