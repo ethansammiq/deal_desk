@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DealComments } from "@/components/collaboration/DealComments";
 import { StatusHistory } from "@/components/collaboration/StatusHistory";
 import { DealHistory } from "@/components/collaboration/DealHistory";
+import { useCurrentUser } from "@/hooks/useAuth";
 
 import { Clock, MessageSquare, FileText, Activity } from "lucide-react";
 import { Deal } from "@shared/schema";
@@ -17,6 +18,8 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ deal, dealId }: ActivityFeedProps) {
   const [activeFilter, setActiveFilter] = useState<'all' | 'status' | 'comments' | 'history'>('all');
+  const { data: user } = useCurrentUser();
+  const userRole = user?.role || 'seller';
 
   // Simple timeline data from deal properties
   const timelineEvents = [
@@ -43,9 +46,9 @@ export function ActivityFeed({ deal, dealId }: ActivityFeedProps) {
       case 'status':
         return <StatusHistory deal={deal} />;
       case 'comments':
-        return <DealComments deal={deal} />;
+        return <DealComments deal={deal} userRole={userRole} currentUser={user?.email || 'unknown'} />;
       case 'history':
-        return <DealHistory deal={deal} />;
+        return <DealHistory dealId={dealId} />;
       default:
         return (
           <div className="space-y-4">
@@ -74,7 +77,7 @@ export function ActivityFeed({ deal, dealId }: ActivityFeedProps) {
             
             {/* Embedded Comments Preview */}
             <div className="border-t pt-4">
-              <DealComments deal={deal} />
+              <DealComments deal={deal} userRole={userRole} currentUser={user?.email || 'unknown'} />
             </div>
           </div>
         );

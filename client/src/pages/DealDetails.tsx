@@ -194,7 +194,7 @@ export default function DealDetails() {
                   <RoleBasedActions
                     deal={deal}
                     userRole={userRole}
-                    onApprove={() => approveDeal(dealId)}
+                    onApprove={() => approveDeal.mutate({ dealId })}
                     onEdit={() => navigate(`/deals/${dealId}/edit`)}
                     onRequestRevision={() => setRevisionModalOpen(true)}
                     onResubmit={() => resubmitMutation.mutate(dealId)}
@@ -343,7 +343,7 @@ export default function DealDetails() {
 
                     {/* Approvals Tab */}
                     <TabsContent value="approvals" className="mt-0">
-                      <ApprovalTracker dealId={dealId} />
+                      <ApprovalTracker dealId={dealId} dealName={deal.dealName} />
                     </TabsContent>
 
                     {/* Financials Tab */}
@@ -356,7 +356,7 @@ export default function DealDetails() {
 
                     {/* AI Insights Tab */}
                     <TabsContent value="ai-insights" className="mt-0">
-                      <DealGenieAssessment deal={deal} />
+                      <DealGenieAssessment dealData={deal} />
                     </TabsContent>
 
                     {/* Activity Tab */}
@@ -369,7 +369,7 @@ export default function DealDetails() {
 
               {/* Revision Request Modal */}
               <RevisionRequestModal
-                dealId={dealId}
+                deal={deal}
                 isOpen={revisionModalOpen}
                 onClose={() => setRevisionModalOpen(false)}
               />
@@ -380,6 +380,3 @@ export default function DealDetails() {
     </div>
   );
 }
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Client:</span>
