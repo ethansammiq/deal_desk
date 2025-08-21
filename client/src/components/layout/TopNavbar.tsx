@@ -74,7 +74,7 @@ function UserProfileDropdown({ currentUser }: { currentUser: any }) {
             <Link href="/testing">
               <button className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075]">
                 <TestTube2 className="w-4 h-4 mr-3" />
-                Switch Roles
+                Testing
               </button>
             </Link>
           </div>
