@@ -965,11 +965,8 @@ export default function SubmitDeal() {
       {/* Header with integrated Save Draft button - matching RequestSupport layout */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <h1 className="text-2xl font-bold text-gray-900">Deal Submission</h1>
-            <span className="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
-              Step 2 of 2
-            </span>
           </div>
           <p className="text-gray-600 text-base">
             {fromScopingId && isPreFilling 

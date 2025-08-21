@@ -189,7 +189,6 @@ export default function RequestSupport() {
         {/* Standardized Form Section Header */}
       <FormSectionHeader
         title="Deal Scoping"
-        badge="Step 1 of 2"
         description="New to the deal process? Start here to get help with scoping, pricing, or technical aspects of your deals."
         helpTitle="About Deal Scoping"
         helpContent={
