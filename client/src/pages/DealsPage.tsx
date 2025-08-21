@@ -265,7 +265,7 @@ export default function DealsPage() {
     },
     {
       accessorKey: "dealStructure",
-      header: "Deal Type",
+      header: "Deal Structure",
       cell: ({ row }) => {
         const structure = row.original.dealStructure;
         const typeLabels = {
@@ -506,7 +506,6 @@ export default function DealsPage() {
                   Deals Overview
                 </CardTitle>
                 <CardDescription className="text-slate-500">
-                  {filteredDeals.length} of {deals.length} deals shown
                 </CardDescription>
               </div>
               
