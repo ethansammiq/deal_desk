@@ -175,8 +175,8 @@ export default function DealDetails() {
           const financialMetrics = getFinancialMetrics();
           
           return (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Column 1: Core Information */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column: Core Information & Financial Performance */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -268,19 +268,11 @@ export default function DealDetails() {
                 tiers={dealTiersQuery.data || []}
                 dealStructure={deal.dealStructure || 'flat_commit'}
               />
-
-              {/* AI Assessment Section */}
-              <DealGenieAssessment 
-                dealData={deal}
-                revenueGrowthRate={undefined}
-                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
-                compact={true}
-              />
             </div>
 
-            {/* Column 2: Workflow & Progress */}
+            {/* Right Column: Workflow, Actions & Intelligence */}
             <div className="space-y-6">
-              {/* Approval Progress Tracker - Moved to Column 2 */}
+              {/* Approval Progress Tracker */}
               {deal.status !== 'draft' && deal.status !== 'scoping' && (
                 <ApprovalTracker
                   dealId={deal.id}
@@ -288,16 +280,15 @@ export default function DealDetails() {
                 />
               )}
 
-              {/* Comments Section - Moved to Column 2 */}
-              <DealComments 
-                deal={deal} 
-                userRole={userRole} 
-                currentUser={user?.username || 'Unknown User'} 
+              {/* AI Assessment Section */}
+              <DealGenieAssessment 
+                dealData={deal}
+                revenueGrowthRate={undefined}
+                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
+                compact={false}
               />
-            </div>
 
-            {/* Column 3: Actions & History */}
-            <div className="space-y-6">
+              {/* Quick Actions - Role Appropriate */}
               <ActionCards 
                 deal={deal}
                 userRole={userRole}
@@ -305,9 +296,13 @@ export default function DealDetails() {
                 onApprove={() => approveDeal.mutate(deal.id)}
                 isUpdatingStatus={isUpdatingStatus}
               />
-              
-              {/* Deal History */}
-              <DealHistory dealId={deal.id} />
+
+              {/* Comments Section */}
+              <DealComments 
+                deal={deal} 
+                userRole={userRole} 
+                currentUser={user?.username || 'Unknown User'} 
+              />
             </div>
           </div>
           );
