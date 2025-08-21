@@ -184,15 +184,6 @@ export function TopNavbar() {
           <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Desktop Tools */}
             <div className="hidden lg:flex lg:items-center lg:space-x-3">
-              {/* Admin/Dev Tools */}
-              {(userRole === 'admin' || import.meta.env.DEV) && (
-                <Link href="/testing">
-                  <button className="flex items-center px-2 py-1 text-xs font-medium text-slate-600 hover:text-[#3e0075] hover:bg-[#f8f5ff] rounded-md transition-all duration-200 border border-slate-200 hover:border-[#3e0075]">
-                    <TestTube2 className="w-3 h-3 mr-1" />
-                    Test
-                  </button>
-                </Link>
-              )}
               
               {/* Notification Bell */}
               <NotificationBell />
@@ -288,19 +279,6 @@ export function TopNavbar() {
             </div>
           </Link>
 
-          {/* Mobile Admin Tools */}
-          {(userRole === 'admin' || import.meta.env.DEV) && (
-            <div className="mt-3 pt-3 border-t border-[#e9ddff]">
-              <Link href="/testing">
-                <div className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-[#f8f5ff] hover:text-[#3e0075] hover:shadow-sm hover:translate-x-1 transition-all duration-200">
-                  <div className="flex items-center">
-                    <TestTube2 className="w-5 h-5 mr-2 flex-shrink-0" />
-                    <span>Switch Roles</span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </header>
