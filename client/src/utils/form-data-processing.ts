@@ -27,7 +27,7 @@ export function processDealScopingData(data: FormDataWithNumbers): any {
   const processedData = processFormDataForSubmission(data);
   
   // Generate consistent scoping request name using DataMappingService
-  const requestTitle = DataMappingService.generateDealName({
+  const dealName = DataMappingService.generateDealName({
     dealType: processedData.dealType,
     salesChannel: processedData.salesChannel,
     dealStructure: processedData.dealStructure,
@@ -43,7 +43,7 @@ export function processDealScopingData(data: FormDataWithNumbers): any {
     // Ensure growthAmbition has a minimum value for scoping requests
     growthAmbition: Number(processedData.growthAmbition || 1000000),
     // Add required backend fields with consistent naming
-    requestTitle,
+    dealName,
     description: "Growth opportunity assessment request",
   };
 }
