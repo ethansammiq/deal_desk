@@ -278,7 +278,9 @@ export default function DealsPage() {
     },
     {
       accessorKey: "priority",
-      header: "Priority",
+      header: ({ column }) => (
+        <div className="text-center">Priority</div>
+      ),
       cell: ({ row }) => {
         const priority = row.original.priority;
         const priorityLabels = {
@@ -312,7 +314,9 @@ export default function DealsPage() {
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: ({ column }) => (
+        <div className="text-center">Status</div>
+      ),
       cell: ({ row }) => {
         const deal = row.original;
         const status = deal.status as DealStatus;
@@ -328,7 +332,9 @@ export default function DealsPage() {
     },
     {
       accessorKey: "dealInsight",
-      header: "Deal Flow", 
+      header: ({ column }) => (
+        <div className="text-center">Deal Flow</div>
+      ), 
       cell: ({ row }) => {
         const deal = row.original;
         // Use backend-calculated flowIntelligence for consistency
