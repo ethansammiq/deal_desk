@@ -3,8 +3,9 @@
  * Handles type conversions, data transformations, and business logic consistently across forms
  */
 
-// Import shared type definitions
+// Import shared type definitions and services
 import { AdvertiserData, AgencyData, FormDataWithNumbers } from "@shared/types";
+import { DataMappingService } from "@/services/dataMappingService";
 
 /**
  * Converts string fields to numbers for backend compatibility
@@ -25,12 +26,24 @@ export function processFormDataForSubmission(data: FormDataWithNumbers): any {
 export function processDealScopingData(data: FormDataWithNumbers): any {
   const processedData = processFormDataForSubmission(data);
   
+  // Generate consistent scoping request name using DataMappingService
+  const requestTitle = DataMappingService.generateDealName({
+    dealType: processedData.dealType,
+    salesChannel: processedData.salesChannel,
+    dealStructure: processedData.dealStructure,
+    advertiserName: processedData.advertiserName,
+    agencyName: processedData.agencyName,
+    termStartDate: processedData.termStartDate,
+    termEndDate: processedData.termEndDate,
+    processType: 'SCOPING'
+  });
+  
   return {
     ...processedData,
     // Ensure growthAmbition has a minimum value for scoping requests
     growthAmbition: Number(processedData.growthAmbition || 1000000),
-    // Add required backend fields
-    requestTitle: "Deal Scoping Request",
+    // Add required backend fields with consistent naming
+    requestTitle,
     description: "Growth opportunity assessment request",
   };
 }

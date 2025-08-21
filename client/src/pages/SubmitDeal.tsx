@@ -942,7 +942,8 @@ export default function SubmitDeal() {
       advertiserName: data.advertiserName,
       agencyName: data.agencyName,
       termStartDate: data.termStartDate,
-      termEndDate: data.termEndDate
+      termEndDate: data.termEndDate,
+      processType: 'SUBMISSION'
     });
 
     // ✅ REFACTORED: Using shared data processing utility

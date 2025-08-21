@@ -17,16 +17,13 @@ export class DataMappingService {
   };
 
   static readonly dealTypeDisplayNames: Record<string, string> = {
-    standard_deal: "Standard Deal",
-    seasonal_promotion: "Seasonal Promotion",
-    annual_commitment: "Annual Commitment",
-    new_business: "New Business",
     grow: "Grow",
+    protect: "Protect",
+    custom: "Custom",
   };
 
   static readonly salesChannelDisplayNames: Record<string, string> = {
     client_direct: "Client Direct",
-    agency: "Agency",
     holding_company: "Holding Company",
     independent_agency: "Independent Agency",
   };
@@ -36,25 +33,22 @@ export class DataMappingService {
     flat_commit: "Flat Commitment",
   };
 
-  // Mapping objects for deal name generation (shortened versions)
+  // Mapping objects for deal name generation (abbreviated versions)
   static readonly dealTypeMap: Record<string, string> = {
-    standard_deal: "STD",
-    seasonal_promotion: "SEAS",
-    annual_commitment: "ANN",
-    new_business: "NEW",
-    grow: "GROW",
+    grow: "Grow",
+    protect: "Protect",
+    custom: "Custom",
   };
 
   static readonly salesChannelMap: Record<string, string> = {
     client_direct: "CD",
-    agency: "AG",
-    holding_company: "HC",
-    independent_agency: "IA",
+    holding_company: "Holdco",
+    independent_agency: "Indies",
   };
 
   static readonly dealStructureMap: Record<string, string> = {
-    tiered: "TR",
-    flat_commit: "FC",
+    tiered: "Tiered",
+    flat_commit: "Flat",
   };
 
   /**
@@ -93,8 +87,9 @@ export class DataMappingService {
     dealStructure?: string;
     advertiserName?: string;
     agencyName?: string;
-    termStartDate?: Date;
-    termEndDate?: Date;
+    termStartDate?: Date | string;
+    termEndDate?: Date | string;
+    processType?: 'SCOPING' | 'SUBMISSION';
   }): string {
     const {
       dealType,
@@ -103,7 +98,8 @@ export class DataMappingService {
       advertiserName,
       agencyName,
       termStartDate,
-      termEndDate
+      termEndDate,
+      processType = 'SUBMISSION'
     } = formData;
 
     // Determine client name based on sales channel
@@ -137,8 +133,8 @@ export class DataMappingService {
       ? (dealStructure as keyof typeof this.dealStructureMap) 
       : "flat_commit";
 
-    // Generate deal name using the mapping
-    return `${this.dealTypeMap[dealTypeKey]}_${this.salesChannelMap[salesChannelKey]}_${clientName}_${this.dealStructureMap[dealStructureKey]}_${startDateFormatted}-${endDateFormatted}`;
+    // Generate deal name using the updated mapping with process type
+    return `${this.dealTypeMap[dealTypeKey]}_${this.salesChannelMap[salesChannelKey]}_${clientName}_${this.dealStructureMap[dealStructureKey]}_${processType}_${startDateFormatted}-${endDateFormatted}`;
   }
 
   /**
