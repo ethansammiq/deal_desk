@@ -12,7 +12,7 @@ import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
 import { DealDetailsProvider, useDealDetails } from "@/providers/DealDetailsProvider";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
-import { ArrowLeft, ArrowRight, Calendar, DollarSign, Users, MapPin, Target, FileCheck, BarChart3, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Users, MapPin, Target, FileCheck, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = 'seller' | 'approver' | 'legal' | 'admin' | 'department_reviewer';
@@ -121,7 +121,7 @@ function DealDetailsContent() {
               tierNumber: 1,
               annualRevenue: 6000000, // Tesla's revenue from fallback
               annualGrossMargin: 0.22, // Tesla's margin from fallback
-              incentiveStructure: [],
+              incentives: [],
               createdAt: deal.createdAt,
               updatedAt: deal.updatedAt
             }
