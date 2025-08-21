@@ -1,12 +1,12 @@
 import { useParams, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { FinancialSummarySection } from "@/components/deal-form/FinancialSummarySection";
-import { FormSectionHeader } from "@/components/ui/form-style-guide";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
 import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
@@ -60,59 +60,60 @@ function DealDetailsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50 p-6 space-y-6">
 
-      {/* Deal Summary Bar - Horizontal Layout */}
-      <div className="px-6 py-6 border-b border-gray-200 bg-white">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Deal Title & Client */}
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{deal.dealName}</h1>
-            <p className="text-sm text-slate-500 mt-1">Client: {deal.dealName.split(' ')[0]}</p>
+      {/* Deal Summary Card */}
+      <Card className="border border-slate-200 shadow-sm bg-white">
+        <CardHeader className="pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+            <div className="flex-1">
+              <CardTitle className="text-xl font-semibold text-slate-900">
+                {deal.dealName}
+              </CardTitle>
+              <CardDescription className="text-slate-500">
+                {deal.dealType} • {deal.dealStructure?.replace('_', ' ')} • Client: {deal.dealName.split(' ')[0]}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-slate-900">#{deal.referenceNumber}</p>
+                <p className="text-xs text-slate-500">
+                  {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                deal.status === 'approved' ? 'bg-green-100 text-green-800' :
+                deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
+                deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
+                'bg-slate-100 text-slate-800'
+              }`}>
+                {deal.status?.replace('_', ' ')}
+              </span>
+            </div>
           </div>
-          
-          {/* Reference & Type */}
-          <div>
-            <p className="text-sm font-medium text-slate-900">#{deal.referenceNumber}</p>
-            <p className="text-sm text-slate-500 mt-1">{deal.dealType} • {deal.dealStructure?.replace('_', ' ')}</p>
-          </div>
-          
-          {/* Timeline */}
-          <div>
-            <p className="text-sm font-medium text-slate-900">Created</p>
-            <p className="text-sm text-slate-500 mt-1">
-              {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
-            </p>
-            {deal.lastRevisedAt && (
-              <p className="text-xs text-slate-400 mt-1">
-                Revised: {format(new Date(deal.lastRevisedAt), 'MMM dd')}
-              </p>
-            )}
-          </div>
-          
-          {/* Status */}
-          <div className="flex items-center justify-end">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-              deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-              deal.status === 'approved' ? 'bg-green-100 text-green-800' :
-              deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
-              deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
-              'bg-slate-100 text-slate-800'
-            }`}>
-              {deal.status?.replace('_', ' ')}
-            </span>
-          </div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
-      {/* Financial Structure - Full Width */}
-      <div className="px-6 py-6 border-b border-gray-200 space-y-6">
-        <FormSectionHeader
-          title="Financial Summary"
-          description="Revenue projections and growth analysis for this deal"
-        />
-        <FinancialSummarySection 
+      {/* Financial Summary Card */}
+      <Card className="border border-slate-200 shadow-sm bg-white">
+        <CardHeader className="pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+            <div className="flex-1">
+              <CardTitle className="text-xl font-semibold text-slate-900">
+                Financial Summary
+              </CardTitle>
+              <CardDescription className="text-slate-500">
+                Revenue projections and growth analysis for this deal
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <FinancialSummarySection 
           dealTiers={tiers.length > 0 ? tiers : [
             {
               dealId: deal.id,
@@ -127,44 +128,73 @@ function DealDetailsContent() {
           salesChannel="independent_agency"
           advertiserName={deal.dealName.split(' ')[0]}
           agencyName="MiQ"
-        />
-      </div>
+          />
+        </CardContent>
+      </Card>
 
-      {/* Bottom Section - 2 Column Layout */}
-      <div className="px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* LEFT COLUMN - Approval Workflow */}
-          <div className="space-y-8">
-            {/* Approval Workflow */}
-            <div>
-              <FormSectionHeader
-                title="Approval Workflow"
-                description="Current approval status and next steps"
-              />
-              <ApprovalTracker 
-                dealId={deal.id}
-                dealName={deal.dealName}
-              />
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* LEFT COLUMN - Approval Workflow */}
+        <Card className="border border-slate-200 shadow-sm bg-white">
+          <CardHeader className="pb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+              <div className="flex-1">
+                <CardTitle className="text-xl font-semibold text-slate-900">
+                  Approval Workflow
+                </CardTitle>
+                <CardDescription className="text-slate-500">
+                  Current approval status and next steps
+                </CardDescription>
+              </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
+            <ApprovalTracker 
+              dealId={deal.id}
+              dealName={deal.dealName}
+            />
+          </CardContent>
+        </Card>
 
-          {/* RIGHT COLUMN - Activity + Metadata + Actions */}
-          <div className="space-y-8">
-            {/* Activity Feed */}
-            <div>
-              <FormSectionHeader
-                title="Activity & Communication"
-                description="Comments, updates, and collaboration history"
-              />
+        {/* RIGHT COLUMN - Activity & Actions */}
+        <div className="space-y-6">
+          {/* Activity Feed */}
+          <Card className="border border-slate-200 shadow-sm bg-white">
+            <CardHeader className="pb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+                <div className="flex-1">
+                  <CardTitle className="text-xl font-semibold text-slate-900">
+                    Activity & Communication
+                  </CardTitle>
+                  <CardDescription className="text-slate-500">
+                    Comments, updates, and collaboration history
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
               <ActivityFeed deal={deal} dealId={deal.id} />
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Role-Based Actions */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <FileCheck className="h-5 w-5" />
-                Actions
-              </h2>
+          {/* Role-Based Actions */}
+          <Card className="border border-slate-200 shadow-sm bg-white">
+            <CardHeader className="pb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
+                <div className="flex-1">
+                  <CardTitle className="text-xl font-semibold text-slate-900">
+                    Actions
+                  </CardTitle>
+                  <CardDescription className="text-slate-500">
+                    Available actions for your role
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
               <RoleBasedActions
                 deal={deal}
                 userRole={userRole}
@@ -174,8 +204,8 @@ function DealDetailsContent() {
                 onResubmit={() => resubmitDeal()}
                 isLoading={isUpdatingStatus}
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
