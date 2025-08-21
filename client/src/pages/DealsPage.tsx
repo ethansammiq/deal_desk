@@ -298,18 +298,22 @@ export default function DealsPage() {
         const label = priorityLabels[priority as keyof typeof priorityLabels] || priority;
         const colorClass = priorityColors[priority as keyof typeof priorityColors] || 'bg-gray-100 text-gray-800 border-gray-200';
         return (
-          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${colorClass}`}>
-            {label}
-          </span>
+          <div className="flex justify-center">
+            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${colorClass}`}>
+              {label}
+            </span>
+          </div>
         );
       },
     },
     {
       id: "dealValue", 
-      header: "Deal Value",
+      header: ({ column }) => (
+        <div className="text-center">Deal Value</div>
+      ),
       cell: ({ row }) => {
         const { amount, isMultiTier } = getDealValue(row.original);
-        return <div className="font-medium">{formatShortCurrency(amount, isMultiTier)}</div>;
+        return <div className="font-medium text-center">{formatShortCurrency(amount, isMultiTier)}</div>;
       },
     },
     {
@@ -321,7 +325,7 @@ export default function DealsPage() {
         const deal = row.original;
         const status = deal.status as DealStatus;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <DealStatusBadge status={status} />
           </div>
         );
@@ -342,16 +346,20 @@ export default function DealsPage() {
         
         if (flowIntelligence === 'needs_attention') {
           return (
-            <Badge variant="destructive" className="text-xs font-medium">
-              Needs Attention
-            </Badge>
+            <div className="flex justify-center">
+              <Badge variant="destructive" className="text-xs font-medium">
+                Needs Attention
+              </Badge>
+            </div>
           );
         }
         
         return (
-          <Badge variant="secondary" className="text-xs font-medium text-slate-600 bg-slate-100">
-            On Track
-          </Badge>
+          <div className="flex justify-center">
+            <Badge variant="secondary" className="text-xs font-medium text-slate-600 bg-slate-100">
+              On Track
+            </Badge>
+          </div>
         );
       },
     },
