@@ -649,80 +649,99 @@ function DealDetailsContent() {
       {/* Deal Summary Card */}
       <Card className="border border-slate-200 shadow-sm bg-white">
         <CardHeader className="pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-6 bg-[#3e0075] rounded-full"></div>
-            <div className="flex-1">
-              <CardTitle className="text-xl font-semibold text-slate-900">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900 mb-2">
                 {deal.dealName}
-              </CardTitle>
-              <div className="text-slate-500 space-y-2">
-                {/* Deal Structure & Client Info */}
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="font-medium">{deal.dealType}</span>
-                  <span>•</span>
-                  <span className="capitalize">{deal.dealStructure?.replace('_', ' ')}</span>
-                  {deal.salesChannel && (
-                    <>
-                      <span>•</span>
-                      <span className="capitalize">{deal.salesChannel.replace('_', ' ')}</span>
-                    </>
-                  )}
-                </div>
-                
-                {/* Client & Region */}
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>Client: {deal.advertiserName || deal.agencyName || deal.dealName.split(' ')[0]}</span>
-                  </div>
-                  {deal.region && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span className="capitalize">{deal.region}</span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Timeline Information */}
-                {(deal.termStartDate && deal.termEndDate) || deal.contractTermMonths ? (
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
-                    {deal.termStartDate && deal.termEndDate && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>
-                          {format(new Date(deal.termStartDate), 'MMM dd, yyyy')} - {format(new Date(deal.termEndDate), 'MMM dd, yyyy')}
-                        </span>
-                      </div>
-                    )}
-                    {deal.contractTermMonths && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{deal.contractTermMonths} month{deal.contractTermMonths !== '1' ? 's' : ''} term</span>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-              </div>
+              </h1>
+              <p className="text-sm text-slate-500">
+                #{deal.referenceNumber}
+              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-slate-900">#{deal.referenceNumber}</p>
-                <p className="text-xs text-slate-500">
-                  {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
-                </p>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+              deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+              deal.status === 'approved' ? 'bg-green-100 text-green-800' :
+              deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
+              deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
+              'bg-slate-100 text-slate-800'
+            }`}>
+              {deal.status?.replace('_', ' ')}
+            </span>
+          </div>
+
+          {/* Two-column layout for deal information */}
+          <div className="grid grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-700">Client:</span>
+                <span className="text-sm text-slate-900">{deal.advertiserName || deal.agencyName || deal.dealName.split(' ')[0]}</span>
               </div>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                deal.status === 'approved' ? 'bg-green-100 text-green-800' :
-                deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
-                deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
-                'bg-slate-100 text-slate-800'
-              }`}>
-                {deal.status?.replace('_', ' ')}
-              </span>
+              
+              {deal.salesChannel && (
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Sales Channel:</span>
+                  <span className="text-sm text-slate-900 capitalize">{deal.salesChannel.replace('_', ' ')}</span>
+                </div>
+              )}
+              
+              {deal.dealStructure && (
+                <div className="flex items-center gap-2">
+                  <FileCheck className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Deal Structure:</span>
+                  <span className="text-sm text-slate-900 capitalize">{deal.dealStructure.replace('_', ' ')}</span>
+                </div>
+              )}
+              
+              {deal.contractTermMonths && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Contract Term:</span>
+                  <span className="text-sm text-slate-900">{deal.contractTermMonths} month{Number(deal.contractTermMonths) !== 1 ? 's' : ''}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              {deal.region && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Region:</span>
+                  <span className="text-sm text-slate-900 capitalize">{deal.region}</span>
+                </div>
+              )}
+              
+              {deal.dealType && (
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Deal Type:</span>
+                  <span className="text-sm text-slate-900 capitalize">{deal.dealType}</span>
+                </div>
+              )}
+
+              {deal.termStartDate && deal.termEndDate && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700">Timeline:</span>
+                  <span className="text-sm text-slate-900">
+                    {format(new Date(deal.termStartDate), 'MMM dd, yyyy')} - {format(new Date(deal.termEndDate), 'MMM dd, yyyy')}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Business Summary Section */}
+          {deal.businessSummary && (
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <h3 className="text-sm font-medium text-slate-700 mb-2">Business Summary</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">{deal.businessSummary}</p>
+            </div>
+          )}
         </CardHeader>
       </Card>
 
