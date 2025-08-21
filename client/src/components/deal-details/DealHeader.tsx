@@ -48,70 +48,67 @@ export function DealHeader({ deal, tiers, aiScore, bottleneckCount }: DealHeader
         </div>
       </div>
 
-      {/* KPI Strip */}
+      {/* KPI Strip - Optimized Most Impactful Metrics */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Annual Revenue */}
+          {/* Annual Revenue - Primary Business Impact */}
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Revenue</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Annual Revenue</p>
               <p className="text-lg font-bold text-gray-900">
                 {annualRevenue ? formatCurrency(annualRevenue) : 'N/A'}
               </p>
+              <p className="text-xs text-gray-500">Primary target</p>
             </div>
           </div>
 
-          {/* Adjusted Gross Margin */}
+          {/* Adjusted Gross Margin - Profitability Efficiency */}
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <TrendingUp className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Margin</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Gross Margin</p>
               <p className="text-lg font-bold text-gray-900">
                 {adjustedGrossMargin ? formatPercentage(adjustedGrossMargin) : 'N/A'}
               </p>
+              <p className="text-xs text-gray-500">After incentives</p>
             </div>
           </div>
 
-          {/* Adjusted Gross Profit */}
+          {/* Adjusted Gross Profit - Bottom Line Impact */}
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
+              <DollarSign className="h-4 w-4 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Profit</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Gross Profit</p>
               <p className="text-lg font-bold text-gray-900">
                 {adjustedGrossProfit ? formatCurrency(adjustedGrossProfit) : 'N/A'}
               </p>
+              <p className="text-xs text-gray-500">Bottom line</p>
             </div>
           </div>
 
-          {/* AI Score & Bottlenecks */}
+          {/* AI Insights & Risk Level */}
           <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              {/* AI Score */}
-              {aiScore && aiRec && (
-                <div className="flex items-center gap-2">
-                  <Award className="h-3 w-3 text-purple-500" />
-                  <span className="text-xs font-medium text-gray-500">AI:</span>
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <Award className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">AI Assessment</p>
+              {aiScore && aiRec ? (
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-gray-900">{aiScore}/10</p>
                   <Badge className={`text-xs px-2 py-0.5 ${aiRec.color}`}>
                     {aiRec.text}
                   </Badge>
                 </div>
-              )}
-              
-              {/* Bottlenecks */}
-              {bottleneckCount && bottleneckCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-3 w-3 text-red-500" />
-                  <span className="text-xs font-medium text-red-600">
-                    {bottleneckCount} Bottleneck{bottleneckCount > 1 ? 's' : ''}
-                  </span>
-                </div>
+              ) : (
+                <p className="text-lg font-bold text-gray-500">Pending</p>
               )}
             </div>
           </div>
