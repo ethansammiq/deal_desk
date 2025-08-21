@@ -135,74 +135,36 @@ export function BusinessContextSection({ form, variant = "submitDeal" }: Busines
         {/* Submit Deal specific fields */}
         {!isRequestSupport && (
           <>
-            <FormField
-              control={form.control}
+            <FormFieldWithTooltip
+              form={form}
               name="growthOpportunityMIQ"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Growth Opportunity (MIQ) <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe the pathway to growth from our perspective..."
-                      className="resize-none"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    What's the pathway to growth from our perspective? Include market opportunities, strategic advantages, and revenue potential.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Growth Opportunity (MIQ)"
+              type="textarea"
+              placeholder="Describe the pathway to growth from our perspective..."
+              required
+              tooltip="Explain the specific growth pathway and how we can contribute to success"
+              description="What's the pathway to growth from our perspective? Include market opportunities, strategic advantages, and revenue potential."
             />
 
-            <FormField
-              control={form.control}
+            <FormFieldWithTooltip
+              form={form}
               name="growthOpportunityClient"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Growth Opportunity (Client) <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe how the client is looking to grow their business AND with MIQ..."
-                      className="resize-none"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    How is the client looking to grow their business AND with MIQ? Include their objectives, challenges, and expectations.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Growth Opportunity (Client)"
+              type="textarea"
+              placeholder="Describe how the client is looking to grow their business AND with MIQ..."
+              required
+              tooltip="Focus on client benefits, success metrics, and partnership value"
+              description="How is the client looking to grow their business AND with MIQ? Include their objectives, challenges, and expectations."
             />
 
-            <FormField
-              control={form.control}
+            <FormFieldWithTooltip
+              form={form}
               name="clientAsks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Client Asks</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe what the client has asked from us (if applicable)..."
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    What has the client specifically asked from us? Include special requirements, custom solutions, or specific deliverables.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Client Asks"
+              type="textarea"
+              placeholder="Describe what the client has asked from us (if applicable)..."
+              tooltip="Document specific client requirements, expectations, and resource requests"
+              description="What has the client specifically asked from us? Include special requirements, custom solutions, or specific deliverables."
             />
           </>
         )}
