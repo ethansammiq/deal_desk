@@ -269,12 +269,7 @@ export default function DealDetails() {
                 dealStructure={deal.dealStructure || 'flat_commit'}
               />
 
-              {/* AI Assessment Section */}
-              <DealGenieAssessment 
-                dealData={deal}
-                revenueGrowthRate={undefined}
-                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
-              />
+
             </div>
 
             {/* Column 2: Workflow & Progress (40% - 2/5 of grid) */}
@@ -295,7 +290,7 @@ export default function DealDetails() {
               />
             </div>
 
-            {/* Column 3: Collaboration & Actions (20% - 1/5 of grid) */}
+            {/* Column 3: AI Insights & Actions (20% - 1/5 of grid) */}
             <div className="md:col-span-2 lg:col-span-1 space-y-6">
               <ActionCards 
                 deal={deal}
@@ -303,6 +298,14 @@ export default function DealDetails() {
                 onRevisionRequest={() => setRevisionModalOpen(true)}
                 onApprove={() => approveDeal(deal.id)}
                 isUpdatingStatus={isUpdatingStatus}
+              />
+              
+              {/* AI Assessment Section - Moved to Column 3 */}
+              <DealGenieAssessment 
+                dealData={deal}
+                revenueGrowthRate={undefined}
+                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
+                mode="compact"
               />
             </div>
           </div>
