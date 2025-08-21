@@ -1036,7 +1036,7 @@ export class MemStorage implements IStorage {
     // Update existing deals with flow intelligence for testing
     this.updateFlowIntelligenceForExistingDeals().catch(console.error);
     
-    // Add sample tiers for tiered deals
+    // Add sample tiers for tiered deals using proper schema structure
     const tiersByDealId = {
       1: [ // For "Coca-Cola Q1 2025 Campaign"
         {
@@ -1044,7 +1044,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 2500000,
           annualGrossMargin: 0.185,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Base Tier",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Base tier - no incentives"
         },
         {
@@ -1052,24 +1055,33 @@ export class MemStorage implements IStorage {
           tierNumber: 2,
           annualRevenue: 3000000,
           annualGrossMargin: 0.205,
-          incentivePercentage: 1.5,
-          incentiveNotes: "Tier 2 - 1.5% rebate"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Volume Discount",
+          incentiveValue: 45000, // 1.5% of $3M
+          incentiveNotes: "1.5% volume rebate"
         },
         {
           dealId: 1,
           tierNumber: 3,
           annualRevenue: 3500000,
           annualGrossMargin: 0.210,
-          incentivePercentage: 2.0,
-          incentiveNotes: "Tier 3 - 2% rebate + premium support"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Volume Discount",
+          incentiveValue: 70000, // 2% of $3.5M
+          incentiveNotes: "2% volume rebate + premium support"
         },
         {
           dealId: 1,
           tierNumber: 4,
           annualRevenue: 4000000,
           annualGrossMargin: 0.220,
-          incentivePercentage: 3.0,
-          incentiveNotes: "Tier 4 - 3% rebate + premium support + quarterly strategy sessions"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Growth Bonus",
+          incentiveValue: 120000, // 3% of $4M
+          incentiveNotes: "3% growth bonus + premium support + quarterly strategy sessions"
         }
       ],
       4: [ // For "Droga5 Client Portfolio"
@@ -1078,7 +1090,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 950000,
           annualGrossMargin: 0.328,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Base Tier",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Base tier - no incentives"
         },
         {
@@ -1086,24 +1101,33 @@ export class MemStorage implements IStorage {
           tierNumber: 2,
           annualRevenue: 1000000,
           annualGrossMargin: 0.330,
-          incentivePercentage: 1.0,
-          incentiveNotes: "Tier 2 - 1% rebate"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Volume Discount",
+          incentiveValue: 10000, // 1% of $1M
+          incentiveNotes: "1% volume rebate"
         },
         {
           dealId: 4,
           tierNumber: 3,
           annualRevenue: 1100000,
           annualGrossMargin: 0.335,
-          incentivePercentage: 1.5,
-          incentiveNotes: "Tier 3 - 1.5% rebate"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Volume Discount",
+          incentiveValue: 16500, // 1.5% of $1.1M
+          incentiveNotes: "1.5% volume rebate"
         },
         {
           dealId: 4,
           tierNumber: 4,
           annualRevenue: 1250000,
           annualGrossMargin: 0.340,
-          incentivePercentage: 2.5,
-          incentiveNotes: "Tier 4 - 2.5% rebate + priority support"
+          categoryName: "Resources",
+          subCategoryName: "Support Services",
+          incentiveOption: "Priority Support",
+          incentiveValue: 31250, // 2.5% of $1.25M
+          incentiveNotes: "2.5% rebate + priority support"
         }
       ],
       5: [ // For "Nike Digital Transformation"
@@ -1112,7 +1136,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 2000000,
           annualGrossMargin: 0.230,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Base Tier",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Base tier - no incentives"
         },
         {
@@ -1120,24 +1147,33 @@ export class MemStorage implements IStorage {
           tierNumber: 2,
           annualRevenue: 2500000,
           annualGrossMargin: 0.255,
-          incentivePercentage: 2.0,
-          incentiveNotes: "Tier 2 - 2% rebate + enhanced analytics package"
+          categoryName: "Analytics",
+          subCategoryName: "Data Services",
+          incentiveOption: "Enhanced Analytics Package",
+          incentiveValue: 50000, // 2% of $2.5M
+          incentiveNotes: "2% value + enhanced analytics package"
         },
         {
           dealId: 5,
           tierNumber: 3,
           annualRevenue: 3000000,
           annualGrossMargin: 0.270,
-          incentivePercentage: 3.0,
-          incentiveNotes: "Tier 3 - 3% rebate + enhanced analytics + quarterly workshops"
+          categoryName: "Analytics",
+          subCategoryName: "Training Services",
+          incentiveOption: "Quarterly Workshops",
+          incentiveValue: 90000, // 3% of $3M
+          incentiveNotes: "3% value + enhanced analytics + quarterly workshops"
         },
         {
           dealId: 5,
           tierNumber: 4,
           annualRevenue: 3500000,
           annualGrossMargin: 0.285,
-          incentivePercentage: 4.5,
-          incentiveNotes: "Tier 4 - 4.5% rebate + all premium features + executive quarterly reviews"
+          categoryName: "Marketing",
+          subCategoryName: "Premium Services",
+          incentiveOption: "Executive Reviews",
+          incentiveValue: 157500, // 4.5% of $3.5M
+          incentiveNotes: "4.5% value + all premium features + executive quarterly reviews"
         }
       ],
       2: [ // For "WPP Agency Partnership" (flat_commit)
@@ -1146,7 +1182,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 9500000,
           annualGrossMargin: 0.302,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Flat Commit",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Flat commit - unified agreement"
         }
       ],
@@ -1156,7 +1195,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 5000000,
           annualGrossMargin: 0.158,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Flat Commit",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Flat commit - custom data solution"
         }
       ],
@@ -1166,7 +1208,10 @@ export class MemStorage implements IStorage {
           tierNumber: 1,
           annualRevenue: 1200000,
           annualGrossMargin: 0.265,
-          incentivePercentage: 0,
+          categoryName: "Financial",
+          subCategoryName: "Base Tier",
+          incentiveOption: "No Incentive",
+          incentiveValue: 0,
           incentiveNotes: "Base tier - no incentives"
         },
         {
@@ -1174,16 +1219,22 @@ export class MemStorage implements IStorage {
           tierNumber: 2,
           annualRevenue: 1500000,
           annualGrossMargin: 0.280,
-          incentivePercentage: 1.0,
-          incentiveNotes: "Tier 2 - 1% rebate"
+          categoryName: "Financial",
+          subCategoryName: "Discounts",
+          incentiveOption: "Volume Discount",
+          incentiveValue: 15000, // 1% of $1.5M
+          incentiveNotes: "1% volume rebate"
         },
         {
           dealId: 6,
           tierNumber: 3,
           annualRevenue: 1800000,
           annualGrossMargin: 0.295,
-          incentivePercentage: 1.5,
-          incentiveNotes: "Tier 3 - 1.5% rebate + priority support"
+          categoryName: "Resources",
+          subCategoryName: "Support Services",
+          incentiveOption: "Priority Support",
+          incentiveValue: 27000, // 1.5% of $1.8M
+          incentiveNotes: "1.5% rebate + priority support"
         }
       ]
     };

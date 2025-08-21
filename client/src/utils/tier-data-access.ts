@@ -55,16 +55,16 @@ export const TierDataAccess = {
     const expectedTier = this.getExpectedTier(tiers);
     if (!expectedTier) return 0;
     
-    // Handle both new incentives array format and legacy incentivePercentage format
+    // Use the proper incentives array structure from deal form schema
     const incentivesArrayCost = getTotalIncentiveValue(expectedTier);
     if (incentivesArrayCost > 0) {
       return incentivesArrayCost;
     }
     
-    // Fallback to legacy incentivePercentage calculation for existing data
-    const incentivePercentage = (expectedTier as any).incentivePercentage;
-    if (incentivePercentage && expectedTier.annualRevenue) {
-      return expectedTier.annualRevenue * (incentivePercentage / 100);
+    // Fallback to incentiveValue field for sample data compatibility
+    const incentiveValue = (expectedTier as any).incentiveValue;
+    if (incentiveValue && typeof incentiveValue === 'number') {
+      return incentiveValue;
     }
     
     return 0;
