@@ -6,7 +6,6 @@ import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { EnhancedFinancialCard } from "@/components/deal-details/EnhancedFinancialCard";
-import { DealHeader } from "@/components/deal-details/DealHeader";
 import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
 import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
 import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
@@ -69,13 +68,27 @@ function DealDetailsContent() {
         </Button>
       </div>
 
-      {/* Deal Header with KPI Strip */}
-      <DealHeader 
-        deal={deal}
-        tiers={tiers}
-        aiScore={aiScore || 90}
-        bottleneckCount={2}
-      />
+      {/* Simplified Deal Header */}
+      <div className="px-6 py-6 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{deal.dealName}</h1>
+            <p className="text-sm text-gray-500 mt-1">#{deal.referenceNumber}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+              deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+              deal.status === 'approved' ? 'bg-green-100 text-green-800' :
+              deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
+              deal.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {deal.status?.replace('_', ' ')}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Consolidated Single-Page Layout */}
       <div className="px-6 py-6">
@@ -159,18 +172,6 @@ function DealDetailsContent() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Client:</span>
                     <span className="font-medium">{deal.dealName.split(' ')[0]}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Status:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                      deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                      deal.status === 'approved' ? 'bg-green-100 text-green-800' :
-                      deal.status === 'revision_requested' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {deal.status?.replace('_', ' ')}
-                    </span>
                   </div>
                   {deal.lastRevisedAt && (
                     <div className="flex justify-between">
