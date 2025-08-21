@@ -4,16 +4,17 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QueryStateHandler, SectionLoading, ErrorState } from "@/components/ui/loading-states";
 import { DealStatusBadge } from "@/components/deal-status/DealStatusBadge";
 import { RevisionRequestModal } from "@/components/revision/RevisionRequestModal";
-import { DealComments } from "@/components/collaboration/DealComments";
-import { StatusHistory } from "@/components/collaboration/StatusHistory";
-import { DealHistory } from "@/components/collaboration/DealHistory";
 import { ApprovalTracker } from "@/components/approval/ApprovalTracker";
 import { DealGenieAssessment } from "@/components/DealGenieAssessment";
 import { EnhancedFinancialCard } from "@/components/deal-details/EnhancedFinancialCard";
-import { ActionCards } from "@/components/deal-details/ActionCards";
+import { DealHeader } from "@/components/deal-details/DealHeader";
+import { RoleBasedActions } from "@/components/deal-details/RoleBasedActions";
+import { ApprovalSummary } from "@/components/deal-details/ApprovalSummary";
+import { ActivityFeed } from "@/components/deal-details/ActivityFeed";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useDealActions } from "@/hooks/useDealActions";
@@ -37,6 +38,7 @@ export default function DealDetails() {
   
   const dealId = parseInt(id || "0");
   const userRole = (user?.role as UserRole) || 'seller';
+  const [activeTab, setActiveTab] = useState('overview');
   
   // Resubmit deal mutation
   const resubmitMutation = useMutation({
@@ -148,16 +150,13 @@ export default function DealDetails() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button onClick={handleGoBack} variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Analytics
-          </Button>
-          <h1 className="text-2xl font-bold text-slate-900">Deal Details</h1>
-        </div>
+    <div className="space-y-0">
+      {/* Navigation Header */}
+      <div className="px-6 py-4 border-b border-gray-200">
+        <Button onClick={handleGoBack} variant="outline" size="sm">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Analytics
+        </Button>
       </div>
 
       <QueryStateHandler
@@ -175,153 +174,212 @@ export default function DealDetails() {
           const financialMetrics = getFinancialMetrics();
           
           return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column: Core Information & Financial Performance */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl">{deal.dealName}</CardTitle>
-                      <p className="text-sm text-slate-500 mt-1">#{deal.referenceNumber}</p>
-                    </div>
-                    <DealStatusBadge status={deal.status as any} />
+            <div>
+              {/* Deal Header with KPI Strip */}
+              <DealHeader 
+                deal={deal}
+                tiers={dealTiersQuery.data || []}
+                aiScore={7} // TODO: Get from AI analysis
+                bottleneckCount={2} // TODO: Calculate from approvals
+              />
+
+              {/* Primary Actions Bar */}
+              <div className="px-6 py-4 bg-white border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">{deal.advertiserName || deal.agencyName}</span> • {deal.region}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Client:</span>
-                      <span className="text-sm">{deal.advertiserName || deal.agencyName || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Region:</span>
-                      <span className="text-sm capitalize">{deal.region || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Sales Channel:</span>
-                      <span className="text-sm">{deal.salesChannel?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Deal Type:</span>
-                      <Badge variant="outline">
-                        {deal.dealType === 'grow' ? 'Grow' : 
-                         deal.dealType === 'protect' ? 'Protect' : 
-                         deal.dealType === 'custom' ? 'Custom' : deal.dealType}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Deal Structure:</span>
-                      <Badge variant="secondary">
-                        {deal.dealStructure === 'tiered' ? 'Tiered Revenue' : 'Flat Commit'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Priority:</span>
-                      <Badge variant={deal.priority === 'critical' ? 'destructive' : deal.priority === 'high' ? 'default' : 'outline'}>
-                        {deal.priority?.charAt(0).toUpperCase() + deal.priority?.slice(1) || 'N/A'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-slate-500" />
-                      <span className="text-sm font-medium">Contract Term:</span>
-                      <span className="text-sm">{deal.contractTerm ? `${deal.contractTerm} months` : 'N/A'}</span>
-                    </div>
+                  <RoleBasedActions
+                    deal={deal}
+                    userRole={userRole}
+                    onApprove={() => approveDeal(dealId)}
+                    onEdit={() => navigate(`/deals/${dealId}/edit`)}
+                    onRequestRevision={() => setRevisionModalOpen(true)}
+                    onResubmit={() => resubmitMutation.mutate(dealId)}
+                    isLoading={isUpdatingStatus || resubmitMutation.isPending}
+                  />
+                </div>
+              </div>
+
+              {/* Tab-Based Content */}
+              <div className="bg-white">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <div className="px-6 border-b border-gray-200">
+                    <TabsList className="grid w-full grid-cols-5 bg-transparent h-auto p-0">
+                      <TabsTrigger 
+                        value="overview" 
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none py-4 px-6"
+                      >
+                        Overview
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="approvals"
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none py-4 px-6"
+                      >
+                        Approvals
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="financials"
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none py-4 px-6"
+                      >
+                        Financials
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="ai-insights"
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none py-4 px-6"
+                      >
+                        AI Insights
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="activity"
+                        className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none py-4 px-6"
+                      >
+                        Activity
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
 
-                  {/* Revision Information */}
-                  {deal.status === 'revision_requested' && deal.revisionReason && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-amber-900 mb-2">Revision Requested</h4>
-                          <p className="text-sm text-amber-800 mb-3">{deal.revisionReason}</p>
-                          <div className="flex items-center gap-2 text-xs text-amber-700">
-                            <span>Revision #{deal.revisionCount || 1}</span>
-                            {deal.lastRevisedAt && (
-                              <span>• Requested {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}</span>
-                            )}
-                          </div>
+                  <div className="p-6">
+                    {/* Overview Tab */}
+                    <TabsContent value="overview" className="mt-0 space-y-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Financial Summary */}
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Financial Performance</h3>
+                          <EnhancedFinancialCard 
+                            tiers={dealTiersQuery.data || []}
+                            dealStructure={deal.dealStructure || 'flat_commit'}
+                          />
+                        </div>
+
+                        {/* Approval Summary */}
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Approval Status</h3>
+                          <ApprovalSummary 
+                            dealId={dealId}
+                            onViewDetails={() => setActiveTab('approvals')}
+                          />
                         </div>
                       </div>
-                    </div>
-                  )}
 
-                  {deal.businessSummary && (
-                    <div>
-                      <h3 className="text-sm font-medium text-slate-900 mb-2">Business Summary</h3>
-                      <p className="text-sm text-slate-600">{deal.businessSummary}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      {/* Deal Details Grid */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Deal Information</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Client:</span>
+                              <span className="text-sm">{deal.advertiserName || deal.agencyName || 'N/A'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Sales Channel:</span>
+                              <span className="text-sm">{deal.salesChannel?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'N/A'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Deal Type:</span>
+                              <Badge variant="outline">
+                                {deal.dealType === 'grow' ? 'Grow' : 
+                                 deal.dealType === 'protect' ? 'Protect' : 
+                                 deal.dealType === 'custom' ? 'Custom' : deal.dealType}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <BarChart3 className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Structure:</span>
+                              <Badge variant="secondary">
+                                {deal.dealStructure === 'tiered' ? 'Tiered Revenue' : 'Flat Commit'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Target className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Priority:</span>
+                              <Badge variant={deal.priority === 'critical' ? 'destructive' : deal.priority === 'high' ? 'default' : 'outline'}>
+                                {deal.priority?.charAt(0).toUpperCase() + deal.priority?.slice(1) || 'N/A'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-slate-500" />
+                              <span className="text-sm font-medium">Contract Term:</span>
+                              <span className="text-sm">{deal.contractTerm ? `${deal.contractTerm} months` : 'N/A'}</span>
+                            </div>
+                          </div>
 
-              {/* Enhanced Financial Performance */}
-              <EnhancedFinancialCard 
-                tiers={dealTiersQuery.data || []}
-                dealStructure={deal.dealStructure || 'flat_commit'}
+                          {/* Business Summary */}
+                          {deal.businessSummary && (
+                            <div className="mt-6">
+                              <h4 className="text-sm font-medium text-slate-900 mb-2">Business Summary</h4>
+                              <p className="text-sm text-slate-600">{deal.businessSummary}</p>
+                            </div>
+                          )}
+
+                          {/* Revision Information */}
+                          {deal.status === 'revision_requested' && deal.revisionReason && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
+                              <div className="flex items-start gap-3">
+                                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-amber-900 mb-2">Revision Requested</h4>
+                                  <p className="text-sm text-amber-800 mb-3">{deal.revisionReason}</p>
+                                  <div className="flex items-center gap-2 text-xs text-amber-700">
+                                    <span>Revision #{deal.revisionCount || 1}</span>
+                                    {deal.lastRevisedAt && (
+                                      <span>• Requested {format(new Date(deal.lastRevisedAt), 'MMM dd, yyyy')}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    {/* Approvals Tab */}
+                    <TabsContent value="approvals" className="mt-0">
+                      <ApprovalTracker dealId={dealId} />
+                    </TabsContent>
+
+                    {/* Financials Tab */}
+                    <TabsContent value="financials" className="mt-0">
+                      <EnhancedFinancialCard 
+                        tiers={dealTiersQuery.data || []}
+                        dealStructure={deal.dealStructure || 'flat_commit'}
+                      />
+                    </TabsContent>
+
+                    {/* AI Insights Tab */}
+                    <TabsContent value="ai-insights" className="mt-0">
+                      <DealGenieAssessment deal={deal} />
+                    </TabsContent>
+
+                    {/* Activity Tab */}
+                    <TabsContent value="activity" className="mt-0">
+                      <ActivityFeed deal={deal} dealId={dealId} />
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </div>
+
+              {/* Revision Request Modal */}
+              <RevisionRequestModal
+                dealId={dealId}
+                isOpen={revisionModalOpen}
+                onClose={() => setRevisionModalOpen(false)}
               />
             </div>
-
-            {/* Right Column: Workflow, Actions & Intelligence */}
-            <div className="space-y-6">
-              {/* Approval Progress Tracker */}
-              {deal.status !== 'draft' && deal.status !== 'scoping' && (
-                <ApprovalTracker
-                  dealId={deal.id}
-                  dealName={deal.dealName}
-                />
-              )}
-
-              {/* AI Assessment Section */}
-              <DealGenieAssessment 
-                dealData={deal}
-                revenueGrowthRate={undefined}
-                grossProfitGrowthRate={financialMetrics?.annualGrossMargin || undefined}
-                compact={false}
-              />
-
-              {/* Quick Actions - Role Appropriate */}
-              <ActionCards 
-                deal={deal}
-                userRole={userRole}
-                onRevisionRequest={() => setRevisionModalOpen(true)}
-                onApprove={() => approveDeal.mutate({
-                  dealId: deal.id,
-                  comments: undefined
-                })}
-                isUpdatingStatus={isUpdatingStatus}
-              />
-
-              {/* Comments Section */}
-              <DealComments 
-                deal={deal} 
-                userRole={userRole} 
-                currentUser={user?.username || 'Unknown User'} 
-              />
-            </div>
-          </div>
           );
         }}
-      </QueryStateHandler>
-
-      {/* Revision Request Modal */}
-      <QueryStateHandler query={dealQuery} loadingComponent={null} errorComponent={null}>
-        {(deal) => (
-          <RevisionRequestModal
-            isOpen={revisionModalOpen}
-            onClose={() => setRevisionModalOpen(false)}
-            deal={deal}
-          />
-        )}
       </QueryStateHandler>
     </div>
   );
 }
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-slate-500" />
+                      <span className="text-sm font-medium">Client:</span>
