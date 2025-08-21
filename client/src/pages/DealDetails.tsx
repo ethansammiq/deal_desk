@@ -68,14 +68,36 @@ function DealDetailsContent() {
         </Button>
       </div>
 
-      {/* Simplified Deal Header */}
-      <div className="px-6 py-6 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
+      {/* Deal Summary Bar - Horizontal Layout */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-white">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Deal Title & Client */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{deal.dealName}</h1>
-            <p className="text-sm text-gray-500 mt-1">#{deal.referenceNumber}</p>
+            <h1 className="text-xl font-bold text-gray-900">{deal.dealName}</h1>
+            <p className="text-sm text-gray-600 mt-1">Client: {deal.dealName.split(' ')[0]}</p>
           </div>
-          <div className="flex items-center gap-4">
+          
+          {/* Reference & Type */}
+          <div>
+            <p className="text-sm font-medium text-gray-900">#{deal.referenceNumber}</p>
+            <p className="text-sm text-gray-600 mt-1">{deal.dealType} • {deal.dealStructure?.replace('_', ' ')}</p>
+          </div>
+          
+          {/* Timeline */}
+          <div>
+            <p className="text-sm font-medium text-gray-900">Created</p>
+            <p className="text-sm text-gray-600 mt-1">
+              {deal.createdAt && format(new Date(deal.createdAt), 'MMM dd, yyyy')}
+            </p>
+            {deal.lastRevisedAt && (
+              <p className="text-xs text-gray-500 mt-1">
+                Revised: {format(new Date(deal.lastRevisedAt), 'MMM dd')}
+              </p>
+            )}
+          </div>
+          
+          {/* Status */}
+          <div className="flex items-center justify-end">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               deal.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
               deal.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
