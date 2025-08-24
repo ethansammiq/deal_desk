@@ -1,135 +1,187 @@
-# Databricks Requirements for Deal Desk Application
+# Databricks Requirements - Deal Desk Project
 
-**Purpose:** Define exactly what's needed from Databricks to make Deal Desk production-ready  
-**For:** Anthony Perez (Databricks Admin)  
-**From:** Ethan & Van  
+**To:** Anthony Perez, VP Innovation & Growth Programs  
+**From:** Van Ngo, RVP Trading Northeast & Ethan Sam  
+**Re:** Database Infrastructure for Deal Desk Application  
 **Date:** August 2025
 
 ---
 
-## 🎯 What We Need
+## Project Context
 
-### **A Test Database Environment**
+Van Ngo is leading the development of a Deal Desk application to streamline MiQ's commercial deal approval process. The application is functionally complete and ready for production, but requires persistent data storage to replace the current in-memory system.
 
-We need a dedicated space in Databricks where we can:
+**Business Problem Being Solved:**
 
-- Create and modify tables during development
-- Test our data persistence layer
-- Load sample data for testing
-- **Suggested name:** `deal_desk_test`
+- Manual deal approval processes causing 5-7 day delays
+- No visibility into deal pipeline or approval bottlenecks  
+- Lost revenue opportunities due to slow response times
+- Lack of audit trail for multi-million dollar deal decisions
 
-### **10 Core Tables**
-
-| Table | Purpose | Key Data |
-|-------|---------|----------|
-| **users** | Store MiQ employee info from Okta SSO | Roles, departments, email |
-| **deals** | Track all deal submissions | 30+ fields for deal details |
-| **deal_approvals** | Multi-stage approval workflow | Who needs to approve what |
-| **deal_tiers** | Tiered pricing structures | Revenue, margins, incentives |
-| **deal_status_history** | Audit trail of all changes | Who changed what and when |
-| **advertisers** | Client company info | Historical revenue data |
-| **agencies** | Agency partner info | Type, region, revenue |
-| **deal_scoping_requests** | Pre-deal exploratory requests | Convert to formal deals |
-| **approval_actions** | Individual approval decisions | Comments, timestamps |
-| **incentive_values** | Track deal incentives | Categories, values, notes |
+**Current Technical Challenge:**
+The application loses all data when the server restarts. This is blocking our production launch and preventing Van's team from using the system for real deals.
 
 ---
 
-## 🔐 Access & Security
+## What We Need From Databricks
 
-### **What We Need Access To:**
+### 1. Test Environment Access
 
-- **Development:** Read/write to test database
-- **Production:** Service account with limited permissions
-- **Connection:** Azure AD token authentication
-- **Security:** SSL/TLS encrypted connections
+We need a dedicated database space where our development team can:
 
-### **What We DON'T Need:**
+- Build and test the data persistence layer
+- Migrate from in-memory to persistent storage
+- Validate the application before production deployment
 
-- ❌ Direct access to production tables
-- ❌ Ability to run ad-hoc queries
-- ❌ Access to other MiQ data
-- ❌ Admin privileges
+**Suggested Database Name:** `deal_desk_test`
+
+### 2. Database Schema Requirements
+
+The application requires 10 core tables to support the deal workflow:
+
+| Table Name | Business Purpose | Expected Volume |
+|------------|------------------|-----------------|
+| **users** | Store MiQ employee data from Okta SSO | ~500 users |
+| **deals** | Track all commercial deals through approval | ~1000/month |
+| **deal_approvals** | Multi-stage approval workflow tracking | ~5000/month |
+| **deal_tiers** | Tiered pricing and margin structures | ~3000/month |
+| **deal_status_history** | Complete audit trail for compliance | ~10000/month |
+| **advertisers** | Client company information | ~2000 records |
+| **agencies** | Agency partner data | ~500 records |
+| **deal_scoping_requests** | Pre-deal opportunity assessment | ~200/month |
+| **approval_actions** | Individual approval decisions and comments | ~5000/month |
+| **incentive_values** | Deal incentives and special terms | ~2000/month |
+
+### 3. Access Requirements
+
+**Development Phase:**
+
+- Service account with read/write permissions to test database
+- Azure AD token-based authentication
+- SSL/TLS encrypted connections
+
+**Production Phase (Future):**
+
+- Separate production database (`deal_desk_prod`)
+- Restricted service account (no direct table access)
+- Automated backup configuration
 
 ---
 
-## 📊 Data Volume Expectations
+## Business Impact & Urgency
 
-- **Monthly:** ~500-1000 new deals
-- **Users:** ~200-500 active employees
-- **Storage:** ~1-2GB initially, growing to ~10-20GB/year
-- **Performance:** Sub-second response for dashboard queries
+### Why This Is Critical
 
----
+**Without Databricks:**
 
-## 🚨 Why This Is Critical
-
-**Current Problem:** All data is stored in memory only
-
-- 💥 **Server restart = all data lost**
-- 📉 **Can't scale beyond single server**
-- 🔒 **No backup or recovery possible**
+- **Data Loss Risk:** Any server restart loses all deals in progress
+- **Revenue Impact:** Unable to track ~$50M+ in monthly deal flow
+- **Compliance Risk:** No audit trail for SOX compliance requirements
+- **Team Impact:** 200+ sellers cannot use the system
 
 **With Databricks:**
 
-- ✅ Data persists permanently
-- ✅ Multiple users can access simultaneously
-- ✅ Automatic backups and recovery
-- ✅ Proper audit trails for compliance
+- Persistent storage for all deal data
+- Real-time visibility into $600M+ annual pipeline
+- Complete audit trail for compliance
+- Foundation for AI-driven deal insights and analytics
+
+### Growth & Innovation Opportunities
+
+Once the core database is operational, this infrastructure will enable:
+
+- Predictive analytics on deal success rates
+- ML models for optimal pricing recommendations
+- Integration with broader MiQ analytics ecosystem
+- Data-driven insights for Van's growth programs
 
 ---
 
-## 🏗️ Implementation Plan
+## Implementation Approach
 
-### **Phase 1: Setup (What we need from you)**
+### Phase 1: Foundation (Immediate Need)
 
-1. Create test database: `deal_desk_test`
-2. Grant our service account basic permissions:
+**What we need from you this week:**
 
-   ```sql
-   GRANT SELECT, INSERT, UPDATE, DELETE 
-   ON DATABASE deal_desk_test 
-   TO [deal_desk_service_account]
-   ```
+1. Provision test database space (`deal_desk_test`)
+2. Create service account with basic permissions
+3. Share connection details (server, authentication token)
 
-3. Provide connection details (server, auth token)
+### Phase 2: Development (Weeks 2-3)
 
-### **Phase 2: Migration (What we'll do)**
+**What our team will handle:**
 
-1. Create tables using provided schema
-2. Test connection from application
-3. Migrate from in-memory to Databricks
-4. Validate data persistence
+- Create tables using provided schema
+- Migrate application from in-memory to Databricks
+- Test with Van's team using real deal scenarios
 
-### **Phase 3: Production (Future)**
+### Phase 3: Production (Weeks 4-6)
 
-1. Create production database: `deal_desk_prod`
-2. Set up automated backups
-3. Configure monitoring
+**Joint effort:**
+
+- Set up production environment
+- Configure monitoring and backups
+- Gradual rollout to sales teams
 
 ---
 
-## 📋 Quick Action Items for Anthony
+## Specific Requirements
 
-**This Week:**
+### Technical Specifications
 
-- [ ] Provision test database space
-- [ ] Create service account for Deal Desk
-- [ ] Share connection details with team
+- **Database Type:** SQL Server compatible (T-SQL syntax)
+- **Connection Method:** Azure AD token authentication
+- **Expected Load:** ~1000 concurrent users, ~10K transactions/day
+- **Performance Target:** <500ms query response time
+- **Data Retention:** 7 years for audit compliance
 
-**Next Week:**
+### Security & Compliance
 
-- [ ] Review table schema together
-- [ ] Test initial connection
-- [ ] Plan production setup
-
----
-
-## 💬 Contact
-
-**Questions?** Reach out to Ethan or Van  
-**Urgent?** This blocks our production launch - data loss risk is critical
+- Row-level security based on user roles
+- Encrypted data at rest and in transit
+- No direct production table access
+- Full audit logging for all modifications
 
 ---
 
-*Note: We already have the complete SQL schema ready (from code review). We just need the database space and permissions to implement it.*
+## Action Items for Anthony
+
+### This Week (Critical Path)
+
+- [ ] Approve test database provisioning
+- [ ] Assign resources for database setup
+- [ ] Schedule technical handoff meeting
+
+### Specific Deliverables Needed
+
+1. **Connection String** for test environment
+2. **Service Account Credentials** with appropriate permissions
+3. **Technical Contact** for troubleshooting
+
+---
+
+## Success Metrics
+
+We'll measure success through:
+
+- **Technical:** Zero data loss events, <500ms response times
+- **Business:** 50% reduction in deal approval time
+- **User Adoption:** 200+ active users within 30 days
+- **Revenue Impact:** Improved visibility on $600M+ pipeline
+
+---
+
+## Questions for Discussion
+
+1. Can we leverage existing Databricks infrastructure or need new provisioning?
+2. What's the standard process for promoting from test to production?
+3. Who should be the technical point of contact for integration issues?
+
+---
+
+**Next Steps:** Please confirm receipt and let us know your availability for a technical planning session this week. Van's team is ready to move forward as soon as we have database access.
+
+**Contact:**
+
+- Van Ngo (Business Requirements): <van.ngo@miq.com>
+- Ethan Sam (Technical Integration): <ethan.sam@miq.com>
