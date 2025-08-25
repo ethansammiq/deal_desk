@@ -1,187 +1,300 @@
-# Databricks Requirements - Deal Desk Project
+# Databricks Infrastructure Requirements - Deal Desk Project
 
 **To:** Anthony Perez, VP Innovation & Growth Programs  
-**From:** Van Ngo, RVP Trading Northeast & Ethan Sam  
-**Re:** Database Infrastructure for Deal Desk Application  
-**Date:** August 2025
+**From:** Ethan Sam, Growth & Innovation Associate  
+**Re:** Database Infrastructure for Trading Department Deal Desk Solution  
+**Date:** August 2025  
+**Timeline:** 6-8 weeks total development
 
 ---
 
-## Project Context
+## 📋 Executive Summary
 
-Van Ngo is leading the development of a Deal Desk application to streamline MiQ's commercial deal approval process. The application is functionally complete and ready for production, but requires persistent data storage to replace the current in-memory system.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PROJECT STATUS DASHBOARD                 │
+├─────────────────────────────────────────────────────────────┤
+│ Business Sponsor: Van Ngo (RVP Trading, Northeast)         │
+│ Technical Lead:   Ethan Sam (Growth & Innovation)          │
+│ Infrastructure:   Anthony Perez (VP Innovation & Growth)   │
+│ Timeline:         6-8 weeks total development              │
+│ Current Status:   ⚠️  Blocked - Awaiting Database Setup    │
+│ Risk Level:       🔴 HIGH - Data loss prevents production   │
+└─────────────────────────────────────────────────────────────┘
+```
 
-**Business Problem Being Solved:**
+**The Challenge:** Van's Trading Department needs a Deal Desk application to streamline commercial deal approvals, but we're blocked by data persistence requirements. Current in-memory storage loses all data on server restart.
 
-- Manual deal approval processes causing 5-7 day delays
-- No visibility into deal pipeline or approval bottlenecks  
-- Lost revenue opportunities due to slow response times
-- Lack of audit trail for multi-million dollar deal decisions
-
-**Current Technical Challenge:**
-The application loses all data when the server restarts. This is blocking our production launch and preventing Van's team from using the system for real deals.
-
----
-
-## What We Need From Databricks
-
-### 1. Test Environment Access
-
-We need a dedicated database space where our development team can:
-
-- Build and test the data persistence layer
-- Migrate from in-memory to persistent storage
-- Validate the application before production deployment
-
-**Suggested Database Name:** `deal_desk_test`
-
-### 2. Database Schema Requirements
-
-The application requires 10 core tables to support the deal workflow:
-
-| Table Name | Business Purpose | Expected Volume |
-|------------|------------------|-----------------|
-| **users** | Store MiQ employee data from Okta SSO | ~500 users |
-| **deals** | Track all commercial deals through approval | ~1000/month |
-| **deal_approvals** | Multi-stage approval workflow tracking | ~5000/month |
-| **deal_tiers** | Tiered pricing and margin structures | ~3000/month |
-| **deal_status_history** | Complete audit trail for compliance | ~10000/month |
-| **advertisers** | Client company information | ~2000 records |
-| **agencies** | Agency partner data | ~500 records |
-| **deal_scoping_requests** | Pre-deal opportunity assessment | ~200/month |
-| **approval_actions** | Individual approval decisions and comments | ~5000/month |
-| **incentive_values** | Deal incentives and special terms | ~2000/month |
-
-### 3. Access Requirements
-
-**Development Phase:**
-
-- Service account with read/write permissions to test database
-- Azure AD token-based authentication
-- SSL/TLS encrypted connections
-
-**Production Phase (Future):**
-
-- Separate production database (`deal_desk_prod`)
-- Restricted service account (no direct table access)
-- Automated backup configuration
+**The Ask:** Databricks infrastructure setup to enable persistent data storage for production deployment.
 
 ---
 
-## Business Impact & Urgency
+## 🎯 Project Team & Organizational Structure
 
-### Why This Is Critical
+```
+Innovation & Growth Programs (Anthony Perez, VP)
+├── Ethan Sam (Growth & Innovation Associate)
+│   └── Technical implementation & database migration
+│
+Trading Department (Separate)
+├── Van Ngo (RVP Trading, Northeast) 
+│   └── Business requirements & user acceptance
+│
+Collaboration Model: Cross-departmental support
+```
 
-**Without Databricks:**
+**Team Responsibilities:**
 
-- **Data Loss Risk:** Any server restart loses all deals in progress
-- **Revenue Impact:** Unable to track ~$50M+ in monthly deal flow
-- **Compliance Risk:** No audit trail for SOX compliance requirements
-- **Team Impact:** 200+ sellers cannot use the system
-
-**With Databricks:**
-
-- Persistent storage for all deal data
-- Real-time visibility into $600M+ annual pipeline
-- Complete audit trail for compliance
-- Foundation for AI-driven deal insights and analytics
-
-### Growth & Innovation Opportunities
-
-Once the core database is operational, this infrastructure will enable:
-
-- Predictive analytics on deal success rates
-- ML models for optimal pricing recommendations
-- Integration with broader MiQ analytics ecosystem
-- Data-driven insights for Van's growth programs
+| Team Member | Department | Role | Key Deliverables |
+|-------------|------------|------|------------------|
+| **Anthony Perez** | Innovation & Growth | Strategic oversight | Databricks provisioning, architecture decisions |
+| **Ethan Sam** | Innovation & Growth | Technical lead | Database implementation, app migration |
+| **Van Ngo** | Trading | Business owner | Requirements, testing, trading team rollout |
 
 ---
 
-## Implementation Approach
+## 📊 Current State Analysis
 
-### Phase 1: Foundation (Immediate Need)
+### Technical Problem
 
-**What we need from you this week:**
+**Current Architecture:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   React     │◄──►│   Express   │◄──►│ MemStorage  │
+│  Frontend   │    │   Server    │    │ (In-Memory) │
+└─────────────┘    └─────────────┘    └─────────────┘
+                                             │
+                                             ▼
+                                      💥 Data Lost 
+                                       on Restart
+```
 
-1. Provision test database space (`deal_desk_test`)
-2. Create service account with basic permissions
-3. Share connection details (server, authentication token)
+**Target Architecture:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   React     │◄──►│   Express   │◄──►│ Databricks │
+│  Frontend   │    │   Server    │    │ Persistent  │
+└─────────────┘    └─────────────┘    └─────────────┘
+                                             │
+                                             ▼
+                                       ✅ Data Safely 
+                                          Persisted
+```
 
-### Phase 2: Development (Weeks 2-3)
+### Business Impact Metrics
 
-**What our team will handle:**
+**From businessConstants.ts (lines 24-29):**
+```
+Approval Thresholds Currently Configured:
+├── Manager Level:    $50,000
+├── Director Level:   $100,000  
+├── VP Level:         $500,000
+└── SVP Level:        $1,000,000
+```
 
-- Create tables using provided schema
-- Migrate application from in-memory to Databricks
-- Test with Van's team using real deal scenarios
-
-### Phase 3: Production (Weeks 4-6)
-
-**Joint effort:**
-
-- Set up production environment
-- Configure monitoring and backups
-- Gradual rollout to sales teams
+**Trading Department Impact:**
+- **Current State:** Manual approval processes, no pipeline visibility
+- **Risk:** Data loss prevents tracking deals through these approval tiers
+- **Opportunity:** Streamlined workflow for Van's Northeast Trading team
 
 ---
 
-## Specific Requirements
+## 🔄 Technical Requirements
+
+### Database Schema Overview
+
+```
+Deal Desk Database Architecture
+├── 👤 users (Okta SSO integration)
+├── 💼 deals (Core deal tracking)  
+├── ✅ deal_approvals (Multi-stage workflow)
+├── 📊 deal_tiers (Pricing structures)
+├── 📝 deal_status_history (Audit trail)
+├── 🏢 advertisers (Client data)
+├── 🎯 agencies (Partner data)
+├── 🔍 deal_scoping_requests (Pre-deal assessment)
+├── ⚡ approval_actions (Individual decisions)
+└── 💰 incentive_values (Special terms)
+```
+
+### Expected Data Volumes
+
+| Table | Business Purpose | Monthly Volume | Storage Est. |
+|-------|------------------|----------------|--------------|
+| deals | Deal submissions | ~500-1000 | Primary workload |
+| deal_approvals | Approval tracking | ~2000-5000 | High activity |
+| deal_status_history | Audit trail | ~5000-10000 | Compliance req'd |
+| users | Trading team members | ~200-500 | Steady state |
+| Others | Supporting data | ~1000-3000 | Reference tables |
 
 ### Technical Specifications
 
+**From system configuration:**
+- **Default Margin:** 35% (businessConstants.ts:13)
+- **Max Tiers per Deal:** 5 (businessConstants.ts:8)
+- **Contract Term Default:** 12 months (businessConstants.ts:14)
 - **Database Type:** SQL Server compatible (T-SQL syntax)
-- **Connection Method:** Azure AD token authentication
-- **Expected Load:** ~1000 concurrent users, ~10K transactions/day
-- **Performance Target:** <500ms query response time
-- **Data Retention:** 7 years for audit compliance
-
-### Security & Compliance
-
-- Row-level security based on user roles
-- Encrypted data at rest and in transit
-- No direct production table access
-- Full audit logging for all modifications
+- **Authentication:** Azure AD token-based
+- **Performance Target:** <500ms query response
 
 ---
 
-## Action Items for Anthony
+## 📈 Development Timeline (6-8 Weeks)
 
-### This Week (Critical Path)
+```
+Project Timeline - Deal Desk Database Implementation
 
-- [ ] Approve test database provisioning
-- [ ] Assign resources for database setup
-- [ ] Schedule technical handoff meeting
+Week 1-2: Infrastructure Setup
+├── Anthony: Databricks environment provisioning
+├── Ethan: Service account configuration
+└── 🎯 Milestone: Database connection established
 
-### Specific Deliverables Needed
+Week 3-4: Implementation
+├── Ethan: Schema creation & data migration
+├── Ethan: Application integration testing
+└── 🎯 Milestone: App running on persistent storage
 
-1. **Connection String** for test environment
-2. **Service Account Credentials** with appropriate permissions
-3. **Technical Contact** for troubleshooting
+Week 5-6: Business Validation  
+├── Van: Trading workflow testing
+├── Ethan: Performance optimization
+└── 🎯 Milestone: User acceptance complete
 
----
+Week 7-8: Production Deployment
+├── Anthony: Production environment setup
+├── Van: Trading team rollout
+└── 🎯 Milestone: Live production system
 
-## Success Metrics
-
-We'll measure success through:
-
-- **Technical:** Zero data loss events, <500ms response times
-- **Business:** 50% reduction in deal approval time
-- **User Adoption:** 200+ active users within 30 days
-- **Revenue Impact:** Improved visibility on $600M+ pipeline
-
----
-
-## Questions for Discussion
-
-1. Can we leverage existing Databricks infrastructure or need new provisioning?
-2. What's the standard process for promoting from test to production?
-3. Who should be the technical point of contact for integration issues?
+Status: ⏳ Currently blocked at Week 1 - awaiting database setup
+```
 
 ---
 
-**Next Steps:** Please confirm receipt and let us know your availability for a technical planning session this week. Van's team is ready to move forward as soon as we have database access.
+## 🤝 Infrastructure Decision Points
 
-**Contact:**
+**Anthony - Strategic Architecture Decisions Needed:**
 
-- Van Ngo (Business Requirements): <van.ngo@miq.com>
-- Ethan Sam (Technical Integration): <ethan.sam@miq.com>
+### Option A: Shared Environment
+```
+Pros: ✅ Faster setup, shared resources
+Cons: ❌ Potential conflicts, limited isolation
+Cost: $ Lower
+Timeline: 1-2 weeks setup
+```
+
+### Option B: Dedicated Environment  
+```
+Pros: ✅ Full control, performance isolation
+Cons: ❌ More setup time, dedicated resources
+Cost: $$$ Higher
+Timeline: 2-3 weeks setup
+```
+
+### Option C: Staged Approach
+```
+Pros: ✅ Test in shared, production dedicated
+Cons: ❌ Two-phase migration
+Cost: $$ Moderate
+Timeline: 2-4 weeks total
+```
+
+**Recommendation:** Option C (Staged) - Start with shared test environment, migrate to dedicated production.
+
+---
+
+## 💡 Success Framework
+
+### Technical KPIs
+```
+┌─────────────────────────────────────────────┐
+│              SUCCESS METRICS                │
+├─────────────────────────────────────────────┤
+│ Data Persistence:    ✅ Zero data loss      │
+│ Response Time:       ✅ <500ms queries      │  
+│ Concurrent Users:    ✅ 200+ supported      │
+│ Uptime:             ✅ 99.9% availability   │
+│ Audit Trail:        ✅ Complete history     │
+└─────────────────────────────────────────────┘
+```
+
+### Business Success Metrics
+- **Trading Team Adoption:** 50+ users within 30 days
+- **Approval Efficiency:** Reduce cycle time by 40%
+- **Pipeline Visibility:** Real-time tracking across all approval tiers
+- **Compliance:** Complete audit trail for regulatory requirements
+
+---
+
+## 🚀 Immediate Action Items
+
+### This Week (Critical Path - Ethan & Anthony)
+
+**Anthony's Decisions Needed:**
+- [ ] Choose environment approach (A, B, or C above)
+- [ ] Approve test database provisioning  
+- [ ] Assign technical contact for setup coordination
+
+**Ethan's Deliverables:**
+- [ ] Provide detailed schema DDL scripts
+- [ ] Document connection requirements
+- [ ] Create migration testing plan
+
+### Next Week
+
+**Joint Activities:**
+- [ ] Database environment validation
+- [ ] Initial connection testing
+- [ ] Schema deployment verification
+
+---
+
+## 🔧 Technical Specifications Detail
+
+### Connection Requirements
+```
+Database Configuration Needed:
+├── Server: [TBD - Anthony to provide]
+├── Database: deal_desk_test (initial)
+├── Auth: Azure AD service account
+├── Permissions: CREATE, SELECT, INSERT, UPDATE, DELETE
+├── SSL: Required (TLS 1.2+)
+└── Pooling: Connection pool size: 10-20
+```
+
+### Service Account Setup
+- **Account Name:** `svc-dealdesk-prod` 
+- **Permissions:** Read/write to designated schema only
+- **Rotation:** Standard MiQ security policy compliance
+- **Monitoring:** Query performance and access logging
+
+---
+
+## 📞 Coordination & Communication
+
+**Immediate Team Sync Needed:**
+- **Anthony & Ethan:** Technical architecture review (30 min)
+- **Van & Ethan:** Business validation planning (30 min)  
+- **All Three:** Weekly status check-ins during 6-8 week timeline
+
+**Questions for Discussion:**
+1. Which environment approach fits Innovation & Growth Programs strategy?
+2. Any existing Databricks infrastructure we can leverage?
+3. Standard process for promoting test → production in our department?
+
+---
+
+## 📋 Risk Mitigation
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Data Loss | 🔴 HIGH | Immediate database setup |
+| Performance | 🟡 MEDIUM | Load testing in week 4-5 |
+| Integration | 🟡 MEDIUM | Parallel development streams |
+| Trading Team Adoption | 🟠 MEDIUM | Van's change management plan |
+
+---
+
+**Next Steps:** Anthony, please review the environment options above and let's schedule a brief technical planning session. Van's trading team is ready to validate the solution as soon as we have persistent storage.
+
+**Internal Contacts:**
+- **Ethan Sam** (Technical): <ethan.sam@miq.com>
+- **Van Ngo** (Business): <van.ngo@miq.com>
