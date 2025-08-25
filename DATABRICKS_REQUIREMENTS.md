@@ -14,11 +14,11 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    PROJECT STATUS DASHBOARD                 │
 ├─────────────────────────────────────────────────────────────┤
-│ Business Sponsor: Van Ngo (RVP Trading, Northeast)         │
-│ Technical Lead:   Ethan Sam (Growth & Innovation)          │
-│ Infrastructure:   Anthony Perez (VP Innovation & Growth)   │
-│ Timeline:         6-8 weeks total development              │
-│ Current Status:   ⚠️  Blocked - Awaiting Database Setup    │
+│ Business Sponsor: Van Ngo (RVP Trading, Northeast)          │
+│ Technical Lead:   Ethan Sam (Growth & Innovation)           │
+│ Infrastructure:   Anthony Perez (VP Innovation & Growth)    │
+│ Timeline:         6-8 weeks total development               │
+│ Current Status:   ⚠️  Blocked - Awaiting Database Setup     |
 │ Risk Level:       🔴 HIGH - Data loss prevents production   │
 └─────────────────────────────────────────────────────────────┘
 ```
