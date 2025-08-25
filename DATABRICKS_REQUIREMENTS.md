@@ -72,7 +72,7 @@ Collaboration Model: Cross-departmental support
 **Target Architecture:**
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   React     │◄──►│   Express   │◄──►│ Databricks │
+│   React     │◄──►│   Express   │◄──►│ Databricks  │
 │  Frontend   │    │   Server    │    │ Persistent  │
 └─────────────┘    └─────────────┘    └─────────────┘
                                              │
@@ -296,5 +296,5 @@ Database Configuration Needed:
 **Next Steps:** Anthony, please review the environment options above and let's schedule a brief technical planning session. Van's trading team is ready to validate the solution as soon as we have persistent storage.
 
 **Internal Contacts:**
-- **Ethan Sam** (Technical): <ethan.sam@miq.com>
-- **Van Ngo** (Business): <van.ngo@miq.com>
+- **Ethan Sam** (Technical): <ethan.sam@miqdigital.com>
+- **Van Ngo** (Business): <van.ngo@miqdigital.com>
